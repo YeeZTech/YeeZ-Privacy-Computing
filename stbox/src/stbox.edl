@@ -1,0 +1,12 @@
+enclave  {
+    include "sgx_eid.h"
+
+    trusted{
+      public uint64_t stbox_common_version();
+    };
+
+    untrusted{
+        void ocall_print_string([in, string] const char * buf);
+        void ocall_log_string(uint32_t rank, [in, string] const char * buf);
+    };
+};

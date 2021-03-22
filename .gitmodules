@@ -1,0 +1,3 @@
+[submodule "vendor/fflib"]
+	path = vendor/fflib
+	url = https://github.com/AthrunArthur/fflib.git

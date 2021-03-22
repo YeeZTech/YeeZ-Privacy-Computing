@@ -1,0 +1,19 @@
+{
+  "host":"ropsten",
+  "project_id":"cb7768694bc940d5a6e8ca21600b37d4",
+  "op_type":"call_and_send",
+  "keystore_path":"offline/keystore/845d866f4a9b1d13bcc2905bd90af3c285fb8c82.json",
+  "sender":"0x845D866F4A9B1D13BcC2905bd90Af3C285Fb8c82",
+  "gas_limit":300000,
+  "tx_value":0,
+  "contract_address":"0xE47667668FdC98EFF6A690547A6399d875407b7D",
+  "contract_name":"YZDataRequest",
+  "func_name":"submit_result",
+  "func_args":{
+    "request_hash":"0xe2df59fc3c7e33080380e3d8607b3c8fa59ae871370381d759e03b47b37b8664",
+    "data_hash":"0x0e23386a8e0086ee7d5c2dc7b0c67a87354cc7aa4db218fe63b3139d0d9a91b6",
+    "cost":0,
+    "results":"",
+    "sig":"0xe579123a9630e57d24753e6f5a03e6046021af21e212c6f13226a8767fc6a8470f7660d2b43579d8539ffec3d3db8524064a714e5d82eecede012664883e91df1c"
+  }
+}

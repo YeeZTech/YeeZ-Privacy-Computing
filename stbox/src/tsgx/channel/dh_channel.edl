@@ -1,0 +1,10 @@
+enclave  {
+    include "sgx_eid.h"
+
+    trusted{
+      public uint64_t stbox_channel_version();
+    };
+
+    untrusted{
+    };
+};
