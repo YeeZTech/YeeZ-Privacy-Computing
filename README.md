@@ -4,13 +4,13 @@ Introduction
 ------------
 In order to empower data collaboration between enterprises and help enterprises use data to enhance their core competitiveness, we launched Fidelius, a privacy protection solution for data collaboration. Fidelius is based on the idea of "data is available but not visible", while effectively ensuring the consistency of the original data, the controllability of the calculation logic, the correctness and privacy of the calculation results.
 
-The following figure describes the abstract flow of data collaboration based on Fidelius. Similar to the traditional data collaboration model, the participants include data providers and data consumers. Fidelius runs on the side of both data provider and data consumer, and the two parties interact with Fidelius to realize data collaboration operation. There is no direct data interaction between the data provider and the data consumer, and the raw/plaintext data will not leave the data provider, which fundamentally avoids the problem of private data leakage.
+The following figure describes the abstract flow of data collaboration based on Fidelius. Similar to the traditional data collaboration model, the participants include data providers and data consumers. Fidelius runs on both sides of data provider and data consumer, and the two parties interact with Fidelius to realize data collaboration operation. There is no direct data interaction between the data provider and the data consumer, and the raw/plaintext data will not leave the data provider, which fundamentally avoids the problem of private data leakage.
 
 ![](doc/Fidelius-Infr.png)
 
 It is worth noting that, compared to the traditional data collaboration model, Fidelius has introduced blockchain. Because blockchain itself has the characteristics of a decentralized network, public and verifiable, Fidelius uses it as a trusted transmission channel and data calculation verification platform.
 
-**NOTE**: this is a community version. Although it shares similar components with our enterprise version, it has different features. Please contract `contact@yeez.tech` for more details about the enterprise version.
+**NOTE**: This is a community version. Although it shares similar components with our enterprise version, it has different features. Please contact `contact@yeez.tech` for more details about the enterprise version.
 
 Documentation
 -------------
@@ -67,7 +67,7 @@ We provide two kinds of building modes of Fidelius, debug mode and release mode.
     ```
     You can find libraries and binaries in directory `yeez-privacy-computing/lib` and `yeez-privacy-computing/bin` respectively.
 
-- To building and deploy Ethereum smart contract, please enter the command:
+- To build and deploy Ethereum smart contract, please enter the command:
     ```
     $ cd yeez-privacy-computing/contracts/backend && truffle migrate --network ropsten
     ```
@@ -109,7 +109,7 @@ The steps of initializing Fidelius is as follows:
     $ ./ypcd --start
     ```
 
-5) (Data Provider and Data Consumer) Create two pairs of public/private keys for data proviser and data consumer respectively, key pairs are created in directory `$HOME/.yeez.key/`.
+5) (Data Provider and Data Consumer) Create two pairs of public/private keys for data provider and data consumer respectively, key pairs are created in directory `$HOME/.yeez.key/`.
     ```
     $ ./keymgr_tool --create  # for data provider
     $ ./keymgr_tool --create  # for data consumer
@@ -124,7 +124,7 @@ The steps of initializing Fidelius is as follows:
 
 
 ### Example (Iris data as data source, run K-Means algorithm)
-We take K-Means algorithm running Iris data as an example of data collaboration.
+We take K-Means algorithm running iris data as an example of data collaboration.
 
 7) (Data Provider) Seal data source (raw/plaintext data), the output file `sealed.output` contains the data hash (`data_id`) of raw/plaintext data.
     ```
@@ -181,12 +181,12 @@ We take K-Means algorithm running Iris data as an example of data collaboration.
 
     `$HOST` in last command line indicates Ethereum network name, so it is set to `ropsten`, while `$PROJECT_ID` is given by [Infura](https://infura.io/) if you create a project on it.
 
-12) (Data Consumer) First of all, data consumer can explore the data set information via blockchain. Say a data consumer learned the IRIS data, and want to use it for a k-means analysis, he/she needs a parser, named `iris_parser.signed.so` here. He/she also needs to upload it to a server so that anyone can access it via a downloadable URL, and register the information of `iris_parser.signed.so` to smart contract by calling contract function `upload_program(string,string,string,uint256,bytes32)`.
+12) (Data Consumer) First of all, data consumer can explore the data set information via blockchain. Say a data consumer have learned the iris data, and want to use it for a k-means analysis, he/she needs a parser, named `iris_parser.signed.so` here. He/she also needs to upload it to a server so that anyone can access it via a downloadable URL, and register the information of `iris_parser.signed.so` to smart contract by calling contract function `upload_program(string,string,string,uint256,bytes32)`.
     ```
     contract address: 0xBC8214F07a3253091aE8fb0A01079ea7B4955768
     contract function: upload_program(string name, string desc, string url, uint256 price, bytes32 enclave_hash)
     ```
-    Where function parameter `url` is given after uploading program to server, parameter `price` is the cost using this program, parameter `enclave_hash` is given in file `dump.out` by entering the following command:
+    Where function parameter `url` is given after uploading program to server, parameter `price` is the cost of using this program, parameter `enclave_hash` is given in file `dump.out` by entering the following command:
     ```
     $ sgx_sign dump -enclave iris_parser.signed.so --dumpfile dump.out
     ```
