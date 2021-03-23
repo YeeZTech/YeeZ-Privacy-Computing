@@ -101,7 +101,7 @@ The steps of initializing Fidelius is as follows:
 
 3) (Data Provider) Initialize `ypcd` database.
     ```
-    $ cd yeez-privacy-computing/bin && ./ypcd --init
+    $ cd YeeZ-Privacy-Computing/bin && ./ypcd --init
     ```
 
 4) (Data Provider) Start Yeez Privacy Computing Daemon (ypcd).
@@ -135,7 +135,7 @@ We take K-Means algorithm running iris data as an example of data collaboration.
     ```
     $ ./ypcshuttle --onchain --input=iris_data.ini
     ```
-    **NOTE**: The content of file `iris_data.ini` is as follows, please replace `$PATH_TO_YEEZ_PRIVACY_COMPUTING` with your own `yeez-privacy-computing` directory, and `$data_id` with `data_id` which outputs in last step (file `sealed.output`).
+    **NOTE**: The content of file `iris_data.ini` is as follows, please replace `$PATH_TO_YEEZ_PRIVACY_COMPUTING` with your own `YeeZ-Privacy-Computing` directory, and `$data_id` with `data_id` which outputs in last step (file `sealed.output`).
     ```
     [general]
     mode = file
@@ -163,7 +163,7 @@ We take K-Means algorithm running iris data as an example of data collaboration.
 
     **NOTE**: Transaction sender should be `$PROVIDER_ADDR`.
 
-10) (Data Provider) Get data contract and data request contract by checking the event logs of `createYZData` transaction. For example, a successful [create data transaction](https://ropsten.etherscan.io/tx/0x414ce1c2e1d89befa6e06cdb66389fedbdd3c8993d1545e070d15b6955a5eea3) has three [event logs](https://ropsten.etherscan.io/tx/0x414ce1c2e1d89befa6e06cdb66389fedbdd3c8993d1545e070d15b6955a5eea3#eventlog), which contain a [NewYZData contract](https://ropsten.etherscan.io/address/0xf9c4ce0eab21e5842fd8fb4a7501b95b85507a4a) and a [NewYZDataRequest contract](https://ropsten.etherscan.io/address/0xe47667668fdc98eff6a690547a6399d875407b7d). After that, copy these two address to `$contract_YZData` and `$contract_YZDataRequest` in file `yeez-privacy-computing/toolkit/blockchain/ethereum/common/const.py`.
+10) (Data Provider) Get data contract and data request contract by checking the event logs of `createYZData` transaction. For example, a successful [create data transaction](https://ropsten.etherscan.io/tx/0x414ce1c2e1d89befa6e06cdb66389fedbdd3c8993d1545e070d15b6955a5eea3) has three [event logs](https://ropsten.etherscan.io/tx/0x414ce1c2e1d89befa6e06cdb66389fedbdd3c8993d1545e070d15b6955a5eea3#eventlog), which contain a [NewYZData contract](https://ropsten.etherscan.io/address/0xf9c4ce0eab21e5842fd8fb4a7501b95b85507a4a) and a [NewYZDataRequest contract](https://ropsten.etherscan.io/address/0xe47667668fdc98eff6a690547a6399d875407b7d). After that, copy these two address to `$contract_YZData` and `$contract_YZDataRequest` in file `YeeZ-Privacy-Computing/toolkit/blockchain/ethereum/common/const.py`.
 
 11) (Data Provider) Start request data listener daemon.
     ```
@@ -173,7 +173,7 @@ We take K-Means algorithm running iris data as an example of data collaboration.
     $ cd $PATH_TO_YEEZ_PRIVACY_COMPUTING/toolkit/blockchain/ethereum/common && python3 db_tables.py
     $ python3 daemon.py --host $HOST --project_id $PROJECT_ID
     ```
-    Where `$PATH_TO_YEEZ_PRIVACY_COMPUTING` is the path to `yeez-privacy-computing`.
+    Where `$PATH_TO_YEEZ_PRIVACY_COMPUTING` is the path to `YeeZ-Privacy-Computing`.
 
     Replace `$MYSQL_URL`/`$MYSQL_USERNAME`/`$MYSQL_PASSWORD`/`$YPCD_DB` with your own values, usually `$MYSQL_URL` is set to `127.0.0.1:3306`, and `YPCD_DB` is set to `ypcd`.
 
@@ -218,6 +218,6 @@ We take K-Means algorithm running iris data as an example of data collaboration.
 
 License
 -------
-The yeez-privacy-computing library (i.e. all code outside of the `toolkit` directory) is licensed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0), also included in our repository in the `COPYING.APACHE` file.
+The `YeeZ-Privacy-Computing` library (i.e. all code outside of the `toolkit` directory) is licensed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0), also included in our repository in the `COPYING.APACHE` file.
 
-The yeez-privacy-computing binaries (i.e. all code inside of the `toolkit` directory) is licensed under the [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.en.html), also included in our repository in the `COPYING` file.
+The `YeeZ-Privacy-Computing` binaries (i.e. all code inside of the `toolkit` directory) is licensed under the [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.en.html), also included in our repository in the `COPYING` file.
