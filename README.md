@@ -181,7 +181,7 @@ We take K-Means algorithm running iris data as an example of data collaboration.
 
     `$HOST` in last command line indicates Ethereum network name, so it is set to `ropsten`, while `$PROJECT_ID` is given by [Infura](https://infura.io/) if you create a project on it.
 
-12) (Data Consumer) First of all, data consumer can explore the data set information via blockchain. Say a data consumer have learned the iris data, and want to use it for a k-means analysis, he/she needs a parser, named `iris_parser.signed.so` here. He/she also needs to upload it to a server so that anyone can access it via a downloadable URL, and register the information of `iris_parser.signed.so` to smart contract by calling contract function `upload_program(string,string,string,uint256,bytes32)`.
+12) (Data Consumer) First of all, data consumer can explore the data set information via blockchain. Say a data consumer have learned the iris data, and want to use it for a k-means analysis, he/she needs a parser, named `iris_parser.signed.so` here. He/she also needs to upload it to a server so that anyone can access it via a downloadable URL, and register the information of `iris_parser.signed.so` to smart contract by calling the contract function `upload_program(string,string,string,uint256,bytes32)`.
     ```
     contract address: 0xBC8214F07a3253091aE8fb0A01079ea7B4955768
     contract function: upload_program(string name, string desc, string url, uint256 price, bytes32 enclave_hash)
