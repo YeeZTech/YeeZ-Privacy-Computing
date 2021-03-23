@@ -52,7 +52,7 @@ We provide two kinds of building modes of Fidelius, debug mode and release mode.
 ### Build YeeZ Privacy Computing (From Source Code)
 - Download YeeZ Privacy Computing source code:
     ```
-    $ git clone https://gitlab.com/Yeez/yeez-privacy-computing.git
+    $ git clone https://github.com/YeeZTech/YeeZ-Privacy-Computing.git
     ```
 
 - Build and install submodule dependencies:
