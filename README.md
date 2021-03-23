@@ -58,20 +58,20 @@ We provide two kinds of building modes of Fidelius, debug mode and release mode.
 - Build and install submodule dependencies:
     ```
     $ git submodule update --init
-    $ cd yeez-privacy-computing/vendor/fflib && mkdir build && cd build && cmake .. && make
+    $ cd YeeZ-Privacy-Computing/vendor/fflib && mkdir build && cd build && cmake .. && make
     ```
 
 - To build YeeZ Privacy Computing with debug mode, enter the following command:
     ```
     $ cmake -DSGX_MODE=Debug -DSGX_HW=OFF .. && make -j8
     ```
-    You can find libraries and binaries in directory `yeez-privacy-computing/lib` and `yeez-privacy-computing/bin` respectively.
+    You can find libraries and binaries in directory `YeeZ-Privacy-Computing/lib` and `YeeZ-Privacy-Computing/bin` respectively.
 
 - To build and deploy Ethereum smart contract, please enter the command:
     ```
-    $ cd yeez-privacy-computing/contracts/backend && truffle migrate --network ropsten
+    $ cd YeeZ-Privacy-Computing/contracts/backend && truffle migrate --network ropsten
     ```
-    We use Etherum as underlying blockchain system, we deploy related smart contract to Ethereum testnet, i.e., [Ropsten](https://ropsten.etherscan.io/). The details of smart contract is located in the directory `yeez-privacy-computing/contracts`.
+    We use Etherum as underlying blockchain system, we deploy related smart contract to Ethereum testnet, i.e., [Ropsten](https://ropsten.etherscan.io/). The details of smart contract is located in the directory `YeeZ-Privacy-Computing/contracts`.
 
 
 Run Fidelius
@@ -87,7 +87,7 @@ The steps of initializing Fidelius is as follows:
     mysql> create database ypcd;
     ```
 
-2) (Data Provider) Create configuration file with name `ypcd.conf` at directory `yeez-privacy-computing/bin`, the content of the file is as follows, and replace `$USER_NAME` and `$USER_PASSWD` with your own name and password respectively.
+2) (Data Provider) Create configuration file with name `ypcd.conf` at directory `YeeZ-Privacy-Computing/bin`, the content of the file is as follows, and replace `$USER_NAME` and `$USER_PASSWD` with your own name and password respectively.
     ```
     [mysql]
     url = tcp://127.0.0.1:3306
