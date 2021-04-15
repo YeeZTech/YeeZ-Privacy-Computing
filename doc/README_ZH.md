@@ -1,6 +1,6 @@
 中文 / [English](../README.md)
 
-Fidelius - 熠智科技隐私计算中间件
+Fidelius - 熠智隐私计算中间件
 =====================================
 
 
@@ -71,7 +71,7 @@ Fidelius - 熠智科技隐私计算中间件
 
 ### 编译(源码编译)
 
-- 下载 YeeZ 隐私计算中间件源码：
+- 下载 Fidelius 源码：
 
   ```shell
   $ git clone https://github.com/YeeZTech/YeeZ-Privacy-Computing.git
@@ -84,7 +84,7 @@ Fidelius - 熠智科技隐私计算中间件
   $ cd YeeZ-Privacy-Computing/vendor/fflib && mkdir build && cd build && cmake .. && make
   ```
 
-- 以Debug 模式编译 YeeZ 隐私计算中间件，执行命令：
+- 以Debug 模式编译 Fidelius，执行命令：
 
   ```shell
   $ cd YeeZ-Privacy-Computing
@@ -122,7 +122,7 @@ Fidelius - 熠智科技隐私计算中间件
   $ cd YeeZ-Privacy-Computing/contracts/backend && truffle migrate --network ropsten
   ```
 
-  **注意： ** 上述命令执行完毕后，用户需要记录 4 个智能合约的地址以方便后续调用。
+  **注意：** 上述命令执行完毕后，用户需要记录 4 个智能合约的地址以方便后续调用。
 
   **注意：** 上述命令执行完毕之后将部署 4 个智能合约，分别是 `CertifiedUsers` 、`ProgramStore`、`YZDataRequestFactory` 和 `YZDataFactory`。
 
@@ -204,13 +204,13 @@ Fidelius 初始化步骤如下：
 
    **注意2：** 上述合约地址是我们部署到 `Ropsten` 的合约地址，只有授权用户才能调用该函数，如果想使用该合约地址，请联系 `contact@yeez.tech` 获得授权。如果想编写自己的智能合约，可参考该[智能合约](https://ropsten.etherscan.io/address/0x45464EbC79186AA313A5c01D7E4447422ba36c97#code)，调用 register 函数时需要提供自己的合约地址。
 
-   **注意3： **可以通过 `EtherScan` 网站调用 `register` 函数, 传入的公钥需要添加 16 进制标识符 `0x`。 
+   **注意3：** 可以通过 `EtherScan` 网站调用 `register` 函数, 传入的公钥需要添加 16 进制标识符 `0x`。 
 
 
 
 ## 示例
 
-我们以 iris data 作为数据源，使用 K-Means算法对这些数据进行聚类作为数据合作的示例。
+在本示例下， iris data 作为数据提供方提供的数据源，数据分析者使用 K-Means 算法对这些数据进行聚类分析。
 
 7. (数据提供方) 使用SGX对称加密原始数据，加密后的结果文件为`sealed.output`, 该文件包含原始数据的哈希 (`data_id`) 。
 
@@ -258,9 +258,9 @@ Fidelius 初始化步骤如下：
 
    **注意：** 交易的发送方应该是 `$PROVIDER_ADDR`。
 
-10. (数据提供方) 检查步骤 9 中的 `createYZData`交易的事件日志，可以获取数据合约以及数据需求合约。
+10. (数据提供方) 检查步骤 9 中的 `createYZData` 交易的事件日志，可以获取数据合约以及数据需求合约的地址。
 
-    举例来说，一个执行成功的[create data transaction](https://ropsten.etherscan.io/tx/0x414ce1c2e1d89befa6e06cdb66389fedbdd3c8993d1545e070d15b6955a5eea3) 会产生 3 个 [event logs](https://ropsten.etherscan.io/tx/0x414ce1c2e1d89befa6e06cdb66389fedbdd3c8993d1545e070d15b6955a5eea3#eventlog), 这些日志中包含一个 [NewYZData contract](https://ropsten.etherscan.io/address/0xf9c4ce0eab21e5842fd8fb4a7501b95b85507a4a) 和一个 [NewYZDataRequest contract](https://ropsten.etherscan.io/address/0xe47667668fdc98eff6a690547a6399d875407b7d)。 将这两个合约的地址拷贝到`YeeZ-Privacy-Computing/toolkit/blockchain/ethereum/common/const.py` 文件中的`$contract_YZData` 和 `$contract_YZDataRequest`中。
+    举例来说，一个执行成功的[create data transaction](https://ropsten.etherscan.io/tx/0x414ce1c2e1d89befa6e06cdb66389fedbdd3c8993d1545e070d15b6955a5eea3) 会产生 3 个 [event logs](https://ropsten.etherscan.io/tx/0x414ce1c2e1d89befa6e06cdb66389fedbdd3c8993d1545e070d15b6955a5eea3#eventlog), 这些日志中包含一个 [NewYZData contract](https://ropsten.etherscan.io/address/0xf9c4ce0eab21e5842fd8fb4a7501b95b85507a4a) 和一个 [NewYZDataRequest contract](https://ropsten.etherscan.io/address/0xe47667668fdc98eff6a690547a6399d875407b7d)。 将这两个合约的地址拷贝到`YeeZ-Privacy-Computing/toolkit/blockchain/ethereum/common/const.py` 文件中的 `$contract_YZData` 和 `$contract_YZDataRequest` 中。
 
 11. (数据提供方)启动监听数据需求的守护进程。
 
@@ -275,19 +275,19 @@ Fidelius 初始化步骤如下：
     - `$PATH_TO_YEEZ_PRIVACY_COMPUTING` 是 `YeeZ-Privacy-Computing` 所在的路径。
     - `$MYSQL_URL`/`$MYSQL_USERNAME`/`$MYSQL_PASSWORD`/`$YPCD_DB`需要用户替换为自己的值。
     - `$MYSQL_URL` 通常情况下指定为`127.0.0.1:3306`,  `YPCD_DB` 设置为 `ypcd`。
-    - `$SUBMITTER_PASSWD` 用于解密私钥，该私钥会使用以太坊密钥库发送分析结果的交易。
+    - `$SUBMITTER_PASSWD` 用于加密私钥。
     - `$HOST` 代表以太坊网络名称，设置为 `ropsten`。
     - `$PROJECT_ID` 由 [Infura](https://infura.io/) 提供。可以在 [Infura](https://infura.io/) 注册一个账户，随后在账户中创建一个以太坊项目即可获得 `$PROJECT_ID` 。
     - 执行 `daemon.py` 文件时确保 `python3 ` 环境已经安装 `hexbytes` 、 `ethereum` 和 `web3`包。
 
-12. (数据分析者) 首先，数据分析者可以浏览发布在区块链上的数据集。如果一个数据分析者看到 `iris data` 数据集并且意欲使用 k-means 算法对该数据集进行数据分析。 他需要一个分析程序，在这里称之为 `iris_parser.signed.so`，并且还要将该程序上传到一个服务器以便于其他人可以通过下载链接进行访问，随后调用合约函数 `upload_program(string,string,string,uint256,bytes32)` 将 `isrs_parser.signed.so` 的信息注册到智能合约中。
+12. (数据分析者) 首先，数据分析者可以浏览发布在区块链上的数据集。如果一个数据分析者看到 `iris data` 数据集并且意欲使用  K-Means 算法对该数据集进行数据分析。 他编写了一个分析程序，这里称之为 `iris_parser.signed.so`。他需要将该程序上传到一个服务器以便于其他人可以通过下载链接进行访问，随后调用合约函数 `upload_program(string,string,string,uint256,bytes32)` 将 `isrs_parser.signed.so` 的信息注册到智能合约中。
 
     ```shell
     contract address: 0xBC8214F07a3253091aE8fb0A01079ea7B4955768
     contract function: upload_program(string name, string desc, string url, uint256 price, bytes32 enclave_hash)
     ```
 
-    - `url`通过将程序上传到服务器后获得。
+    - `url` 通过将程序上传到服务器后获得。
     - `price` 是使用这个程序的费用。
     - `enclave_hash` 来自执行下述命令后生成的`dump.out`文件中的 `enclave_hash`字段。
 
@@ -306,15 +306,15 @@ Fidelius 初始化步骤如下：
     {                                                                                
       "data": [ 
           {
-           "data-hash" : $data_id,                     
-           "provider-pkey" : $CONSUMER_PKEY
+           "data-hash" : data_id,                     
+           "provider-pkey" : CONSUMER_PKEY
           }                                                                                 
       ]                                 
     }
     ```
 
-    - `$data_id` 是数据分析者数据哈希。
-    - `$CONSUMER_PKEY` 是数据分析者公钥。
+    - `$data_id` 是数据提供方的数据哈希。
+    - `$CONSUMER_PKEY` 是数据分析者的公钥。
 
 14. (数据分析者) 生成调用 YZDataFactory 合约的参数(`encrypted-input`, `program-enclave-hash` ) 。`$data_id` 和 `$CONSUMER_PKEY` 分别是步骤 7 和步骤 5 产生的参数。
 
@@ -331,18 +331,17 @@ Fidelius 初始化步骤如下：
     ```
 
     - `contract_YZDataRequest` 由步骤 10 生成。
-    - `secret`/`input`/`forward_sig`  由步骤14 中生成的文件 `params.json`  中的`$encrypted-skey`/`encrypted-input`/`forward-sig`指定。
+    - `secret`/`input`/`forward_sig`  由步骤14 中生成的文件 `params.json`  中的 `$encrypted-skey`/`encrypted-input`/`forward-sig` 指定。
     - `program_hash` 由步骤 12 中的交易日志中 `Data` 中的 `hash` 字段。
 
     在数据提供方一侧，步骤 11 产生的需求数据监听守护进程会监听到数据分析者发出的该交易，随后自动下载 `iris_parser.signed.so` 文件并运行数据分析程序。 运行结束后，分析结果会被自动发送到智能合约 `YZDataFactory` 中。
 
-    **注意： ** 交易发送方应该是 `$CONSUMER_ADDR`。在配置文件 `$PATH_TO_YEEZ_PRIVACY_COMPUTING/toolkit/blockchain/ethereum/transaction/config/YZDataRequest.json` 中需要对 `$keystore_path`, `$sender` 和 `$contract_address` 进行修改。其中：
+    **注意：** 交易发送方应该是 `$CONSUMER_ADDR`。在配置文件 `$PATH_TO_YEEZ_PRIVACY_COMPUTING/toolkit/blockchain/ethereum/transaction/config/YZDataRequest.json` 中需要对 `$keystore_path`, `$sender` 和 `$contract_address` 进行修改。其中：
 
-    - `$keystore_path` 是在步骤 11 中由 `$SUBMITTER_PASSWD` 解密得到的以太坊密钥库。
+    - `$keystore_path` 是在步骤 11 中由 `$SUBMITTER_PASSWD` 加密私钥得到的以太坊密钥库。
     - `$sender` 设置为 `$CONSUMER_ADDR`。
     - `contract_address` 设置为 `$contract_YZDataRequest` 。
 
-    **该步骤操作网址： https://ropsten.etherscan.io/verifyContract-solc?a=0xb0dad566afe3affcf67775c3f21dcff9a5160df1&c=v0.5.10%2bcommit.5a6ea5b1&lictype=3**
 
 16. (数据分析者) 解密结果。加密后的分析结果会被自动发送到区块链智能合约中，数据分析者可以通过如下命令解密分析结果:
 
