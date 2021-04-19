@@ -156,7 +156,7 @@ Fidelius - 熠智隐私计算中间件
 
 ## 运行 Fidelius
 
-根据编译模式，Fidelius 可以在Debug和Release模式下运行。Debug 模式请按照本指导进行编译，以 Release 模式运行，请查看英特尔SGX [开发文档](baidu.com)，或者也可以通过联系`contact@yeez.tech`取得帮助。
+根据编译模式，Fidelius 可以在Debug和Release模式下运行。Debug 模式请按照本指导进行编译，以 Release 模式运行，请查看英特尔 [SGX开发文档](https://software.intel.com/content/www/us/en/develop/topics/software-guard-extensions/attestation-services.html)，或者也可以通过联系`contact@yeez.tech`取得帮助。
 
 
 由于Fidelius 系统中有两个角色，数据提供方和数据分析者，因此运行 Fidelius 时，我们会指定命令在哪一方执行。
