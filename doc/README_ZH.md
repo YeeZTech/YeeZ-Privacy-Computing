@@ -29,7 +29,7 @@ Fidelius - 熠智隐私计算中间件
 
 我们提供 Fidelius 两种编译模式，Debug 模式和 Release 模式。Debug 模式请按照本指导进行编译。
 
-由于 Fidelius 中使用到了英特尔公司的 `Software Guard Extention (SGX)`，Release 模式下编译需要开发者事先完成产品授权，否则将无法正常工作，如果想使用 Release 版本的 Fidelius，请查看英特尔 [ SGX 开发文档](https://software.intel.com/content/www/us/en/develop/topics/software-guard-extensions/attestation-services.html)，或者也可以通过联系 `contact@yeez.tech` 取得帮助。
+由于 Fidelius 中使用到了英特尔公司的 `Software Guard Extension (SGX)`，Release 模式下编译需要开发者事先完成产品授权，否则将无法正常工作，如果想使用 Release 版本的 Fidelius，请查看英特尔 [ SGX 开发文档](https://software.intel.com/content/www/us/en/develop/topics/software-guard-extensions/attestation-services.html)，或者也可以通过联系 `contact@yeez.tech` 取得帮助。
 
 
 
@@ -65,11 +65,11 @@ Fidelius - 熠智隐私计算中间件
   $ npm install -g truffle
   ```
 
-- 确保拥有两个以太坊测试网络 `Ropsten` 上的账户（分别作为数据提供方和数据使用方），且每个账户至少有 1 个 `ETH`。账户可以用 `MetaMask` 钱包生成，`ETH` 可以访问[该网址](https://faucet.ropsten.be/)申请得到。
+- 确保拥有两个以太坊测试网络 `Ropsten` 上的账户（分别作为数据提供方和数据使用方），且每个账户至少有 1 个 `ETH`。账户可以用 `MetaMask` 钱包生成，`ETH` 可以访问 [该网址](https://faucet.ropsten.be/) 申请得到。
 
 - 确保拥有一个 `INFURA_API_KEY`，可以通过 [Infura](https://infura.io/) 网站获取。
 
-- 确保拥有一个 `ETHERSACAN_API_KEY`, 可以通过 [EtherScan](https://ropsten.etherscan.io/) 网站获取。
+- 确保拥有一个 `ETHERSACAN_API_KEY`, 可以通过 [Etherscan](https://ropsten.etherscan.io/) 网站获取。
 
 ### 编译（源码编译）
 
@@ -109,19 +109,19 @@ Fidelius - 熠智隐私计算中间件
 - 编写部署智能合约所需的配置文件。在 `YeeZ-Privacy-Computing/contracts/backend` 目录下创建 `.env` 文件，其内容如下：
 
   ```shell
-  ROPSTEN_PK = $Private_key
-  ETHERSCAN_API_KEY = $EtherScan_API_KEY
-  INFURA_API_KEY = $Infura_API_KEY
+  ROPSTEN_PK = $PRIVATE_KEY
+  ETHERSCAN_API_KEY = $ETHERSACAN_API_KEY
+  INFURA_API_KEY = $INFURA_API_KEY
   ```
 
-  - `$Private_key` 是用户用于部署智能合约的密钥。
-  - `$EtherScan_API_KEY` 是在  [EtherScan](https://ropsten.etherscan.io/) 网站获取的 API Key。
-  - `$Infura_API_KEY` 是在  [Infura](https://infura.io/) 网站获取的 API Key 。
+  - `$PRIVATE_KEY` 是用户用于部署智能合约的私钥。
+  - `$ETHERSACAN_API_KEY` 是在  [Etherscan](https://ropsten.etherscan.io/) 网站获取的 API Key。
+  - `$INFURA_API_KEY` 是在  [Infura](https://infura.io/) 网站获取的 API Key。
 
 
 
 
-- 安装部署智能合约所需的依赖  ` truffle-privatekey-provider` 和 `dotenv` , 执行如下命令：
+- 安装部署智能合约所需的依赖 `truffle-privatekey-provider` 和 `dotenv`，执行如下命令：
 
   ```shell
   $ cd YeeZ-Privacy-Computing/contracts/backend
@@ -137,7 +137,7 @@ Fidelius - 熠智隐私计算中间件
   $ cd YeeZ-Privacy-Computing/contracts/backend && truffle migrate --network ropsten
   ```
 
-  **注意：** 上述命令执行大约需要 15 分钟左右，执行完毕之后将部署 4 个智能合约，分别是 `CertifiedUsers` 、`ProgramStore`、`YZDataRequestFactory` 和 `YZDataFactory`。用户需要记录 这4 个智能合约的地址以方便后续使用。
+  **注意：** 上述命令执行大约需要 15 分钟左右，执行完毕之后将部署 4 个智能合约，分别是 `CertifiedUsers` 、`ProgramStore`、`YZDataRequestFactory` 和 `YZDataFactory`。用户需要记录这 4 个智能合约的地址以方便后续使用。
 
   - `CertifiedUsers` 合约用于存储数据提供方和数据使用方的注册信息。
 
@@ -185,7 +185,7 @@ Fidelius 初始化步骤如下：
    control-port = $PORT
    ```
 
-   - `$MYSQL_URL`，`$USER_NAME`，`$USER_PASSWD`，`$PORT` 需要用户替换为自己的用户名和密码。
+   - `$MYSQL_URL`，`$USER_NAME`，`$USER_PASSWD`，`$PORT` 需要用户替换为自己的相关信息。
    - 默认 `$MYSQL_URL` 为 `tcp://127.0.0.1:3306` 。
    - 默认 `$PORT` 为 `7068` 。
 
@@ -218,7 +218,7 @@ Fidelius 初始化步骤如下：
 
 
 6. （数据提供方/数据使用方）注册公钥。通过调用 `CertifiedUsers` 智能合约中的 `register` 函数注册公钥。
-   `CertifiedUsers` 智能合约在[编译步骤](#编译（源码编译）) 中的部署智能合约得到。
+   `CertifiedUsers` 智能合约在 [编译步骤](#编译（源码编译）) 中的部署智能合约得到。
    `register` 函数格式如下：
 
    ```shell
@@ -233,7 +233,7 @@ Fidelius 初始化步骤如下：
 
    **注意2：** 上述合约地址是我们部署到 `Ropsten` 的合约地址，只有授权用户才能调用该函数，如果想使用该合约地址，请联系 `contact@yeez.tech` 获得授权。如果想编写自己的智能合约，可参考 [该智能合约](https://ropsten.etherscan.io/address/0x45464EbC79186AA313A5c01D7E4447422ba36c97#code)。
 
-   **注意3：** 可以通过 `EtherScan` 网站调用 `register` 函数，传入的公钥需要添加十六进制标识符 `0x`。
+   **注意3：** 可以通过 `Etherscan` 网站调用 `register` 函数，传入的公钥需要添加十六进制标识符 `0x`。
 
 
 
@@ -241,7 +241,7 @@ Fidelius 初始化步骤如下：
 
 经过上述初始化步骤，我们搭建好了 `Fidelius` 的运行环境，下面以一个具体的示例进行说明。
 
-在本示例下，数据提供方提供 `iris data`, 数据使用方使用 `K-Means` 算法，双方通过与智能合约交互完成数据合作，合作流程如下：
+在本示例下，数据提供方提供 `iris data`，数据使用方使用 `K-Means` 算法，双方通过与智能合约交互完成数据合作，合作流程如下：
 
 - 数据提供方将自身 `iris data` 的元数据信息注册到 `YZData` 智能合约中。
 
@@ -259,11 +259,11 @@ Fidelius 初始化步骤如下：
 
   **注意1：** 在第 7 步开始进行，必须保证前述的 6 个步骤正确完成。
 
-  **注意2：** 如无路径说明， 示例中命令默认在 `YeeZ-Privacy-Computing/bin` 目录下执行。
+  **注意2：** 如无路径说明，示例中命令默认在 `YeeZ-Privacy-Computing/bin` 目录下执行。
 
 
 
-7. （数据提供方）使用 `SGX` 对称密钥加密 `iris data`，加密后的结果文件为 `iris.data.sealed`，同时输出加密过程的描述文件 `sealed.output`，`sealed.output` 文件包含原始数据的哈希（`data_id`），执行命令如下：
+7. （数据提供方）使用 `SGX` 内部对称密钥加密 `iris data`，加密后的结果文件为 `iris.data.sealed`，同时输出加密过程的描述文件 `sealed.output`，`sealed.output` 文件包含原始数据的哈希（`data_id`），执行命令如下：
 
    ```shell
    $ ./data_provider --data-url ./iris.data --sealed-data-url ./iris.data.sealed --sealer-path ../lib/edatahub.signed.so --plugin-path ../lib/libiris_reader.so --output sealed.output
@@ -316,7 +316,7 @@ Fidelius 初始化步骤如下：
 
    - `price` 是使用该 `iris data` 进行数据分析的费用，可以填写为0。
 
-   - `cert_addr` 和 `program_proxy` 分别是 [编译步骤](#编译（源码编译）)生成的 `CertifiedUsers` 合约地址和 `ProgramStore` 合约地址。
+   - `cert_addr` 和 `program_proxy` 分别是 [编译步骤](#编译（源码编译）) 生成的 `CertifiedUsers` 合约地址和 `ProgramStore` 合约地址。
 
    交易执行成功后会产生 3 个事件日志，日志中包含新生成的 `YZData` 和 `YZDataRequest` 这两个智能合约的地址。
 
@@ -346,7 +346,7 @@ Fidelius 初始化步骤如下：
     - `$MYSQL_URL` 通常情况下指定为`127.0.0.1:3306`，`$YPCD_DB` 设置为 `ypcd`。
     - `$SUBMITTER_PASSWD` 为解密 `Keystore` 的密码。
     - `$HOST` 代表以太坊网络名称，设置为 `ropsten`。
-    - `$PROJECT_ID` 由 [Infura](https://infura.io/) 提供。可以在 [Infura](https://infura.io/) 注册一个账户，随后在账户中创建一个以太坊项目即可获得 `$PROJECT_ID` 。
+    - `$PROJECT_ID` 由 [Infura](https://infura.io/) 提供。可以在 [Infura](https://infura.io/) 注册一个账户，随后在账户中创建一个以太坊项目即可获得 `$PROJECT_ID`。
     - 执行 `daemon.py` 文件时确保 `python3` 环境已经安装 `hexbytes`、`ethereum` 和 `web3` 包。
 
 
@@ -424,11 +424,11 @@ Fidelius 初始化步骤如下：
 
     ```shell
     $ cd YeeZ-Privacy-Computing/bin
-    $ ./yprepare --dhash=$data_id --use-pubkey=$CONSUMER_PKEY --use-param xxx --param-format text --use-enclave ../lib/iris_parser.signed.so --output params.json
+    $ ./yprepare --dhash=$data_id --use-pubkey=$PROVIDER_PKEY --use-param xxx --param-format text --use-enclave ../lib/iris_parser.signed.so --output params.json
     ```
 
     - `$data_id` 是数据提供方 `iris data` 的数据哈希值，其值由数据提供方在步骤 7 生成。
-    - `$CONSUMER_PKEY` 是数据使用方的公钥。
+    - `$PROVIDER_PKEY` 是数据提供方的公钥。
     - 其他参数无需修改。
 
 
@@ -471,4 +471,4 @@ Fidelius 初始化步骤如下：
 
 `YeeZ-Privacy-Computing` 库(即 `toolkit`目录下的所有代码) 根据 [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0) 获得许可，同时也包括我们存储库中的 `COPYING.APACHE` 文件。
 
-`YeeZ-Privacy-Computing`  二进制文件(即toolkit目录下的所有代码) 根据 [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.en.html) 获得授权，同时也包括我们存储库中的`COPYING` 文件。
+`YeeZ-Privacy-Computing` 二进制文件(即toolkit目录下的所有代码) 根据 [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.en.html) 获得授权，同时也包括我们存储库中的 `COPYING` 文件。
