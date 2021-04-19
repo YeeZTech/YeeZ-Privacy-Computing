@@ -48,7 +48,7 @@ Fidelius - 熠智隐私计算中间件
   ```shell
   $ sudo apt install build-essential ocaml ocamlbuild automake autoconf libtool wget python libssl-dev git cmake perl
   $ sudo apt install libssl-dev libcurl4-openssl-dev protobuf-compiler libprotobuf-dev debhelper cmake reprepro unzip
-  $ sudo apt insatll mysql-server libgoogle-glog-dev libboost-all-dev libmysqlcppconn-dev
+  $ sudo apt install mysql-server libgoogle-glog-dev libboost-all-dev libmysqlcppconn-dev
   ```
 
 - 安装 (cryptopp):
@@ -333,7 +333,7 @@ Fidelius 初始化步骤如下：
     $ cd $PATH_TO_YEEZ_PRIVACY_COMPUTING/toolkit/blockchain/ethereum/ 
     $ pip3 install -r requirements.txt
     $ export MYSQL_URL=$MYSQL_URL MYSQL_USERNAME=$MYSQL_USERNAME MYSQL_PASSWORD=$MYSQL_PASSWORD YPCD_DB=$YPCD_DB
-    $ export YPC_HOME=$PATH_TO_YEEZ_PRIVACY_COMPUTING SUBMITTER_PASSWD=$YPC_HOME
+    $ export YPC_HOME=$PATH_TO_YEEZ_PRIVACY_COMPUTING SUBMITTER_PASSWD=$SUBMITTER_PASSWD
     $ cd $PATH_TO_YEEZ_PRIVACY_COMPUTING/toolkit/blockchain/ethereum/common 
     $ python3 db_tables.py
     $ cd $PATH_TO_YEEZ_PRIVACY_COMPUTING/toolkit/blockchain/ethereum/ 
@@ -343,7 +343,7 @@ Fidelius 初始化步骤如下：
     - `$PATH_TO_YEEZ_PRIVACY_COMPUTING` 是 `YeeZ-Privacy-Computing` 所在的路径。
     - `$MYSQL_URL`/`$MYSQL_USERNAME`/`$MYSQL_PASSWORD`/`$YPCD_DB`需要用户替换为自己的值。
     - `$MYSQL_URL` 通常情况下指定为`127.0.0.1:3306`,  `YPCD_DB` 设置为 `ypcd`。
-    - `$SUBMITTER_PASSWD` 用于加密私钥。
+    - `$SUBMITTER_PASSWD` 为解密 `Keystore` 的密码。
     - `$HOST` 代表以太坊网络名称，设置为 `ropsten`。
     - `$PROJECT_ID` 由 [Infura](https://infura.io/) 提供。可以在 [Infura](https://infura.io/) 注册一个账户，随后在账户中创建一个以太坊项目即可获得 `$PROJECT_ID` 。
     - 执行 `daemon.py` 文件时确保 `python3 ` 环境已经安装 `hexbytes` 、 `ethereum` 和 `web3`包。
