@@ -1,4 +1,5 @@
 #include "ypc_t/analyzer/parser_wrapper_base.h"
+#include "common/crypto_prefix.h"
 #include "stbox/ebyte.h"
 #include "stbox/eth/util.h"
 #include "stbox/stx_common.h"
@@ -108,12 +109,13 @@ parser_wrapper_base::decrypt_param(const uint8_t *encrypted_param,
     return stbox::stx_status::success;
   }
   m_encrypted_param = std::string((const char *)encrypted_param, len);
-  uint32_t data_len = stbox::crypto::get_rijndael128GCM_decrypt_size(len);
+  uint32_t data_len = stbox::crypto::get_decrypt_message_size_with_prefix(len);
   m_param = std::string(data_len, '0');
 
-  auto ret = stbox::crypto::decrypt_message(
+  auto ret = stbox::crypto::decrypt_message_with_prefix(
       (const uint8_t *)m_private_key.c_str(), m_private_key.size(),
-      encrypted_param, len, (uint8_t *)&m_param[0], data_len);
+      encrypted_param, len, (uint8_t *)&m_param[0], data_len,
+      crypto_prefix_arbitrary);
   if (ret != static_cast<uint32_t>(stbox::stx_status::success)) {
     LOG(ERROR) << "error for stbox::crypto::decrypt_message: " << ret;
     return static_cast<stbox::stx_status>(ret);
@@ -145,8 +147,7 @@ uint32_t parser_wrapper_base::end_parse_data_item() {
   uint32_t pkey_size = stbox::crypto::get_secp256k1_public_key_size();
   std::string pkey(pkey_size, '0');
   auto status = stbox::crypto::generate_secp256k1_pkey_from_skey(
-      (uint8_t *)m_private_key.c_str(), m_private_key.size(),
-      (uint8_t *)&pkey[0], pkey_size);
+      (const uint8_t *)&m_private_key[0], (uint8_t *)&pkey[0], pkey_size);
   if (status != static_cast<uint32_t>(stbox::stx_status::success)) {
     LOG(ERROR) << "error for generate_secp256k1_pkey_from_skey: " << status;
     return static_cast<uint32_t>(status);
@@ -157,11 +158,13 @@ uint32_t parser_wrapper_base::end_parse_data_item() {
   LOG(INFO) << "address : " << addr;
 
   uint32_t cipher_size =
-      stbox::crypto::get_rijndael128GCM_encrypt_size(m_result_str.size());
+      stbox::crypto::get_encrypt_message_size_with_prefix(m_result_str.size());
   m_encrypted_result_str = std::string(cipher_size, '0');
-  status = stbox::crypto::encrypt_message(
-      (uint8_t *)&pkey[0], pkey_size, (uint8_t *)m_result_str.c_str(),
-      m_result_str.size(), (uint8_t *)&m_encrypted_result_str[0], cipher_size);
+  status = stbox::crypto::encrypt_message_with_prefix(
+      (const uint8_t *)&pkey[0], pkey_size,
+      (const uint8_t *)m_result_str.c_str(), m_result_str.size(),
+      crypto_prefix_arbitrary, (uint8_t *)&m_encrypted_result_str[0],
+      cipher_size);
   if (status != static_cast<uint32_t>(stbox::stx_status::success)) {
     LOG(ERROR) << "error for encrypt_message: " << status;
     return static_cast<uint32_t>(status);
@@ -216,14 +219,14 @@ uint32_t parser_wrapper_base::merge_parse_result(const uint8_t *encrypted_param,
 
   auto decrypt_block_result = [&](const std::string &_encrypted_param,
                                   std::string &_param) -> stbox::stx_status {
-    uint32_t data_len =
-        stbox::crypto::get_rijndael128GCM_decrypt_size(_encrypted_param.size());
+    uint32_t data_len = stbox::crypto::get_decrypt_message_size_with_prefix(
+        _encrypted_param.size());
     _param = std::string(data_len, '0');
 
-    auto ret = stbox::crypto::decrypt_message(
+    auto ret = stbox::crypto::decrypt_message_with_prefix(
         (const uint8_t *)m_private_key.c_str(), m_private_key.size(),
         (uint8_t *)&_encrypted_param[0], _encrypted_param.size(),
-        (uint8_t *)&_param[0], data_len);
+        (uint8_t *)&_param[0], data_len, crypto_prefix_arbitrary);
 
     if (ret != static_cast<uint32_t>(stbox::stx_status::success)) {
       LOG(ERROR) << "error for decrypt_message: " << ret;
@@ -237,7 +240,7 @@ uint32_t parser_wrapper_base::merge_parse_result(const uint8_t *encrypted_param,
   scope_guard _l([&]() { delete[] pkey; });
 
   stbox::crypto::generate_secp256k1_pkey_from_skey(
-      (uint8_t *)m_private_key.c_str(), m_private_key.size(), pkey, pkey_size);
+      (uint8_t *)m_private_key.c_str(), pkey, pkey_size);
 
   std::vector<std::string> results;
   for (uint16_t i = 0; i < m_block_results.size(); ++i) {

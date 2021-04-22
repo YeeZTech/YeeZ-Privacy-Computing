@@ -1,4 +1,7 @@
 
-add_subdirectory(core)
-add_subdirectory(keymgr)
-add_subdirectory(toolkit)
+file(GLOB sub_folders ./*)
+foreach(folder ${sub_folders})
+  if(IS_DIRECTORY ${folder})
+    add_subdirectory(${folder})
+  endif()
+endforeach()

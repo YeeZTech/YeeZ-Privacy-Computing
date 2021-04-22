@@ -11,7 +11,7 @@ Logger &Logger::start(const std::string &file, uint32_t line,
   std::string::size_type pos = file.find_last_of("/");
   std::string f = file.substr(pos + 1);
 
-  m_ss = file + std::string(":") + std::to_string(line) + std::string(":") +
+  m_ss = f + std::string(":") + std::to_string(line) + std::string(":") +
          function + std::string(", ");
   return *this;
 }
