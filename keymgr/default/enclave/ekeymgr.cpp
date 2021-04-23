@@ -1,3 +1,4 @@
+#include "common/crypto_prefix.h"
 #include "ekeymgr_t.h" /* print_string */
 #include <stdarg.h>
 #include <stdio.h> /* vsnprintf */
@@ -35,76 +36,108 @@ using scope_guard = stbox::scope_guard;
 using namespace stbox;
 // using namespace stbox::crypto;
 
-static char aad_mac_text[64] = "tech.yeez.key.manager";
-// uint8_t *p_iv_text =
-//(uint8_t *)malloc(INITIALIZATION_VECTOR_SIZE * sizeof(uint8_t));
+uint32_t get_backup_private_key_size(uint32_t sealed_size) {
+  if (sealed_size != stbox::crypto::get_secp256k1_sealed_private_key_size()) {
+    return SGX_ERROR_UNEXPECTED;
+  }
+
+  return stbox::crypto::get_encrypt_message_size_with_prefix(
+      stbox::crypto::get_secp256k1_private_key_size());
+}
 
 uint32_t backup_private_key(uint8_t *sealed_private_key, uint32_t sealed_size,
                             uint8_t *pub_key, uint32_t pkey_size,
                             uint8_t *backup_private_key, uint32_t bp_size) {
-#ifdef DEBUG_LOG
-  printf("\n########## backup private key ##########\n");
-#endif
-  sgx_status_t se_ret;
-  uint32_t data_size =
-      sgx_get_encrypt_txt_len((sgx_sealed_data_t *)sealed_private_key);
-  uint8_t *data;
-  ff::scope_guard _l([&]() { data = new uint8_t[data_size]; },
-                     [&]() { delete[] data; });
-  uint32_t aad_mac_len = strlen(aad_mac_text);
-  se_ret = sgx_unseal_data((const sgx_sealed_data_t *)sealed_private_key,
-                           (uint8_t *)aad_mac_text, (uint32_t *)&aad_mac_len,
-                           data, &data_size);
+
+  uint32_t se_ret;
+  uint8_t *skey;
+  uint32_t skey_size = stbox::crypto::get_secp256k1_private_key_size();
+  ff::scope_guard _skey_ptr([&]() { skey = new uint8_t[skey_size]; },
+                            [&]() { delete[] skey; });
+
+  se_ret = stbox::crypto::unseal_secp256k1_private_key(sealed_private_key,
+                                                       sealed_size, skey);
   if (se_ret) {
     return se_ret;
   }
-#ifdef DEBUG_LOG
-  printf("unseal data size: %u\n", data_size);
-  printf("unseal data hex: ");
-  print_hex(data, data_size);
-#endif
 
-  se_ret = (sgx_status_t)encrypt_message(pub_key, pkey_size, data, data_size,
-                                         backup_private_key, bp_size);
-#ifdef DEBUG_LOG
-  printf("backup private key size: %u\n", bp_size);
-  printf("backup private key hex: ");
-  print_hex(backup_private_key, bp_size);
-#endif
+  se_ret = stbox::crypto::encrypt_message_with_prefix(
+      pub_key, pkey_size, skey, skey_size, ypc::crypto_prefix_backup,
+      backup_private_key, bp_size);
   return se_ret;
 }
 
+uint32_t get_restore_private_key_size(uint32_t bp_size) {
+  uint32_t expect = stbox::crypto::get_encrypt_message_size_with_prefix(
+      stbox::crypto::get_secp256k1_private_key_size());
+  if (bp_size != expect) {
+    return SGX_ERROR_UNEXPECTED;
+  }
+  return stbox::crypto::get_secp256k1_sealed_private_key_size();
+}
+
 uint32_t restore_private_key(uint8_t *backup_private_key, uint32_t bp_size,
-                             uint8_t *priv_key, uint32_t skey_size,
+                             uint8_t *priv_key, uint32_t priv_key_size,
                              uint8_t *sealed_private_key,
                              uint32_t sealed_size) {
-#ifdef DEBUG_LOG
-  printf("\n########## restore private key ##########\n");
-#endif
-  sgx_status_t se_ret;
-  uint8_t data[SECP256K1_PRIVATE_KEY_SIZE];
-  uint32_t aad_mac_len = strlen(aad_mac_text);
-  se_ret =
-      (sgx_status_t)decrypt_message(priv_key, skey_size, backup_private_key,
-                                    bp_size, data, SECP256K1_PRIVATE_KEY_SIZE);
+
+  uint32_t se_ret;
+  uint8_t *skey;
+  uint32_t skey_size = stbox::crypto::get_secp256k1_private_key_size();
+  ff::scope_guard _skey_ptr([&]() { skey = new uint8_t[skey_size]; },
+                            [&]() { delete[] skey; });
+
+  se_ret = stbox::crypto::unseal_secp256k1_private_key(priv_key, priv_key_size,
+                                                       skey);
   if (se_ret) {
     return se_ret;
   }
-#ifdef DEBUG_LOG
-  printf("restore private key size: %u\n", SECP256K1_PRIVATE_KEY_SIZE);
-  printf("restore private key hex: ");
-  print_hex(data, SECP256K1_PRIVATE_KEY_SIZE);
-#endif
+  uint8_t *raw_bkey;
+  uint32_t raw_bkey_size =
+      stbox::crypto::get_decrypt_message_size_with_prefix(bp_size);
 
-  se_ret = sgx_seal_data(
-      (const uint32_t)strlen(aad_mac_text), (const uint8_t *)aad_mac_text,
-      SECP256K1_PRIVATE_KEY_SIZE, data, (const uint32_t)sealed_size,
-      (sgx_sealed_data_t *)sealed_private_key);
-#ifdef DEBUG_LOG
-  printf("sealed secret key size: %d\n", sealed_size);
-  printf("sealed secret key hex: ");
-  print_hex(sealed_private_key, sealed_size);
-#endif
+  ff::scope_guard _raw_bkey_desc(
+      [&]() { raw_bkey = new uint8_t[raw_bkey_size]; },
+      [&]() { delete[] raw_bkey; });
+
+  se_ret = stbox::crypto::decrypt_message_with_prefix(
+      skey, skey_size, backup_private_key, bp_size, raw_bkey, raw_bkey_size,
+      ypc::crypto_prefix_backup);
+  if (se_ret) {
+    return se_ret;
+  }
+  se_ret = stbox::crypto::seal_secp256k1_private_key(
+      raw_bkey, sealed_private_key, sealed_size);
+  return se_ret;
+}
+uint32_t get_forward_private_key_size(uint32_t sealed_size) {
+  if (sealed_size != stbox::crypto::get_secp256k1_sealed_private_key_size()) {
+    return SGX_ERROR_UNEXPECTED;
+  }
+
+  return stbox::crypto::get_encrypt_message_size_with_prefix(
+      stbox::crypto::get_secp256k1_private_key_size());
+}
+
+uint32_t forward_private_key(uint8_t *sealed_private_key, uint32_t sealed_size,
+                             uint8_t *pub_key, uint32_t pkey_size,
+                             uint8_t *fwd_private_key, uint32_t fwd_size) {
+
+  uint32_t se_ret;
+  uint8_t *skey;
+  uint32_t skey_size = stbox::crypto::get_secp256k1_private_key_size();
+  ff::scope_guard _skey_ptr([&]() { skey = new uint8_t[skey_size]; },
+                            [&]() { delete[] skey; });
+
+  se_ret = stbox::crypto::unseal_secp256k1_private_key(sealed_private_key,
+                                                       sealed_size, skey);
+  if (se_ret) {
+    return se_ret;
+  }
+
+  se_ret = stbox::crypto::encrypt_message_with_prefix(
+      pub_key, pkey_size, skey, skey_size, ypc::crypto_prefix_forward,
+      fwd_private_key, fwd_size);
   return se_ret;
 }
 
@@ -121,6 +154,7 @@ stbox::stx_status verify_peer_enclave_trust(
   }
   return stbox::stx_status::success;
 }
+
 uint32_t session_request(sgx_dh_msg1_t *dh_msg1, uint32_t *session_id) {
   try {
     if (!dh_resp_session) {
@@ -151,11 +185,27 @@ uint32_t exchange_report(sgx_dh_msg2_t *dh_msg2, sgx_dh_msg3_t *dh_msg3,
 }
 
 uint32_t load_key_pair_if_not_exist(uint8_t *pkey_ptr, uint32_t pkey_size,
-                                    uint8_t **skey_ptr, uint32_t *sealed_size) {
-  *sealed_size = get_secp256k1_sealed_private_key_size();
-  *skey_ptr = new uint8_t[*sealed_size];
-  return stbox::ocall_cast<uint32_t>(ocall_load_key_pair)(
-      pkey_ptr, pkey_size, *skey_ptr, *sealed_size);
+                                    uint8_t *skey_ptr, uint32_t *skey_size) {
+  *skey_size = stbox::crypto::get_secp256k1_private_key_size();
+  if (!skey_ptr) {
+    return SGX_SUCCESS;
+  }
+
+  uint32_t sealed_size = get_secp256k1_sealed_private_key_size();
+  uint8_t *sealed_key;
+  ff::scope_guard _sealed_key_ptr_desc(
+      [&]() { sealed_key = new uint8_t[sealed_size]; },
+      [&]() { delete[] skey_ptr; });
+
+  uint32_t ret = stbox::ocall_cast<uint32_t>(ocall_load_key_pair)(
+      pkey_ptr, pkey_size, sealed_key, sealed_size);
+  if (ret != 0) {
+    return ret;
+  }
+
+  ret = stbox::crypto::unseal_secp256k1_private_key(sealed_key, sealed_size,
+                                                    skey_ptr);
+  return ret;
 }
 
 std::unordered_map<std::string, forward_message_st> message_table;
@@ -178,10 +228,15 @@ uint32_t forward_message(uint32_t msg_id, uint8_t *cipher, uint32_t cipher_size,
   }
 
   uint8_t *skey_ptr;
-  uint32_t sealed_size;
+  uint32_t skey_size;
   se_ret = (sgx_status_t)load_key_pair_if_not_exist(epublic_key, epkey_size,
-                                                    &skey_ptr, &sealed_size);
-  ff::scope_guard _skey_ptr_desc([&]() { delete[] skey_ptr; });
+                                                    nullptr, &skey_size);
+
+  ff::scope_guard _skey_ptr_desc([&]() { skey_ptr = new uint8_t[skey_size]; },
+                                 [&]() { delete[] skey_ptr; });
+
+  se_ret = (sgx_status_t)load_key_pair_if_not_exist(epublic_key, epkey_size,
+                                                    skey_ptr, &skey_size);
 
   uint32_t all_size = sizeof(msg_id) + cipher_size + epkey_size + ehash_size;
   stbox::bytes all(all_size);
@@ -194,16 +249,17 @@ uint32_t forward_message(uint32_t msg_id, uint8_t *cipher, uint32_t cipher_size,
                                           sig_size, verify_key, vpkey_size);
   if (se_ret) {
     LOG(ERROR) << "Invalid signature";
-    printf("Invalid signature!\n");
     return se_ret;
   }
-  uint32_t decrypted_size = get_rijndael128GCM_decrypt_size(cipher_size);
+  uint32_t decrypted_size =
+      ::stbox::crypto::get_decrypt_message_size_with_prefix(cipher_size);
   stbox::bytes decrypted_msg(decrypted_size);
-  se_ret =
-      (sgx_status_t)decrypt_message(skey_ptr, sealed_size, cipher, cipher_size,
-                                    decrypted_msg.value(), decrypted_size);
+  se_ret = (sgx_status_t)::stbox::crypto::decrypt_message_with_prefix(
+      skey_ptr, skey_size, cipher, cipher_size, decrypted_msg.value(),
+      decrypted_size, ::ypc::crypto_prefix_forward);
+
   if (se_ret) {
-    LOG(ERROR) << "decrypt_message returns " << se_ret;
+    LOG(ERROR) << "decrypt_message_with_prefix forward returns " << se_ret;
     return se_ret;
   }
 
@@ -211,7 +267,7 @@ uint32_t forward_message(uint32_t msg_id, uint8_t *cipher, uint32_t cipher_size,
   std::string str_hash((const char *)ehash, ehash_size);
   message_table.insert(std::make_pair(
       str_msg_key, forward_message_st{msg_id, str_msg, str_hash}));
-  LOG(INFO) << "recv msg ";
+  LOG(INFO) << "recv forward msg ";
   return se_ret;
 }
 

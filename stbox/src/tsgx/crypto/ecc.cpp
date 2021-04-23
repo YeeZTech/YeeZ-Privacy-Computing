@@ -82,6 +82,7 @@ uint32_t sign_hash(const secp256k1_context *ctx, const uint8_t *hash,
 
 namespace stbox {
 namespace crypto {
+uint32_t get_secp256k1_private_key_size() { return 32; }
 uint32_t get_secp256k1_public_key_size() {
   return sizeof(secp256k1_pubkey) * sizeof(unsigned char);
 }
@@ -115,10 +116,6 @@ uint32_t seal_secp256k1_private_key(const uint8_t *skey,
       (const uint32_t)strlen(aad_mac_text), (const uint8_t *)aad_mac_text,
       (const uint32_t)skey_size, (const uint8_t *)skey,
       (const uint32_t)sealed_size, (sgx_sealed_data_t *)sealed_private_key);
-#ifdef STBOX_CRYPTO_VERBOSE
-  printf("sealed secret key hex: ");
-  print_hex(sealed_private_key, sealed_size);
-#endif
   return se_ret;
 }
 uint32_t unseal_secp256k1_private_key(const uint8_t *sealed_private_key,

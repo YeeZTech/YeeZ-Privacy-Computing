@@ -80,15 +80,17 @@ std::string encrypt_skey_with_pubkey(std::shared_ptr<keymgr_sgx_module> ptr,
                                      ypc::bytes &b_sealed_key) {
   load_key_pair(pkey_for_skey, b_pkey, b_sealed_key);
   ypc::bref backup_key;
-  ptr->backup_private_key(b_sealed_key.value(), b_sealed_key.size(),
-                          (const uint8_t *)pkey_for_encrypt.c_str(),
-                          pkey_for_encrypt.size(), backup_key);
+  ptr->forward_private_key(b_sealed_key.value(), b_sealed_key.size(),
+                           (const uint8_t *)pkey_for_encrypt.c_str(),
+                           pkey_for_encrypt.size(), backup_key);
 
+  /*
   ypc::bref restore_key;
   ypc::bytes tmp_pkey, tmp_skey;
   load_key_pair(ypc::to_hex(pkey_for_encrypt), tmp_pkey, tmp_skey);
   ptr->restore_private_key(backup_key.data(), backup_key.len(),
                            tmp_skey.value(), tmp_skey.size(), restore_key);
+                           */
   return ypc::to_hex(backup_key);
 }
 
