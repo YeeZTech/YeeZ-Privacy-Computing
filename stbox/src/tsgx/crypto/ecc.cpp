@@ -15,6 +15,7 @@
 #include "stbox/stx_status.h"
 #include "stbox/tsgx/crypto/ecc.h"
 #include "stbox/tsgx/crypto/ecc_context.h"
+#include "stbox/tsgx/log.h"
 #include "stbox/tsgx/secp256k1/secp256k1.h"
 #include "stbox/tsgx/secp256k1/secp256k1_ecdh.h"
 #include "stbox/tsgx/secp256k1/secp256k1_preallocated.h"
@@ -123,9 +124,15 @@ uint32_t unseal_secp256k1_private_key(const uint8_t *sealed_private_key,
   uint32_t aad_mac_len =
       sgx_get_add_mac_txt_len((const sgx_sealed_data_t *)sealed_private_key);
   if (aad_mac_len == 0xFFFFFFFF) {
+    LOG(ERROR) << "sgx_get_add_mac_txt_len returns unexpected ";
     return SGX_ERROR_UNEXPECTED;
   }
-  uint32_t skey_size;
+  uint32_t skey_size =
+      sgx_get_encrypt_txt_len((const sgx_sealed_data_t *)sealed_private_key);
+  if (skey_size != SECP256K1_PRIVATE_KEY_SIZE) {
+    LOG(ERROR) << "invalid skey size";
+    return SGX_ERROR_UNEXPECTED;
+  }
   uint8_t *mac_text;
   ff::scope_guard _mac_text_desc([&]() { mac_text = new uint8_t[aad_mac_len]; },
                                  [&]() { delete[] mac_text; });
@@ -134,14 +141,18 @@ uint32_t unseal_secp256k1_private_key(const uint8_t *sealed_private_key,
                                 (uint8_t *)mac_text, (uint32_t *)&aad_mac_len,
                                 skey, &skey_size);
   if (se_ret) {
+    LOG(ERROR) << "sgx_unseal_data returns: " << se_ret;
     return se_ret;
   }
 
   auto t = memcmp(mac_text, aad_mac_text, aad_mac_len);
   if (t != 0) {
+    LOG(ERROR) << "mac mismatch, got: " << (char *)mac_text
+               << ", expect: " << aad_mac_text;
     return SGX_ERROR_MAC_MISMATCH;
   }
   if (skey_size != SECP256K1_PRIVATE_KEY_SIZE) {
+    LOG(ERROR) << "invalid skey size";
     return static_cast<uint32_t>(stx_status::ecc_invalid_skey_size);
   }
   return se_ret;
@@ -238,6 +249,7 @@ uint32_t encrypt_message_with_prefix(const uint8_t *public_key,
   }
 
   uint8_t mac_text[AAD_MAC_TEXT_LEN];
+  memset(mac_text, 0, AAD_MAC_TEXT_LEN);
   memcpy(mac_text, aad_mac_text, AAD_MAC_TEXT_LEN);
   uint32_t *p_prefix = (uint32_t *)(mac_text + AAD_MAC_PREFIX_POS);
   *p_prefix = prefix;
@@ -265,6 +277,7 @@ uint32_t decrypt_message_with_prefix(const uint8_t *skey, uint32_t skey_size,
   }
 
   uint8_t mac_text[AAD_MAC_TEXT_LEN];
+  memset(mac_text, 0, AAD_MAC_TEXT_LEN);
   memcpy(mac_text, aad_mac_text, AAD_MAC_TEXT_LEN);
   uint32_t *p_prefix = (uint32_t *)(mac_text + AAD_MAC_PREFIX_POS);
   *p_prefix = prefix;

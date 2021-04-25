@@ -38,8 +38,8 @@ privacy_data_reader::privacy_data_reader(const std::string &plugin_path,
     throw std::runtime_error("failed to call dlopen");
   }
 
-  m_create_item_reader = get_func_with_name<create_item_reader_func_t>(
-      "_Z18create_item_readerPKc");
+  m_create_item_reader =
+      get_func_with_name<create_item_reader_func_t>("create_item_reader");
   m_reset_for_read =
       get_func_with_name<reset_for_read_func_t>("reset_for_read");
   m_read_item_data =

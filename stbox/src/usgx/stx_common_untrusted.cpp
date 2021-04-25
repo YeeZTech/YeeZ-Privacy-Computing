@@ -33,15 +33,19 @@ void ocall_log_string(uint32_t rank, const char *buf) {
   switch (rank) {
   case stbox::log_rank::INFO:
     LOG(INFO) << buf;
+    google::FlushLogFiles(google::INFO);
     break;
   case stbox::log_rank::WARNING:
     LOG(WARNING) << buf;
+    google::FlushLogFiles(google::WARNING);
     break;
   case stbox::log_rank::ERROR:
     LOG(ERROR) << buf;
+    google::FlushLogFiles(google::ERROR);
     break;
   case stbox::log_rank::FATAL:
     LOG(FATAL) << buf;
+    google::FlushLogFiles(google::FATAL);
     break;
   default:
     LOG(ERROR) << "unexpected rank: " << buf;

@@ -139,7 +139,8 @@ int main(int argc, char *argv[]) {
   boost::program_options::variables_map vm;
   try {
     vm = parse_command_line(argc, argv);
-  } catch (...) {
+  } catch (const std::exception &e) {
+    std::cout << e.what() << std::endl;
     std::cout << "invalid cmd line parameters!" << std::endl;
     return -1;
   }

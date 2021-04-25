@@ -6,7 +6,7 @@
 #include <memory>
 #include <string>
 
-void *create_item_reader(const char *file_path) {
+void *create_item_reader(const char *file_path, int len) {
 
   file_t *f = new file_t();
   f->open_for_read(file_path);

@@ -132,6 +132,7 @@ uint32_t forward_private_key(uint8_t *sealed_private_key, uint32_t sealed_size,
   se_ret = stbox::crypto::unseal_secp256k1_private_key(sealed_private_key,
                                                        sealed_size, skey);
   if (se_ret) {
+    LOG(ERROR) << "unseal_secp256k1_private_key returns: " << se_ret;
     return se_ret;
   }
 
@@ -195,7 +196,7 @@ uint32_t load_key_pair_if_not_exist(uint8_t *pkey_ptr, uint32_t pkey_size,
   uint8_t *sealed_key;
   ff::scope_guard _sealed_key_ptr_desc(
       [&]() { sealed_key = new uint8_t[sealed_size]; },
-      [&]() { delete[] skey_ptr; });
+      [&]() { delete[] sealed_key; });
 
   uint32_t ret = stbox::ocall_cast<uint32_t>(ocall_load_key_pair)(
       pkey_ptr, pkey_size, sealed_key, sealed_size);
@@ -238,6 +239,18 @@ uint32_t forward_message(uint32_t msg_id, uint8_t *cipher, uint32_t cipher_size,
   se_ret = (sgx_status_t)load_key_pair_if_not_exist(epublic_key, epkey_size,
                                                     skey_ptr, &skey_size);
 
+  uint32_t decrypted_size =
+      ::stbox::crypto::get_decrypt_message_size_with_prefix(cipher_size);
+  stbox::bytes decrypted_msg(decrypted_size);
+  se_ret = (sgx_status_t)::stbox::crypto::decrypt_message_with_prefix(
+      skey_ptr, skey_size, cipher, cipher_size, decrypted_msg.value(),
+      decrypted_size, ::ypc::crypto_prefix_forward);
+
+  if (se_ret) {
+    LOG(ERROR) << "decrypt_message_with_prefix forward returns " << se_ret;
+    return se_ret;
+  }
+
   uint32_t all_size = sizeof(msg_id) + cipher_size + epkey_size + ehash_size;
   stbox::bytes all(all_size);
   memcpy(all.value(), &msg_id, sizeof(msg_id));
@@ -251,23 +264,11 @@ uint32_t forward_message(uint32_t msg_id, uint8_t *cipher, uint32_t cipher_size,
     LOG(ERROR) << "Invalid signature";
     return se_ret;
   }
-  uint32_t decrypted_size =
-      ::stbox::crypto::get_decrypt_message_size_with_prefix(cipher_size);
-  stbox::bytes decrypted_msg(decrypted_size);
-  se_ret = (sgx_status_t)::stbox::crypto::decrypt_message_with_prefix(
-      skey_ptr, skey_size, cipher, cipher_size, decrypted_msg.value(),
-      decrypted_size, ::ypc::crypto_prefix_forward);
-
-  if (se_ret) {
-    LOG(ERROR) << "decrypt_message_with_prefix forward returns " << se_ret;
-    return se_ret;
-  }
 
   std::string str_msg((const char *)decrypted_msg.value(), decrypted_size);
   std::string str_hash((const char *)ehash, ehash_size);
   message_table.insert(std::make_pair(
       str_msg_key, forward_message_st{msg_id, str_msg, str_hash}));
-  LOG(INFO) << "recv forward msg ";
   return se_ret;
 }
 

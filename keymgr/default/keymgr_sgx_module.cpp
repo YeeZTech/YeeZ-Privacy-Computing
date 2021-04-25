@@ -125,8 +125,8 @@ uint32_t keymgr_sgx_module::forward_private_key(
   uint8_t *backup_private_key;
   uint32_t bp_size;
   stbox::buffer_length_t buf_bak(&bp_size, &backup_private_key,
-                                 ::get_backup_private_key_size, sealed_size);
-  auto t = ecall<uint32_t>(::backup_private_key, (uint8_t *)sealed_private_key,
+                                 ::get_forward_private_key_size, sealed_size);
+  auto t = ecall<uint32_t>(::forward_private_key, (uint8_t *)sealed_private_key,
                            sealed_size, (uint8_t *)pub_key, pkey_size,
                            stbox::xmem(buf_bak), stbox::xlen(buf_bak));
 

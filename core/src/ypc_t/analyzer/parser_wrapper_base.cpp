@@ -61,12 +61,14 @@ stbox::stx_status km_verify_peer_enclave_trust(
 }
 
 uint32_t parser_wrapper_base::begin_parse_data_item() {
+  LOG(INFO) << "begin";
   m_datahub_session.reset(new stbox::dh_session_initiator(
       stbox::ocall_cast<uint32_t>(datahub_session_request_ocall),
       stbox::ocall_cast<uint32_t>(datahub_exchange_report_ocall),
       stbox::ocall_cast<uint32_t>(datahub_send_request_ocall),
       stbox::ocall_cast<uint32_t>(datahub_end_session_ocall)));
   m_datahub_session->set_verify_peer(datahub_verify_peer_enclave_trust);
+  LOG(INFO) << "begin1";
 
   m_keymgr_session.reset(new stbox::dh_session_initiator(
       stbox::ocall_cast<uint32_t>(km_session_request_ocall),
@@ -74,13 +76,17 @@ uint32_t parser_wrapper_base::begin_parse_data_item() {
       stbox::ocall_cast<uint32_t>(km_send_request_ocall),
       stbox::ocall_cast<uint32_t>(km_end_session_ocall)));
   m_keymgr_session->set_verify_peer(km_verify_peer_enclave_trust);
+  LOG(INFO) << "begin2";
 
   auto t1 = m_datahub_session->create_session();
+  LOG(INFO) << "begin3: " << static_cast<uint32_t>(t1);
   auto t2 = m_keymgr_session->create_session();
+  LOG(INFO) << "begin4: " << static_cast<uint32_t>(t2);
   return static_cast<uint32_t>(t1) | static_cast<uint32_t>(t2);
 }
 
 stbox::stx_status parser_wrapper_base::request_private_key() {
+  LOG(INFO) << "request private key start";
   if (m_private_key.size() > 0) {
     return stbox::stx_status::success;
   }
@@ -99,12 +105,14 @@ stbox::stx_status parser_wrapper_base::request_private_key() {
     return status;
   }
   m_private_key = std::string(out_buff, out_buff_len);
+  LOG(INFO) << "request private key done";
   return status;
 }
 
 stbox::stx_status
 parser_wrapper_base::decrypt_param(const uint8_t *encrypted_param,
                                    uint32_t len) {
+  LOG(INFO) << "decrypt param start ";
   if (m_param.size() > 0) {
     return stbox::stx_status::success;
   }
@@ -120,6 +128,7 @@ parser_wrapper_base::decrypt_param(const uint8_t *encrypted_param,
     LOG(ERROR) << "error for stbox::crypto::decrypt_message: " << ret;
     return static_cast<stbox::stx_status>(ret);
   }
+  LOG(INFO) << "decrypt param done";
   return stbox::stx_status::success;
 }
 

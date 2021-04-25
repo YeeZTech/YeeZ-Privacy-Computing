@@ -36,6 +36,7 @@ uint32_t generate_secp256k1_key_pair(uint8_t *public_key, uint32_t pkey_size,
 
   se_ret = (sgx_status_t)stbox::crypto::generate_secp256k1_pkey_from_skey(
       skey, public_key, pkey_size);
+
   if (se_ret) {
     return se_ret;
   }

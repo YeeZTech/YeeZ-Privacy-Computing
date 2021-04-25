@@ -169,11 +169,11 @@ int main(int argc, char *argv[]) {
 
   pkey = tcsm.test_generate_pkey(skey);
   std::cout << "start encrypt" << std::endl;
-  cipher = tcsm.encrypt(pkey, data, ypc::crypto_prefix_arbitrary);
+  cipher = tcsm.encrypt(pkey, data, ypc::crypto_prefix_forward);
   std::cout << "cipher: " << ypc::encode_hex(cipher) << std::endl;
 
   std::cout << "start decrypt" << std::endl;
-  std::string dd = tcsm.decrypt(skey, cipher, ypc::crypto_prefix_arbitrary);
+  std::string dd = tcsm.decrypt(skey, cipher, ypc::crypto_prefix_forward);
   if (dd != data) {
     std::cout << "!!!!decrypt and encrypt are inconsistency" << std::endl;
     return 0;

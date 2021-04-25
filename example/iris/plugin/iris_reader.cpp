@@ -5,7 +5,7 @@
 #include <memory>
 #include <string>
 
-void *create_item_reader(const char *file_path) {
+void *create_item_reader(const char *file_path, int len) {
   std::ifstream *s = new std::ifstream(file_path);
 
   return s;

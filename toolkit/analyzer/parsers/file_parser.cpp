@@ -19,9 +19,12 @@ void file_parser::do_parse() {
   auto ret = m_parser->begin_parse_data_item();
   if (ret != stx_status::success) {
     LOG(INFO) << "got error: " << std::to_string(ret);
+    return;
   }
+  LOG(INFO) << "parse data item start";
   m_parser->parse_data_item((const char *)m_psource->input().value(),
                             m_psource->input().size());
+  LOG(INFO) << "parse data item end";
 
   ret = m_parser->end_parse_data_item();
   if (ret != stx_status::success) {
