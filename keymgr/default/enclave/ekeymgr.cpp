@@ -80,7 +80,6 @@ uint32_t restore_private_key(uint8_t *backup_private_key, uint32_t bp_size,
                              uint8_t *priv_key, uint32_t priv_key_size,
                              uint8_t *sealed_private_key,
                              uint32_t sealed_size) {
-
   uint32_t se_ret;
   uint8_t *skey;
   uint32_t skey_size = stbox::crypto::get_secp256k1_private_key_size();
@@ -156,7 +155,7 @@ stbox::stx_status verify_peer_enclave_trust(
   return stbox::stx_status::success;
 }
 
-uint32_t session_request(sgx_dh_msg1_t *dh_msg1, uint32_t *session_id) {
+uint32_t msession_request(sgx_dh_msg1_t *dh_msg1, uint32_t *session_id) {
   try {
     if (!dh_resp_session) {
       dh_resp_session = std::make_shared<stbox::dh_session_responder>();
@@ -170,8 +169,8 @@ uint32_t session_request(sgx_dh_msg1_t *dh_msg1, uint32_t *session_id) {
     return static_cast<uint32_t>(stx_status::error_unexpected);
   }
 }
-uint32_t exchange_report(sgx_dh_msg2_t *dh_msg2, sgx_dh_msg3_t *dh_msg3,
-                         uint32_t session_id) {
+uint32_t mexchange_report(sgx_dh_msg2_t *dh_msg2, sgx_dh_msg3_t *dh_msg3,
+                          uint32_t session_id) {
   try {
     if (!dh_resp_session) {
       dh_resp_session = std::make_shared<stbox::dh_session_responder>();
@@ -288,10 +287,10 @@ std::string handle_pkg(const uint8_t *data, size_t data_len,
   throw std::runtime_error("Request message not exist in message table!");
 }
 
-uint32_t generate_response(secure_message_t *req_message,
-                           size_t req_message_size, size_t max_payload_size,
-                           secure_message_t *resp_message,
-                           size_t resp_message_size, uint32_t session_id) {
+uint32_t mgenerate_response(secure_message_t *req_message,
+                            size_t req_message_size, size_t max_payload_size,
+                            secure_message_t *resp_message,
+                            size_t resp_message_size, uint32_t session_id) {
   try {
     if (!dh_resp_session) {
       dh_resp_session = std::make_shared<stbox::dh_session_responder>();
@@ -305,7 +304,7 @@ uint32_t generate_response(secure_message_t *req_message,
     return static_cast<uint32_t>(stx_status::error_unexpected);
   }
 }
-uint32_t end_session(uint32_t session_id) {
+uint32_t mend_session(uint32_t session_id) {
   try {
     if (!dh_resp_session) {
       dh_resp_session = std::make_shared<stbox::dh_session_responder>();

@@ -35,6 +35,7 @@
 #include "sgx_dh.h"
 #include "sgx_eid.h"
 #include "sgx_utils.h"
+#include "stbox/stx_common.h"
 #include "stbox/stx_status.h"
 #include "stbox/tsgx/channel/dh_session_initiator.h"
 #include <stdio.h> /* vsnprintf */
@@ -49,16 +50,7 @@ sgx_measurement_t g_responder_mrsigner = {
      0xf6, 0x2a, 0x4d, 0x77, 0x43, 0x03, 0xc8, 0x99, 0xdb, 0x69, 0x02,
      0x0f, 0x9c, 0x70, 0xee, 0x1d, 0xfc, 0x08, 0xc7, 0xce, 0x9e}};
 
-int printf(const char *fmt, ...) {
-  char buf[BUFSIZ] = {'\0'};
-  va_list ap;
-  va_start(ap, fmt);
-  vsnprintf(buf, BUFSIZ, fmt, ap);
-  va_end(ap);
-  ocall_print_string(buf);
-  return (int)strnlen(buf, BUFSIZ - 1) + 1;
-}
-
+using namespace stbox;
 /* Function Description:
  *   This is to verify peer enclave's identity.
  * For demonstration purpose, we verify below points:

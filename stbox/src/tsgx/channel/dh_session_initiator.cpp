@@ -1,4 +1,5 @@
 #include "stbox/tsgx/channel/dh_session_initiator.h"
+#include "stbox/tsgx/log.h"
 
 namespace stbox {
 

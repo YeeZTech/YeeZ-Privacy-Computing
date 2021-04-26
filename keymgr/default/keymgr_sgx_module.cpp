@@ -1,6 +1,7 @@
 #include "keymgr_sgx_module.h"
 #include "ekeymgr_u.h"
 #include "sgx_urts.h"
+#include <glog/logging.h>
 #include <stdexcept>
 
 keymgr_sgx_module::keymgr_sgx_module(const char *mod_path)
@@ -136,12 +137,12 @@ uint32_t keymgr_sgx_module::forward_private_key(
 
 uint32_t keymgr_sgx_module::session_request(sgx_dh_msg1_t *dh_msg1,
                                             uint32_t *session_id) {
-  return ecall<uint32_t>(::session_request, dh_msg1, session_id);
+  return ecall<uint32_t>(::msession_request, dh_msg1, session_id);
 }
 uint32_t keymgr_sgx_module::exchange_report(sgx_dh_msg2_t *dh_msg2,
                                             sgx_dh_msg3_t *dh_msg3,
                                             uint32_t session_id) {
-  return ecall<uint32_t>(::exchange_report, dh_msg2, dh_msg3, session_id);
+  return ecall<uint32_t>(::mexchange_report, dh_msg2, dh_msg3, session_id);
 }
 uint32_t keymgr_sgx_module::generate_response(secure_message_t *req_message,
                                               size_t req_message_size,
@@ -149,12 +150,12 @@ uint32_t keymgr_sgx_module::generate_response(secure_message_t *req_message,
                                               secure_message_t *resp_message,
                                               size_t resp_message_size,
                                               uint32_t session_id) {
-  return ecall<uint32_t>(::generate_response, req_message, req_message_size,
+  return ecall<uint32_t>(::mgenerate_response, req_message, req_message_size,
                          max_payload_size, resp_message, resp_message_size,
                          session_id);
 }
 uint32_t keymgr_sgx_module::end_session(uint32_t session_id) {
-  return ecall<uint32_t>(::end_session, session_id);
+  return ecall<uint32_t>(::mend_session, session_id);
 }
 
 uint32_t keymgr_sgx_module::forward_message(

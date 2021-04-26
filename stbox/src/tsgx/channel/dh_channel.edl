@@ -1,5 +1,6 @@
 enclave  {
     include "sgx_eid.h"
+    from "stbox.edl" import *;
 
     trusted{
       public uint64_t stbox_channel_version();
