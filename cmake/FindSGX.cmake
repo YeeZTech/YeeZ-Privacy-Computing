@@ -26,7 +26,15 @@ if(CMAKE_SIZEOF_VOID_P EQUAL 4)
     set(SGX_EDGER8R ${SGX_PATH}/bin/x86/sgx_edger8r)
 else()
     set(SGX_COMMON_CFLAGS -m64)
-    set(SGX_LIBRARY_PATH ${SGX_PATH}/lib64)
+    if(SGX_MODE STREQUAL "Debug")
+      set(SGX_LIBRARY_PATH ${SGX_PATH}/lib64)
+    elseif(SGX_MODE STREQUAL "PreRelease")
+      set(SGX_LIBRARY_PATH "/lib/x86_64-linux-gnu")
+    elseif(SGX_MODE STREQUAL "Release")
+      set(SGX_LIBRARY_PATH "/lib/x86_64-linux-gnu")
+    else()
+      message(FATAL_ERROR "SGX_MODE ${SGX_MODE} is not Debug, PreRelease or Release.")
+    endif()
     set(SGX_ENCLAVE_SIGNER ${SGX_PATH}/bin/x64/sgx_sign)
     set(SGX_EDGER8R ${SGX_PATH}/bin/x64/sgx_edger8r)
 endif()
@@ -201,6 +209,10 @@ if(SGX_FOUND)
         get_filename_component(CONFIG_ABSPATH ${SGX_CONFIG} ABSOLUTE)
 
         if(SGX_HW AND SGX_MODE STREQUAL "Release")
+            add_custom_target(${target}-sign ALL ${SGX_ENCLAVE_SIGNER} sign -key ${KEY_ABSPATH} -config ${CONFIG_ABSPATH}
+                              -enclave $<TARGET_FILE:${target}> -out $<TARGET_FILE_DIR:${target}>/${OUTPUT_NAME}
+                              WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+            #[[
             add_custom_target(${target}-sign ALL
                               COMMAND ${SGX_ENCLAVE_SIGNER} gendata -config ${CONFIG_ABSPATH}
                                       -enclave $<TARGET_FILE:${target}> -out $<TARGET_FILE_DIR:${target}>/${target}_hash.hex
@@ -208,6 +220,7 @@ if(SGX_FOUND)
                                   --cyan "SGX production enclave first step signing finished, \
     use ${CMAKE_CURRENT_BINARY_DIR}/${target}_hash.hex for second step"
                               WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+            ]]
         else()
             add_custom_target(${target}-sign ALL ${SGX_ENCLAVE_SIGNER} sign -key ${KEY_ABSPATH} -config ${CONFIG_ABSPATH}
                               -enclave $<TARGET_FILE:${target}> -out $<TARGET_FILE_DIR:${target}>/${OUTPUT_NAME}

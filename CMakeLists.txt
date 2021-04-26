@@ -15,52 +15,48 @@ find_package(SGX REQUIRED)
 
 enable_testing()
 
-if(Release)
+if(SGX_MODE STREQUAL "Release")
 	message(STATUS "This is a Release version!")
 	add_definitions(-O2)
 	add_definitions(-DNDEBUG)
-else(Release)
+elseif(SGX_MODE STREQUAL "Debug")
 	message(STATUS "This is a Debug version!")
 	add_definitions(-g)
   add_definitions(-O0)
-  #add_definitions(-DSTBOX_CRYPTO_VERBOSE)
-  #add_definitions(-DDEBUG_LOG)
+  configure_file(CMakeLists.txt.in googletest-download/CMakeLists.txt)
+  execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
+    RESULT_VARIABLE result
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download )
+    if(result)
+      message(FATAL_ERROR "CMake step for googletest failed: ${result}")
+    endif()
+    execute_process(COMMAND ${CMAKE_COMMAND} --build .
+    RESULT_VARIABLE result
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download )
+    if(result)
+      message(FATAL_ERROR "Build step for googletest failed: ${result}")
+    endif()
 
-#hunter_add_package(glog)
-#find_package(glog CONFIG REQUIRED)
+    # Prevent overriding the parent project's compiler/linker
+    # settings on Windows
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
-# Download and unpack googletest at configure time
-configure_file(CMakeLists.txt.in googletest-download/CMakeLists.txt)
-execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
-  RESULT_VARIABLE result
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download )
-  if(result)
-    message(FATAL_ERROR "CMake step for googletest failed: ${result}")
-  endif()
-  execute_process(COMMAND ${CMAKE_COMMAND} --build .
-  RESULT_VARIABLE result
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download )
-  if(result)
-    message(FATAL_ERROR "Build step for googletest failed: ${result}")
-  endif()
+    # Add googletest directly to our build. This defines
+    # the gtest and gtest_main targets.
+    add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
+                    ${CMAKE_CURRENT_BINARY_DIR}/googletest-build
+                    EXCLUDE_FROM_ALL)
 
-  # Prevent overriding the parent project's compiler/linker
-  # settings on Windows
-  set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    # The gtest/gtest_main targets carry header search path
+    # dependencies automatically when using CMake 2.8.11 or
+    # later. Otherwise we have to add them here ourselves.
+    if (CMAKE_VERSION VERSION_LESS 2.8.11)
+      include_directories("${gtest_SOURCE_DIR}/include")
+    endif()
+else()
+    message(FATAL_ERROR "SGX_MODE ${SGX_MODE} is not Debug or Release.")
+endif()
 
-  # Add googletest directly to our build. This defines
-  # the gtest and gtest_main targets.
-  add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
-                  ${CMAKE_CURRENT_BINARY_DIR}/googletest-build
-                  EXCLUDE_FROM_ALL)
-
-  # The gtest/gtest_main targets carry header search path
-  # dependencies automatically when using CMake 2.8.11 or
-  # later. Otherwise we have to add them here ourselves.
-  if (CMAKE_VERSION VERSION_LESS 2.8.11)
-    include_directories("${gtest_SOURCE_DIR}/include")
-  endif()
-endif(Release)
 
 include_directories(${SGX_INCLUDE_DIR})
 include_directories(/usr/local/include)
@@ -88,7 +84,9 @@ add_subdirectory(hpda)
 add_subdirectory(core)
 add_subdirectory(toolkit)
 add_subdirectory(stbox)
-add_subdirectory(test)
+if(SGX_MODE STREQUAL "Debug")
+  add_subdirectory(test)
+endif()
 add_subdirectory(keymgr)
 add_subdirectory(example)
 

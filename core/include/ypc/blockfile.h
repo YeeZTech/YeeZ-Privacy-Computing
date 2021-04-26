@@ -98,6 +98,7 @@ public:
     m_file.seekp(back.end_file_pos - len - sizeof(len), m_file.beg);
     m_file.write((char *)&len, sizeof(len));
     m_file.write(data, len);
+    return 0;
   }
 
   void reset_read_item() {
