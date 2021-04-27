@@ -11,6 +11,9 @@ map_request_and_data = dict()
 request_filters = list()
 
 
+# keccak256 hash of function `request_proxy()`
+hash_request_proxy = '69d18ad7fa2a30c8f532c31aa5f2d08a8e5d8d19c9a87e51cc81e3d6cc4b0238'
+
 # keccak256 hash of function `pkey()`
 hash_pkey = '84f720883cdae4b672b88602da3ba45c5b8a3c956e47047313546799ccd91e9a'
 

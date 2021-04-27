@@ -81,7 +81,6 @@ uint32_t verify_signature(uint8_t *data, uint32_t data_size, uint8_t *sig,
                           uint32_t pkey_size) {
   return stbox::crypto::verify_signature(data, data_size, sig, sig_size,
                                          public_key, pkey_size);
-  return 0;
 }
 
 uint32_t get_encrypted_message_size(uint32_t data_size) {

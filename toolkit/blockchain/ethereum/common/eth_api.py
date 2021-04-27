@@ -66,6 +66,12 @@ class eth_api:
         return self.wss.eth.getFilterChanges(filter_id)
 
 
+def request_proxy(ea, contract_addr):
+    method_id = '0x%s' % const.hash_request_proxy[:8]
+    request_byte = ea.readonly_contract(contract_addr, method_id)
+    return request_byte.hex()[-40:]
+
+
 def argument_encoding_str(ea, contract_addr, func_hash, arg_type):
     method_id = '0x%s' % func_hash[:8]
     str_byte = ea.readonly_contract(contract_addr, method_id)

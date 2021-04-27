@@ -5,3 +5,4 @@ set(ypc_dep_libs cryptopp boost_program_options boost_filesystem boost_system gl
 add_subdirectory(datahub)
 add_subdirectory(analyzer)
 add_subdirectory(yprepare)
+add_subdirectory(client)

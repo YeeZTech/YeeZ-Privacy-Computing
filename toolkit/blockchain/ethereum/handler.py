@@ -10,6 +10,7 @@ sys.path.append('./common')
 import const
 import common
 from eth_api import eth_api
+from eth_api import request_proxy
 from eth_api import get_program_info
 from eth_api import argument_encoding_str
 from log import logger
