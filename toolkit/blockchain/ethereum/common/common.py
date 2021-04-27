@@ -29,16 +29,14 @@ def split_by_32bytes(data):
     return [data[i:i+step] for i in range(0, len(data), step)]
 
 
-def pkey_endian_change(pkey):
-    assert isinstance(pkey, str)
-    assert len(pkey) is 128
-    b_pkey = bytearray.fromhex(pkey)
-    assert len(b_pkey) is 64
-    step = len(b_pkey) >> 1
-    for i in range(0, len(b_pkey), step):
-        for j in range(0, step >> 1):
-            b_pkey[i+j], b_pkey[i+step-1-j] = b_pkey[i+step-1-j], b_pkey[i+j]
-    return b_pkey.hex()
+def safe_str_cast(num_str, base):
+    try:
+        return int(num_str, base)
+    except Exception as err:
+        logger.info('\n!!!!!!!!!! string to integer cast failed !!!!!!!!!!\nerror:%s\n' % err)
+        log_handler.flush()
+        print('\n!!!!!!!!!! string to integer cast failed !!!!!!!!!!\nerror:%s\n' % err)
+    raise Exception('\n!!!!!!!!!! string to integer cast failed !!!!!!!!!!\n')
 
 
 def main():

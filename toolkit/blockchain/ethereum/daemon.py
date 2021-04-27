@@ -7,7 +7,6 @@ import traceback
 import handler
 import sys
 sys.path.append('./common')
-import common
 import const
 from eth_api import eth_api
 from log import logger
@@ -22,9 +21,10 @@ class repeat_timer(threading.Timer):
                 continue
 
 
-def run(ea, yzdata_req_filter):
+def run(ea, data_filter):
     try:
-        handler.handle_yzdata_request(ea, yzdata_req_filter)
+        handler.handle_data(ea, data_filter)
+        [handler.handle_request(ea, request_filter) for request_filter in const.request_filters]
     except Exception as err:
         tb = traceback.format_exc()
         logger.warning('\n********** get exception **********\nerror:%s\ntraceback:%s\n' % (err, tb))
@@ -32,12 +32,22 @@ def run(ea, yzdata_req_filter):
         print('\n********** get exception **********\nerror:%s\ntraceback:%s\n' % (err, tb))
 
 
+def create_data_filter(ea):
+    return ea.create_filter('latest', 'latest', const.contract_YZDataFactory[ea.host], [const.topic_NewYZData])
+
+
+def create_request_filters(ea):
+    [const.request_filters.append(handler.__create_request_filter(ea, contract_request))
+            for contract_request in const.map_data_and_request.values()]
+
+
 def timer(host, project_id):
     ea = eth_api(host, project_id)
     logger.info('To start daemon timer')
-    yzdata_req_contract = common.checksum_encode(const.contract_YZDataRequest[host])
-    yzdata_req_filter = ea.create_filter('latest', 'latest', yzdata_req_contract, [[const.topic_RequestData]])
-    t = repeat_timer(const.DAEMON_TIMER_IN_SECONDS, run, [ea, yzdata_req_filter])
+    handler.all_data_and_request_init(ea)
+    data_filter = create_data_filter(ea)
+    create_request_filters(ea)
+    t = repeat_timer(const.DAEMON_TIMER_IN_SECONDS, run, [ea, data_filter])
     t.start()
     logger.info('Daemon started! Listen to Ethereum contract events...')
 

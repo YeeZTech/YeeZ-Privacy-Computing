@@ -66,18 +66,15 @@ class eth_api:
         return self.wss.eth.getFilterChanges(filter_id)
 
 
-def owner(ea, contract_addr):
-    o_byte = ea.readonly_contract(contract_addr, '0x%s' % const.hash_owner[:8])
-    return o_byte.hex()[-40:]
-
-
-def pkeyFromAddr(ea, contract_addr, address):
-    method_id = '0x%s' % const.hash_pkeyFromAddr[:8]
-    address = common.checksum_encode(address)
-    data = address[2:].lower().zfill(const.PARAMS_BYTES_IN_HEX_LENGTH)
-    data = method_id + data
-    pkey_byte = ea.readonly_contract(contract_addr, data)
-    return pkey_byte.hex()[-128:]
+def argument_encoding_str(ea, contract_addr, func_hash, arg_type):
+    method_id = '0x%s' % func_hash[:8]
+    str_byte = ea.readonly_contract(contract_addr, method_id)
+    items = common.split_by_32bytes(str_byte.hex()[2:])
+    assert len(items) >= 3
+    str_len = common.safe_str_cast(items[1], 16)
+    str_hex_len = str_len * int(const.PARAMS_BYTES_IN_HEX_LENGTH / const.PARAMS_BYTES)
+    str_hex = ''.join(items[2:])[:str_hex_len]
+    return str_hex if arg_type=='bytes' else bytes.fromhex(str_hex).decode('utf-8')
 
 
 def get_program_info(ea, contract_addr, program_hash):
