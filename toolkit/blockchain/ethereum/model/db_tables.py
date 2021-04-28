@@ -20,7 +20,8 @@ class Contract(db.Model):
 
 class RequestData(db.Model):
     __tablename__ = 'RequestData'
-    request_hash = db.Column('request_hash', String(64), primary_key=True)
+    id = db.Column('id', Integer, primary_key=True)
+    request_hash = db.Column('request_hash', String(64))
     encrypted_skey = db.Column('encrypted_skey', Text)
     encrypted_input = db.Column('encrypted_input', Text)
     provider_pkey = db.Column('provider_pkey', String(128))

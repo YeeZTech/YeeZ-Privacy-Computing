@@ -64,7 +64,7 @@ def __settle_request(request_hash):
         return
     assert len(query) is 1
     record = query[0]
-    rd = RequestData(request_hash=request_hash, status=2)
+    rd = RequestData(id=RequestData.id, request_hash=request_hash, status=2)
     db.session.merge(rd)
     db.session.commit()
 
