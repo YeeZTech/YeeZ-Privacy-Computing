@@ -1,4 +1,5 @@
 
+#include "stbox/ebyte.h"
 #include "stbox/stx_common.h"
 #include "user_type.h"
 #include <hpda/extractor/raw_data.h>
@@ -51,7 +52,7 @@ public:
       ::hpda::extractor::internal::extractor_base<user_item_t> *source)
       : m_source(source){};
 
-  inline std::string do_parse(const std::string &param) {
+  inline stbox::bytes do_parse(const stbox::bytes &param) {
     hpda::algorithm::kmeans::kmeans_processor<
         hpda::ntobject<iris_data, species>, iris_data, double, iid>
         km(m_source, 3, 0.001);
@@ -59,7 +60,7 @@ public:
     hpda::output::memory_output<iris_data, species, iid> mo(
         km.data_with_cluster_stream());
     mo.run();
-    std::string result;
+    stbox::bytes result;
     for (auto it : mo.values()) {
       result += it.get<species>();
       result += " - ";
@@ -68,9 +69,9 @@ public:
     }
     return result;
   }
-  inline bool merge_parse_result(const std::vector<std::string> &block_result,
-                                 const std::string &param,
-                                 std::string &result) {
+  inline bool merge_parse_result(const std::vector<stbox::bytes> &block_result,
+                                 const stbox::bytes &param,
+                                 stbox::bytes &result) {
     return false;
   }
 

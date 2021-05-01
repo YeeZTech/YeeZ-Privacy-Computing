@@ -1,4 +1,6 @@
 #pragma once
+#include "stbox/ebyte.h"
+#include "stbox/tsgx/log.h"
 #include <ff/net/middleware/ntpackage.h>
 #include <functional>
 #include <unordered_map>
@@ -16,7 +18,7 @@ enum {
 };
 
 define_nt(reserve, uint32_t);
-define_nt(data, std::string);
+define_nt(data, stbox::bytes);
 
 typedef sgx_package<request_data_item, reserve> request_pkg_t;
 typedef sgx_package<response_data_item, data> response_pkg_t;

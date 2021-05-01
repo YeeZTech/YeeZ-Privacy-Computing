@@ -258,7 +258,11 @@ int main(int argc, char *argv[]) {
   uint64_t price;
   std::string pkey, pkey_sig;
   read_params_from_stdin(name, desc, sample, env_info, price, pkey, pkey_sig);
-  std::string sample_hex = ypc::to_hex(ypc::string_to_byte(sample));
+
+  auto sample_hex_bytes = ypc::bytes(sample.c_str()).as<ypc::hex_bytes>();
+  std::string sample_hex(
+      (const char *)sample_hex_bytes.data(),
+      sample_hex_bytes.size()); // ypc::to_hex(ypc::string_to_byte(sample));
 
   write_params_to_json(output, prefix_hex(info.get<data_id>()), name, desc,
                        sample, prefix_hex(sample_hex), env_info, price,

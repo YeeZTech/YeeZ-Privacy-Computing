@@ -75,15 +75,14 @@ int main(int argc, char *argv[]) {
   if (vm.count("create")) {
     ypc::bref public_key, private_key;
     ptr->generate_secp256k1_key_pair(public_key, private_key);
-    std::string pkey_hex =
-        ypc::bytes(public_key.data(), public_key.len()).to_hex();
-    std::string skey_hex =
-        ypc::bytes(private_key.data(), private_key.len()).to_hex();
+    ypc::bytes pkey(public_key.data(), public_key.len());
+    ypc::bytes skey(private_key.data(), private_key.len());
     boost::filesystem::path output_path =
-        key_dir /
-        boost::filesystem::path(pkey_hex.substr(0, PKEY_FILE_NAME_LENGTH));
+        key_dir / boost::filesystem::path(std::string(
+                      (const char *)pkey.as<ypc::hex_bytes>().data(),
+                      PKEY_FILE_NAME_LENGTH));
     std::string output = output_path.generic_string();
-    write_key_pair_to_file(output, pkey_hex, skey_hex);
+    write_key_pair_to_file(output, pkey, skey);
     std::cout << "Create key pair in file " << output << std::endl;
   } else if (vm.count("list")) {
     boost::filesystem::path key_path(key_dir);
@@ -125,17 +124,15 @@ int main(int argc, char *argv[]) {
     ypc::bytes b_pkey, b_skey;
     read_key_pair_from_file(p.generic_string(), b_pkey, b_skey);
 
-    std::string public_key = vm["backup.public-key"].as<std::string>();
-    ypc::bytes encrypt_pkey = ypc::bytes::from_hex(public_key);
+    ypc::bytes public_key = vm["backup.public-key"].as<ypc::bytes>();
     ypc::bref backup_key;
-    ptr->backup_private_key(b_skey.value(), b_skey.size(), encrypt_pkey.value(),
-                            encrypt_pkey.size(), backup_key);
+    ptr->backup_private_key(b_skey.data(), b_skey.size(), public_key.data(),
+                            public_key.size(), backup_key);
 
     p = bak_dir / boost::filesystem::path(name);
     std::string output = p.generic_string();
-    write_key_pair_to_file(
-        output, b_pkey.to_hex(),
-        ypc::bytes(backup_key.data(), backup_key.len()).to_hex());
+    write_key_pair_to_file(output, b_pkey,
+                           ypc::bytes(backup_key.data(), backup_key.len()));
     std::cout << "Backup key pair in file " << output << std::endl;
   } else if (vm.count("restore")) {
     std::string name = vm["restore"].as<std::string>();
@@ -151,17 +148,14 @@ int main(int argc, char *argv[]) {
     ypc::bytes b_pkey, b_skey;
     read_key_pair_from_file(p.generic_string(), b_pkey, b_skey);
 
-    std::string private_key = vm["restore.private-key"].as<std::string>();
-    ypc::bytes decrypt_skey = ypc::bytes::from_hex(private_key);
+    ypc::bytes decrypt_skey = vm["restore.private-key"].as<ypc::bytes>();
     ypc::bref sealed_key;
-    ptr->restore_private_key(b_skey.value(), b_skey.size(),
-                             decrypt_skey.value(), decrypt_skey.size(),
-                             sealed_key);
+    ptr->restore_private_key(b_skey.data(), b_skey.size(), decrypt_skey.data(),
+                             decrypt_skey.size(), sealed_key);
     p = key_dir / boost::filesystem::path(name);
     std::string output = p.generic_string();
-    write_key_pair_to_file(
-        output, b_pkey.to_hex(),
-        ypc::bytes(sealed_key.data(), sealed_key.len()).to_hex());
+    write_key_pair_to_file(output, b_pkey,
+                           ypc::bytes(sealed_key.data(), sealed_key.len()));
     std::cout << "Restore key pair in file " << output << std::endl;
   } else if (vm.count("encrypt")) {
     std::string msg = vm["encrypt"].as<std::string>();
@@ -169,37 +163,32 @@ int main(int argc, char *argv[]) {
       std::cout << "`public-key` must be specified!" << std::endl;
       return -1;
     }
-    std::string public_key = vm["encrypt.public-key"].as<std::string>();
-    ypc::bytes encrypt_pkey = ypc::bytes::from_hex(public_key);
-    ypc::bytes b_msg = ypc::string_to_byte(msg);
+    ypc::bytes encrypt_pkey = vm["encrypt.public-key"].as<ypc::bytes>();
+    ypc::bytes b_msg;
     if (vm.count("encrypt.hex")) {
-      b_msg = ypc::bytes::from_hex(msg);
+      b_msg = ypc::hex_bytes(msg.c_str()).as<ypc::bytes>();
+    } else {
+      b_msg = ypc::bytes(msg.c_str());
     }
     ypc::bref cipher;
     // uint32_t cipher_size;
     // uint8_t *cipher;
-    ptr->encrypt_message(encrypt_pkey.value(), encrypt_pkey.size(),
-                         b_msg.value(), b_msg.size(), cipher);
-    std::cout << "Encrypt message \"" << msg << "\", cipher output: ";
-    print_hex(cipher.data(), cipher.len());
+    ptr->encrypt_message(encrypt_pkey.data(), encrypt_pkey.size(), b_msg.data(),
+                         b_msg.size(), cipher);
+    std::cout << "Encrypt message \"" << msg << "\", cipher output: "
+              << ypc::bytes(cipher.data(), cipher.size());
   } else if (vm.count("decrypt")) {
-    std::string cipher = vm["decrypt"].as<std::string>();
+    ypc::bytes b_cipher = vm["decrypt"].as<ypc::bytes>();
     if (!vm.count("decrypt.private-key")) {
       std::cout << "`private-key` must be specified!" << std::endl;
       return -1;
     }
-    std::string private_key = vm["decrypt.private-key"].as<std::string>();
-    ypc::bytes decrypt_skey = ypc::bytes::from_hex(private_key);
-    ypc::bytes b_cipher = ypc::bytes::from_hex(cipher);
+    ypc::bytes decrypt_skey = vm["decrypt.private-key"].as<ypc::bytes>();
     ypc::bref msg;
-    ptr->decrypt_message(decrypt_skey.value(), decrypt_skey.size(),
-                         b_cipher.value(), b_cipher.size(), msg);
-    std::cout << "Decrypt cipher \"" << cipher << "\", messsage output: ";
-    if (vm.count("decrypt.hex")) {
-      print_hex(msg.data(), msg.len());
-    } else {
-      std::cout << msg.data() << std::endl;
-    }
+    ptr->decrypt_message(decrypt_skey.data(), decrypt_skey.size(),
+                         b_cipher.data(), b_cipher.size(), msg);
+    std::cout << "Decrypt cipher \"" << b_cipher
+              << "\", messsage output: " << ypc::bytes(msg.data(), msg.size());
   }
   return 0;
 }

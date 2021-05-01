@@ -62,7 +62,7 @@ uint32_t backup_private_key(uint8_t *sealed_private_key, uint32_t sealed_size,
   }
 
   se_ret = stbox::crypto::encrypt_message_with_prefix(
-      pub_key, pkey_size, skey, skey_size, ypc::crypto_prefix_backup,
+      pub_key, pkey_size, skey, skey_size, ypc::utc::crypto_prefix_backup,
       backup_private_key, bp_size);
   return se_ret;
 }
@@ -101,7 +101,7 @@ uint32_t restore_private_key(uint8_t *backup_private_key, uint32_t bp_size,
 
   se_ret = stbox::crypto::decrypt_message_with_prefix(
       skey, skey_size, backup_private_key, bp_size, raw_bkey, raw_bkey_size,
-      ypc::crypto_prefix_backup);
+      ypc::utc::crypto_prefix_backup);
   if (se_ret) {
     return se_ret;
   }
@@ -136,7 +136,7 @@ uint32_t forward_private_key(uint8_t *sealed_private_key, uint32_t sealed_size,
   }
 
   se_ret = stbox::crypto::encrypt_message_with_prefix(
-      pub_key, pkey_size, skey, skey_size, ypc::crypto_prefix_forward,
+      pub_key, pkey_size, skey, skey_size, ypc::utc::crypto_prefix_forward,
       fwd_private_key, fwd_size);
   return se_ret;
 }
@@ -208,7 +208,7 @@ uint32_t load_key_pair_if_not_exist(uint8_t *pkey_ptr, uint32_t pkey_size,
   return ret;
 }
 
-std::unordered_map<std::string, forward_message_st> message_table;
+std::unordered_map<stbox::bytes, forward_message_st> message_table;
 
 uint32_t forward_message(uint32_t msg_id, uint8_t *cipher, uint32_t cipher_size,
                          uint8_t *epublic_key, uint32_t epkey_size,
@@ -218,9 +218,9 @@ uint32_t forward_message(uint32_t msg_id, uint8_t *cipher, uint32_t cipher_size,
   sgx_status_t se_ret = SGX_SUCCESS;
 
   uint32_t msg_key_size = sizeof(msg_id) + ehash_size;
-  std::string str_msg_key(msg_key_size, '0');
-  memcpy((uint8_t *)str_msg_key.c_str(), &msg_id, sizeof(msg_id));
-  memcpy((uint8_t *)str_msg_key.c_str() + sizeof(msg_id), ehash, ehash_size);
+  stbox::bytes str_msg_key(msg_key_size);
+  memcpy((uint8_t *)str_msg_key.data(), &msg_id, sizeof(msg_id));
+  memcpy((uint8_t *)str_msg_key.data() + sizeof(msg_id), ehash, ehash_size);
 
   if (message_table.find(str_msg_key) != message_table.end()) {
     LOG(WARNING) << "key already exist";
@@ -242,8 +242,8 @@ uint32_t forward_message(uint32_t msg_id, uint8_t *cipher, uint32_t cipher_size,
       ::stbox::crypto::get_decrypt_message_size_with_prefix(cipher_size);
   stbox::bytes decrypted_msg(decrypted_size);
   se_ret = (sgx_status_t)::stbox::crypto::decrypt_message_with_prefix(
-      skey_ptr, skey_size, cipher, cipher_size, decrypted_msg.value(),
-      decrypted_size, ::ypc::crypto_prefix_forward);
+      skey_ptr, skey_size, cipher, cipher_size, decrypted_msg.data(),
+      decrypted_size, ::ypc::utc::crypto_prefix_forward);
 
   if (se_ret) {
     LOG(ERROR) << "decrypt_message_with_prefix forward returns " << se_ret;
@@ -252,32 +252,32 @@ uint32_t forward_message(uint32_t msg_id, uint8_t *cipher, uint32_t cipher_size,
 
   uint32_t all_size = sizeof(msg_id) + cipher_size + epkey_size + ehash_size;
   stbox::bytes all(all_size);
-  memcpy(all.value(), &msg_id, sizeof(msg_id));
-  memcpy(all.value() + sizeof(msg_id), cipher, cipher_size);
-  memcpy(all.value() + sizeof(msg_id) + cipher_size, epublic_key, epkey_size);
-  memcpy(all.value() + sizeof(msg_id) + cipher_size + epkey_size, ehash,
+  memcpy(all.data(), &msg_id, sizeof(msg_id));
+  memcpy(all.data() + sizeof(msg_id), cipher, cipher_size);
+  memcpy(all.data() + sizeof(msg_id) + cipher_size, epublic_key, epkey_size);
+  memcpy(all.data() + sizeof(msg_id) + cipher_size + epkey_size, ehash,
          ehash_size);
-  se_ret = (sgx_status_t)verify_signature(all.value(), all.size(), sig,
-                                          sig_size, verify_key, vpkey_size);
+  se_ret = (sgx_status_t)verify_signature(all.data(), all.size(), sig, sig_size,
+                                          verify_key, vpkey_size);
   if (se_ret) {
     LOG(ERROR) << "Invalid signature";
     return se_ret;
   }
 
-  std::string str_msg((const char *)decrypted_msg.value(), decrypted_size);
-  std::string str_hash((const char *)ehash, ehash_size);
   message_table.insert(std::make_pair(
-      str_msg_key, forward_message_st{msg_id, str_msg, str_hash}));
+      str_msg_key,
+      forward_message_st{msg_id, decrypted_msg, bytes(ehash, ehash_size)}));
   return se_ret;
 }
 
-std::string handle_pkg(const uint8_t *data, size_t data_len,
-                       stbox::dh_session *context) {
+stbox::bytes handle_pkg(const uint8_t *data, size_t data_len,
+                        stbox::dh_session *context) {
   uint32_t msg_key_size = data_len + sizeof(sgx_measurement_t);
-  std::string str_msg_key(msg_key_size, '0');
+  stbox::bytes str_msg_key(msg_key_size);
   memcpy(&str_msg_key[0], data, data_len);
   memcpy(&str_msg_key[data_len], &context->peer_identity().mr_enclave,
          sizeof(sgx_measurement_t));
+  LOG(INFO) << "got request: " << str_msg_key;
 
   auto iter = message_table.find(str_msg_key);
   if (iter != message_table.end()) {

@@ -60,6 +60,6 @@ uint32_t get_data_hash_size() { return pw.data_hash().size(); }
 uint32_t get_data_hash(uint8_t *hash, uint32_t hash_size) {
   auto t = pw.data_hash();
   uint32_t ret = SGX_SUCCESS;
-  memcpy(hash, t.value(), t.size());
+  memcpy(hash, t.data(), t.size());
   return ret;
 }

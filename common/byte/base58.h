@@ -21,7 +21,6 @@
 #include <string>
 #include <vector>
 
-namespace ypc {
 /**
  * Encode a byte sequence as a base58-encoded string.
  * pbegin and pend cannot be nullptr, unless both are.
@@ -47,5 +46,4 @@ bool decode_base58(const char *psz, std::vector<unsigned char> &vchRet);
  */
 bool decode_base58(const std::string &str, std::vector<unsigned char> &vchRet);
 
-} // namespace ypc
 #endif // BITCOIN_BASE58_H

@@ -54,6 +54,12 @@ public:
     }
   }
 
+  template <typename ByteType>
+  int append_item(const ByteType *data, size_t len) {
+    static_assert(sizeof(ByteType) == 1);
+    return append_item((const char *)data, len);
+  }
+
   int append_item(const char *data, size_t len) {
     // TODO: Check if reach limit
     read_header();

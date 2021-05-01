@@ -1,5 +1,4 @@
 #include "stbox/eth/eth_hash.h"
-#include "ypc/base64.h"
 #include "ypc/limits.h"
 #include "ypc/ntobject_file.h"
 #include "ypc/privacy_data_reader.h"
@@ -36,8 +35,7 @@ void seal_file_for_parallel(const std::string &plugin, const std::string &file,
             << std::endl;
 
   // magic string here!
-  stbox::bytes std_hash =
-      stbox::eth::keccak256_hash(stbox::string_to_byte("Fidelius"));
+  stbox::bytes std_hash = stbox::eth::keccak256_hash(stbox::bytes("Fidelius"));
 
   uint64_t item_number = reader.get_item_number();
   if (item_number == 0) {
@@ -45,7 +43,7 @@ void seal_file_for_parallel(const std::string &plugin, const std::string &file,
     exit(-1);
   }
 
-  auto check_item_data_size = [](const std::string &_data) {
+  auto check_item_data_size = [](const bytes &_data) {
     if (_data.size() > ypc::max_item_size) {
       std::cout << "only support item size that smaller than " << max_item_size
                 << " bytes!" << std::endl;
@@ -76,7 +74,7 @@ void seal_file_for_parallel(const std::string &plugin, const std::string &file,
       cur_sf = new simple_sealed_file(file_path, false);
       k = std_hash;
       if (i != 0) {
-        items.back().set<sfm_hash>(stbox::byte_to_string(k));
+        items.back().set<sfm_hash>(k);
       }
       sfm_item_t item;
       item.set<sfm_path>(file_path);
@@ -84,22 +82,22 @@ void seal_file_for_parallel(const std::string &plugin, const std::string &file,
       items.push_back(item);
     }
 
-    std::string item_data = reader.read_item_data();
+    bytes item_data = reader.read_item_data();
     check_item_data_size(item_data);
-    std::string s = sm.seal_data(item_data.c_str(), item_data.size());
+    bytes s = sm.seal_data(item_data);
     cur_sf->write_item(s);
     k = k + item_data;
     k = stbox::eth::keccak256_hash(k);
     ++pd;
   }
-  items.back().set<sfm_hash>(stbox::byte_to_string(k));
+  items.back().set<sfm_hash>(k);
 
   k = std_hash;
   for (int i = 0; i < items.size(); i++) {
     k = k + items[i].get<sfm_hash>();
   }
   k = stbox::eth::keccak256_hash(k);
-  data.set<sfm_hash>(stbox::byte_to_string(k));
+  data.set<sfm_hash>(k);
   data.set<sfm_items>(items);
   data.set<sfm_num>(concurrency);
 
@@ -120,9 +118,9 @@ void seal_file(const std::string &plugin, const std::string &file,
   k = k + std::string(sealer_path);
 
   // magic string here!
-  data_hash = stbox::eth::keccak256_hash(stbox::string_to_byte("Fidelius"));
+  data_hash = stbox::eth::keccak256_hash(bytes("Fidelius"));
 
-  std::string item_data = reader.read_item_data();
+  bytes item_data = reader.read_item_data();
   if (item_data.size() > ypc::max_item_size) {
     std::cout << "only support item size that smaller than " << max_item_size
               << " bytes!" << std::endl;
@@ -133,7 +131,7 @@ void seal_file(const std::string &plugin, const std::string &file,
   std::cout << "Reading " << item_number << " items ..." << std::endl;
   boost::progress_display pd(item_number);
   while (!item_data.empty()) {
-    std::string s = sm.seal_data(item_data.c_str(), item_data.size());
+    bytes s = sm.seal_data(item_data);
     sf.write_item(s);
     stbox::bytes k = data_hash + item_data;
     data_hash = stbox::eth::keccak256_hash(k);
@@ -233,7 +231,7 @@ int main(int argc, char *argv[]) {
   ofs << "sealer_enclave"
       << " = " << enclave_file << "\n";
   ofs << "data_id"
-      << " = " << ::ypc::to_hex(data_hash) << "\n";
+      << " = " << data_hash << "\n";
 
   privacy_data_reader reader(plugin, iris_file);
   ofs << "item_num"
@@ -243,7 +241,7 @@ int main(int argc, char *argv[]) {
   bytes sample = reader.get_sample_data();
   if (sample.size() > 0) {
     ofs << "sample_data"
-        << " = " << ypc::to_hex(sample) << "\n";
+        << " = " << sample << "\n";
   }
   std::string format = reader.get_data_format();
   if (format.size() > 0) {

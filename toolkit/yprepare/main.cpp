@@ -47,7 +47,7 @@ boost::program_options::variables_map parse_command_line(int argc,
   return vm;
 }
 
-uint32_t load_key_pair(const std::string &filename, ypc::bytes &b_pkey,
+uint32_t load_key_pair(const ypc::bytes &pkey, ypc::bytes &b_pkey,
                        ypc::bytes &b_skey) {
   uint32_t ret = 1;
   std::string key_dir = create_dir_if_not_exist(".", ".yeez.key/");
@@ -57,10 +57,12 @@ uint32_t load_key_pair(const std::string &filename, ypc::bytes &b_pkey,
         boost::str(boost::format("Directory not exist %1%!") % key_dir));
   }
 
+  std::string fname = std::string(
+      (const char *)pkey.as<ypc::hex_bytes>().data(), PKEY_FILE_NAME_LENGTH);
   for (auto &f : boost::make_iterator_range(
            boost::filesystem::directory_iterator(key_path), {})) {
     auto name = f.path().filename().generic_string();
-    if (filename.substr(0, PKEY_FILE_NAME_LENGTH) == name) {
+    if (fname == name) {
       boost::filesystem::path p = key_dir / boost::filesystem::path(name);
       ret = read_key_pair_from_file(p.generic_string(), b_pkey, b_skey);
       break;
@@ -73,66 +75,59 @@ uint32_t load_key_pair(const std::string &filename, ypc::bytes &b_pkey,
   return ret;
 }
 
-std::string encrypt_skey_with_pubkey(std::shared_ptr<keymgr_sgx_module> ptr,
-                                     const std::string &pkey_for_encrypt,
-                                     const std::string &pkey_for_skey,
-                                     ypc::bytes &b_pkey,
-                                     ypc::bytes &b_sealed_key) {
+ypc::bytes encrypt_skey_with_pubkey(std::shared_ptr<keymgr_sgx_module> ptr,
+                                    const ypc::bytes &pkey_for_encrypt,
+                                    const ypc::bytes &pkey_for_skey,
+                                    ypc::bytes &b_pkey,
+                                    ypc::bytes &b_sealed_key) {
   load_key_pair(pkey_for_skey, b_pkey, b_sealed_key);
   ypc::bref backup_key;
-  ptr->forward_private_key(b_sealed_key.value(), b_sealed_key.size(),
-                           (const uint8_t *)pkey_for_encrypt.c_str(),
+  ptr->forward_private_key(b_sealed_key.data(), b_sealed_key.size(),
+                           (const uint8_t *)pkey_for_encrypt.data(),
                            pkey_for_encrypt.size(), backup_key);
 
-  /*
-  ypc::bref restore_key;
-  ypc::bytes tmp_pkey, tmp_skey;
-  load_key_pair(ypc::to_hex(pkey_for_encrypt), tmp_pkey, tmp_skey);
-  ptr->restore_private_key(backup_key.data(), backup_key.len(),
-                           tmp_skey.value(), tmp_skey.size(), restore_key);
-                           */
-  return ypc::to_hex(backup_key);
+  return ypc::bytes(backup_key.data(), backup_key.size());
 }
 
-std::string encrypt_param_with_pubkey(std::shared_ptr<keymgr_sgx_module> ptr,
-                                      const ypc::bytes &pubkey,
-                                      const ypc::bytes &param) {
+ypc::bytes encrypt_param_with_pubkey(std::shared_ptr<keymgr_sgx_module> ptr,
+                                     const ypc::bytes &pubkey,
+                                     const ypc::bytes &param) {
   ypc::bref cipher;
-  ptr->encrypt_message(pubkey.value(), pubkey.size(), param.value(),
-                       param.size(), cipher);
+  ptr->encrypt_message(pubkey.data(), pubkey.size(), param.data(), param.size(),
+                       cipher);
 
-  return ypc::to_hex(cipher);
+  return ypc::bytes(cipher.data(), cipher.size());
 }
 
-std::string generate_signature(std::shared_ptr<keymgr_sgx_module> ptr,
-                               uint32_t msg_id, const ypc::bytes &cipher,
-                               const ypc::bytes &epkey, const ypc::bytes &ehash,
-                               const ypc::bytes &b_sealed_key,
-                               const ypc::bytes &vpkey) {
+ypc::bytes generate_signature(std::shared_ptr<keymgr_sgx_module> ptr,
+                              uint32_t msg_id, const ypc::bytes &cipher,
+                              const ypc::bytes &epkey, const ypc::bytes &ehash,
+                              const ypc::bytes &b_sealed_key,
+                              const ypc::bytes &vpkey) {
   uint32_t all_size =
       sizeof(msg_id) + cipher.size() + epkey.size() + ehash.size();
   ypc::bytes all(all_size);
-  memcpy(all.value(), &msg_id, sizeof(msg_id));
-  memcpy(all.value() + sizeof(msg_id), cipher.value(), cipher.size());
-  memcpy(all.value() + sizeof(msg_id) + cipher.size(), epkey.value(),
+  memcpy(all.data(), &msg_id, sizeof(msg_id));
+  memcpy(all.data() + sizeof(msg_id), cipher.data(), cipher.size());
+  memcpy(all.data() + sizeof(msg_id) + cipher.size(), epkey.data(),
          epkey.size());
-  memcpy(all.value() + sizeof(msg_id) + cipher.size() + epkey.size(),
-         ehash.value(), ehash.size());
+  memcpy(all.data() + sizeof(msg_id) + cipher.size() + epkey.size(),
+         ehash.data(), ehash.size());
   ypc::bref sig;
-  auto ret = ptr->sign_message(b_sealed_key.value(), b_sealed_key.size(),
-                               all.value(), all_size, sig);
+  auto ret = ptr->sign_message(b_sealed_key.data(), b_sealed_key.size(),
+                               all.data(), all_size, sig);
   if (ret) {
     throw std::runtime_error("Generate signature failed!");
   }
   std::cout << "Sign msg_id/cipher/epkey/ehash ---- Success" << std::endl;
 
-  ret = ptr->verify_signature(all.value(), all.size(), sig.data(), sig.len(),
-                              vpkey.value(), vpkey.size());
+  ret = ptr->verify_signature(all.data(), all.size(), sig.data(), sig.len(),
+                              vpkey.data(), vpkey.size());
   if (ret) {
     throw std::runtime_error("Verify signature failed!");
   }
   std::cout << "Verify signature ---- Success" << std::endl;
-  return ypc::to_hex(sig);
+  return ypc::bytes(sig.data(), sig.size());
 }
 
 int main(int argc, char *argv[]) {
@@ -159,10 +154,9 @@ int main(int argc, char *argv[]) {
     size_t index = 0;
     for (auto &c : odr->all_onchain_data()) {
       std::cout << "Index " << index << ": " << std::endl;
-      std::cout << "\tData Hash: 0x" << ypc::to_hex(c.get<data_hash>())
+      std::cout << "\tData Hash: 0x" << c.get<data_hash>() << std::endl;
+      std::cout << "\tProvider Public key: 0x" << c.get<provider_pub_key>()
                 << std::endl;
-      std::cout << "\tProvider Public key: 0x"
-                << ypc::to_hex(c.get<provider_pub_key>()) << std::endl;
       index++;
     }
     return 0;
@@ -172,11 +166,11 @@ int main(int argc, char *argv[]) {
     std::cout << "No data hash is provided!" << std::endl;
     return -1;
   }
-  std::string dhash = vm["dhash"].as<std::string>();
+  ypc::bytes dhash =
+      ypc::hex_bytes(vm["dhash"].as<std::string>()).as<ypc::bytes>();
   onchain_data_meta_t d;
   try {
-    d = odr->get_data_with_hash(
-        stbox::byte_to_string(stbox::bytes::from_hex(dhash)));
+    d = odr->get_data_with_hash(dhash);
     std::cout << "found data with hash: " << dhash << std::endl;
   } catch (const std::exception &e) {
     std::cout << "Cannot find data with hash " << dhash << std::endl;
@@ -184,10 +178,10 @@ int main(int argc, char *argv[]) {
   }
 
   std::shared_ptr<keymgr_sgx_module> ptr;
-  std::unordered_map<std::string, std::string> result;
+  std::unordered_map<std::string, ypc::bytes> result;
 
-  result["data-hash"] = ypc::to_hex(d.get<data_hash>());
-  result["provider-pkey"] = ypc::to_hex(d.get<provider_pub_key>());
+  result["data-hash"] = d.get<data_hash>();
+  result["provider-pkey"] = d.get<provider_pub_key>();
 
   if (vm.count("use-pubkey") || vm.count("use-param")) {
     ptr = std::make_shared<keymgr_sgx_module>(ENCLAVE_KEYMGR_PATH);
@@ -197,12 +191,14 @@ int main(int argc, char *argv[]) {
   ypc::bytes b_pkey, b_sealed_key;
   if (vm.count("use-pubkey")) {
     auto pkey_for_encrypt = d.get<provider_pub_key>();
-    auto pkey_for_skey = vm["use-pubkey"].as<std::string>();
-    std::string es = encrypt_skey_with_pubkey(
-        ptr, pkey_for_encrypt, pkey_for_skey, b_pkey, b_sealed_key);
+    auto pkey_for_skey =
+        ypc::hex_bytes(vm["use-pubkey"].as<std::string>()).as<ypc::bytes>();
+    auto es = encrypt_skey_with_pubkey(ptr, pkey_for_encrypt, pkey_for_skey,
+                                       b_pkey, b_sealed_key);
     std::cout << "Encrypt private key ---- Success" << std::endl;
     result["encrypted-skey"] = es;
-    result["analyzer-pkey"] = vm["use-pubkey"].as<std::string>();
+    result["analyzer-pkey"] =
+        ypc::hex_bytes(vm["use-pubkey"].as<std::string>()).as<ypc::bytes>();
   }
 
   if (vm.count("use-param")) {
@@ -219,16 +215,19 @@ int main(int argc, char *argv[]) {
       format = vm["param-format"].as<std::string>();
     }
     if (format == "hex") {
-      param = ypc::bytes::from_hex(vm["use-param"].as<std::string>());
+      param =
+          ypc::hex_bytes(vm["use-param"].as<std::string>()).as<ypc::bytes>();
     } else if (format == "text") {
-      param = ypc::bytes(vm["use-param"].as<std::string>());
+      param = ypc::bytes(vm["use-param"].as<std::string>().c_str());
     } else {
       std::cout << "unknow format from '--param-format='" << format
                 << std::endl;
       return -1;
     }
-    std::string es = encrypt_param_with_pubkey(
-        ptr, ypc::bytes::from_hex(vm["use-pubkey"].as<std::string>()), param);
+    auto es = encrypt_param_with_pubkey(
+        ptr,
+        ypc::hex_bytes(vm["use-pubkey"].as<std::string>()).as<ypc::bytes>(),
+        param);
     result["encrypted-input"] = es;
   }
 
@@ -246,16 +245,15 @@ int main(int argc, char *argv[]) {
     mod.get_enclave_hash(enclave_hash);
 
     // std::cout << "enclave hash: " << ypc::to_hex(enclave_hash) << std::endl;
-    result["program-enclave-hash"] = ypc::to_hex(enclave_hash);
+    result["program-enclave-hash"] =
+        ypc::bytes(enclave_hash.data(), enclave_hash.size());
   }
 
   // generate signature here
-  std::string skey_sig =
-      generate_signature(ptr, param_id::PRIVATE_KEY,
-                         ypc::bytes::from_hex(result["encrypted-skey"]),
-                         ypc::bytes::from_hex(result["provider-pkey"]),
-                         ypc::bytes::from_hex(result["program-enclave-hash"]),
-                         b_sealed_key, b_pkey);
+  ypc::bytes skey_sig =
+      generate_signature(ptr, param_id::PRIVATE_KEY, result["encrypted-skey"],
+                         result["provider-pkey"],
+                         result["program-enclave-hash"], b_sealed_key, b_pkey);
   result["forward-sig"] = skey_sig;
   // std::string param_sig = generate_signature(ptr);
 

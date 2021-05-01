@@ -33,7 +33,7 @@ public:
   virtual ~privacy_data_reader();
 
   void reset_for_read();
-  std::string read_item_data();
+  bytes read_item_data();
   uint64_t get_item_number();
   bytes get_sample_data();
   std::string get_data_format();

@@ -5,10 +5,6 @@
 namespace ypc {
 template <typename T> class ref {
 public:
-  template <typename TK> struct wild_pointer_deleter {
-    void operator()(TK const *p) { free(p); }
-  };
-
   ref() : m_data(nullptr), m_len(0) {}
   ref(T *data, size_t len)
       : m_data(data),
@@ -18,6 +14,10 @@ public:
 
   inline size_t &len() { return m_len; }
   inline const size_t &len() const { return m_len; }
+
+  inline size_t &size() { return m_len; }
+  inline const size_t &size() const { return m_len; }
+
   inline T *data() { return m_data; }
   inline const T *data() const { return m_data; }
 
@@ -30,8 +30,5 @@ private:
 };
 
 typedef ref<uint8_t> bref;
-
-std::string to_hex(const bref &s);
-
 } // namespace ypc
 

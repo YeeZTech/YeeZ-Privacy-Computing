@@ -15,7 +15,7 @@ namespace ypc {
 template <typename UserItemT, typename ParserT>
 class parser_wrapper : public parser_wrapper_base {
 public:
-  typedef UserItemT (*item_parser_t)(const char *, size_t);
+  typedef UserItemT (*item_parser_t)(const stbox::bytes::byte_t *, size_t);
 
   virtual uint32_t begin_parse_data_item() {
     uint32_t r1 = parser_wrapper_base::begin_parse_data_item();
@@ -51,15 +51,14 @@ public:
       return r1;
     }
     uint32_t sig_size = stbox::crypto::get_secp256k1_signature_size();
-    std::string cost_gas_str(sizeof(m_cost_gas), '0');
+    stbox::bytes cost_gas_str(sizeof(m_cost_gas));
     memcpy((uint8_t *)&cost_gas_str[0], (uint8_t *)&m_cost_gas,
            sizeof(m_cost_gas));
-    m_result_signature_str = std::string(sig_size, '0');
-    auto msg = m_encrypted_param +
-               stbox::byte_to_string(m_data_source->data_hash()) +
-               cost_gas_str + m_encrypted_result_str;
+    m_result_signature_str = stbox::bytes(sig_size);
+    auto msg = m_encrypted_param + m_data_source->data_hash() + cost_gas_str +
+               m_encrypted_result_str;
     auto status = stbox::crypto::sign_message(
-        (uint8_t *)m_private_key.c_str(), m_private_key.size(),
+        (uint8_t *)m_private_key.data(), m_private_key.size(),
         (uint8_t *)&msg[0], msg.size(), (uint8_t *)&m_result_signature_str[0],
         sig_size);
     return static_cast<uint32_t>(status);
@@ -68,7 +67,7 @@ public:
   const bytes &data_hash() const { return m_data_source->data_hash(); }
 
   virtual bool
-  user_def_block_result_merge(const std::vector<std::string> &block_results) {
+  user_def_block_result_merge(const std::vector<stbox::bytes> &block_results) {
     ParserT m;
     return m.merge_parse_result(block_results, m_param, m_result_str);
   }

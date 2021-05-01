@@ -1,5 +1,6 @@
 #pragma once
 #include "ypc/blockfile.h"
+#include "ypc/byte.h"
 #include "ypc/limits.h"
 #include "ypc/memref.h"
 #include "ypc/ntobject_file.h"
@@ -21,7 +22,7 @@ public:
   sealed_file_base(const std::string &file_path, bool read);
 
   virtual ~sealed_file_base();
-  virtual void write_item(const std::string &data);
+  virtual void write_item(const bytes &data);
 
   virtual void reset_read() = 0;
 
@@ -63,8 +64,10 @@ protected:
 } // namespace ypc
 
 define_nt(sfm_path, std::string);
+// define_nt(sfm_hash, std::string);
+// define_nt(sfm_path, ypc::bytes);
+define_nt(sfm_hash, ypc::bytes);
 define_nt(sfm_index, uint16_t);
-define_nt(sfm_hash, std::string);
 define_nt(sfm_num, uint16_t);
 typedef ::ff::net::ntpackage<1, sfm_path, sfm_index, sfm_hash> sfm_item_t;
 define_nt(sfm_items, std::vector<sfm_item_t>);

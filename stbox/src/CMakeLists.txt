@@ -1,4 +1,4 @@
-set(stbox_src stx_status.cpp stx_common.cpp exception.cpp ebyte.cpp eth/eth_hash.cpp eth/util.cpp keccak/keccak.c)
+set(stbox_src stx_status.cpp stx_common.cpp exception.cpp eth/eth_hash.cpp eth/util.cpp keccak/keccak.c)
 
 
 set(stbox_t_src ${stbox_src}

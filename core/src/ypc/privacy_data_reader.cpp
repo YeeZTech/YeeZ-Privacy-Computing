@@ -71,7 +71,7 @@ uint64_t privacy_data_reader::get_item_number() {
 
 bytes privacy_data_reader::get_sample_data() {
   if (!m_get_sample_data) {
-    return std::string();
+    return bytes();
   }
   int len;
   m_get_sample_data(m_handle, NULL, &len);
@@ -98,16 +98,15 @@ std::string privacy_data_reader::get_data_format() {
   return ret;
 }
 
-std::string privacy_data_reader::read_item_data() {
+bytes privacy_data_reader::read_item_data() {
   // We use static buf here to optimize memory usage.
   char buf[max_item_size] = {0};
 
   int len = max_item_size;
   auto status = m_read_item_data(m_handle, buf, &len);
   if (status != 0) {
-    return std::string();
+    return bytes();
   }
-  std::string ret(buf, len);
-  return ret;
+  return bytes(buf, len);
 }
 } // namespace ypc

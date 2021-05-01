@@ -4,7 +4,7 @@ using namespace toolkit::analyzer;
 
 result_to_db::result_to_db(const std::string &url, const std::string &usrname,
                            const std::string &passwd, const std::string &dbname,
-                           const std::string &request_hash)
+                           const ypc::bytes &request_hash)
     : m_request_hash(request_hash) {
   m_db = std::make_unique<request_db>(url, usrname, passwd, dbname);
 }
@@ -16,7 +16,7 @@ void result_to_db::write_to_target(const ypc::bref &encrypted_result,
   auto info = request_data_table::select<::encrypted_skey, ::encrypted_input,
                                          ::provider_pkey, ::enclave_hash,
                                          ::analyzer_pkey, ::forward_sig>(ptr)
-                  .where(request_hash::eq(m_request_hash))
+                  .where(request_hash::eq(m_request_hash.as<ypc::hex_bytes>()))
                   .eval();
   request_data_item_t item;
   if (!info.empty()) {
@@ -27,9 +27,15 @@ void result_to_db::write_to_target(const ypc::bref &encrypted_result,
         info[0].get<::provider_pkey>(), info[0].get<::enclave_hash>(),
         info[0].get<::analyzer_pkey>(), info[0].get<::forward_sig>());
   }
+
+  auto to_hex = [](const ypc::bref &a) -> ypc::hex_bytes {
+    return ypc::bytes(a.data(), a.size()).as<ypc::hex_bytes>();
+  };
   item.set<::request_hash, ::status, ::encrypted_result, ::result_signature,
-           ::data_hash>(m_request_hash, 1, ypc::to_hex(encrypted_result),
-                        ypc::to_hex(result_signature), ypc::to_hex(data_hash));
+           ::data_hash>(m_request_hash.as<ypc::hex_bytes>(), 1,
+                        to_hex(encrypted_result), to_hex(result_signature),
+                        to_hex(data_hash));
+
   request_data_table::row_collection_type rs;
   rs.push_back(item);
   request_data_table::insert_or_replace_rows(m_db->db_engine_ptr(), rs);
@@ -41,12 +47,12 @@ void result_to_db::read_from_target(ypc::bytes &encrypted_result,
   auto *ptr = m_db->db_engine_ptr();
   auto info = request_data_table::select<::encrypted_result, ::result_signature,
                                          ::data_hash>(ptr)
-                  .where(request_hash::eq(m_request_hash))
+                  .where(request_hash::eq(m_request_hash.as<ypc::hex_bytes>()))
                   .eval();
   if (!info.empty()) {
     assert(info.size() == 1);
-    encrypted_result = ypc::bytes::from_hex(info[0].get<::encrypted_result>());
-    result_signature = ypc::bytes::from_hex(info[0].get<::result_signature>());
-    data_hash = ypc::bytes::from_hex(info[0].get<::data_hash>());
+    encrypted_result = info[0].get<::encrypted_result>().as<ypc::bytes>();
+    result_signature = info[0].get<::result_signature>().as<ypc::bytes>();
+    data_hash = info[0].get<::data_hash>().as<ypc::bytes>();
   }
 }

@@ -1,9 +1,10 @@
 #pragma once
 #include "ypc/byte.h"
+#include "ypc/status.h"
 
 class param_source {
 public:
-  virtual void read_from_source() = 0;
+  virtual uint32_t read_from_source() = 0;
 
   inline param_source &copy_from(param_source &s) {
     if (&s == this) {

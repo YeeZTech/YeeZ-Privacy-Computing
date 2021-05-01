@@ -9,7 +9,7 @@ file_parser::file_parser(param_source *psource, result_target *rtarget,
                   keymgr_enclave_path),
       m_sealfile_path(sealfile_path) {}
 
-void file_parser::do_parse() {
+uint32_t file_parser::do_parse() {
   // m_sf = std::shared_ptr<ypc::internal::sealed_file_base>(
   // new ypc::sealed_file_with_cache_opt(m_sealfile_path, true));
   m_sf = std::shared_ptr<ypc::internal::sealed_file_base>(
@@ -18,18 +18,20 @@ void file_parser::do_parse() {
 
   auto ret = m_parser->begin_parse_data_item();
   if (ret != stx_status::success) {
-    LOG(INFO) << "got error: " << std::to_string(ret);
-    return;
+    LOG(ERROR) << "got error: " << std::to_string(ret);
+    return ret;
   }
-  LOG(INFO) << "parse data item start";
-  m_parser->parse_data_item((const char *)m_psource->input().value(),
-                            m_psource->input().size());
-  LOG(INFO) << "parse data item end";
+  ret = m_parser->parse_data_item((const char *)m_psource->input().data(),
+                                  m_psource->input().size());
+  if (ret) {
+    return ret;
+  }
 
   ret = m_parser->end_parse_data_item();
   if (ret != stx_status::success) {
-    LOG(INFO) << "got error: " << std::to_string(ret);
+    LOG(ERROR) << "got error: " << std::to_string(ret);
   }
+  return ret;
 }
 
 uint32_t file_parser::next_sealed_item_data(uint8_t **data, uint32_t *len) {

@@ -2,8 +2,21 @@
 #include <stdexcept>
 
 namespace stbox {
-const char *sgx_status_string(sgx_status_t status) {
-  switch (status) {
+const char *status_string(uint32_t status) {
+  if (status & 0x10000) {
+#define ATT_STATUS(a, b)                                                       \
+  case b:                                                                      \
+    return #a;
+
+    switch (status) {
+#include "stbox/stx_status.def"
+    default:
+      return "unknown stx status";
+    }
+
+#undef ATT_STATUS
+  } else {
+    switch (status) {
 #define SGX_STATUS(n)                                                          \
   case n:                                                                      \
     return #n;
@@ -13,21 +26,7 @@ const char *sgx_status_string(sgx_status_t status) {
     return "unknown sgx status";
   }
   return "unknown sgx status";
-}
-
-} // namespace stbox
-namespace std {
-std::string to_string(::stbox::stx_status status) {
-#define ATT_STATUS(a, b)                                                       \
-  case ::stbox::stx_status::a:                                                 \
-    return #a;
-
-  switch (status) {
-#include "stbox/stx_status.def"
-  default:
-    throw std::runtime_error("invalid stx_status");
   }
-#undef ATT_STATUS
 }
+} // namespace stbox
 
-} // namespace std

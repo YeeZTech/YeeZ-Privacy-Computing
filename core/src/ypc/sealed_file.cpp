@@ -12,8 +12,8 @@ sealed_file_base::sealed_file_base(const std::string &file_path, bool read) {
 }
 
 sealed_file_base::~sealed_file_base() {}
-void sealed_file_base::write_item(const std::string &data) {
-  m_file.append_item(data.c_str(), data.size());
+void sealed_file_base::write_item(const bytes &data) {
+  m_file.append_item((const char *)data.data(), data.size());
 }
 } // namespace internal
 

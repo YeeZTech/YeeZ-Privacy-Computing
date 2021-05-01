@@ -55,6 +55,9 @@ enclave {
     public uint32_t get_encrypt_message_size_with_prefix(uint32_t data_size);
     public uint32_t get_decrypt_message_size_with_prefix(uint32_t data_size);
 
+    public uint32_t test_sign_message([in, size=skey_size] uint8_t * skey, uint32_t skey_size, [in, size=data_size] uint8_t *data, uint32_t data_size, [out, size=65] uint8_t *sig);
+    public uint32_t test_verify_message([in, size=data_size] uint8_t *data, uint32_t data_size, [in, size=sig_size] uint8_t *sig, uint32_t sig_size, [in, size=64] uint8_t * pkey);
+
     };
 
 

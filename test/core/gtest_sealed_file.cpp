@@ -13,14 +13,12 @@ TEST(test_sealed_file, simple) {
 
   ypc::simple_sealed_file ssf("tsf1", true);
 
-  stbox::bytes kdata_hash =
-      stbox::eth::keccak256_hash(stbox::string_to_byte("test"));
+  stbox::bytes kdata_hash = stbox::eth::keccak256_hash(ypc::bytes("test"));
 
   ypc::memref r;
   while (ssf.next_item(r)) {
-    std::string item(r.data(), r.len());
-    kdata_hash =
-        stbox::eth::keccak256_hash(kdata_hash + stbox::string_to_byte(item));
+    ypc::bytes item(r.data(), r.len());
+    kdata_hash = stbox::eth::keccak256_hash(kdata_hash + item);
     r.dealloc();
   }
   EXPECT_EQ(kdata_hash, data_hash);
@@ -33,16 +31,14 @@ TEST(test_sealed_file, opt) {
   std::cout << "done create file" << std::endl;
   ypc::sealed_file_with_cache_opt ssf("tsf1", true);
 
-  stbox::bytes kdata_hash =
-      stbox::eth::keccak256_hash(stbox::string_to_byte("test"));
+  stbox::bytes kdata_hash = stbox::eth::keccak256_hash(ypc::bytes("test"));
 
   ypc::memref r;
   int i = 0;
   while (ssf.next_item(r)) {
-    std::string item(r.data(), r.len());
+    ypc::bytes item(r.data(), r.len());
     // std::cout << i << ": " << item << std::endl;
-    kdata_hash =
-        stbox::eth::keccak256_hash(kdata_hash + stbox::string_to_byte(item));
+    kdata_hash = stbox::eth::keccak256_hash(kdata_hash + item);
     r.dealloc();
     i++;
   }
