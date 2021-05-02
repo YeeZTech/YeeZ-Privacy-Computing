@@ -1,13 +1,12 @@
 #include "ypc_t/analyzer/parser_wrapper_base.h"
 #include "common/crypto_prefix.h"
+#include "common/param_id.h"
 #include "stbox/ebyte.h"
 #include "stbox/eth/util.h"
 #include "stbox/stx_common.h"
 #include "stbox/tsgx/crypto/ecc.h"
 #include "stbox/tsgx/log.h"
 #include "yaenclave_t.h"
-#include "ypc/limits.h"
-#include "ypc/param_id.h"
 #include "ypc_t/ecommon/version.h"
 
 uint32_t get_ypc_analyzer_version() { return ypc::version(1, 0, 0).data(); }

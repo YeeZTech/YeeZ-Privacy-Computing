@@ -124,7 +124,9 @@ int main(int argc, char *argv[]) {
     ypc::bytes b_pkey, b_skey;
     read_key_pair_from_file(p.generic_string(), b_pkey, b_skey);
 
-    ypc::bytes public_key = vm["backup.public-key"].as<ypc::bytes>();
+    ypc::bytes public_key =
+        ypc::hex_bytes(vm["backup.public-key"].as<std::string>())
+            .as<ypc::bytes>();
     ypc::bref backup_key;
     ptr->backup_private_key(b_skey.data(), b_skey.size(), public_key.data(),
                             public_key.size(), backup_key);
@@ -148,7 +150,9 @@ int main(int argc, char *argv[]) {
     ypc::bytes b_pkey, b_skey;
     read_key_pair_from_file(p.generic_string(), b_pkey, b_skey);
 
-    ypc::bytes decrypt_skey = vm["restore.private-key"].as<ypc::bytes>();
+    ypc::bytes decrypt_skey =
+        ypc::hex_bytes(vm["restore.private-key"].as<std::string>())
+            .as<ypc::bytes>();
     ypc::bref sealed_key;
     ptr->restore_private_key(b_skey.data(), b_skey.size(), decrypt_skey.data(),
                              decrypt_skey.size(), sealed_key);
@@ -163,7 +167,9 @@ int main(int argc, char *argv[]) {
       std::cout << "`public-key` must be specified!" << std::endl;
       return -1;
     }
-    ypc::bytes encrypt_pkey = vm["encrypt.public-key"].as<ypc::bytes>();
+    ypc::bytes encrypt_pkey =
+        ypc::hex_bytes(vm["encrypt.public-key"].as<std::string>())
+            .as<ypc::bytes>();
     ypc::bytes b_msg;
     if (vm.count("encrypt.hex")) {
       b_msg = ypc::hex_bytes(msg.c_str()).as<ypc::bytes>();
@@ -178,17 +184,20 @@ int main(int argc, char *argv[]) {
     std::cout << "Encrypt message \"" << msg << "\", cipher output: "
               << ypc::bytes(cipher.data(), cipher.size());
   } else if (vm.count("decrypt")) {
-    ypc::bytes b_cipher = vm["decrypt"].as<ypc::bytes>();
+    ypc::bytes b_cipher =
+        ypc::hex_bytes(vm["decrypt"].as<std::string>()).as<ypc::bytes>();
     if (!vm.count("decrypt.private-key")) {
       std::cout << "`private-key` must be specified!" << std::endl;
       return -1;
     }
-    ypc::bytes decrypt_skey = vm["decrypt.private-key"].as<ypc::bytes>();
+    ypc::bytes decrypt_skey =
+        ypc::hex_bytes(vm["decrypt.private-key"].as<std::string>())
+            .as<ypc::bytes>();
     ypc::bref msg;
     ptr->decrypt_message(decrypt_skey.data(), decrypt_skey.size(),
                          b_cipher.data(), b_cipher.size(), msg);
-    std::cout << "Decrypt cipher \"" << b_cipher
-              << "\", messsage output: " << ypc::bytes(msg.data(), msg.size());
+    std::cout << "Decrypt cipher \"" << b_cipher << "\", messsage output: "
+              << std::string((const char *)msg.data(), msg.size());
   }
   return 0;
 }

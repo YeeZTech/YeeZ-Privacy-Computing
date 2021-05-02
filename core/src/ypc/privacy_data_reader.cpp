@@ -1,7 +1,7 @@
 #include "ypc/privacy_data_reader.h"
+#include "common/limits.h"
 #include "ypc/exceptions.h"
 #include "ypc/filesystem.h"
-#include "ypc/limits.h"
 #include <boost/format.hpp>
 #include <iostream>
 
@@ -75,7 +75,7 @@ bytes privacy_data_reader::get_sample_data() {
   }
   int len;
   m_get_sample_data(m_handle, NULL, &len);
-  if (len > max_sample_size) {
+  if (len > ::ypc::utc::max_sample_size) {
     throw data_sample_too_large(m_plugin_path, m_extra_param);
   }
   bytes ret(len);
@@ -90,7 +90,7 @@ std::string privacy_data_reader::get_data_format() {
   }
   int len;
   m_get_data_format(m_handle, NULL, &len);
-  if (len > max_data_format_size) {
+  if (len > ::ypc::utc::max_data_format_size) {
     throw data_format_too_large(m_plugin_path, m_extra_param);
   }
   std::string ret(len, 0);
@@ -100,9 +100,9 @@ std::string privacy_data_reader::get_data_format() {
 
 bytes privacy_data_reader::read_item_data() {
   // We use static buf here to optimize memory usage.
-  char buf[max_item_size] = {0};
+  char buf[::ypc::utc::max_item_size] = {0};
 
-  int len = max_item_size;
+  int len = ::ypc::utc::max_item_size;
   auto status = m_read_item_data(m_handle, buf, &len);
   if (status != 0) {
     return bytes();

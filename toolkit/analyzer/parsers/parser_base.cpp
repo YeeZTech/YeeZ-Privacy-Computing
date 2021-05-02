@@ -1,5 +1,5 @@
 #include "parsers/parser_base.h"
-#include "ypc/param_id.h"
+#include "common/param_id.h"
 #include "ypc/sealed_file.h"
 #include <glog/logging.h>
 

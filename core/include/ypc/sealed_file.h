@@ -1,7 +1,7 @@
 #pragma once
+#include "common/limits.h"
 #include "ypc/blockfile.h"
 #include "ypc/byte.h"
-#include "ypc/limits.h"
 #include "ypc/memref.h"
 #include "ypc/ntobject_file.h"
 #include <atomic>
@@ -16,7 +16,8 @@ namespace ypc {
 namespace internal {
 class sealed_file_base {
 public:
-  typedef blockfile<0x4788d13e7fefe21f, 1024 * 1024, 256 * max_item_size>
+  typedef blockfile<0x4788d13e7fefe21f, 1024 * 1024,
+                    256 * ::ypc::utc::max_item_size>
       blockfile_t;
 
   sealed_file_base(const std::string &file_path, bool read);

@@ -1,6 +1,6 @@
+#include "common/param_id.h"
 #include "onchain_data_reader.h"
 #include "ypc/filesystem.h"
-#include "ypc/param_id.h"
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
@@ -218,7 +218,7 @@ int main(int argc, char *argv[]) {
       param =
           ypc::hex_bytes(vm["use-param"].as<std::string>()).as<ypc::bytes>();
     } else if (format == "text") {
-      param = ypc::bytes(vm["use-param"].as<std::string>().c_str());
+      param = ypc::bytes(vm["use-param"].as<std::string>());
     } else {
       std::cout << "unknow format from '--param-format='" << format
                 << std::endl;

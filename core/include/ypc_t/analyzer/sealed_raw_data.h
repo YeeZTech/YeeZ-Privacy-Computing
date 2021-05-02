@@ -1,11 +1,11 @@
 #pragma once
+#include "common/limits.h"
 #include "hpda/extractor/extractor_base.h"
 #include "stbox/ebyte.h"
 #include "stbox/eth/eth_hash.h"
 #include "stbox/stx_common.h"
 #include "stbox/tsgx/channel/dh_session_initiator.h"
 #include "stbox/tsgx/log.h"
-#include "ypc/limits.h"
 #include "ypc_t/ecommon/package.h"
 #include <ff/util/ntobject.h>
 
@@ -64,8 +64,8 @@ public:
         free(out_buff);
     });
     auto ret = m_datahub_session->send_request_recv_response(
-        m_request_pkg_buf, m_request_pkg_buf_len, max_item_size, &out_buff,
-        &out_buff_len);
+        m_request_pkg_buf, m_request_pkg_buf_len, ::ypc::utc::max_item_size,
+        &out_buff, &out_buff_len);
     if (ret != stbox::stx_status::success) {
       LOG(ERROR) << "error for m_datahub_session->send_request_recv_response: "
                  << ret;

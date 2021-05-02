@@ -1,5 +1,5 @@
+#include "common/limits.h"
 #include "stbox/eth/eth_hash.h"
-#include "ypc/limits.h"
 #include "ypc/ntobject_file.h"
 #include "ypc/privacy_data_reader.h"
 #include "ypc/sealed_file.h"
@@ -44,9 +44,9 @@ void seal_file_for_parallel(const std::string &plugin, const std::string &file,
   }
 
   auto check_item_data_size = [](const bytes &_data) {
-    if (_data.size() > ypc::max_item_size) {
-      std::cout << "only support item size that smaller than " << max_item_size
-                << " bytes!" << std::endl;
+    if (_data.size() > ypc::utc::max_item_size) {
+      std::cout << "only support item size that smaller than "
+                << ypc::utc::max_item_size << " bytes!" << std::endl;
       exit(-1);
     }
   };
@@ -121,9 +121,9 @@ void seal_file(const std::string &plugin, const std::string &file,
   data_hash = stbox::eth::keccak256_hash(bytes("Fidelius"));
 
   bytes item_data = reader.read_item_data();
-  if (item_data.size() > ypc::max_item_size) {
-    std::cout << "only support item size that smaller than " << max_item_size
-              << " bytes!" << std::endl;
+  if (item_data.size() > ypc::utc::max_item_size) {
+    std::cout << "only support item size that smaller than "
+              << ypc::utc::max_item_size << " bytes!" << std::endl;
     exit(-1);
   }
   uint64_t item_number = reader.get_item_number();
