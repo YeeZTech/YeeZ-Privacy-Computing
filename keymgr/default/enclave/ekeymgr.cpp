@@ -8,9 +8,11 @@
 
 #include "stbox/scope_guard.h"
 #include "stbox/stx_common.h"
+#include <sgx_report.h>
 #include <sgx_tcrypto.h>
 #include <sgx_trts.h>
 #include <sgx_tseal.h>
+#include <sgx_utils.h>
 
 #include "keymgr/common/message_type.h"
 #include "stbox/ebyte.h"
@@ -200,12 +202,38 @@ uint32_t load_key_pair_if_not_exist(uint8_t *pkey_ptr, uint32_t pkey_size,
   uint32_t ret = stbox::ocall_cast<uint32_t>(ocall_load_key_pair)(
       pkey_ptr, pkey_size, sealed_key, sealed_size);
   if (ret != 0) {
+    LOG(ERROR) << "failed to load key pair: " << stbox::status_string(ret);
     return ret;
   }
 
   ret = stbox::crypto::unseal_secp256k1_private_key(sealed_key, sealed_size,
                                                     skey_ptr);
   return ret;
+}
+
+uint32_t load_and_check_key_pair(const uint8_t *pkey, uint32_t pkey_size,
+                                 stbox::bytes &skey) {
+  uint32_t skey_size;
+  auto se_ret = (sgx_status_t)load_key_pair_if_not_exist(
+      (uint8_t *)pkey, pkey_size, nullptr, &skey_size);
+  if (se_ret) {
+    return se_ret;
+  }
+  skey = stbox::bytes(skey_size);
+
+  se_ret = (sgx_status_t)load_key_pair_if_not_exist((uint8_t *)pkey, pkey_size,
+                                                    skey.data(), &skey_size);
+  if (se_ret) {
+    return se_ret;
+  }
+
+  stbox::bytes expect_pkey(stbox::crypto::get_secp256k1_public_key_size());
+  stbox::crypto::generate_secp256k1_pkey_from_skey(
+      skey.data(), expect_pkey.data(), expect_pkey.size());
+  if (memcmp(expect_pkey.data(), pkey, expect_pkey.size()) != 0) {
+    return stbox::stx_status::kmgr_pkey_skey_mismatch;
+  }
+  return stbox::stx_status::success;
 }
 
 std::unordered_map<stbox::bytes, forward_message_st> message_table;
@@ -215,7 +243,7 @@ uint32_t forward_message(uint32_t msg_id, uint8_t *cipher, uint32_t cipher_size,
                          uint8_t *ehash, uint32_t ehash_size,
                          uint8_t *verify_key, uint32_t vpkey_size, uint8_t *sig,
                          uint32_t sig_size) {
-  sgx_status_t se_ret = SGX_SUCCESS;
+  uint32_t se_ret = SGX_SUCCESS;
 
   uint32_t msg_key_size = sizeof(msg_id) + ehash_size;
   stbox::bytes str_msg_key(msg_key_size);
@@ -227,22 +255,17 @@ uint32_t forward_message(uint32_t msg_id, uint8_t *cipher, uint32_t cipher_size,
     return se_ret;
   }
 
-  uint8_t *skey_ptr;
-  uint32_t skey_size;
-  se_ret = (sgx_status_t)load_key_pair_if_not_exist(epublic_key, epkey_size,
-                                                    nullptr, &skey_size);
-
-  ff::scope_guard _skey_ptr_desc([&]() { skey_ptr = new uint8_t[skey_size]; },
-                                 [&]() { delete[] skey_ptr; });
-
-  se_ret = (sgx_status_t)load_key_pair_if_not_exist(epublic_key, epkey_size,
-                                                    skey_ptr, &skey_size);
+  stbox::bytes skey;
+  se_ret = load_and_check_key_pair(epublic_key, epkey_size, skey);
+  if (se_ret) {
+    return se_ret;
+  }
 
   uint32_t decrypted_size =
       ::stbox::crypto::get_decrypt_message_size_with_prefix(cipher_size);
   stbox::bytes decrypted_msg(decrypted_size);
   se_ret = (sgx_status_t)::stbox::crypto::decrypt_message_with_prefix(
-      skey_ptr, skey_size, cipher, cipher_size, decrypted_msg.data(),
+      skey.data(), skey.size(), cipher, cipher_size, decrypted_msg.data(),
       decrypted_size, ::ypc::utc::crypto_prefix_forward);
 
   if (se_ret) {
@@ -315,4 +338,43 @@ uint32_t mend_session(uint32_t session_id) {
     LOG(ERROR) << "end_session get exception " << e.what();
     return static_cast<uint32_t>(stx_status::error_unexpected);
   }
+}
+
+uint32_t create_report_for_pkey(const sgx_target_info_t *p_qe3_target,
+                                const uint8_t *pkey, uint32_t pkey_size,
+                                sgx_report_t *p_report) {
+  stbox::bytes skey;
+  auto se_ret = load_and_check_key_pair(pkey, pkey_size, skey);
+  if (se_ret) {
+    return se_ret;
+  }
+
+  sgx_report_data_t report_data = {0};
+  // TODO we may add more info here, like version
+  stbox::bytes hash = stbox::eth::keccak256_hash(stbox::bytes(pkey, pkey_size));
+  memcpy(report_data.d, hash.data(), hash.size());
+
+  sgx_status_t sgx_error =
+      sgx_create_report(p_qe3_target, &report_data, p_report);
+  return sgx_error;
+}
+
+uint32_t verify_report_and_sign(const sgx_report_t *p_report,
+                                const uint8_t *pkey, uint32_t pkey_size,
+                                const uint8_t *sig_pkey, uint32_t sig_pkey_size,
+                                uint8_t *sig, uint32_t sig_size) {
+  stbox::bytes skey;
+  auto se_ret = load_and_check_key_pair(sig_pkey, sig_pkey_size, skey);
+  if (se_ret) {
+    return se_ret;
+  }
+
+  stbox::bytes hash = stbox::eth::keccak256_hash(stbox::bytes(pkey, pkey_size));
+  if (!memcmp(hash.data(), (void *)&p_report->body.report_data, hash.size())) {
+    return stbox::stx_status::kmgr_pkey_sgx_report_mismatch;
+  }
+
+  // TODO we should add more info here, like version
+  return stbox::crypto::sign_message(skey.data(), skey.size(), pkey, pkey_size,
+                                     sig, sig_size);
 }

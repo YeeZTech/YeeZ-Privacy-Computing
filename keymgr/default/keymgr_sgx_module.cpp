@@ -168,3 +168,24 @@ uint32_t keymgr_sgx_module::forward_message(
                          (uint8_t *)ehash, ehash_size, (uint8_t *)verify_key,
                          vpkey_size, (uint8_t *)sig, sig_size);
 }
+
+uint32_t
+keymgr_sgx_module::create_report_for_pkey(const sgx_target_info_t *p_qe3_target,
+                                          const stbox::bytes &pkey,
+                                          sgx_report_t *p_report) {
+
+  return ecall<uint32_t>(::create_report_for_pkey, p_qe3_target, pkey.data(),
+                         pkey.size(), p_report);
+}
+
+uint32_t keymgr_sgx_module::verify_report_and_sign(const sgx_report_t *p_report,
+                                                   const stbox::bytes &pkey,
+                                                   const stbox::bytes &sig_pkey,
+                                                   stbox::bytes &_sig) {
+  uint32_t s = ecall<uint32_t>(::get_secp256k1_signature_size);
+
+  _sig = stbox::bytes(s);
+  return ecall<uint32_t>(::verify_report_and_sign, p_report, pkey.data(),
+                         pkey.size(), sig_pkey.data(), sig_pkey.size(),
+                         _sig.data(), _sig.size());
+}
