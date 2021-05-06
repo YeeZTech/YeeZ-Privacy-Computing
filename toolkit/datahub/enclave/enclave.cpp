@@ -47,7 +47,7 @@ sgx_status_t seal_file_data(uint8_t *encrypt_data, uint32_t in_size,
     // Copy the sealed data to outside buffer
     memcpy(sealed_blob, temp_sealed_buf, sealed_data_size);
   } else {
-    LOG(ERROR) << "sgx_seal_data returns " << sgx_status_string(err);
+    LOG(ERROR) << "sgx_seal_data returns " << status_string(err);
   }
 
   free(temp_sealed_buf);
@@ -133,8 +133,8 @@ stbox::stx_status verify_peer_enclave_trust(
   return stbox::stx_status::success;
 }
 
-std::string get_data_and_unseal(const uint8_t *data_buf, size_t data_len,
-                                stbox::dh_session *context) {
+stbox::bytes get_data_and_unseal(const uint8_t *data_buf, size_t data_len,
+                                 stbox::dh_session *context) {
   uint32_t type_id;
   ::ff::net::deseralize((const char *)data_buf, type_id);
   if (type_id != request_data_item) {
@@ -145,7 +145,7 @@ std::string get_data_and_unseal(const uint8_t *data_buf, size_t data_len,
     sgx_marshaler m(buf, 256, sgx_marshaler::seralizer);
     p.arch(m);
     size_t len = m.get_length();
-    return std::string(buf, len);
+    return stbox::bytes(buf, len);
   } else {
     uint8_t *t_sealed_data;
     uint32_t t_sealed_data_len;
@@ -174,25 +174,25 @@ std::string get_data_and_unseal(const uint8_t *data_buf, size_t data_len,
       sgx_marshaler m(buf, 256, sgx_marshaler::seralizer);
       p.arch(m);
       size_t len = m.get_length();
-      return std::string(buf, len);
+      return stbox::bytes(buf, len);
     } else {
       // unseal data
-      std::string raw_str(unsealed_data_len(sealed_data, sealed_data_len), '0');
+      stbox::bytes raw_str(unsealed_data_len(sealed_data, sealed_data_len));
       size_t raw_size = raw_str.size();
       sgx_status_t ut =
           unseal_data(sealed_data, sealed_data_len,
                       reinterpret_cast<uint8_t *>(&raw_str[0]), raw_size);
       if (ut != SGX_SUCCESS) {
-        LOG(ERROR) << "unseal failed: " << sgx_status_string(ut);
-        return std::string();
+        LOG(ERROR) << "unseal failed: " << status_string(ut);
+        return stbox::bytes();
       }
       response_pkg_t p;
       p.set<data>(std::move(raw_str));
       sgx_marshaler lm(sgx_marshaler::length_retriver);
       p.arch(lm);
-      std::string ret(lm.get_length(), '0');
+      stbox::bytes ret(lm.get_length());
 
-      sgx_marshaler m(&ret[0], ret.size(), sgx_marshaler::seralizer);
+      sgx_marshaler m((char *)&ret[0], ret.size(), sgx_marshaler::seralizer);
       p.arch(m);
       return ret;
     }

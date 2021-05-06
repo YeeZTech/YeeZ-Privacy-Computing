@@ -1,4 +1,3 @@
-#include "ypc/base58.h"
 #include "ypc/byte.h"
 #include <gtest/gtest.h>
 #include <iostream>
@@ -25,21 +24,23 @@ std::vector<std::pair<std::string,std::string>> v({
 
 TEST(test_base58, encode_pointer) {
   for (auto &ele : v) {
-    auto bytes = ypc::bytes::from_hex(ele.first);
-    auto encoded_str =
-        ypc::encode_base58(bytes.value(), bytes.value() + bytes.size());
-    EXPECT_EQ(encoded_str, ele.second);
+    auto from_hex = ypc::hex_bytes(ele.first.c_str()).as<ypc::bytes>();
+    auto from_base58 = ypc::base58_bytes(ele.second.c_str()).as<ypc::bytes>();
+    EXPECT_EQ(from_hex, from_base58);
+
+    ypc::base58_bytes base58 = from_hex.as<ypc::base58_bytes>();
+    EXPECT_EQ(base58, ypc::base58_bytes(ele.second.c_str()));
   }
 }
 
 TEST(test_base58, encode_vector) {
   for (auto &ele : v) {
-    auto bytes = ypc::bytes::from_hex(ele.first);
+    auto from_hex = ypc::hex_bytes(ele.first.c_str()).as<ypc::bytes>();
     std::vector<unsigned char> vch;
-    for (size_t i = 0; i < bytes.size(); i++) {
-      vch.push_back(bytes[i]);
+    for (size_t i = 0; i < from_hex.size(); i++) {
+      vch.push_back(from_hex[i]);
     }
-    auto encoded_str = ypc::encode_base58(vch);
+    auto encoded_str = encode_base58(vch);
     EXPECT_EQ(encoded_str, ele.second);
   }
 }
@@ -47,12 +48,12 @@ TEST(test_base58, encode_vector) {
 TEST(test_base58, decode_pointer) {
   for (auto &ele : v) {
     std::vector<unsigned char> vch;
-    auto ret = ypc::decode_base58(ele.second.c_str(), vch);
+    auto ret = decode_base58(ele.second.c_str(), vch);
     EXPECT_TRUE(ret);
-    auto bytes = ypc::bytes::from_hex(ele.first);
-    EXPECT_EQ(bytes.size(), vch.size());
+    auto from_hex = ypc::hex_bytes(ele.first.c_str()).as<ypc::bytes>();
+    EXPECT_EQ(from_hex.size(), vch.size());
     for (size_t i = 0; i < vch.size(); i++) {
-      EXPECT_EQ(vch[i], bytes[i]);
+      EXPECT_EQ(vch[i], from_hex[i]);
     }
   }
 }
@@ -60,27 +61,27 @@ TEST(test_base58, decode_pointer) {
 TEST(test_base58, decode_string) {
   for (auto &ele : v) {
     std::vector<unsigned char> vch;
-    auto ret = ypc::decode_base58(ele.second, vch);
+    auto ret = decode_base58(ele.second, vch);
     EXPECT_TRUE(ret);
-    auto bytes = ypc::bytes::from_hex(ele.first);
-    EXPECT_EQ(bytes.size(), vch.size());
+    auto from_hex = ypc::hex_bytes(ele.first.c_str()).as<ypc::bytes>();
+    EXPECT_EQ(from_hex.size(), vch.size());
     for (size_t i = 0; i < vch.size(); i++) {
-      EXPECT_EQ(vch[i], bytes[i]);
+      EXPECT_EQ(vch[i], from_hex[i]);
     }
   }
 }
 
 TEST(test_base58, decode_failed) {
   std::vector<unsigned char> vch;
-  EXPECT_FALSE(ypc::decode_base58("invalid", vch));
-  EXPECT_FALSE(ypc::decode_base58(std::string("invalid"), vch));
-  // EXPECT_FALSE(ypc::decode_base58(std::string("\0invalid", 8), vch));
-  EXPECT_TRUE(ypc::decode_base58(std::string("good", 4), vch));
-  EXPECT_FALSE(ypc::decode_base58(std::string("bad0IOl", 7), vch));
-  EXPECT_FALSE(ypc::decode_base58(std::string("goodbad0IOl", 11), vch));
-  // EXPECT_FALSE(ypc::decode_base58(std::string("good\0bad0IOl", 12), vch));
-  EXPECT_FALSE(ypc::decode_base58(" \t\n\v\f\r skip \r\f\v\n\t a", vch));
-  EXPECT_TRUE(ypc::decode_base58(" \t\n\v\f\r skip \r\f\v\n\t ", vch));
+  EXPECT_FALSE(decode_base58("invalid", vch));
+  EXPECT_FALSE(decode_base58(std::string("invalid"), vch));
+  // EXPECT_FALSE(decode_base58(std::string("\0invalid", 8), vch));
+  EXPECT_TRUE(decode_base58(std::string("good", 4), vch));
+  EXPECT_FALSE(decode_base58(std::string("bad0IOl", 7), vch));
+  EXPECT_FALSE(decode_base58(std::string("goodbad0IOl", 11), vch));
+  // EXPECT_FALSE(decode_base58(std::string("good\0bad0IOl", 12), vch));
+  EXPECT_FALSE(decode_base58(" \t\n\v\f\r skip \r\f\v\n\t a", vch));
+  EXPECT_TRUE(decode_base58(" \t\n\v\f\r skip \r\f\v\n\t ", vch));
 }
 
 TEST(test_base58, random_encode) {
@@ -93,9 +94,9 @@ TEST(test_base58, random_encode) {
     for (size_t j = 0; j < len; j++) {
       vch.push_back(dis(mt));
     }
-    auto encoded = ypc::encode_base58(vch);
+    auto encoded = encode_base58(vch);
     std::vector<unsigned char> ret;
-    auto flag = ypc::decode_base58(encoded, ret);
+    auto flag = decode_base58(encoded, ret);
     EXPECT_TRUE(flag);
     for (size_t j = 0; j < len; j++) {
       EXPECT_EQ((int)vch[j], (int)ret[j]);

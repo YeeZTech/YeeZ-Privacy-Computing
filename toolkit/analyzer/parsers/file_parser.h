@@ -12,7 +12,7 @@ public:
               const std::string &sealfile_path);
 
 protected:
-  virtual void do_parse();
+  virtual uint32_t do_parse();
 
   virtual uint32_t next_sealed_item_data(uint8_t **data, uint32_t *len);
   virtual void free_sealed_item_data(uint8_t *data);

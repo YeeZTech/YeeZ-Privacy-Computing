@@ -91,7 +91,7 @@ uint32_t encrypt_message(uint8_t *public_key, uint32_t pkey_size, uint8_t *data,
                          uint32_t data_size, uint8_t *cipher,
                          uint32_t cipher_size) {
   return stbox::crypto::encrypt_message_with_prefix(
-      public_key, pkey_size, data, data_size, ypc::crypto_prefix_arbitrary,
+      public_key, pkey_size, data, data_size, ypc::utc::crypto_prefix_arbitrary,
       cipher, cipher_size);
 }
 
@@ -111,5 +111,5 @@ uint32_t decrypt_message(uint8_t *sealed_private_key, uint32_t sealed_size,
   }
   return stbox::crypto::decrypt_message_with_prefix(
       skey, SECP256K1_PRIVATE_KEY_SIZE, cipher, cipher_size, data, data_size,
-      ypc::crypto_prefix_arbitrary);
+      ypc::utc::crypto_prefix_arbitrary);
 }

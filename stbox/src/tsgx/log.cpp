@@ -19,12 +19,17 @@ Logger &Logger::operator<<(const std::string &t) {
   m_ss = m_ss + t;
   return *this;
 }
+Logger &Logger::operator<<(const bytes &t) {
+  hex_bytes r = t.as<hex_bytes>();
+  m_ss = m_ss + std::string((const char *)r.data(), r.size());
+  return *this;
+}
 Logger &Logger::operator<<(stx_status t) {
   m_ss = m_ss + std::to_string(t);
   return *this;
 }
 Logger &Logger::operator<<(sgx_status_t t) {
-  m_ss = m_ss + std::string(sgx_status_string(t));
+  m_ss = m_ss + std::string(status_string(t));
   return *this;
 }
 } // namespace stbox

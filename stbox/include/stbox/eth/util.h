@@ -3,8 +3,7 @@
 
 namespace stbox {
 namespace eth {
-
-void checksum_addr(std::string &addr);
-std::string gen_addr_from_pkey(const bytes &pkey);
+hex_bytes checksum_addr(const hex_bytes &addr);
+hex_bytes gen_addr_from_pkey(const bytes &pkey);
 } // namespace eth
 } // namespace stbox

@@ -28,12 +28,12 @@ public:
         ret = sgx_create_enclave(m_mod_path.c_str(), SGX_DEBUG_FLAG, NULL, NULL,
                                  &m_sgx_eid, NULL);
         if (ret != SGX_SUCCESS) {
-          throw std::runtime_error(sgx_status_string(ret));
+          throw std::runtime_error(status_string(ret));
         }
         continue;
       }
       if (ret != SGX_SUCCESS) {
-        throw std::runtime_error(sgx_status_string(ret));
+        throw std::runtime_error(status_string(ret));
       }
       return retvalue;
     }
@@ -149,12 +149,12 @@ public:
         ret = sgx_create_enclave(m_mod_path.c_str(), SGX_DEBUG_FLAG, NULL, NULL,
                                  &m_sgx_eid, NULL);
         if (ret != SGX_SUCCESS) {
-          throw std::runtime_error(sgx_status_string(ret));
+          throw std::runtime_error(status_string(ret));
         }
         continue;
       }
       if (ret != SGX_SUCCESS) {
-        throw std::runtime_error(sgx_status_string(ret));
+        throw std::runtime_error(status_string(ret));
       }
       return retvalue;
     }

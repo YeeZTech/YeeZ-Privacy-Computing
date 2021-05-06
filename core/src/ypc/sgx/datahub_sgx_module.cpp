@@ -15,16 +15,17 @@ uint32_t datahub_sgx_module::get_sealed_data_size(uint32_t encrypt_data_size) {
 
   return sealed_data_size;
 }
-std::string datahub_sgx_module::seal_data(const char *data, size_t len) {
-  uint32_t sealed_data_size = get_sealed_data_size(len);
+bytes datahub_sgx_module::seal_data(const bytes &_data) {
+  uint32_t sealed_data_size = get_sealed_data_size(_data.size());
   uint8_t *tmp_sealed_buf = (uint8_t *)malloc(sealed_data_size);
-  sgx_status_t retval = ecall<sgx_status_t>(
-      ::seal_file_data, (uint8_t *)data, len, tmp_sealed_buf, sealed_data_size);
+  sgx_status_t retval =
+      ecall<sgx_status_t>(::seal_file_data, (uint8_t *)_data.data(),
+                          _data.size(), tmp_sealed_buf, sealed_data_size);
   if (retval != SGX_SUCCESS) {
     free(tmp_sealed_buf);
     throw std::runtime_error(std::to_string(retval));
   }
-  std::string s((char *)tmp_sealed_buf, sealed_data_size);
+  bytes s(tmp_sealed_buf, sealed_data_size);
   free(tmp_sealed_buf);
   return s;
 }

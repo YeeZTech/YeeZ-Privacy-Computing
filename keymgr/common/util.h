@@ -9,8 +9,9 @@
 std::string create_dir_if_not_exist(const std::string &base,
                                     const std::string &dir);
 uint32_t write_key_pair_to_file(const std::string &filename,
-                                const std::string &pkey_hex,
-                                const std::string &skey_hex);
+                                const ypc::bytes &pkey_hex,
+                                const ypc::bytes &skey_hex);
+
 uint32_t read_key_pair_from_file(const std::string &filename,
                                  ypc::bytes &b_pkey, ypc::bytes &b_skey);
 

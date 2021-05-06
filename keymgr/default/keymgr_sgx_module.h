@@ -2,6 +2,7 @@
 #include "sgx_dh.h"
 #include "sgx_eid.h"
 #include "sgx_error.h"
+#include "stbox/ebyte.h"
 #include "stbox/stx_status.h"
 #include "stbox/tsgx/channel/dh_cdef.h"
 #include "stbox/usgx/sgx_module.h"
@@ -62,4 +63,12 @@ public:
                            uint32_t ehash_size, const uint8_t *verify_key,
                            uint32_t vpkey_size, const uint8_t *sig,
                            uint32_t sig_size);
+  uint32_t create_report_for_pkey(const sgx_target_info_t *p_qe3_target,
+                                  const stbox::bytes &pkey,
+                                  sgx_report_t *p_report);
+
+  uint32_t verify_report_and_sign(const sgx_report_t *p_report,
+                                  const stbox::bytes &pkey,
+                                  const stbox::bytes &sig_pkey,
+                                  stbox::bytes &sig);
 };

@@ -1,4 +1,5 @@
 #pragma once
+#include "stbox/ebyte.h"
 #include "stbox/stx_common.h"
 #include "stbox/stx_status.h"
 #include <string>
@@ -27,6 +28,7 @@ public:
     return *this;
   }
   Logger &operator<<(const std::string &t);
+  Logger &operator<<(const bytes &t);
   Logger &operator<<(stx_status t);
   Logger &operator<<(sgx_status_t t);
 

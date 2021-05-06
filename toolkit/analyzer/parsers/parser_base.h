@@ -15,7 +15,7 @@ public:
 
   virtual ~parser_base();
 
-  virtual void parse();
+  virtual uint32_t parse();
 
   virtual bool
   merge(std::vector<std::shared_ptr<result_target>> &block_results);
@@ -30,7 +30,7 @@ public:
   inline std::shared_ptr<keymgr_sgx_module> keymgr() const { return m_keymgr; }
 
 protected:
-  virtual void do_parse() = 0;
+  virtual uint32_t do_parse() = 0;
 
 protected:
   param_source *m_psource;

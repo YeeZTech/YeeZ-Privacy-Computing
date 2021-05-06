@@ -13,7 +13,6 @@
 #include <sgx_trts.h>
 #include <sgx_tseal.h>
 
-#include "common/util.h"
 #include "keymgr/common/message_type.h"
 #include "stbox/ebyte.h"
 #include "stbox/eth/eth_hash.h"
@@ -99,3 +98,16 @@ uint32_t get_encrypt_message_size_with_prefix(uint32_t data_size) {
 uint32_t get_decrypt_message_size_with_prefix(uint32_t data_size) {
   return ::stbox::crypto::get_decrypt_message_size_with_prefix(data_size);
 }
+uint32_t test_sign_message(uint8_t *skey, uint32_t skey_size, uint8_t *data,
+                           uint32_t data_size, uint8_t *sig) {
+  return ::stbox::crypto::sign_message(skey, skey_size, data, data_size, sig,
+                                       65);
+}
+
+uint32_t test_verify_message(uint8_t *data, uint32_t data_size, uint8_t *sig,
+                             uint32_t sig_size, uint8_t *pkey) {
+
+  return ::stbox::crypto::verify_signature(data, data_size, sig, sig_size, pkey,
+                                           64);
+}
+

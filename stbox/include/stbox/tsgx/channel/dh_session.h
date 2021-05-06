@@ -1,4 +1,5 @@
 #pragma once
+#include "stbox/ebyte.h"
 #include "stbox/scope_guard.h"
 #include "stbox/stx_status.h"
 #include "stbox/tsgx/channel/dh_cdef.h"
@@ -52,8 +53,8 @@ public:
                                                 char **out_buff,
                                                 size_t *out_buff_len);
 
-  typedef std::function<std::string(const uint8_t *data, size_t data_len,
-                                    dh_session *context)>
+  typedef std::function<bytes(const uint8_t *data, size_t data_len,
+                              dh_session *context)>
       handler_func_t;
   virtual stx_status
   generate_response(secure_message_t *req_message, size_t req_message_size,

@@ -4,7 +4,8 @@
 #include <cstdint>
 
 namespace ypc {
-// Bytes can be stbox::bytes or ypc::bytes
+namespace utc {
+
 template <typename Bytes> void change_endian(Bytes &pkey) {
   size_t step = pkey.size() / 2;
   for (size_t i = 0; i < pkey.size(); i += step) {
@@ -23,4 +24,5 @@ template <typename T> void change_endian(T *pkey, size_t pkey_size) {
     }
   }
 }
+} // namespace utc
 } // namespace ypc

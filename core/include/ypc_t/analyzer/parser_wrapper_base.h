@@ -41,31 +41,31 @@ public:
                                       uint32_t len);
 
   virtual bool user_def_block_result_merge(
-      const std::vector<std::string> &block_results) = 0;
+      const std::vector<stbox::bytes> &block_results) = 0;
 
   inline bool need_continue() { return m_continue; }
 
 protected:
-  stbox::stx_status request_private_key();
-  stbox::stx_status decrypt_param(const uint8_t *encrypted_param, uint32_t len);
+  uint32_t request_private_key();
+  uint32_t decrypt_param(const uint8_t *encrypted_param, uint32_t len);
 
 protected:
   std::unique_ptr<stbox::dh_session_initiator> m_datahub_session;
   std::unique_ptr<stbox::dh_session_initiator> m_keymgr_session;
 
-  std::string m_response_str;
-  std::string m_result_str;
-  std::string m_private_key;
-  std::string m_param;
-  std::string m_encrypted_param;
+  stbox::bytes m_response_str;
+  stbox::bytes m_result_str;
+  stbox::bytes m_private_key;
+  stbox::bytes m_param;
+  stbox::bytes m_encrypted_param;
   uint64_t m_cost_gas;
-  std::string m_encrypted_result_str;
-  std::string m_result_signature_str;
+  stbox::bytes m_encrypted_result_str;
+  stbox::bytes m_result_signature_str;
 
   //! for merge block result
 
   struct block_meta_t {
-    std::string encrypted_result;
+    stbox::bytes encrypted_result;
     stbox::bytes data_hash;
     stbox::bytes sig;
   };

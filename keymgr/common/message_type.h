@@ -1,4 +1,5 @@
 #pragma once
+#include "stbox/ebyte.h"
 #include <string>
 
 enum message_type_t {
@@ -8,6 +9,6 @@ enum message_type_t {
 
 typedef struct {
   size_t m_id;
-  std::string m_msg;
-  std::string m_ehash;
+  stbox::bytes m_msg;
+  stbox::bytes m_ehash;
 } forward_message_st;
