@@ -22,5 +22,6 @@ uint32_t param_from_json::read_from_source() {
         e.what()));
     return ::ypc::param_from_json_read_param_from_source_failed;
   }
+  return ::ypc::success;
 }
 

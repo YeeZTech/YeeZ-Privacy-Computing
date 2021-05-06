@@ -18,16 +18,15 @@ uint32_t param_from_db::read_from_source() {
                                  ::analyzer_pkey, ::forward_sig>(ptr)
           .where(request_hash::eq(m_request_hash.as<::ypc::hex_bytes>()))
           .eval();
-  if (!info.empty()) {
-    assert(info.size() == 1);
-    m_eskey = info[0].get<::encrypted_skey>().as<::ypc::bytes>();
-    m_input = info[0].get<::encrypted_input>().as<::ypc::bytes>();
-    m_epkey = info[0].get<::provider_pkey>().as<::ypc::bytes>();
-    m_ehash = info[0].get<::enclave_hash>().as<::ypc::bytes>();
-    m_vpkey = info[0].get<::analyzer_pkey>().as<::ypc::bytes>();
-    m_sig = info[0].get<::forward_sig>().as<::ypc::bytes>();
-    return 0;
-  } else {
+  if (info.empty()) {
     return ::ypc::param_from_db_read_from_source_failed;
   }
+  assert(info.size() == 1);
+  m_eskey = info[0].get<::encrypted_skey>().as<::ypc::bytes>();
+  m_input = info[0].get<::encrypted_input>().as<::ypc::bytes>();
+  m_epkey = info[0].get<::provider_pkey>().as<::ypc::bytes>();
+  m_ehash = info[0].get<::enclave_hash>().as<::ypc::bytes>();
+  m_vpkey = info[0].get<::analyzer_pkey>().as<::ypc::bytes>();
+  m_sig = info[0].get<::forward_sig>().as<::ypc::bytes>();
+  return ::ypc::success;
 }
