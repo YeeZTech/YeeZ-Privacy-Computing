@@ -1,9 +1,9 @@
 contract_YZDataFactory = {
-    'ropsten':'0x65745e8C07d82DB6F3949f7aa9F91352550d6910'
+    'ropsten':'0x78721120073383827A78623a4eae304a11b9270F'
 }
 
 contract_ProgramStore = {
-    'ropsten':'0x445E1963cC577C6335e24CA8e8b7F1280aF2E9bc',
+    'ropsten':'0xA755826a997c18082BE343EDf02Fe4107Cd808Dc',
 }
 
 map_data_and_request = dict()
@@ -31,4 +31,4 @@ topic_RequestData = '0xa2eb61ce32ba0f2b61d32b2505b63c7d91843928753a586e5a3d0feaf
 PARAMS_BYTES = 32
 PARAMS_BYTES_IN_HEX_LENGTH = 64
 
-DAEMON_TIMER_IN_SECONDS = 1
+DAEMON_TIMER_IN_SECONDS = 30

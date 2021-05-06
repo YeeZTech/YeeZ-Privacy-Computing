@@ -20,8 +20,9 @@ class Contract(db.Model):
 
 class RequestData(db.Model):
     __tablename__ = 'RequestData'
-    id = db.Column('id', Integer, primary_key=True)
-    request_hash = db.Column('request_hash', String(64))
+    # Table RequestData also be revised by YPC daemon,
+    # so we use `request_hash` to identify the request
+    request_hash = db.Column('request_hash', String(64), primary_key=True)
     encrypted_skey = db.Column('encrypted_skey', Text)
     encrypted_input = db.Column('encrypted_input', Text)
     provider_pkey = db.Column('provider_pkey', String(128))
