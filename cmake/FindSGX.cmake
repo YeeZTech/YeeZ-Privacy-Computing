@@ -343,6 +343,22 @@ if(SGX_FOUND)
         set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES ${EDL_U_HDRS})
     endfunction()
 
+    function(add_sgx_executable target)
+        set(optionArgs USE_PREFIX)
+        set(multiValueArgs SRCS)
+        cmake_parse_arguments("SGX" "${optionArgs}" "" "${multiValueArgs}" ${ARGN})
+
+        add_executable(${target} ${SGX_SRCS})
+        set_target_properties(${target} PROPERTIES COMPILE_FLAGS ${APP_CXX_FLAGS})
+        target_include_directories(${target} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+        target_link_libraries(${target} "${SGX_COMMON_CFLAGS} \
+                                         -L${SGX_LIBRARY_PATH} \
+                                         -l${SGX_URTS_LIB} \
+                                         -l${SGX_USVC_LIB} \
+                                         -lsgx_ukey_exchange \
+                                         -lpthread")
+    endfunction()
+
 else(SGX_FOUND)
     message(WARNING "Intel SGX SDK not found!")
     if(SGX_FIND_REQUIRED)

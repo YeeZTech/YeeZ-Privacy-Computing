@@ -15,11 +15,7 @@ find_package(SGX REQUIRED)
 
 enable_testing()
 
-if(SGX_MODE STREQUAL "Release")
-	message(STATUS "This is a Release version!")
-	add_definitions(-O2)
-	add_definitions(-DNDEBUG)
-elseif(SGX_MODE STREQUAL "Debug")
+if(SGX_MODE STREQUAL "Debug")
 	message(STATUS "This is a Debug version!")
 	add_definitions(-g)
   add_definitions(-O0)
@@ -54,7 +50,9 @@ elseif(SGX_MODE STREQUAL "Debug")
       include_directories("${gtest_SOURCE_DIR}/include")
     endif()
 else()
-    message(FATAL_ERROR "SGX_MODE ${SGX_MODE} is not Debug or Release.")
+  message(STATUS "This is a " ${SGX_MODE} " version!")
+	add_definitions(-O2)
+	add_definitions(-DNDEBUG)
 endif()
 
 
