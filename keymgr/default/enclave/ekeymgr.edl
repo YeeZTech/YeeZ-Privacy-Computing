@@ -5,7 +5,6 @@ enclave {
     include "stbox/tsgx/channel/dh_cdef.h"
     from "sgx_tstdc.edl" import *;
     from "ecc.edl" import *;
-    from "sgx_dcap_tvl.edl" import *;
 
     trusted {
     /* define ECALLs here. */
