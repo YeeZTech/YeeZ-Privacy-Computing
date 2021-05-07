@@ -5,6 +5,7 @@ enclave {
     include "stbox/tsgx/channel/dh_cdef.h"
     from "sgx_tstdc.edl" import *;
     from "ecc.edl" import *;
+    from "sgx_dcap_tvl.edl" import *;
 
     trusted {
     /* define ECALLs here. */
@@ -37,18 +38,6 @@ enclave {
                                     [in, size=vpkey_size] uint8_t * verify_key, uint32_t vpkey_size,
                                     [in, size=sig_size] uint8_t * sig, uint32_t sig_size);
 
-    public uint32_t create_report_for_pkey([in]const sgx_target_info_t* p_qe3_target,
-                                           [in, size=pkey_size] const uint8_t * pkey,
-                                           uint32_t pkey_size,
-                                           [out]sgx_report_t* p_report);
-
-    public uint32_t verify_report_and_sign([in] const sgx_report_t * p_report,
-                                           [in, size=pkey_size] const uint8_t * pkey,
-                                           uint32_t pkey_size,
-                                           [in, size=sig_pkey_size] const uint8_t * sig_pkey,
-                                           uint32_t sig_pkey_size,
-                                           [out, size=sig_size] uint8_t *sig,
-                                           uint32_t sig_size);
     };
 
     untrusted {
