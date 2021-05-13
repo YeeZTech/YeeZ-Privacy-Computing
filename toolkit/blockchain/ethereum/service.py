@@ -26,13 +26,15 @@ tx_home = '{}/toolkit/blockchain/ethereum/transaction'.format(ypc_home)
 submitter_passwd = getpass.getpass()
 
 
-def __download_program(program_url):
+def __download_program_if_not_exists(program_url):
     filename = os.path.basename(program_url)
     save_path = '%s/%s' % (ypc_bin, filename)
+    if os.path.exists(save_path):
+        return save_path
     logger.info('Downloading analysis program to path: %s' % save_path)
     # TODO disable download program for debug
-    # ret = common.run_cmd('''wget -O %s %s''' % (save_path, program_url))
-    # logger.info(ret)
+    ret = common.run_cmd('''wget -O %s %s''' % (save_path, program_url))
+    logger.info(ret)
     return save_path
 
 
@@ -70,7 +72,7 @@ def __settle_request(request_hash):
 
 
 def __start_data_analysis_service(ea, contract_request, request_hash, program_url):
-    program_path = __download_program(program_url)
+    program_path = __download_program_if_not_exists(program_url)
     logger.info('Start to run analysis program...')
     cmd = '''{0}/fid_analyzer --sealed-data-url {0}/iris.data.sealed --sealer-path {1}/edatahub.signed.so --keymgr-path {1}/keymgr.signed.so --parser-path {2} --source-type db --db-conf ypcd.conf --request-hash {3}'''.format(ypc_bin, ypc_lib, program_path, request_hash)
     ret = common.run_cmd(cmd)
