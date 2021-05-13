@@ -199,8 +199,10 @@ uint32_t load_key_pair_if_not_exist(uint8_t *pkey_ptr, uint32_t pkey_size,
       [&]() { sealed_key = new uint8_t[sealed_size]; },
       [&]() { delete[] sealed_key; });
 
+  std::string key_path(".yeez.key/");
   uint32_t ret = stbox::ocall_cast<uint32_t>(ocall_load_key_pair)(
-      pkey_ptr, pkey_size, sealed_key, sealed_size);
+      key_path.c_str(), key_path.size(), pkey_ptr, pkey_size, sealed_key,
+      sealed_size);
   if (ret != 0) {
     LOG(ERROR) << "failed to load key pair: " << stbox::status_string(ret);
     return ret;

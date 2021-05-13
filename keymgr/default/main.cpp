@@ -90,11 +90,19 @@ int main(int argc, char *argv[]) {
       std::cout << "Directory not exist " << key_dir << std::endl;
       return -1;
     }
+    std::cout << key_dir << std::endl;
+    std::cout << std::string(key_dir.size(), '-') << std::endl;
     for (auto &f : boost::make_iterator_range(
              boost::filesystem::directory_iterator(key_path), {})) {
       auto name = f.path().filename().generic_string();
       if (name != "backup") {
+        ypc::bytes b_pkey, b_skey;
+        read_key_pair_from_file(f.path().generic_string(), b_pkey, b_skey);
         std::cout << name << std::endl;
+        std::cout << '\t' << "public key: " << b_pkey << std::endl;
+        std::cout << '\t' << "user name : " << std::endl;
+        std::cout << '\t' << "create at : " << std::endl;
+        std::cout << std::endl;
       }
     }
   } else if (vm.count("remove")) {

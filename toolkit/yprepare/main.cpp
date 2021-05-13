@@ -27,6 +27,7 @@ boost::program_options::variables_map parse_command_line(int argc,
     ("help", "help message")
     ("sample-path", bp::value<std::string>(), "sample json file path")
     ("dhash", bp::value<std::string>(), "data hash, show data info with hash")
+    ("key-path", bp::value<std::string>()->default_value(".yeez.key/"), "key pair path")
     ("use-pubkey", bp::value<std::string>(), "local public key")
     ("use-param", bp::value<std::string>(), "param that need to be encrypted")
     ("param-format", bp::value<std::string>(), "[text|hex], default is [hex], param format")
@@ -47,10 +48,10 @@ boost::program_options::variables_map parse_command_line(int argc,
   return vm;
 }
 
-uint32_t load_key_pair(const ypc::bytes &pkey, ypc::bytes &b_pkey,
-                       ypc::bytes &b_skey) {
+uint32_t load_key_pair(const std::string &key_path_name, const ypc::bytes &pkey,
+                       ypc::bytes &b_pkey, ypc::bytes &b_skey) {
   uint32_t ret = 1;
-  std::string key_dir = create_dir_if_not_exist(".", ".yeez.key/");
+  std::string key_dir = create_dir_if_not_exist(".", key_path_name.c_str());
   boost::filesystem::path key_path(key_dir);
   if (!ypc::is_dir_exists(key_dir)) {
     throw std::runtime_error(
@@ -76,11 +77,12 @@ uint32_t load_key_pair(const ypc::bytes &pkey, ypc::bytes &b_pkey,
 }
 
 ypc::bytes encrypt_skey_with_pubkey(std::shared_ptr<keymgr_sgx_module> ptr,
+                                    const std::string &key_path,
                                     const ypc::bytes &pkey_for_encrypt,
                                     const ypc::bytes &pkey_for_skey,
                                     ypc::bytes &b_pkey,
                                     ypc::bytes &b_sealed_key) {
-  load_key_pair(pkey_for_skey, b_pkey, b_sealed_key);
+  load_key_pair(key_path, pkey_for_skey, b_pkey, b_sealed_key);
   ypc::bref backup_key;
   ptr->forward_private_key(b_sealed_key.data(), b_sealed_key.size(),
                            (const uint8_t *)pkey_for_encrypt.data(),
@@ -190,11 +192,12 @@ int main(int argc, char *argv[]) {
 
   ypc::bytes b_pkey, b_sealed_key;
   if (vm.count("use-pubkey")) {
+    auto key_path = vm["key-path"].as<std::string>();
     auto pkey_for_encrypt = d.get<provider_pub_key>();
     auto pkey_for_skey =
         ypc::hex_bytes(vm["use-pubkey"].as<std::string>()).as<ypc::bytes>();
-    auto es = encrypt_skey_with_pubkey(ptr, pkey_for_encrypt, pkey_for_skey,
-                                       b_pkey, b_sealed_key);
+    auto es = encrypt_skey_with_pubkey(ptr, key_path, pkey_for_encrypt,
+                                       pkey_for_skey, b_pkey, b_sealed_key);
     std::cout << "Encrypt private key ---- Success" << std::endl;
     result["encrypted-skey"] = es;
     result["analyzer-pkey"] =

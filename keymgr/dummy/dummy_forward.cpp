@@ -30,8 +30,9 @@ uint32_t dummy_forward(keymgr_sgx_module *ksm_ptr, uint32_t msg_id,
   auto b_vpkey = stbox::hex_bytes(vpkey.c_str()).as<stbox::bytes>();
   uint32_t sealed_size = ksm_ptr->get_secp256k1_sealed_private_key_size();
   stbox::bytes b_skey(sealed_size);
-  ocall_load_key_pair(b_vpkey.data(), b_vpkey.size(), b_skey.data(),
-                      sealed_size);
+  std::string key_path(".yeez.key/");
+  ocall_load_key_pair(key_path.c_str(), key_path.size(), b_vpkey.data(),
+                      b_vpkey.size(), b_skey.data(), sealed_size);
   ypc::bref sig;
   ret = ksm_ptr->sign_message(b_skey.data(), sealed_size, all.data(), all_size,
                               sig);
