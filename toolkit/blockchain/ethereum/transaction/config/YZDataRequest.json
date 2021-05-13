@@ -11,7 +11,6 @@
   "func_name":"submit_result",
   "func_args":{
     "request_hash":"$REQUEST_HASH",
-    "data_hash":"$DATA_HASH",
     "cost":0,
     "results":"$RESULT",
     "sig":"$SIGNATURE"

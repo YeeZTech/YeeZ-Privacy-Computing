@@ -46,7 +46,7 @@ def __update_func_args(contract_request, request_hash, args):
     record = query[0]
     args = args._replace(keystore_path='{}/{}'.format(tx_home, args.keystore_path))
     args = args._replace(contract_address=common.checksum_encode(contract_request))
-    args = args._replace(func_args=[request_hash,record.data_hash,0,record.encrypted_result,record.result_signature])
+    args = args._replace(func_args=[request_hash,0,record.encrypted_result,record.result_signature])
     logger.info('Submit result arguments: {}'.format(args))
     return True, args
 
