@@ -1,6 +1,6 @@
 from web3 import Web3
 # only effective for rinkeby network
-# from web3.middleware import geth_poa_middleware
+from web3.middleware import geth_poa_middleware
 from hexbytes import HexBytes
 import argparse
 import const
@@ -17,7 +17,8 @@ class eth_api:
         self.wss = self.__websocket_provider(host, project_id)
         self.w3 = self.wss
         # only effective for rinkeby network
-        # self.w3.middleware_onion.inject(geth_poa_middleware, layer=0)
+        if self.host == 'rinkeby':
+            self.w3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
 
     def __websocket_provider(self, host, project_id):

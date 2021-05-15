@@ -41,7 +41,7 @@ boost::program_options::variables_map parse_command_line(int argc,
     ("sign.hex", "message is hex enable")
     ("sign.private-key", bp::value<std::string>(), "sealed private key which is to sign a message");
   verify.add_options()
-    ("verify.message", "message to be verified")
+    ("verify.message", bp::value<std::string>(), "message to be verified")
     ("verify.hex", "message is hex enable")
     ("verify.public-key", bp::value<std::string>(), "public key which is to verify a signature");
 

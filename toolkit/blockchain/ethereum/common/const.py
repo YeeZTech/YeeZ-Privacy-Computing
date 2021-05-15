@@ -1,9 +1,11 @@
 contract_YZDataFactory = {
-    'ropsten':'0x78721120073383827A78623a4eae304a11b9270F'
+    'rinkeby':'0xBE588908394c3b4dDEbA2B11B46f24da233b1596',
+    'ropsten':'0x93c2168b801E8627CfA725Ba39d9EF0657E88991',
 }
 
 contract_ProgramStore = {
-    'ropsten':'0xA755826a997c18082BE343EDf02Fe4107Cd808Dc',
+    'rinkeby':'0xd886065A4dD60c189aAEFB25CeEFfc04D8FeF3a8',
+    'ropsten':'0x0E92004392241f109A6cEd1751C6F903CcD9d22e',
 }
 
 map_data_and_request = dict()

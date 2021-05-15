@@ -1,4 +1,6 @@
 from web3 import Web3
+# only effective for rinkeby network
+from web3.middleware import geth_poa_middleware
 import json
 import argparse
 import getpass
@@ -14,8 +16,15 @@ class transaction:
     def __init__(self, host, project_id):
         assert isinstance(host, str)
         assert isinstance(project_id, str)
-        self.url = 'https://%s.infura.io/v3/%s' % (host, project_id)
-        self.w3 = Web3(Web3.HTTPProvider(self.url))
+        self.wss = self.__websocket_provider(host, project_id)
+        self.w3 = self.wss
+        # only effective for rinkeby network
+        if host == 'rinkeby':
+            self.w3.middleware_onion.inject(geth_poa_middleware, layer=0)
+
+    def __websocket_provider(self, host, project_id):
+        url = 'wss://%s.infura.io/ws/v3/%s' % (host, project_id)
+        return Web3(Web3.WebsocketProvider(url))
 
     def call_contract(self, args):
         sc = contract.contract(self.w3, args.compiled_path)
