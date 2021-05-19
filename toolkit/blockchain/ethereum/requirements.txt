@@ -1,9 +1,0 @@
-setuptools
-flask
-flask_restful
-flask_cors
-flask_sqlalchemy
-ethereum
-mysqlclient
-hexbytes
-web3
