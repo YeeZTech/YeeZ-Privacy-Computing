@@ -53,6 +53,6 @@ stbox::bytes test_m_data(FT &f, const char *name, size_t item_num,
     }
   }
 
-  EXPECT_EQ(data_hash, kdata_hash);
+  EXPECT_TRUE(data_hash == kdata_hash);
   return data_hash;
 }

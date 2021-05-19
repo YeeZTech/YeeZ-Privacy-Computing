@@ -9,7 +9,7 @@ void test_number_bytes(NT v, const std::initializer_list<ypc::byte_t> &l) {
   ypc::bytes b = ypc::number_to_byte<ypc::bytes>(v);
 
   ypc::bytes wb(l);
-  EXPECT_EQ(b, wb);
+  EXPECT_TRUE(b == wb);
   EXPECT_EQ(v, ypc::byte_to_number<NT>(wb));
 }
 TEST(test_byte, from_uint64) {
@@ -59,7 +59,7 @@ TEST(test_common_util, from_int16) {
 TEST(test_byte, to_string) {
   ypc::bytes result({72, 101, 108, 108, 111, 44, 32, 119, 111, 114, 108, 100});
   ypc::bytes want("Hello, world");
-  EXPECT_EQ(result, want);
+  EXPECT_TRUE(result == want);
 }
 
 TEST(test_byte, stream) {
@@ -71,7 +71,7 @@ TEST(test_byte, stream) {
   ypc::bytes bs;
   s1 >> hb;
   s2 >> bs;
-  EXPECT_EQ(hb.as<ypc::bytes>(), bs);
+  EXPECT_TRUE(hb.as<ypc::bytes>() == bs);
 }
 
 /*
@@ -239,7 +239,7 @@ void test_base64_encoding_decoding(const std::string &input) {
   T result = mid.template as<T>();
   // std::string result = b.to_base64();
 
-  EXPECT_EQ(result, b);
+  EXPECT_TRUE(result == b);
 }
 
 TEST(test_byte, base64_encoding_decoding) {
