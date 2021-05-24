@@ -30,6 +30,7 @@ def run(ea, data_filter):
         logger.warning('\n********** get exception **********\nerror:%s\ntraceback:%s\n' % (err, tb))
         log_handler.flush()
         print('\n********** get exception **********\nerror:%s\ntraceback:%s\n' % (err, tb))
+        sys.exit()
 
 
 def create_data_filter(ea):

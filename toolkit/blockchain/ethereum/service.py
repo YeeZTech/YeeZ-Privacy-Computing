@@ -22,8 +22,8 @@ ypc_bin = '%s/bin' % ypc_home
 ypc_lib = '%s/lib' % ypc_home
 
 tx_home = '{}/toolkit/blockchain/ethereum/transaction'.format(ypc_home)
-# submitter_passwd = os.environ['SUBMITTER_PASSWD']
-submitter_passwd = getpass.getpass()
+submitter_passwd = os.environ['SUBMITTER_PASSWD']
+# submitter_passwd = getpass.getpass()
 
 
 def __download_program_if_not_exists(program_url):
