@@ -21,7 +21,7 @@ TEST(test_sealed_file, simple) {
     kdata_hash = stbox::eth::keccak256_hash(kdata_hash + item);
     r.dealloc();
   }
-  EXPECT_EQ(kdata_hash, data_hash);
+  EXPECT_TRUE(kdata_hash == data_hash);
 }
 
 TEST(test_sealed_file, opt) {
@@ -42,5 +42,5 @@ TEST(test_sealed_file, opt) {
     r.dealloc();
     i++;
   }
-  EXPECT_EQ(kdata_hash, data_hash);
+  EXPECT_TRUE(kdata_hash == data_hash);
 }

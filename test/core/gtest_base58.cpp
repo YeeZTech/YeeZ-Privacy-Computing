@@ -26,10 +26,10 @@ TEST(test_base58, encode_pointer) {
   for (auto &ele : v) {
     auto from_hex = ypc::hex_bytes(ele.first.c_str()).as<ypc::bytes>();
     auto from_base58 = ypc::base58_bytes(ele.second.c_str()).as<ypc::bytes>();
-    EXPECT_EQ(from_hex, from_base58);
+    EXPECT_TRUE(from_hex == from_base58);
 
     ypc::base58_bytes base58 = from_hex.as<ypc::base58_bytes>();
-    EXPECT_EQ(base58, ypc::base58_bytes(ele.second.c_str()));
+    EXPECT_TRUE(base58 == ypc::base58_bytes(ele.second.c_str()));
   }
 }
 

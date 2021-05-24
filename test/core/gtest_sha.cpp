@@ -16,6 +16,6 @@ TEST(test_sha, encode) {
   for (auto &ele : v) {
     auto ret = ypc::SHA256(ele.first.c_str(), ele.first.size());
     auto bytes = ypc::hex_bytes(ele.second.c_str()).as<ypc::bytes>();
-    EXPECT_EQ(bytes, ret);
+    EXPECT_TRUE(bytes == ret);
   }
 }

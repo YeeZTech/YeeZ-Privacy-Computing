@@ -21,7 +21,7 @@ TEST_F(crypto_test, aes_cmac_msg) {
   ypc::bytes result = m_module->aes_cmac_msg(pkey, msg);
 
   ypc::hex_bytes expect("0125c538f8be7c4eea370f992a4ffdcb");
-  EXPECT_EQ(expect.as<ypc::bytes>(), result);
+  EXPECT_TRUE(expect.as<ypc::bytes>() == result);
 }
 
 TEST_F(crypto_test, gen_pub_key) {
@@ -34,7 +34,7 @@ TEST_F(crypto_test, gen_pub_key) {
       "5b7aa166766e2ad032d0a195372f5e2d20db792901d559ab0d2bfae10ecea97");
 
   ypc::bytes pkey = m_module->test_generate_pkey(skey);
-  EXPECT_EQ(pkey, expect_hex.as<ypc::bytes>());
+  EXPECT_TRUE(pkey == expect_hex.as<ypc::bytes>());
 }
 
 TEST_F(crypto_test, ecdh) {
@@ -50,7 +50,7 @@ TEST_F(crypto_test, ecdh) {
   ypc::bytes shared_key = m_module->ecdh(pkey, skey);
 
   ypc::hex_bytes expect("226c29a1a26844169ad4e6ce33bcb7bd");
-  EXPECT_EQ(shared_key.as<ypc::hex_bytes>(), expect);
+  EXPECT_TRUE(shared_key.as<ypc::hex_bytes>() == expect);
 }
 
 TEST_F(crypto_test, enrypt_decrypt) {
@@ -68,7 +68,7 @@ TEST_F(crypto_test, enrypt_decrypt) {
   ypc::bytes dd =
       m_module->decrypt(skey, cipher, ypc::utc::crypto_prefix_forward);
 
-  EXPECT_EQ(dd, data);
+  EXPECT_TRUE(dd == data);
 }
 
 TEST_F(crypto_test, decrypt_data) {
@@ -89,7 +89,7 @@ TEST_F(crypto_test, decrypt_data) {
 
   ypc::bytes data("xxx");
 
-  EXPECT_EQ(dd, data);
+  EXPECT_TRUE(dd == data);
 }
 
 TEST_F(crypto_test, sign) {

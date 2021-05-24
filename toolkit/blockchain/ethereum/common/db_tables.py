@@ -11,17 +11,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 db = SQLAlchemy(app)
 
 
-class Contract(db.Model):
-    __tablename__ = 'Contract'
-    id = db.Column('id', Integer, primary_key=True)
-    yz_data = db.Column('YZData', String(40))
-    yz_request = db.Column('YZDataRequest', String(40))
-
-
 class RequestData(db.Model):
     __tablename__ = 'RequestData'
-    # Table RequestData also be revised by YPC daemon,
-    # so we use `request_hash` to identify the request
     request_hash = db.Column('request_hash', String(64), primary_key=True)
     encrypted_skey = db.Column('encrypted_skey', Text)
     encrypted_input = db.Column('encrypted_input', Text)

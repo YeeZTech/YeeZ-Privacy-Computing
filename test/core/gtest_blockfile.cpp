@@ -24,7 +24,7 @@ void test_1_data(const ypc::bytes &k) {
   EXPECT_EQ(t, true);
   EXPECT_EQ(r.len(), k.size());
   ypc::bytes k_prime(r.data(), r.len());
-  EXPECT_EQ(k, k_prime);
+  EXPECT_TRUE(k == k_prime);
 
   t = f.next_item(r);
   EXPECT_EQ(t, false);
