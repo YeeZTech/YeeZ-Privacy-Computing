@@ -10,9 +10,11 @@ void result_to_json::write_to_target(const ypc::bref &encrypted_result,
                                      const ypc::bref &data_hash) {
   try {
     boost::property_tree::ptree pt;
-    pt.put("encrypted-result", ypc::to_hex(encrypted_result));
-    pt.put("result-signature", ypc::to_hex(result_signature));
-    pt.put("data-hash", ypc::to_hex(data_hash));
+    pt.put("encrypted-result",
+           ypc::bytes(encrypted_result.data(), encrypted_result.size()));
+    pt.put("result-signature",
+           ypc::bytes(result_signature.data(), result_signature.size()));
+    pt.put("data-hash", ypc::bytes(data_hash.data(), data_hash.size()));
     boost::property_tree::json_parser::write_json(m_path, pt);
   } catch (const std::exception &e) {
     throw std::runtime_error(boost::str(
@@ -28,11 +30,9 @@ void result_to_json::read_from_target(ypc::bytes &encrypted_result,
   try {
     boost::property_tree::ptree pt;
     boost::property_tree::json_parser::read_json(m_path, pt);
-    encrypted_result =
-        ypc::bytes::from_hex(pt.get<std::string>("encrypted-result"));
-    result_signature =
-        ypc::bytes::from_hex(pt.get<std::string>("result-signature"));
-    data_hash = ypc::bytes::from_hex(pt.get<std::string>("data-hash"));
+    encrypted_result = pt.get<ypc::bytes>("encrypted-result");
+    result_signature = pt.get<ypc::bytes>("result-signature");
+    data_hash = pt.get<ypc::bytes>("data-hash");
   } catch (const std::exception &e) {
     throw std::runtime_error(boost::str(
         boost::format(

@@ -9,18 +9,26 @@ enclave {
     trusted {
     /* define ECALLs here. */
 
+    public uint32_t get_backup_private_key_size(uint32_t sealed_size);
     public uint32_t backup_private_key([in, size=sealed_size] uint8_t * sealed_private_key, uint32_t sealed_size,
                                        [in, size=pkey_size] uint8_t * pub_key, uint32_t pkey_size,
                                        [out, size=bp_size] uint8_t * backup_private_key, uint32_t bp_size);
 
+    public uint32_t get_restore_private_key_size(uint32_t bp_size);
     public uint32_t restore_private_key([in, size=bp_size] uint8_t * backup_private_key, uint32_t bp_size,
                                         [in, size=skey_size] uint8_t * priv_key, uint32_t skey_size,
                                         [out, size=sealed_size] uint8_t * sealed_private_key, uint32_t sealed_size);
 
-    public uint32_t session_request([out] sgx_dh_msg1_t *dh_msg1, [out] uint32_t *session_id);
-    public uint32_t exchange_report([in] sgx_dh_msg2_t *dh_msg2, [out] sgx_dh_msg3_t *dh_msg3, uint32_t session_id);
-    public uint32_t generate_response([in, size = req_message_size] secure_message_t* req_message, size_t req_message_size, size_t max_payload_size, [out, size=resp_message_size] secure_message_t* resp_message, size_t resp_message_size, uint32_t session_id);
-    public uint32_t end_session(uint32_t session_id);
+
+    public uint32_t get_forward_private_key_size(uint32_t sealed_size);
+    public uint32_t forward_private_key([in, size=sealed_size] uint8_t * sealed_private_key, uint32_t sealed_size,
+                                       [in, size=pkey_size] uint8_t * pub_key, uint32_t pkey_size,
+                                       [out, size=fwd_size] uint8_t * fwd_private_key, uint32_t fwd_size);
+
+    public uint32_t msession_request([out] sgx_dh_msg1_t *dh_msg1, [out] uint32_t *session_id);
+    public uint32_t mexchange_report([in] sgx_dh_msg2_t *dh_msg2, [out] sgx_dh_msg3_t *dh_msg3, uint32_t session_id);
+    public uint32_t mgenerate_response([in, size = req_message_size] secure_message_t* req_message, size_t req_message_size, size_t max_payload_size, [out, size=resp_message_size] secure_message_t* resp_message, size_t resp_message_size, uint32_t session_id);
+    public uint32_t mend_session(uint32_t session_id);
 
     public uint32_t forward_message(uint32_t msg_id,
                                     [in, size=cipher_size] uint8_t * cipher, uint32_t cipher_size,
@@ -28,12 +36,13 @@ enclave {
                                     [in, size=ehash_size] uint8_t * ehash, uint32_t ehash_size,
                                     [in, size=vpkey_size] uint8_t * verify_key, uint32_t vpkey_size,
                                     [in, size=sig_size] uint8_t * sig, uint32_t sig_size);
+
     };
 
     untrusted {
         /* define OCALLs here. */
-        /*void ocall_print_string([in, string] const char * buf);*/
-        uint32_t ocall_load_key_pair([in, size=pkey_size] uint8_t * public_key, uint32_t pkey_size,
+        uint32_t ocall_load_key_pair([in, size=path_size] const char * key_path, uint32_t path_size,
+                                     [in, size=pkey_size] uint8_t * public_key, uint32_t pkey_size,
                                      [out, size=sealed_size] uint8_t * sealed_privated_key, uint32_t sealed_size);
     };
 };

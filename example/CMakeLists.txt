@@ -1,2 +1,6 @@
-add_subdirectory(iris)
-add_subdirectory(personlist)
+file(GLOB sub_folders ./*)
+foreach(folder ${sub_folders})
+  if(IS_DIRECTORY ${folder})
+    add_subdirectory(${folder})
+  endif()
+endforeach()

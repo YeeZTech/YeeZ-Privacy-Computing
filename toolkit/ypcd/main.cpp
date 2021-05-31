@@ -1,6 +1,7 @@
 #include "db.h"
 #include "net.h"
 #include "ypc/configuration.h"
+#include "ypc/filesystem.h"
 #include <boost/interprocess/sync/named_mutex.hpp>
 #include <boost/interprocess/sync/scoped_lock.hpp>
 #include <boost/program_options.hpp>
@@ -152,7 +153,7 @@ int main(int argc, const char *argv[]) {
       return EXIT_FAILURE;
     }
 
-    if ((chdir("/")) < 0) {
+    if ((chdir(ypc::current_directory().c_str())) < 0) {
       LOG(ERROR) << "chdir failed";
       return EXIT_FAILURE;
     }

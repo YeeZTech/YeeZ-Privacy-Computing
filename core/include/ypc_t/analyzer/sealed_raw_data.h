@@ -1,10 +1,11 @@
 #pragma once
+#include "common/limits.h"
 #include "hpda/extractor/extractor_base.h"
 #include "stbox/ebyte.h"
 #include "stbox/eth/eth_hash.h"
 #include "stbox/stx_common.h"
 #include "stbox/tsgx/channel/dh_session_initiator.h"
-#include "ypc/limits.h"
+#include "stbox/tsgx/log.h"
 #include "ypc_t/ecommon/package.h"
 #include <ff/util/ntobject.h>
 
@@ -15,7 +16,7 @@ class sealed_data_provider
     : public ::hpda::extractor::internal::extractor_base<OutputObjType> {
 public:
   typedef OutputObjType user_item_t;
-  typedef user_item_t (*item_parser_t)(const char *, size_t);
+  typedef user_item_t (*item_parser_t)(const stbox::bytes::byte_t *, size_t);
 
   sealed_data_provider(::stbox::dh_session_initiator *dh_session)
       : m_datahub_session(dh_session) {
@@ -31,14 +32,14 @@ public:
     p.arch(m);
 
     // magic string here, Do Not Change!
-    m_data_hash = stbox::eth::keccak256_hash(stbox::string_to_byte("Fidelius"));
+    m_data_hash = stbox::eth::keccak256_hash(stbox::bytes("Fidelius"));
 
     m_phandler.add_to_handle_pkg<response_pkg_t>(
         [&](std::shared_ptr<response_pkg_t> p) {
-          const std::string &response = p->get<data>();
-          stbox::bytes k = m_data_hash + stbox::string_to_byte(response);
+          const stbox::bytes &response = p->get<data>();
+          stbox::bytes k = m_data_hash + response;
           m_data_hash = stbox::eth::keccak256_hash(k);
-          m_data = m_item_parser_func(response.c_str(), response.size());
+          m_data = m_item_parser_func(response.data(), response.size());
         });
     m_phandler.add_to_handle_pkg<ctrl_pkg_t>(
         [&](std::shared_ptr<ctrl_pkg_t> p) { m_data_reach_end = true; });
@@ -56,12 +57,15 @@ public:
     if (m_data_reach_end) {
       return m_data_reach_end;
     }
-    char *out_buff;
+    char *out_buff = nullptr;
     size_t out_buff_len;
-    ff::scope_guard _out_buff_desc([&out_buff]() { free(out_buff); });
+    ff::scope_guard _out_buff_desc([&out_buff]() {
+      if (out_buff)
+        free(out_buff);
+    });
     auto ret = m_datahub_session->send_request_recv_response(
-        m_request_pkg_buf, m_request_pkg_buf_len, max_item_size, &out_buff,
-        &out_buff_len);
+        m_request_pkg_buf, m_request_pkg_buf_len, ::ypc::utc::max_item_size,
+        &out_buff, &out_buff_len);
     if (ret != stbox::stx_status::success) {
       LOG(ERROR) << "error for m_datahub_session->send_request_recv_response: "
                  << ret;

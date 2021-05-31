@@ -26,7 +26,15 @@ if(CMAKE_SIZEOF_VOID_P EQUAL 4)
     set(SGX_EDGER8R ${SGX_PATH}/bin/x86/sgx_edger8r)
 else()
     set(SGX_COMMON_CFLAGS -m64)
-    set(SGX_LIBRARY_PATH ${SGX_PATH}/lib64)
+    if(SGX_MODE STREQUAL "Debug")
+      set(SGX_LIBRARY_PATH ${SGX_PATH}/lib64)
+    elseif(SGX_MODE STREQUAL "PreRelease")
+      set(SGX_LIBRARY_PATH "/lib/x86_64-linux-gnu")
+    elseif(SGX_MODE STREQUAL "Release")
+      set(SGX_LIBRARY_PATH "/lib/x86_64-linux-gnu")
+    else()
+      message(FATAL_ERROR "SGX_MODE ${SGX_MODE} is not Debug, PreRelease or Release.")
+    endif()
     set(SGX_ENCLAVE_SIGNER ${SGX_PATH}/bin/x64/sgx_sign)
     set(SGX_EDGER8R ${SGX_PATH}/bin/x64/sgx_edger8r)
 endif()
@@ -71,8 +79,8 @@ if(SGX_FOUND)
     endif()
 
     set(ENCLAVE_INC_FLAGS "-I${SGX_INCLUDE_DIR} -I${SGX_TLIBC_INCLUDE_DIR} -I${SGX_LIBCXX_INCLUDE_DIR}")
-    set(ENCLAVE_C_FLAGS "${SGX_COMMON_CFLAGS} -nostdinc -fvisibility=hidden -fpie -fstack-protector-strong ${ENCLAVE_INC_FLAGS}")
-    set(ENCLAVE_CXX_FLAGS "${ENCLAVE_C_FLAGS} -nostdinc++")
+    set(ENCLAVE_C_FLAGS "${SGX_COMMON_CFLAGS} -DYPC_SGX -nostdinc -fvisibility=hidden -fpie -fstack-protector-strong ${ENCLAVE_INC_FLAGS}")
+    set(ENCLAVE_CXX_FLAGS "${ENCLAVE_C_FLAGS} -nostdinc++ -std=c++11")
 
     set(APP_INC_FLAGS "-I${SGX_PATH}/include")
     set(APP_C_FLAGS "${SGX_COMMON_CFLAGS} -fPIC -Wno-attributes ${APP_INC_FLAGS}")
@@ -84,7 +92,6 @@ if(SGX_FOUND)
         set(EDL_T_C "${CMAKE_CURRENT_BINARY_DIR}/${EDL_NAME}_t.c")
         set(SEARCH_PATHS "")
         foreach(path ${edl_search_paths})
-            message(STATUS "check edl path: " ${path})
             get_filename_component(ABSPATH ${path} ABSOLUTE)
             list(APPEND SEARCH_PATHS "${ABSPATH}")
         endforeach()
@@ -93,7 +100,6 @@ if(SGX_FOUND)
         if(${use_prefix})
             set(USE_PREFIX "--use-prefix")
         endif()
-        message(STATUS "search path: " ${SEARCH_PATHS} " for " ${edl})
         add_custom_command(OUTPUT ${EDL_T_C}
                            COMMAND ${SGX_EDGER8R} ${USE_PREFIX} --trusted ${EDL_ABSPATH} --search-path ${SEARCH_PATHS}
                            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
@@ -171,6 +177,32 @@ if(SGX_FOUND)
             -Wl,--no-undefined -nostdlib -nodefaultlibs -nostartfiles -L${SGX_LIBRARY_PATH} \
             -Wl,--whole-archive -l${SGX_TRTS_LIB} -Wl,--no-whole-archive \
             -Wl,--start-group ${TLIB_LIST} -lsgx_tstdc -lsgx_tcxx -lsgx_tkey_exchange -lsgx_tcrypto -l${SGX_TSVC_LIB} -Wl,--end-group \
+            -Wl,-Bstatic -Wl,-Bsymbolic -Wl,--no-undefined \
+            -Wl,-pie,-eenclave_entry -Wl,--export-dynamic \
+            ${LDSCRIPT_FLAG} \
+            -Wl,--defsym,__ImageBase=0")
+    endfunction()
+
+    # build static library that to be linked to enclave, without any edl
+    function(add_sgx_library target)
+        set(optionArgs USE_PREFIX)
+        set(oneValueArgs LDSCRIPT)
+        set(multiValueArgs SRCS TRUSTED_LIBS)
+        cmake_parse_arguments("SGX" "${optionArgs}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+        if(NOT "${SGX_LDSCRIPT}" STREQUAL "")
+            get_filename_component(LDS_ABSPATH ${SGX_LDSCRIPT} ABSOLUTE)
+            set(LDSCRIPT_FLAG "-Wl,--version-script=${LDS_ABSPATH}")
+        endif()
+
+        add_library(${target} STATIC ${SGX_SRCS})
+        set_target_properties(${target} PROPERTIES COMPILE_FLAGS ${ENCLAVE_CXX_FLAGS})
+        target_include_directories(${target} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+
+              #-Wl,--whole-archive -l${SGX_TRTS_LIB} -Wl,--no-whole-archive \
+        target_link_libraries(${target} "${SGX_COMMON_CFLAGS} \
+            -Wl,--no-undefined -nostdlib -nodefaultlibs -nostartfiles -L${SGX_LIBRARY_PATH} \
+            -Wl,--start-group -lsgx_tstdc -lsgx_tcxx -lsgx_tkey_exchange -lsgx_tcrypto -l${SGX_TSVC_LIB} -Wl,--end-group \
             -Wl,-Bstatic -Wl,-Bsymbolic -Wl,--no-undefined \
             -Wl,-pie,-eenclave_entry -Wl,--export-dynamic \
             ${LDSCRIPT_FLAG} \
@@ -309,6 +341,22 @@ if(SGX_FOUND)
                                          -lsgx_ukey_exchange \
                                          -lpthread")
         set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES ${EDL_U_HDRS})
+    endfunction()
+
+    function(add_sgx_executable target)
+        set(optionArgs USE_PREFIX)
+        set(multiValueArgs SRCS)
+        cmake_parse_arguments("SGX" "${optionArgs}" "" "${multiValueArgs}" ${ARGN})
+
+        add_executable(${target} ${SGX_SRCS})
+        set_target_properties(${target} PROPERTIES COMPILE_FLAGS ${APP_CXX_FLAGS})
+        target_include_directories(${target} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+        target_link_libraries(${target} "${SGX_COMMON_CFLAGS} \
+                                         -L${SGX_LIBRARY_PATH} \
+                                         -l${SGX_URTS_LIB} \
+                                         -l${SGX_USVC_LIB} \
+                                         -lsgx_ukey_exchange \
+                                         -lpthread")
     endfunction()
 
 else(SGX_FOUND)

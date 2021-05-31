@@ -2,6 +2,7 @@
 #include <boost/thread/shared_mutex.hpp>
 #include <functional>
 #include <mutex>
+#include <boost/core/noncopyable.hpp>
 
 namespace ypc {
 

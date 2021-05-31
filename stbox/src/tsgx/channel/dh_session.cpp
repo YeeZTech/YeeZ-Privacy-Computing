@@ -236,7 +236,7 @@ stx_status dh_session::generate_response(secure_message_t *req_message,
   if (SGX_SUCCESS != status) {
     return static_cast<stx_status>(status);
   }
-  std::string resp_str = handler(decrypted_data, decrypted_data_length, this);
+  bytes resp_str = handler(decrypted_data, decrypted_data_length, this);
 
   resp_data_length = resp_str.size();
   if (resp_str.size() > max_payload_size) {

@@ -2,12 +2,11 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "ypc/base58.h"
+#include "common/byte/base58.h"
 
 #include <assert.h>
 #include <string.h>
 
-namespace ypc {
 /** All alphanumeric characters except for "0", "I", "O", and "l" */
 static const char *psz_base58 =
     "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
@@ -127,4 +126,3 @@ std::string encode_base58(const std::vector<unsigned char> &vch) {
 bool decode_base58(const std::string &str, std::vector<unsigned char> &vchRet) {
   return decode_base58(str.c_str(), vchRet);
 }
-} // namespace ypc

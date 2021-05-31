@@ -1,7 +1,6 @@
 #include "gtest_common.h"
 #include "stbox/eth/eth_hash.h"
 #include "ypc/blockfile.h"
-#include "ypc/limits.h"
 #include <functional>
 #include <gtest/gtest.h>
 #include <random>
@@ -13,19 +12,19 @@ typedef ypc::blockfile<0x29384792, 16, 1024> bft;
 
 TEST(test_blockfile, simple) { ypc::blockfile<0x29384792, 16, 1024> t; }
 
-void test_1_data(const std::string &k) {
+void test_1_data(const ypc::bytes &k) {
   bft f;
   f.open_for_write("tf1");
 
-  f.append_item(k.c_str(), k.size());
+  f.append_item(k.data(), k.size());
   f.close();
   f.open_for_read("tf1");
   ypc::memref r;
   bool t = f.next_item(r);
   EXPECT_EQ(t, true);
   EXPECT_EQ(r.len(), k.size());
-  std::string k_prime(r.data(), r.len());
-  EXPECT_EQ(k, k_prime);
+  ypc::bytes k_prime(r.data(), r.len());
+  EXPECT_TRUE(k == k_prime);
 
   t = f.next_item(r);
   EXPECT_EQ(t, false);
@@ -36,7 +35,7 @@ void test_1_data(const std::string &k) {
 TEST(test_blockfile, 1_data) {
   // not exceed length
 
-  test_1_data(std::string("123456"));
+  test_1_data(ypc::bytes("123456"));
   test_1_data(random_string(2048));
   // exceed length
 }

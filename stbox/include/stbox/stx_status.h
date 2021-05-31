@@ -3,19 +3,15 @@
 #include <string>
 
 namespace stbox {
-enum class stx_status : uint16_t {
-#define ATT_STATUS(a, b) a = b,
+enum stx_status : uint32_t {
+// 0x10000 makes sure our error code won't overlap with sgx_status_t
+#define ATT_STATUS(a, b) a = (b == 0 ? b : 0x10000 & b),
 
 #include "stbox/stx_status.def"
 
 #undef ATT_STATUS
 };
 
-const char *sgx_status_string(sgx_status_t status);
+const char *status_string(uint32_t status);
 } // namespace stbox
-
-namespace std {
-std::string to_string(stbox::stx_status status);
-}
-
 

@@ -7,7 +7,7 @@ class result_to_db : public result_target {
 public:
   result_to_db(const std::string &url, const std::string &usrname,
                const std::string &passwd, const std::string &dbname,
-               const std::string &request_hash);
+               const ypc::bytes &request_hash);
 
   virtual void write_to_target(const ypc::bref &encrypted_result,
                                const ypc::bref &result_signature,
@@ -19,5 +19,5 @@ public:
 protected:
   using request_db = toolkit::analyzer::request_db;
   std::unique_ptr<request_db> m_db;
-  std::string m_request_hash;
+  ypc::bytes m_request_hash;
 };

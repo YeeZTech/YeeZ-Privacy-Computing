@@ -19,9 +19,9 @@ std::vector<std::string> split(const std::string &str,
   return res;
 }
 
-int parse_item_data(const char *data, int len, void *item) {
+int parse_item_data(const uint8_t *data, int len, void *item) {
   user_item_t *uitem = (user_item_t *)item;
-  std::string str(data, len);
+  std::string str((const char *)data, len);
   std::vector<std::string> result = split(str, ",");
   // boost::split(result, str, boost::is_any_of(","));
   if (result.size() != 5) {

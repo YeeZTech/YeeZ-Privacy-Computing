@@ -30,6 +30,7 @@ def run(ea, yzdata_req_filter):
         logger.warning('\n********** get exception **********\nerror:%s\ntraceback:%s\n' % (err, tb))
         log_handler.flush()
         print('\n********** get exception **********\nerror:%s\ntraceback:%s\n' % (err, tb))
+        sys.exit()
 
 
 def timer(host, project_id):

@@ -1,7 +1,7 @@
 #include "ypc/privacy_data_reader.h"
+#include "common/limits.h"
 #include "ypc/exceptions.h"
 #include "ypc/filesystem.h"
-#include "ypc/limits.h"
 #include <boost/format.hpp>
 #include <iostream>
 
@@ -38,8 +38,8 @@ privacy_data_reader::privacy_data_reader(const std::string &plugin_path,
     throw std::runtime_error("failed to call dlopen");
   }
 
-  m_create_item_reader = get_func_with_name<create_item_reader_func_t>(
-      "_Z18create_item_readerPKc");
+  m_create_item_reader =
+      get_func_with_name<create_item_reader_func_t>("create_item_reader");
   m_reset_for_read =
       get_func_with_name<reset_for_read_func_t>("reset_for_read");
   m_read_item_data =
@@ -71,11 +71,11 @@ uint64_t privacy_data_reader::get_item_number() {
 
 bytes privacy_data_reader::get_sample_data() {
   if (!m_get_sample_data) {
-    return std::string();
+    return bytes();
   }
   int len;
   m_get_sample_data(m_handle, NULL, &len);
-  if (len > max_sample_size) {
+  if (len > ::ypc::utc::max_sample_size) {
     throw data_sample_too_large(m_plugin_path, m_extra_param);
   }
   bytes ret(len);
@@ -90,7 +90,7 @@ std::string privacy_data_reader::get_data_format() {
   }
   int len;
   m_get_data_format(m_handle, NULL, &len);
-  if (len > max_data_format_size) {
+  if (len > ::ypc::utc::max_data_format_size) {
     throw data_format_too_large(m_plugin_path, m_extra_param);
   }
   std::string ret(len, 0);
@@ -98,16 +98,15 @@ std::string privacy_data_reader::get_data_format() {
   return ret;
 }
 
-std::string privacy_data_reader::read_item_data() {
+bytes privacy_data_reader::read_item_data() {
   // We use static buf here to optimize memory usage.
-  char buf[max_item_size] = {0};
+  char buf[::ypc::utc::max_item_size] = {0};
 
-  int len = max_item_size;
+  int len = ::ypc::utc::max_item_size;
   auto status = m_read_item_data(m_handle, buf, &len);
   if (status != 0) {
-    return std::string();
+    return bytes();
   }
-  std::string ret(buf, len);
-  return ret;
+  return bytes(buf, len);
 }
 } // namespace ypc

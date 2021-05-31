@@ -54,6 +54,12 @@ public:
     }
   }
 
+  template <typename ByteType>
+  int append_item(const ByteType *data, size_t len) {
+    static_assert(sizeof(ByteType) == 1);
+    return append_item((const char *)data, len);
+  }
+
   int append_item(const char *data, size_t len) {
     // TODO: Check if reach limit
     read_header();
@@ -98,6 +104,7 @@ public:
     m_file.seekp(back.end_file_pos - len - sizeof(len), m_file.beg);
     m_file.write((char *)&len, sizeof(len));
     m_file.write(data, len);
+    return 0;
   }
 
   void reset_read_item() {

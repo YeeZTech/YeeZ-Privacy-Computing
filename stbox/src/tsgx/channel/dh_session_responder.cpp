@@ -1,5 +1,5 @@
 #include "stbox/tsgx/channel/dh_session_responder.h"
-
+#include "stbox/tsgx/log.h"
 namespace stbox {
 
 stx_status

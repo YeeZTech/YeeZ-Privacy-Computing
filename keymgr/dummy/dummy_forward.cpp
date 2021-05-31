@@ -6,10 +6,10 @@
 uint32_t dummy_forward(keymgr_sgx_module *ksm_ptr, uint32_t msg_id,
                        const std::string &epkey, const std::string &vpkey) {
   uint32_t ret;
-  auto b_epkey = stbox::bytes::from_hex(epkey);
+  auto b_epkey = stbox::hex_bytes(epkey.c_str()).as<stbox::bytes>();
   char raw_data[] = "winter is cold!";
   ypc::bref cipher;
-  ret = ksm_ptr->encrypt_message(b_epkey.value(), b_epkey.size(),
+  ret = ksm_ptr->encrypt_message(b_epkey.data(), b_epkey.size(),
                                  (uint8_t *)raw_data, sizeof(raw_data), cipher);
 
   // TODO Suppose to get self hash using sgx tool
@@ -20,24 +20,25 @@ uint32_t dummy_forward(keymgr_sgx_module *ksm_ptr, uint32_t msg_id,
   uint32_t all_size =
       sizeof(msg_id) + cipher.len() + b_epkey.size() + sizeof(self_ehash);
   stbox::bytes all(all_size);
-  memcpy(all.value(), &msg_id, sizeof(msg_id));
-  memcpy(all.value() + sizeof(msg_id), cipher.data(), cipher.len());
-  memcpy(all.value() + sizeof(msg_id) + cipher.len(), b_epkey.value(),
+  memcpy(all.data(), &msg_id, sizeof(msg_id));
+  memcpy(all.data() + sizeof(msg_id), cipher.data(), cipher.len());
+  memcpy(all.data() + sizeof(msg_id) + cipher.len(), b_epkey.data(),
          b_epkey.size());
-  memcpy(all.value() + sizeof(msg_id) + cipher.len() + b_epkey.size(),
+  memcpy(all.data() + sizeof(msg_id) + cipher.len() + b_epkey.size(),
          self_ehash, sizeof(self_ehash));
 
-  auto b_vpkey = stbox::bytes::from_hex(vpkey);
+  auto b_vpkey = stbox::hex_bytes(vpkey.c_str()).as<stbox::bytes>();
   uint32_t sealed_size = ksm_ptr->get_secp256k1_sealed_private_key_size();
   stbox::bytes b_skey(sealed_size);
-  ocall_load_key_pair(b_vpkey.value(), b_vpkey.size(), b_skey.value(),
-                      sealed_size);
+  std::string key_path(".yeez.key/");
+  ocall_load_key_pair(key_path.c_str(), key_path.size(), b_vpkey.data(),
+                      b_vpkey.size(), b_skey.data(), sealed_size);
   ypc::bref sig;
-  ret = ksm_ptr->sign_message(b_skey.value(), sealed_size, all.value(),
-                              all_size, sig);
+  ret = ksm_ptr->sign_message(b_skey.data(), sealed_size, all.data(), all_size,
+                              sig);
   ret = ksm_ptr->forward_message(msg_id, cipher.data(), cipher.len(),
-                                 b_epkey.value(), b_epkey.size(), self_ehash,
-                                 sizeof(self_ehash), b_vpkey.value(),
+                                 b_epkey.data(), b_epkey.size(), self_ehash,
+                                 sizeof(self_ehash), b_vpkey.data(),
                                  b_vpkey.size(), sig.data(), sig.len());
   return ret;
 }

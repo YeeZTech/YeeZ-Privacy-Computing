@@ -1,0 +1,67 @@
+/* Enclave.edl - Top EDL file. */
+
+enclave {
+    include "sgx_eid.h"
+    include "stbox/tsgx/channel/dh_cdef.h"
+    from "sgx_tstdc.edl" import *;
+    from "ecc.edl" import *;
+
+    trusted {
+    /* define ECALLs here. */
+    public uint32_t aes_cmac_msg(
+      [in, size=16] uint8_t *p_key, //should be 128 bit
+      [in, size=src_len] uint8_t *p_src,
+      uint32_t src_len,
+      [out, size=16] uint8_t *p_mac
+      );
+
+    public uint32_t test_generate_pkey(
+      [in, size=32] uint8_t * skey,
+      [out, size=64] uint8_t * pkey);
+
+    public uint32_t aes_gcm_encrypt(
+      [in, size=16] uint8_t * key,
+      [in, size=data_size] uint8_t * data,
+      uint32_t data_size,
+      [out, size=data_size] uint8_t *cipher,
+      [in, size=iv_size] uint8_t * iv,
+      uint32_t iv_size,
+      [in, size=aad_size] uint8_t * aad,
+      uint32_t aad_size,
+      [out, size=16] uint8_t * mac);
+
+    public uint32_t test_ecdh(
+      [in, size=32] uint8_t * skey,
+      [in, size=64] uint8_t * pkey,
+      [out, size=16] uint8_t * share_key );
+
+    public uint32_t encrypt_message_with_prefix(
+      [in, size=64] uint8_t *public_key,
+      uint32_t prefix,
+      [in, size=data_size] uint8_t * data,
+      uint32_t data_size,
+      [out, size=cipher_size] uint8_t * cipher,
+      uint32_t cipher_size
+    );
+
+    public uint32_t decrypt_message_with_prefix([in, size=32] uint8_t *skey,
+      uint32_t prefix,
+      [in, size=cipher_size] uint8_t * cipher,
+      uint32_t cipher_size,
+      [out, size=data_size] uint8_t * data,
+      uint32_t data_size
+    );
+
+    public uint32_t get_encrypt_message_size_with_prefix(uint32_t data_size);
+    public uint32_t get_decrypt_message_size_with_prefix(uint32_t data_size);
+
+    public uint32_t test_sign_message([in, size=skey_size] uint8_t * skey, uint32_t skey_size, [in, size=data_size] uint8_t *data, uint32_t data_size, [out, size=65] uint8_t *sig);
+    public uint32_t test_verify_message([in, size=data_size] uint8_t *data, uint32_t data_size, [in, size=sig_size] uint8_t *sig, uint32_t sig_size, [in, size=64] uint8_t * pkey);
+
+    };
+
+
+
+    untrusted {
+    };
+};

@@ -2,6 +2,7 @@
 #include "sgx_dh.h"
 #include "sgx_eid.h"
 #include "sgx_error.h"
+#include "stbox/ebyte.h"
 #include "stbox/stx_status.h"
 #include "stbox/tsgx/channel/dh_cdef.h"
 #include "stbox/usgx/sgx_module.h"
@@ -42,7 +43,12 @@ public:
                                uint32_t bp_size, const uint8_t *priv_key,
                                uint32_t skey_size, bref &sealed_private_key);
 
+  uint32_t forward_private_key(const uint8_t *sealed_private_key,
+                               uint32_t sealed_size, const uint8_t *pub_key,
+                               uint32_t pkey_size, bref &forward_private_key);
+
   uint32_t session_request(sgx_dh_msg1_t *dh_msg1, uint32_t *session_id);
+
   uint32_t exchange_report(sgx_dh_msg2_t *dh_msg2, sgx_dh_msg3_t *dh_msg3,
                            uint32_t session_id);
   uint32_t generate_response(secure_message_t *req_message,

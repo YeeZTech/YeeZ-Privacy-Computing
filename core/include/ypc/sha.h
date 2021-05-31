@@ -1,8 +1,9 @@
 
 #pragma once
+#include "ypc/byte.h"
 #include <string>
 
 namespace ypc {
 
-std::string SHA256(const char *data, size_t len);
+bytes SHA256(const char *data, size_t len);
 }

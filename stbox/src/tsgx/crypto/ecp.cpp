@@ -31,6 +31,7 @@
 
 #include "sgx_ecp_types.h"
 #include "stbox/tsgx/crypto/ecp_interface.h"
+#include "stbox/tsgx/log.h"
 #include "stdlib.h"
 #include "string.h"
 
@@ -57,14 +58,13 @@
 #endif
 
 #define MAC_KEY_SIZE 16
-
+static uint8_t cmac_key[MAC_KEY_SIZE] = "yeez.tech.stbox";
 #define EC_DERIVATION_BUFFER_SIZE(label_length) ((label_length) + 4)
 
 sgx_status_t derive_key(const sgx_ec256_dh_shared_t *shared_key,
                         const char *label, uint32_t label_length,
                         sgx_ec_key_128bit_t *derived_key) {
   sgx_status_t se_ret = SGX_SUCCESS;
-  uint8_t cmac_key[MAC_KEY_SIZE];
   sgx_ec_key_128bit_t key_derive_key;
   if (!shared_key || !derived_key || !label) {
     return SGX_ERROR_INVALID_PARAMETER;
@@ -85,6 +85,8 @@ sgx_status_t derive_key(const sgx_ec256_dh_shared_t *shared_key,
     INTERNAL_SGX_ERROR_CODE_CONVERTOR(se_ret);
     return se_ret;
   }
+
+  // TODO: note this is quite common, we may optimize this into 1 computation
   /* derivation_buffer = counter(0x01) || label || 0x00 ||
    * output_key_len(0x0080) */
   uint32_t derivation_buffer_length = EC_DERIVATION_BUFFER_SIZE(label_length);

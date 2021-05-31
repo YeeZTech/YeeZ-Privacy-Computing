@@ -1,0 +1,3 @@
+YPC_STATUS(success, 0x00)
+YPC_STATUS(param_from_json_read_param_from_source_failed, 0xE1)
+YPC_STATUS(param_from_db_read_from_source_failed, 0xE2)

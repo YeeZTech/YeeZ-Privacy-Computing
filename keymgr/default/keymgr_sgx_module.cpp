@@ -1,6 +1,7 @@
 #include "keymgr_sgx_module.h"
 #include "ekeymgr_u.h"
 #include "sgx_urts.h"
+#include <glog/logging.h>
 #include <stdexcept>
 
 keymgr_sgx_module::keymgr_sgx_module(const char *mod_path)
@@ -63,7 +64,7 @@ uint32_t keymgr_sgx_module::encrypt_message(const uint8_t *public_key,
   uint32_t cipher_size;
 
   stbox::buffer_length_t buf_cip(&cipher_size, &cipher,
-                                 ::get_rijndael128GCM_encrypt_size, data_size);
+                                 ::get_encrypted_message_size, data_size);
 
   auto t = ecall<uint32_t>(::encrypt_message, (uint8_t *)public_key, pkey_size,
                            (uint8_t *)data, data_size, stbox::xmem(buf_cip),
@@ -79,7 +80,7 @@ uint32_t keymgr_sgx_module::decrypt_message(const uint8_t *sealed_private_key,
   uint8_t *data;
   uint32_t data_size;
   stbox::buffer_length_t buf_data(&data_size, &data,
-                                  get_rijndael128GCM_decrypt_size, cipher_size);
+                                  ::get_decrypted_message_size, cipher_size);
   auto t = ecall<uint32_t>(::decrypt_message, (uint8_t *)sealed_private_key,
                            sealed_size, (uint8_t *)cipher, cipher_size,
                            stbox::xmem(buf_data), stbox::xlen(buf_data));
@@ -95,7 +96,7 @@ uint32_t keymgr_sgx_module::backup_private_key(
   uint8_t *backup_private_key;
   uint32_t bp_size;
   stbox::buffer_length_t buf_bak(&bp_size, &backup_private_key,
-                                 ::get_rijndael128GCM_encrypt_size, skey_size);
+                                 ::get_backup_private_key_size, sealed_size);
   auto t = ecall<uint32_t>(::backup_private_key, (uint8_t *)sealed_private_key,
                            sealed_size, (uint8_t *)pub_key, pkey_size,
                            stbox::xmem(buf_bak), stbox::xlen(buf_bak));
@@ -111,7 +112,7 @@ uint32_t keymgr_sgx_module::restore_private_key(
   uint32_t sealed_size;
   uint8_t *sealed_private_key;
   stbox::buffer_length_t buf_res(&sealed_size, &sealed_private_key,
-                                 ::get_secp256k1_sealed_private_key_size);
+                                 ::get_restore_private_key_size, bp_size);
   auto t = ecall<uint32_t>(::restore_private_key, (uint8_t *)backup_private_key,
                            bp_size, (uint8_t *)priv_key, skey_size,
                            stbox::xmem(buf_res), stbox::xlen(buf_res));
@@ -119,14 +120,29 @@ uint32_t keymgr_sgx_module::restore_private_key(
   return t;
 }
 
+uint32_t keymgr_sgx_module::forward_private_key(
+    const uint8_t *sealed_private_key, uint32_t sealed_size,
+    const uint8_t *pub_key, uint32_t pkey_size, bref &_fwd_private_key) {
+  uint8_t *backup_private_key;
+  uint32_t bp_size;
+  stbox::buffer_length_t buf_bak(&bp_size, &backup_private_key,
+                                 ::get_forward_private_key_size, sealed_size);
+  auto t = ecall<uint32_t>(::forward_private_key, (uint8_t *)sealed_private_key,
+                           sealed_size, (uint8_t *)pub_key, pkey_size,
+                           stbox::xmem(buf_bak), stbox::xlen(buf_bak));
+
+  _fwd_private_key = bref(backup_private_key, bp_size);
+  return t;
+}
+
 uint32_t keymgr_sgx_module::session_request(sgx_dh_msg1_t *dh_msg1,
                                             uint32_t *session_id) {
-  return ecall<uint32_t>(::session_request, dh_msg1, session_id);
+  return ecall<uint32_t>(::msession_request, dh_msg1, session_id);
 }
 uint32_t keymgr_sgx_module::exchange_report(sgx_dh_msg2_t *dh_msg2,
                                             sgx_dh_msg3_t *dh_msg3,
                                             uint32_t session_id) {
-  return ecall<uint32_t>(::exchange_report, dh_msg2, dh_msg3, session_id);
+  return ecall<uint32_t>(::mexchange_report, dh_msg2, dh_msg3, session_id);
 }
 uint32_t keymgr_sgx_module::generate_response(secure_message_t *req_message,
                                               size_t req_message_size,
@@ -134,12 +150,12 @@ uint32_t keymgr_sgx_module::generate_response(secure_message_t *req_message,
                                               secure_message_t *resp_message,
                                               size_t resp_message_size,
                                               uint32_t session_id) {
-  return ecall<uint32_t>(::generate_response, req_message, req_message_size,
+  return ecall<uint32_t>(::mgenerate_response, req_message, req_message_size,
                          max_payload_size, resp_message, resp_message_size,
                          session_id);
 }
 uint32_t keymgr_sgx_module::end_session(uint32_t session_id) {
-  return ecall<uint32_t>(::end_session, session_id);
+  return ecall<uint32_t>(::mend_session, session_id);
 }
 
 uint32_t keymgr_sgx_module::forward_message(
@@ -152,3 +168,4 @@ uint32_t keymgr_sgx_module::forward_message(
                          (uint8_t *)ehash, ehash_size, (uint8_t *)verify_key,
                          vpkey_size, (uint8_t *)sig, sig_size);
 }
+

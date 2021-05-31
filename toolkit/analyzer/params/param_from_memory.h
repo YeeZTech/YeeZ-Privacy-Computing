@@ -3,5 +3,5 @@
 class param_from_memory : public param_source {
 public:
   param_from_memory(param_source &s);
-  virtual void read_from_source();
+  virtual uint32_t read_from_source();
 };

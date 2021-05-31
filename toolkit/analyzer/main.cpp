@@ -1,6 +1,5 @@
 #include "parser.h"
 #include "sgx_bridge.h"
-#include "ypc/base64.h"
 #include "ypc/configuration.h"
 #include "ypc/ntobject_file.h"
 #include "ypc/sealed_file.h"
@@ -104,10 +103,12 @@ int main(int argc, char *argv[]) {
         vm["db-conf"].as<std::string>());
     psource = std::make_shared<param_from_db>(
         info.get<db_url>(), info.get<db_usr>(), info.get<db_pass>(),
-        info.get<db_dbname>(), vm["request-hash"].as<std::string>());
+        info.get<db_dbname>(),
+        ypc::hex_bytes(vm["request-hash"].as<std::string>()).as<ypc::bytes>());
     rtarget = std::make_shared<result_to_db>(
         info.get<db_url>(), info.get<db_usr>(), info.get<db_pass>(),
-        info.get<db_dbname>(), vm["request-hash"].as<std::string>());
+        info.get<db_dbname>(),
+        ypc::hex_bytes(vm["request-hash"].as<std::string>()).as<ypc::bytes>());
   } else {
     std::cout << "not supported source type" << std::endl;
     return -1;
@@ -127,7 +128,10 @@ int main(int argc, char *argv[]) {
     parser = std::make_shared<file_parser>(
         psource.get(), rtarget.get(), sealer_enclave_file, parser_enclave_file,
         keymgr_enclave_file, sealed_file);
-    parser->parse();
+    uint32_t ret = parser->parse();
+    if (ret) {
+      std::cout << "got error: " << ypc::status_string(ret) << std::endl;
+    }
   } else {
     if (source_type != "json") {
       std::cout << "parallel parser now only supports file type!" << std::endl;
