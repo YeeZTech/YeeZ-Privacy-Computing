@@ -15,9 +15,6 @@ uint32_t get_secp256k1_sealed_private_key_size() {
 uint32_t get_secp256k1_signature_size() {
   return stbox::crypto::get_secp256k1_signature_size();
 }
-// TODO fix compile warnning
-uint32_t get_rijndael128GCM_encrypt_size(uint32_t data_size) {}
-uint32_t get_rijndael128GCM_decrypt_size(uint32_t cipher_size) {}
 
 uint32_t generate_secp256k1_key_pair(uint8_t *public_key, uint32_t pkey_size,
                                      uint8_t *sealed_private_key,

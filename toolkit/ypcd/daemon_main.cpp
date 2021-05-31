@@ -18,6 +18,7 @@ int daemon_main(const std::string &conf_file,
   std::thread data_thread([&]() { start_data_analysis_service(); });
   data_thread.join();
   net_thread.join();
+  return 0;
 }
 } // namespace ypcd
 } // namespace toolkit
