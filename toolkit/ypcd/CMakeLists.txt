@@ -4,8 +4,10 @@ add_library(libypcd
   services.cpp
   net.cpp)
 target_link_libraries(libypcd mysqlcppconn ypc_core glog pthread ff_net )
+install(TARGETS libypcd DESTINATION lib)
 
 add_executable(ypcd
   main.cpp)
+install(TARGETS ypcd DESTINATION bin)
 target_link_libraries(ypcd libypcd)
 

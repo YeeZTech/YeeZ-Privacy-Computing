@@ -10,3 +10,4 @@ target_link_libraries(person_first_match stbox_common_t stbox_channel_t ypc_anal
 
 enclave_sign(person_first_match KEY enclave_private.pem
   CONFIG enclave.config.xml)
+install(FILES ${PROJECT_SOURCE_DIR}/lib/person_first_match.signed.so DESTINATION lib)

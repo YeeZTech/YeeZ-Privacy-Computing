@@ -10,6 +10,7 @@ add_trusted_library(stbox_common_t
   SRCS "${stbox_t_src}"
   EDL ./stbox.edl
   EDL_SEARCH_PATHS .)
+install(TARGETS stbox_common_t DESTINATION lib)
 
 set(stbox_core_src ${stbox_src} usgx/error_message.cpp
   usgx/sgx_module.cpp
@@ -20,6 +21,7 @@ add_untrusted_library(stbox_common_u SHARED
   SRCS "${stbox_core_src}"
   EDL ./stbox.edl
   EDL_SEARCH_PATHS .)
+install(TARGETS stbox_common_u DESTINATION lib)
 
 target_link_libraries(stbox_common_u glog)
 
