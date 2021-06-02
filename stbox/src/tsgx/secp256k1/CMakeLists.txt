@@ -9,3 +9,4 @@ add_trusted_library(stbox_secp256k1_t
   SRCS "${secp256k1_src}"
   EDL ./secp256k1.edl
   EDL_SEARCH_PATHS .)
+install(TARGETS stbox_secp256k1_t DESTINATION lib)

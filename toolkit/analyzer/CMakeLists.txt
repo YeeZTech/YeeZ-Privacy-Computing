@@ -10,6 +10,7 @@ add_executable(fid_analyzer main.cpp
   result/result_to_db.cpp
   db/db.cpp
   )
+install(TARGETS fid_analyzer DESTINATION bin)
 
 include_directories(${PROJECT_SOURCE_DIR}/toolkit/analyzer/)
 target_link_libraries(fid_analyzer
