@@ -55,6 +55,8 @@ uint64_t get_item_number(void *handle) {
       n++;
     }
   }
+  // must clear ifstream before seekg
+  is->clear();
   is->seekg(0, is->beg);
   return n;
 }

@@ -139,7 +139,7 @@ void seal_file(const std::string &plugin, const std::string &file,
     item_data = reader.read_item_data();
     ++pd;
   }
-  std::cout << "\nDone read data" << std::endl;
+  std::cout << "\nDone read data count: " << pd.count() << std::endl;
 }
 
 boost::program_options::variables_map parse_command_line(int argc,
