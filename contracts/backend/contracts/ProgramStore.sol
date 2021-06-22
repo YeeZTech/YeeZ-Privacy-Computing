@@ -16,7 +16,7 @@ contract ProgramStore{
     bytes32[] public program_hashes;
 
     event UploadProgram(bytes32 hash, address author);
-    function upload_program(string memory _name, string memory _desc, bool _offchain, string memory _url, uint256 _price, bytes32 _enclave_hash, ) public returns(bytes32){
+    function upload_program(string memory _name, string memory _desc, bool _offchain, string memory _url, uint256 _price, bytes32 _enclave_hash) public returns(bytes32){
       bytes32 _hash = keccak256(abi.encodePacked(msg.sender, _name, _desc, _url, _price, _enclave_hash));
       require(!program_info[_hash].exists, "already exist");
       program_info[_hash].author = msg.sender;

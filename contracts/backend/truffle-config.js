@@ -1,1 +1,1 @@
-truffle-config.ropsten.js
+./truffle-config.ganache.js

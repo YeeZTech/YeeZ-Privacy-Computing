@@ -44,7 +44,7 @@ contract YZDataRequest {
       bytes memory pkey = cert_proxy.pkeyFromAddr(msg.sender);
       require(pkey.length != 0, "not a registered user");
       require(data.is_program_hash_available(program_hash), "invalid program");
-      (,,,,bool is_offchain,)= ProgramProxyInterface(data.program_proxy()).get_program_info(program_hash);
+      (,,,,, bool is_offchain,)= ProgramProxyInterface(data.program_proxy()).get_program_info(program_hash);
       require(!is_offchain, "can only use program with onchain result");
 
       request_hash = keccak256(abi.encode(msg.sender, pkey, secret, input, forward_sig, program_hash, gas_price));

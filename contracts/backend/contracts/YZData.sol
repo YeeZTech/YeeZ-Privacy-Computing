@@ -102,9 +102,10 @@ contract YZDataFactory{
   YZDataRequestFactoryInterface public request_factory;
   YZDataRequestFactoryInterface public offchain_request_factory;
 
-  constructor(address addr, address _request_factory) public{
+  constructor(address addr, address _request_factory, address _offchain_request_factory) public{
     cert_addr = addr;
     request_factory = YZDataRequestFactoryInterface(_request_factory);
+    offchain_request_factory = YZDataRequestFactoryInterface(_offchain_request_factory);
   }
 
   function createYZData(bytes32 _hash,
