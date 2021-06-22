@@ -1,4 +1,5 @@
 #pragma once
+#include "common/crypto_prefix.h"
 #include "sgx_trts.h"
 #include "stbox/stx_status.h"
 #include "stbox/tsgx/channel/dh_session_initiator.h"
@@ -13,7 +14,7 @@
 namespace ypc {
 
 template <typename UserItemT, typename ParserT>
-class parser_wrapper : public parser_wrapper_base {
+class parser_wrapper_for_offchain : public parser_wrapper_base {
 public:
   typedef UserItemT (*item_parser_t)(const stbox::bytes::byte_t *, size_t);
 
@@ -50,14 +51,57 @@ public:
     if (r1 != static_cast<uint32_t>(stbox::stx_status::success)) {
       return r1;
     }
+    // m_encrypted_result_str is the first round encrypt
+
+    auto skey_size = stbox::crypto::get_secp256k1_private_key_size();
+    auto pkey_size = stbox::crypto::get_secp256k1_public_key_size();
+
+    stbox::bytes skey(skey_size);
+
+    stbox::crypto::gen_secp256k1_skey(skey_size, skey.data());
+    stbox::bytes pkey(pkey_size);
+    stbox::crypto::generate_secp256k1_pkey_from_skey(skey.data(), pkey.data(),
+                                                     pkey_size);
+
+    auto rs = m_encrypted_result_str;
+    uint32_t cipher_size =
+        stbox::crypto::get_encrypt_message_size_with_prefix(rs.size());
+    m_encrypted_result_str = bytes(cipher_size);
+
+    auto status = stbox::crypto::encrypt_message_with_prefix(
+        pkey.data(), pkey_size, rs.data(), rs.size(),
+        utc::crypto_prefix_arbitrary, (uint8_t *)&m_encrypted_result_str[0],
+        cipher_size);
+    if (status != stbox::stx_status::success) {
+      LOG(ERROR) << "error for encrypt_message: " << status;
+      return status;
+    }
+    auto hash_m = stbox::eth::keccak256_hash(m_encrypted_result_str);
+
+    stbox::bytes pkey_a(pkey_size);
+    status = stbox::crypto::generate_secp256k1_pkey_from_skey(
+        (const uint8_t *)&m_private_key[0], (uint8_t *)&pkey_a[0], pkey_size);
+
+    cipher_size =
+        stbox::crypto::get_encrypt_message_size_with_prefix(skey.size());
+    m_encrypted_c = stbox::bytes(cipher_size);
+    status = stbox::crypto::encrypt_message_with_prefix(
+        pkey_a.data(), pkey_size, skey.data(), skey.size(),
+        utc::crypto_prefix_arbitrary, m_encrypted_c.data(),
+        m_encrypted_c.size());
+    if (status != stbox::stx_status::success) {
+      LOG(ERROR) << "error for encrypt_message: " << status;
+      return status;
+    }
+
     uint32_t sig_size = stbox::crypto::get_secp256k1_signature_size();
     stbox::bytes cost_gas_str(sizeof(m_cost_gas));
     memcpy((uint8_t *)&cost_gas_str[0], (uint8_t *)&m_cost_gas,
            sizeof(m_cost_gas));
     m_result_signature_str = stbox::bytes(sig_size);
-    auto msg = m_encrypted_param + m_data_source->data_hash() + cost_gas_str +
-               m_encrypted_result_str + m_enclave_hash;
-    auto status = stbox::crypto::sign_message(
+    auto msg = m_encrypted_c + hash_m + m_data_source->data_hash() +
+               cost_gas_str + m_enclave_hash + m_encrypted_param;
+    status = stbox::crypto::sign_message(
         (uint8_t *)m_private_key.data(), m_private_key.size(),
         (uint8_t *)&msg[0], msg.size(), (uint8_t *)&m_result_signature_str[0],
         sig_size);
@@ -72,14 +116,22 @@ public:
     return m.merge_parse_result(block_results, m_param, m_result_str);
   }
 
-  virtual uint32_t get_result_encrypt_key_size() { return 0; }
+  virtual uint32_t get_result_encrypt_key_size() {
+    return m_encrypted_c.size();
+  }
   virtual uint32_t get_result_encrypt_key(uint8_t *key, uint32_t key_size) {
-    return 0;
+    if (!key || key_size < m_encrypted_c.size()) {
+      return stbox::stx_status::invalid_parameter_error;
+    }
+    memcpy(key, m_encrypted_c.data(), m_encrypted_c.size());
+    return stbox::stx_status::success;
   }
 
 protected:
   std::unique_ptr<ParserT> m_parser;
   item_parser_t m_item_parser_func;
+
+  stbox::bytes m_encrypted_c;
 
   std::unique_ptr<sealed_data_provider<UserItemT>> m_data_source;
 };

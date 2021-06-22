@@ -5,9 +5,13 @@ import "./ECDSA.sol";
 import "./YZDataInterface.sol";
 import "./ProgramProxyInterface.sol";
 
-contract YZDataRequest {
+
+
+contract YZDataRequestForOffChainResult {
   using SafeMath for uint256;
   using ECDSA for bytes32;
+
+  enum RequestStatus{init, upload_url, request_key, settled}
 
     struct YZRequest{
       address payable from;
@@ -19,7 +23,7 @@ contract YZDataRequest {
       uint token_amount;
       uint gas_price;
       uint block_number;
-      bool settled;
+      RequestStatus status;
       bool exists;
     }
     mapping (bytes32 => YZRequest) request_infos;
@@ -45,7 +49,7 @@ contract YZDataRequest {
       require(pkey.length != 0, "not a registered user");
       require(data.is_program_hash_available(program_hash), "invalid program");
       (,,,,bool is_offchain,)= ProgramProxyInterface(data.program_proxy()).get_program_info(program_hash);
-      require(!is_offchain, "can only use program with onchain result");
+      require(is_offchain, "can only use program with offchain result");
 
       request_hash = keccak256(abi.encode(msg.sender, pkey, secret, input, forward_sig, program_hash, gas_price));
       require(request_infos[request_hash].exists == false, "already exist");
@@ -60,7 +64,7 @@ contract YZDataRequest {
       request_infos[request_hash].token_amount = msg.value;
       request_infos[request_hash].gas_price = gas_price;
       request_infos[request_hash].block_number = block.number;
-      request_infos[request_hash].settled = false;
+      request_infos[request_hash].status = RequestStatus.init;
       request_infos[request_hash].exists = true;
 
       emit RequestData(request_hash, secret, input, forward_sig, program_hash, gas_price);
@@ -70,7 +74,7 @@ contract YZDataRequest {
     event RefundRequest(bytes32 request_hash, uint256 old_amount, uint256 new_amount);
     function refund_request(bytes32 request_hash) public payable{
       require(request_infos[request_hash].exists, "request not exist");
-      require(request_infos[request_hash].settled, "already settled");
+      require(request_infos[request_hash].status != RequestStatus.settled, "already settled");
       require(request_infos[request_hash].from == msg.sender, "only request owner can refund");
 
       uint256 old = request_infos[request_hash].token_amount;
@@ -80,25 +84,44 @@ contract YZDataRequest {
       emit RefundRequest(request_hash, old, request_infos[request_hash].token_amount);
     }
 
-    event SubmitResult(bytes32 request_hash, bytes data, uint cost_gas, bytes result, bytes sig, uint256 cost_token, uint256 return_token);
-    event SResultInsufficientFund(bytes32 request_hash, uint256 expect_fund, uint256 actual_fund);
-    function submit_result(bytes32 request_hash, bytes memory data_hash, uint cost, bytes memory result, bytes memory sig) public returns(bool){
+    event SubmitResultForOffChain(bytes32 request_hash, string result_url);
+    function submit_result_offchain_url(bytes32 request_hash, string memory result_url) public returns(bool){
       require(request_infos[request_hash].exists, "request not exist");
-      require(!request_infos[request_hash].settled, "already settled");
+      require(!request_infos[request_hash].status == RequestStatus.init, "only for init status");
+      request_infos[request_hash].status = RequestStatus.upload_url;
+      emit SubmitResultForOffChain(request_hash, result_url);
+      return true;
+    }
 
+    event RequestResultDecryptionKey(bytes32 request_hash, bytes32 result_hash);
+    function request_result_decryption_key(bytes32 request_hash, bytes32 result_hash) public returns(bool){
+      require(request_infos[request_hash].exists, "request not exist");
+      require(request_infos[request_hash].status == RequestStatus.upload_url, "only for upload_url status");
+      require(result_infos[request_hash].from == msg.sender, "only for request sender");
+      request_infos[request_hash].status = RequestStatus.request_key;
+      request_infos[request_hash].result_hash = result_hash;
+      emit RequestResultDecryptionKey(request_hash, result_hash);
+
+      return true;
+    }
+
+
+    event SubmitResultDecryptionKey(bytes32 request_hash, bytes key, uint cost_gas, bytes result, bytes sig, uint256 cost_token, uint256 return_token);
+    function submit_result_decryption_key(bytes32 request_hash, bytes key, uint cost_gas, bytes sig) public returns(bool){
+      require(request_infos[request_hash].exists, "request not exist");
+      require(request_infos[request_hash].status == RequestStatus.request_key, "only for request key");
       YZRequest storage r = request_infos[request_hash];
-      bytes32 vhash = keccak256(abi.encodePacked(r.input, data_hash, uint64(cost), result));
+
+      (,,,,,bytes32 enclave_hash)= ProgramProxyInterface(data.program_proxy()).get_program_info(r.program_hash);
+
+      bytes32 vhash = keccak256(abi.encodePacked(key, r.result_hash, data.data_hash(), cost_gas, enclave_hash, r.input));
       bool v = verify_signature(vhash.toEthSignedMessageHash(), sig, r.pkey4v);
-      require(v, "invalid data");
+      require(v, "invalid decryption key");
 
       uint amount = cost.safeMul(request_infos[request_hash].gas_price);
       amount = amount.safeAdd(data.price()).safeAdd(data.program_price(r.program_hash));
 
-      //emit event instead of revert, so users can refund
-      if(amount > request_infos[request_hash].token_amount){
-        emit SResultInsufficientFund(request_hash, amount, request_infos[request_hash].token_amount);
-        return false;
-      }
+      require(amount <= r.token_amount, "insufficient fund");
 
       r.settled = true;
       uint rest = r.token_amount.safeSub(amount);
@@ -120,7 +143,7 @@ contract YZDataRequest {
     function revoke_request(bytes32 request_hash) public{
       YZRequest storage r = request_infos[request_hash];
       require(msg.sender == r.from, "not owner of this request");
-      require(r.settled == false, "alread settled");
+      require(r.settled == false, "already settled");
 
       //require(block.number - r.block_number >= revoke_period, "not long enough for revoke");
 
@@ -145,10 +168,10 @@ contract YZDataRequest {
     }
 }
 
-contract YZDataRequestFactory{
+contract YZDataRequestForOffChainFactory{
   event NewYZDataRequest(address addr);
   function createYZDataRequest(address data) public returns(address){
-    YZDataRequest r = new YZDataRequest(data);
+    YZDataRequestForOffChain r = new YZDataRequestForOffChain(data);
     emit NewYZDataRequest(address(r));
     return address(r);
   }

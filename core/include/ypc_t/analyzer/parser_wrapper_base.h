@@ -43,7 +43,14 @@ public:
   virtual bool user_def_block_result_merge(
       const std::vector<stbox::bytes> &block_results) = 0;
 
+  virtual uint32_t get_result_encrypt_key_size() = 0;
+  virtual uint32_t get_result_encrypt_key(uint8_t *key, uint32_t key_size) = 0;
+
   inline bool need_continue() { return m_continue; }
+
+  inline void set_enclave_hash(const uint8_t *hash, uint32_t hash_size) {
+    m_enclave_hash = stbox::bytes(hash, hash_size);
+  }
 
 protected:
   uint32_t request_private_key();
@@ -53,6 +60,7 @@ protected:
   std::unique_ptr<stbox::dh_session_initiator> m_datahub_session;
   std::unique_ptr<stbox::dh_session_initiator> m_keymgr_session;
 
+  stbox::bytes m_enclave_hash;
   stbox::bytes m_response_str;
   stbox::bytes m_result_str;
   stbox::bytes m_private_key;

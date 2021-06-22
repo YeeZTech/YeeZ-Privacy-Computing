@@ -267,6 +267,9 @@ uint32_t parser_wrapper_base::merge_parse_result(const uint8_t *encrypted_param,
   }
   m_continue = user_def_block_result_merge(results);
   m_block_results.clear();
+  if (m_enclave_hash.size() == 0) {
+    LOG(WARNING) << "didn't set enclave hash";
+  }
 
   return stbox::stx_status::success;
 }

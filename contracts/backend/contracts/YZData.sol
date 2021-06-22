@@ -24,6 +24,7 @@ contract YZData {
 
     address public program_proxy;
     address public request_proxy;
+    address public offchain_request_proxy;
 
     CertInterface public cert_contract_addr;
 
@@ -76,6 +77,13 @@ contract YZData {
       emit ChangeRequestProxy(old, request_proxy);
     }
 
+    event ChangeOffChainRequestProxy(address _old, address _new);
+    function change_offchain_request_proxy(address _addr) public is_owner{
+      address old = offchain_request_proxy;
+      offchain_request_proxy = _addr;
+      emit ChangeOffChainRequestProxy(old, offchain_request_proxy);
+    }
+
     event ChangeProgramProxy(address _old, address _new);
     function change_program_proxy(address _addr) public is_owner{
       address old = program_proxy;
@@ -92,6 +100,7 @@ contract YZDataFactory{
   event NewYZData(address addr);
   address public cert_addr;
   YZDataRequestFactoryInterface public request_factory;
+  YZDataRequestFactoryInterface public offchain_request_factory;
 
   constructor(address addr, address _request_factory) public{
     cert_addr = addr;
@@ -110,6 +119,8 @@ contract YZDataFactory{
 
     address req = request_factory.createYZDataRequest(address(y));
     y.change_request_proxy(req);
+    req = offchain_request_factory.createYZDataRequest(address(y));
+    y.change_offchain_request_proxy(req);
     y.transferOwner(msg.sender);
     emit NewYZData(address(y));
     return address(y);

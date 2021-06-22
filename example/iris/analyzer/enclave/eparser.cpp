@@ -10,7 +10,14 @@
 
 ypc::parser_wrapper<user_item_t, enclave_iris_parser> pw;
 
-uint32_t begin_parse_data_item() { return pw.begin_parse_data_item(); }
+uint32_t begin_parse_data_item() {
+  stbox::bytes hash(get_enclave_hash_size());
+  get_enclave_hash(hash.data(), hash.size());
+
+  pw.set_enclave_hash(hash.data(), hash.size());
+
+  return pw.begin_parse_data_item();
+}
 uint32_t parse_data_item(uint8_t *sealed_data, uint32_t len) {
   pw.set_item_parser(ypc::ecall_parse_item_data);
   return pw.parse_data_item(sealed_data, len);

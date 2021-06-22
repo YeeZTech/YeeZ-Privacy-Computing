@@ -7,7 +7,7 @@ async function performMigration(deployer, network, accounts) {
   if(network.includes("development") ||
     network.includes("ganache")
     ){
-    await deployer.deploy(TestProgramStore);
+    await deployer.deploy(ProgramStore);
   }
 }
 module.exports = function(deployer, network, accounts){

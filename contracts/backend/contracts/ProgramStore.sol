@@ -8,6 +8,7 @@ contract ProgramStore{
       string program_url;
       uint256 price;
       bytes32 enclave_hash;
+      bool offchain_flag; //for result
       bool exists;
     }
 
@@ -15,7 +16,7 @@ contract ProgramStore{
     bytes32[] public program_hashes;
 
     event UploadProgram(bytes32 hash, address author);
-    function upload_program(string memory _name, string memory _desc, string memory _url, uint256 _price, bytes32 _enclave_hash) public returns(bytes32){
+    function upload_program(string memory _name, string memory _desc, bool _offchain, string memory _url, uint256 _price, bytes32 _enclave_hash, ) public returns(bytes32){
       bytes32 _hash = keccak256(abi.encodePacked(msg.sender, _name, _desc, _url, _price, _enclave_hash));
       require(!program_info[_hash].exists, "already exist");
       program_info[_hash].author = msg.sender;
@@ -23,6 +24,7 @@ contract ProgramStore{
       program_info[_hash].program_desc = _desc;
       program_info[_hash].program_url = _url;
       program_info[_hash].price = _price;
+      program_info[_hash].offchain_flag = _offchain;
       program_info[_hash].enclave_hash = _enclave_hash;
       program_info[_hash].exists = true;
       program_hashes.push(_hash);
@@ -39,6 +41,7 @@ contract ProgramStore{
                                                                 string memory program_desc,
                                                                 string memory program_url,
                                                                 uint256 price,
+                                                                bool for_offchain,
                                                                 bytes32 enclave_hash){
       require(program_info[hash].exists, "program not exist");
       program_meta storage m = program_info[hash];
@@ -47,6 +50,7 @@ contract ProgramStore{
       program_desc = m.program_desc;
       program_url = m.program_url;
       price = m.price;
+      for_offchain = m.offchain_flag;
       enclave_hash = m.enclave_hash;
     }
 
