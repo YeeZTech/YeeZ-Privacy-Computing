@@ -66,4 +66,5 @@
   }                                                                            \
   uint32_t get_result_encrypt_key(uint8_t *key, uint32_t key_size) {           \
     return pw.get_result_encrypt_key(key, key_size);                           \
-  }
+  }                                                                            \
+  uint32_t get_parser_type() { return pw.get_parser_type(); }

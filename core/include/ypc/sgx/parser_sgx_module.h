@@ -1,4 +1,5 @@
 #pragma once
+#include "common/parser_type.h"
 #include "sgx_eid.h"
 #include "sgx_error.h"
 #include "ypc/byte.h"
@@ -7,6 +8,8 @@
 #include <ypc/ref.h>
 
 using stx_status = stbox::stx_status;
+using parser_type_t = ypc::utc::parser_type_t;
+
 class parser_sgx_module : public stbox::sgx_module {
 public:
   parser_sgx_module(const char *mod_path);
@@ -21,6 +24,10 @@ public:
                                               ypc::bref &result_sig);
 
   uint32_t get_data_hash(ypc::bref &data_hash);
+
+  uint32_t get_result_encrypt_skey(ypc::bref &key);
+  uint32_t get_encrypted_result_hash(ypc::bref &hash);
+  parser_type_t get_parser_type();
 
   uint32_t add_block_parse_result(uint16_t block_index,
                                   const uint8_t *block_result,

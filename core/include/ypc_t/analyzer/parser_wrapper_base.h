@@ -1,4 +1,5 @@
 #pragma once
+#include "common/parser_type.h"
 #include "sgx_trts.h"
 #include "stbox/stx_status.h"
 #include "stbox/tsgx/channel/dh_session_initiator.h"
@@ -45,6 +46,8 @@ public:
 
   virtual uint32_t get_result_encrypt_key_size() = 0;
   virtual uint32_t get_result_encrypt_key(uint8_t *key, uint32_t key_size) = 0;
+
+  virtual utc::parser_type_t get_parser_type() = 0;
 
   inline bool need_continue() { return m_continue; }
 

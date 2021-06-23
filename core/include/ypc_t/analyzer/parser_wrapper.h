@@ -72,6 +72,10 @@ public:
     return m.merge_parse_result(block_results, m_param, m_result_str);
   }
 
+  virtual utc::parser_type_t get_parser_type() {
+    return utc::onchain_result_parser;
+  }
+
   virtual uint32_t get_result_encrypt_key_size() { return 0; }
   virtual uint32_t get_result_encrypt_key(uint8_t *key, uint32_t key_size) {
     return 0;

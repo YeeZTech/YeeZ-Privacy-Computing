@@ -127,6 +127,10 @@ public:
     return stbox::stx_status::success;
   }
 
+  virtual utc::parser_type_t get_parser_type() {
+    return utc::offchain_result_parser;
+  }
+
 protected:
   std::unique_ptr<ParserT> m_parser;
   item_parser_t m_item_parser_func;
