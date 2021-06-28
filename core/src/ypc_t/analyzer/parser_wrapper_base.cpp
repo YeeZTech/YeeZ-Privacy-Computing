@@ -7,6 +7,7 @@
 #include "stbox/tsgx/crypto/ecc.h"
 #include "stbox/tsgx/log.h"
 #include "yaenclave_t.h"
+#include "ypc_t/ecommon/signer_verify.h"
 #include "ypc_t/ecommon/version.h"
 
 uint32_t get_ypc_analyzer_version() { return ypc::version(1, 0, 0).data(); }
@@ -30,15 +31,12 @@ parser_wrapper_base::~parser_wrapper_base() {}
 stbox::stx_status datahub_verify_peer_enclave_trust(
     sgx_dh_session_enclave_identity_t *peer_enclave_identity) {
   if (!peer_enclave_identity) {
-    LOG(ERROR) << "verify peer enclave failed";
+    LOG(ERROR) << "verify datahub enclave failed";
     return stbox::stx_status::invalid_parameter_error;
   }
 
-  // printf("datahub MRENCLAVE:");
-  uint8_t *p = (uint8_t *)&peer_enclave_identity->mr_enclave;
-  for (int i = 0; i < sizeof(sgx_measurement_t); ++i) {
-    uint8_t c = p[i];
-    // printf("%02X ", c);
+  if (!ypc::is_certified_signer(peer_enclave_identity)) {
+    return stbox::stx_status::enclave_trust_error;
   }
   return stbox::stx_status::success;
 }
@@ -50,11 +48,8 @@ stbox::stx_status km_verify_peer_enclave_trust(
     return stbox::stx_status::invalid_parameter_error;
   }
 
-  // printf("keymgr MRENCLAVE:");
-  uint8_t *p = (uint8_t *)&peer_enclave_identity->mr_enclave;
-  for (int i = 0; i < sizeof(sgx_measurement_t); ++i) {
-    uint8_t c = p[i];
-    // printf("%02X ", c);
+  if (!ypc::is_certified_signer(peer_enclave_identity)) {
+    return stbox::stx_status::enclave_trust_error;
   }
   return stbox::stx_status::success;
 }

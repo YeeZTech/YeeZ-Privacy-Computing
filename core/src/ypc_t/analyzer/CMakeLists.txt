@@ -1,6 +1,7 @@
 
 set(src parser_wrapper_base.cpp
   ../ecommon/package.cpp
+  ../ecommon/signer_verify.cpp
   ${FF_SRC_PATH}/net/common/archive.cpp
   #${FF_SRC_PATH}/net/middleware/package.cpp
   )

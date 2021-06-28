@@ -12,13 +12,11 @@ sgx_measurement_t g_responder_mrsigner = {
 namespace ypc {
 bool is_certified_signer(
     sgx_dh_session_enclave_identity_t *peer_enclave_identity) {
-#if 0
   if (memcmp((uint8_t *)&peer_enclave_identity->mr_signer,
              (uint8_t *)&g_responder_mrsigner, sizeof(sgx_measurement_t))) {
     LOG(ERROR) << "not a trusted signer";
     return false;
   }
-#endif
 
 #if 0
   if (peer_enclave_identity->isv_prod_id != RESPONDER_PRODID ||
@@ -30,9 +28,9 @@ bool is_certified_signer(
 
   // check the enclave isn't loaded in enclave debug mode, except that the
   // project is built for debug purpose
-#if defined(NDEBUG)
+#if 0
   if (peer_enclave_identity->attributes.flags & SGX_FLAGS_DEBUG) {
-    LOG(ERROR) << "shouldn't loaded ad DEBUG";
+    LOG(ERROR) << "shouldn't loaded as DEBUG";
     return false;
   }
 #endif
