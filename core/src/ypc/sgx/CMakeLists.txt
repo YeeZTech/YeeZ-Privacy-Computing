@@ -1,3 +1,4 @@
+add_subdirectory(usgx)
 
 add_untrusted_library(ypc_datahub_module SHARED
   SRCS "datahub_sgx_module.cpp"
@@ -12,4 +13,10 @@ add_untrusted_library(ypc_parser_module SHARED
 install(TARGETS ypc_parser_module DESTINATION lib)
 
 target_link_libraries(ypc_datahub_module stbox_common_u)
-target_link_libraries(ypc_parser_module stbox_common_u)
+
+if (${ENABLE_DIANSHU})
+  set(ypc_usgx dshttp_request)
+else()
+  set(ypc_usgx ypc_usgx)
+endif()
+target_link_libraries(ypc_parser_module stbox_common_u ${ypc_usgx})
