@@ -152,7 +152,12 @@ void read_params_from_stdin(std::string &name, std::string &desc,
   }
 }
 
-std::string prefix_hex(const std::string &hex_str) { return "0x" + hex_str; }
+std::string add_prefix_hex_if_not_exist(const std::string &hex_str) {
+  if (hex_str.substr(0, 2) == "0x") {
+    return hex_str;
+  }
+  return "0x" + hex_str;
+}
 
 boost::property_tree::ptree generate_description(const std::string &name,
                                                  const std::string &desc,
@@ -294,9 +299,11 @@ int main(int argc, char *argv[]) {
       (const char *)sample_hex_bytes.data(),
       sample_hex_bytes.size()); // ypc::to_hex(ypc::string_to_byte(sample));
 
-  write_params_to_json(output, prefix_hex(info.get<::data_id>()),
-                       info.get<::item_num>(), name, desc, sample,
-                       prefix_hex(sample_hex), env_info, price, program_proxy,
-                       prefix_hex(pkey), prefix_hex(pkey_sig));
+  write_params_to_json(
+      output, add_prefix_hex_if_not_exist(info.get<::data_id>()),
+      info.get<::item_num>(), name, desc, sample,
+      add_prefix_hex_if_not_exist(sample_hex), env_info, price,
+      add_prefix_hex_if_not_exist(program_proxy),
+      add_prefix_hex_if_not_exist(pkey), add_prefix_hex_if_not_exist(pkey_sig));
   return 0;
 }
