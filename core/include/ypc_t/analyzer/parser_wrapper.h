@@ -55,8 +55,9 @@ public:
     memcpy((uint8_t *)&cost_gas_str[0], (uint8_t *)&m_cost_gas,
            sizeof(m_cost_gas));
     m_result_signature_str = stbox::bytes(sig_size);
+    // TODO also sign enclave_hash
     auto msg = m_encrypted_param + m_data_source->data_hash() + cost_gas_str +
-               m_encrypted_result_str + m_enclave_hash;
+               m_encrypted_result_str;
     auto status = stbox::crypto::sign_message(
         (uint8_t *)m_private_key.data(), m_private_key.size(),
         (uint8_t *)&msg[0], msg.size(), (uint8_t *)&m_result_signature_str[0],

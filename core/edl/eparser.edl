@@ -36,7 +36,8 @@ enclave {
 
   untrusted {
     /* define OCALLs here. */
-    uint32_t ocall_http_request([in, size=param_size] const char * param, uint32_t param_size,
+    uint32_t ocall_http_request([in, size=service_size] const char * service, uint32_t service_size,
+                                [in, size=param_size] const char * param, uint32_t param_size,
                                 [out, size=resp_size] char * resp, uint32_t resp_size);
   };
 };
