@@ -21,7 +21,8 @@ public:
 
   uint32_t get_enclave_hash(ypc::bref &enclave_hash);
   uint32_t get_encrypted_result_and_signature(ypc::bref &encrypted_res,
-                                              ypc::bref &result_sig);
+                                              ypc::bref &result_sig,
+                                              ypc::bref &cost_sig);
 
   uint32_t get_data_hash(ypc::bref &data_hash);
 

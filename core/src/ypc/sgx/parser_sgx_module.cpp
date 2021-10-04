@@ -43,20 +43,23 @@ uint32_t parser_sgx_module::get_enclave_hash(ypc::bref &_enclave_hash) {
   return t;
 }
 
-uint32_t
-parser_sgx_module::get_encrypted_result_and_signature(ypc::bref &_encrypted_res,
-                                                      ypc::bref &_result_sig) {
-  uint32_t res_size, sig_size;
-  uint8_t *encrypted_res, *result_sig;
+uint32_t parser_sgx_module::get_encrypted_result_and_signature(
+    ypc::bref &_encrypted_res, ypc::bref &_result_sig, ypc::bref &_cost_sig) {
+  uint32_t res_size, sig_size, cost_sig_size;
+  uint8_t *encrypted_res, *result_sig, *cost_sig;
   stbox::buffer_length_t buf_res(&res_size, &encrypted_res,
                                  ::get_encrypted_result_size);
   stbox::buffer_length_t buf_sig(&sig_size, &result_sig,
                                  ::get_secp256k1_signature_size);
-  auto t = ecall<uint32_t>(::get_encrypted_result_and_signature,
-                           stbox::xmem(buf_res), stbox::xlen(buf_res),
-                           stbox::xmem(buf_sig), stbox::xlen(buf_sig));
+  stbox::buffer_length_t cost_buf_sig(&cost_sig_size, &cost_sig,
+                                      ::get_encrypted_result_size);
+  auto t = ecall<uint32_t>(
+      ::get_encrypted_result_and_signature, stbox::xmem(buf_res),
+      stbox::xlen(buf_res), stbox::xmem(buf_sig), stbox::xlen(buf_sig),
+      stbox::xmem(cost_buf_sig), stbox::xlen(cost_buf_sig));
   _encrypted_res = ypc::bref(encrypted_res, res_size);
   _result_sig = ypc::bref(result_sig, sig_size);
+  _cost_sig = ypc::bref(cost_sig, cost_sig_size);
   return t;
 }
 

@@ -168,11 +168,13 @@ uint32_t parser_wrapper_base::end_parse_data_item() {
 
 uint32_t parser_wrapper_base::get_encrypted_result_and_signature(
     uint8_t *encrypted_res, uint32_t res_size, uint8_t *result_sig,
-    uint32_t sig_size) {
+    uint32_t sig_size, uint8_t *cost_sig, uint32_t cost_sig_size) {
   memcpy(encrypted_res, (uint8_t *)&m_encrypted_result_str[0],
          m_encrypted_result_str.size());
   memcpy(result_sig, (uint8_t *)&m_result_signature_str[0],
          m_result_signature_str.size());
+  memcpy(cost_sig, (uint8_t *)&m_cost_signature_str[0],
+         m_cost_signature_str.size());
   return stbox::stx_status::success;
 }
 

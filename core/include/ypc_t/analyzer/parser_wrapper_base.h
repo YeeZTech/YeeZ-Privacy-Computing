@@ -27,10 +27,10 @@ public:
   virtual inline uint32_t get_encrypted_result_size() const {
     return m_encrypted_result_str.size();
   }
-  virtual uint32_t get_encrypted_result_and_signature(uint8_t *encrypted_res,
-                                                      uint32_t res_size,
-                                                      uint8_t *result_sig,
-                                                      uint32_t sig_size);
+  virtual uint32_t
+  get_encrypted_result_and_signature(uint8_t *encrypted_res, uint32_t res_size,
+                                     uint8_t *result_sig, uint32_t sig_size,
+                                     uint8_t *cost_sig, uint32_t cost_sig_size);
 
   virtual uint32_t add_block_parse_result(uint16_t block_index,
                                           uint8_t *block_result,
@@ -71,6 +71,7 @@ protected:
   stbox::bytes m_encrypted_param;
   uint64_t m_cost_gas;
   stbox::bytes m_encrypted_result_str;
+  stbox::bytes m_cost_signature_str;
   stbox::bytes m_result_signature_str;
 
   //! for merge block result

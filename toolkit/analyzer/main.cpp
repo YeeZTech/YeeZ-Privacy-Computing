@@ -228,9 +228,9 @@ void parallel_parse(std::shared_ptr<param_source> psource,
       continue_flag = (val == 0x1312);
 
       // make the result as new param
-      ypc::bytes encrypted_result, result_sig, data_hash;
+      ypc::bytes encrypted_result, result_sig, data_hash, cost_sig;
       round_result_target->read_from_target(encrypted_result, result_sig,
-                                            data_hash);
+                                            cost_sig, data_hash);
       tmp_source->input() = encrypted_result;
     }
   }

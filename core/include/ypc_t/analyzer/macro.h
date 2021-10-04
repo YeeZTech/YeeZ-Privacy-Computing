@@ -35,9 +35,10 @@
   }                                                                            \
   uint32_t get_encrypted_result_and_signature(                                 \
       uint8_t *encrypted_res, uint32_t res_size, uint8_t *result_sig,          \
-      uint32_t sig_size) {                                                     \
+      uint32_t sig_size, uint8_t *cost_sig, uint32_t cost_sig_size) {          \
     return pw.get_encrypted_result_and_signature(encrypted_res, res_size,      \
-                                                 result_sig, sig_size);        \
+                                                 result_sig, sig_size,         \
+                                                 cost_sig, cost_sig_size);     \
   }                                                                            \
                                                                                \
   uint32_t add_block_parse_result(uint16_t block_index, uint8_t *block_result, \

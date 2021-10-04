@@ -44,8 +44,9 @@ uint32_t parser_base::parse() {
   }
   LOG(INFO) << "parse done";
 
-  ypc::bref encrypted_res, result_sig, data_hash;
-  ret = m_parser->get_encrypted_result_and_signature(encrypted_res, result_sig);
+  ypc::bref encrypted_res, result_sig, data_hash, cost_sig;
+  ret = m_parser->get_encrypted_result_and_signature(encrypted_res, result_sig,
+                                                     cost_sig);
   if (ret) {
     return ret;
   }
@@ -54,7 +55,7 @@ uint32_t parser_base::parse() {
     return ret;
   }
 
-  m_rtarget->write_to_target(encrypted_res, result_sig, data_hash);
+  m_rtarget->write_to_target(encrypted_res, result_sig, cost_sig, data_hash);
   LOG(INFO) << "write result target done";
   return ypc::success;
 }
@@ -95,7 +96,9 @@ bool parser_base::merge(
     ypc::bytes encrypted_result;
     ypc::bytes sig;
     ypc::bytes hash;
-    block_results[i]->read_from_target(encrypted_result, sig, hash);
+    ypc::bytes cost_sig;
+    block_results[i]->read_from_target(encrypted_result, sig, cost_sig, hash);
+    // TODO seems we missed the batched cost here
     m_parser->add_block_parse_result(i, encrypted_result, hash, sig);
   }
   LOG(INFO) << "add_block_parse_result done";
@@ -118,8 +121,9 @@ bool parser_base::merge(
     return ret;
   }
 
-  ypc::bref encrypted_res, result_sig, data_hash;
-  ret = m_parser->get_encrypted_result_and_signature(encrypted_res, result_sig);
+  ypc::bref encrypted_res, result_sig, data_hash, cost_sig;
+  ret = m_parser->get_encrypted_result_and_signature(encrypted_res, result_sig,
+                                                     cost_sig);
   if (ret) {
     return ret;
   }
@@ -129,7 +133,7 @@ bool parser_base::merge(
   }
   LOG(INFO) << "get_encrypted_result done";
 
-  m_rtarget->write_to_target(encrypted_res, result_sig, data_hash);
+  m_rtarget->write_to_target(encrypted_res, result_sig, cost_sig, data_hash);
   LOG(INFO) << "write result target done";
   return m_parser->need_continue();
 }

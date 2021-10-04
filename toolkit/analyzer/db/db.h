@@ -15,6 +15,7 @@ define_column(forward_sig, column, ypc::hex_bytes, "forward_sig");
 define_column(status, column, uint64_t, "status");
 define_column(encrypted_result, column, ypc::hex_bytes, "encrypted_result");
 define_column(result_signature, column, ypc::hex_bytes, "result_signature");
+define_column(cost_signature, column, ypc::hex_bytes, "cost_signature");
 define_column(data_hash, column, ypc::hex_bytes, "data_hash");
 
 namespace ff {
@@ -57,10 +58,11 @@ struct request_data_table_desc {
   constexpr static const char *table_name = "RequestData";
 };
 
-typedef ::ff::sql::table<
-    ::ff::sql::mysql<::ff::sql::cppconn>, request_data_table_desc, request_hash,
-    encrypted_skey, encrypted_input, provider_pkey, analyzer_pkey, enclave_hash,
-    forward_sig, status, encrypted_result, result_signature, data_hash>
+typedef ::ff::sql::table<::ff::sql::mysql<::ff::sql::cppconn>,
+                         request_data_table_desc, request_hash, encrypted_skey,
+                         encrypted_input, provider_pkey, analyzer_pkey,
+                         enclave_hash, forward_sig, status, encrypted_result,
+                         result_signature, cost_signature, data_hash>
     request_data_table;
 typedef typename request_data_table::row_type request_data_item_t;
 
