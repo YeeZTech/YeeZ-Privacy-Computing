@@ -146,9 +146,12 @@ public:
       BytesType>::type {
     bytes<ByteType, byte_encode::raw_bytes> ret(
         internal::bytes_base<ByteType>::size() / 2);
-    internal::convert_hex_to_bytes(internal::bytes_base<ByteType>::data(),
-                                   internal::bytes_base<ByteType>::size(),
-                                   ret.data(), ret.size());
+    auto v = internal::convert_hex_to_bytes(
+        internal::bytes_base<ByteType>::data(),
+        internal::bytes_base<ByteType>::size(), ret.data(), ret.size());
+    if (!v) {
+      throw std::invalid_argument("invalid hex string");
+    }
     return ret;
   }
 
