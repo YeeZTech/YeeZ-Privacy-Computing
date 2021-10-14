@@ -55,6 +55,9 @@ privacy_data_reader::privacy_data_reader(const std::string &plugin_path,
       get_opt_func_with_name<get_data_format_func_t>("get_data_format");
 
   m_handle = m_create_item_reader(m_extra_param.c_str(), m_extra_param.size());
+  if (!m_handle) {
+    throw std::runtime_error("failed to create item reader");
+  }
 }
 privacy_data_reader::~privacy_data_reader() {
   if (m_handle) {

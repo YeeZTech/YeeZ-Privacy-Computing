@@ -56,10 +56,9 @@ public:
            sizeof(m_cost_gas));
     m_result_signature_str = stbox::bytes(sig_size);
     m_cost_signature_str = stbox::bytes(sig_size);
-    // TODO also sign enclave_hash
 
-    auto cost_msg =
-        m_encrypted_param + m_data_source->data_hash() + cost_gas_str;
+    auto cost_msg = m_encrypted_param + m_data_source->data_hash() +
+                    m_enclave_hash + cost_gas_str;
     auto status = stbox::crypto::sign_message(
         (uint8_t *)m_private_key.data(), m_private_key.size(),
         (uint8_t *)&cost_msg[0], cost_msg.size(),
@@ -69,8 +68,8 @@ public:
       return status;
     }
 
-    auto msg = m_encrypted_param + m_data_source->data_hash() + cost_gas_str +
-               m_encrypted_result_str;
+    auto msg = m_encrypted_param + m_data_source->data_hash() + m_enclave_hash +
+               cost_gas_str + m_encrypted_result_str;
     status = stbox::crypto::sign_message(
         (uint8_t *)m_private_key.data(), m_private_key.size(),
         (uint8_t *)&msg[0], msg.size(), (uint8_t *)&m_result_signature_str[0],
