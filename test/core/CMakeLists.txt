@@ -1,3 +1,5 @@
+add_subdirectory(enclave)
+
 add_executable(gtest_core
   main.cpp
   gtest_common.cpp
@@ -16,3 +18,15 @@ target_link_libraries(gtest_core gtest ypc_core stbox_common_u)
 
 add_test(NAME test-core
   COMMAND gtest_core)
+
+set(edl_path ${PROJECT_SOURCE_DIR}/stbox/src/tsgx/crypto/:${PROJECT_SOURCE_DIR}/stbox/src)
+
+
+add_untrusted_library(test_ypc_lib SHARED
+  SRCS "test_ypc_module.cpp"
+  EDL ./enclave/enclave.edl
+  EDL_SEARCH_PATHS ${edl_path})
+add_executable(gen_sign_for_ypc gen_sign_for_ypc.cpp)
+target_link_libraries(gen_sign_for_ypc test_ypc_lib ypc_core)
+
+add_dependencies(gen_sign_for_ypc test_ypc_enclave-sign)

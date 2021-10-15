@@ -23,7 +23,7 @@ const bytes &ecc_context::skey() {
                                       m_pkey_big.size());
 
     m_pkey_little = m_pkey_big;
-    ::ypc::utc::change_endian(m_pkey_little);
+    ::ypc::utc::change_pubkey_endian(m_pkey_little);
   }
   return m_skey;
 }

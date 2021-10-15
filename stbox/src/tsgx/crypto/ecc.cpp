@@ -61,7 +61,7 @@ uint32_t gen_pkey_from_skey(const secp256k1_context *ctx, const uint8_t *skey,
     LOG(ERROR) << "Pubkey computation failed: " << ret;
     return stbox::stx_status::ecc_secp256k1_ec_pubkey_create_error;
   }
-  ::ypc::utc::change_endian((uint8_t *)pkey, sizeof(secp256k1_pubkey));
+  ::ypc::utc::change_pubkey_endian((uint8_t *)pkey, sizeof(secp256k1_pubkey));
   return SGX_SUCCESS;
 }
 
@@ -193,8 +193,8 @@ uint32_t verify_signature(const uint8_t *data, uint32_t data_size,
 
   secp256k1_pubkey secp256k1_pkey;
   memcpy(&secp256k1_pkey, public_key, pkey_size);
-  ::ypc::utc::change_endian((uint8_t *)&secp256k1_pkey,
-                            sizeof(secp256k1_pubkey));
+  ::ypc::utc::change_pubkey_endian((uint8_t *)&secp256k1_pkey,
+                                   sizeof(secp256k1_pubkey));
 
   secp256k1_ecdsa_recoverable_signature rsig;
   se_ret = (sgx_status_t)secp256k1_ecdsa_recoverable_signature_parse_compact(
@@ -307,7 +307,7 @@ uint32_t gen_sgx_ec_key_128bit(const uint8_t *pkey, uint32_t pkey_size,
 
   secp256k1_pubkey lpkey;
   memcpy((uint8_t *)&lpkey, pkey, sizeof(secp256k1_pubkey));
-  ::ypc::utc::change_endian((uint8_t *)&lpkey, sizeof(secp256k1_pubkey));
+  ::ypc::utc::change_pubkey_endian((uint8_t *)&lpkey, sizeof(secp256k1_pubkey));
 
   secp256k1_context *ctx = ::stbox::crypto::context->ctx();
   sgx_ec256_dh_shared_t ec256_dh_shared_key;

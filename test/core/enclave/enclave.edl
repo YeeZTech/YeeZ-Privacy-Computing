@@ -1,0 +1,30 @@
+/* Enclave.edl - Top EDL file. */
+
+enclave {
+    include "sgx_eid.h"
+    include "stbox/tsgx/channel/dh_cdef.h"
+    from "sgx_tstdc.edl" import *;
+    from "ecc.edl" import *;
+
+    trusted {
+    /* define ECALLs here. */
+    public uint32_t get_encrypted_result_and_signature(
+        [in, size=encrypted_param_size] uint8_t * encrypted_param, uint32_t encrypted_param_size,
+        [in, size=enclave_hash_size] uint8_t * enclave_hash, uint32_t enclave_hash_size,
+        [in, size=result_size] uint8_t * result, uint32_t result_size,
+        [in, size=private_key_size] uint8_t * private_key, uint32_t private_key_size,
+        [in, size=data_hash_size] uint8_t * data_hash, uint32_t data_hash_size,
+        uint64_t cost,
+        [out, size=res_size] uint8_t * encrypted_res, uint32_t res_size,
+        [out, size=sig_size] uint8_t * result_sig, uint32_t sig_size,
+        [out, size=cost_sig_size] uint8_t * cost_sig, uint32_t cost_sig_size);
+
+    public uint32_t get_encrypt_message_size_with_prefix(uint32_t data_size);
+
+    };
+
+
+
+    untrusted {
+    };
+};

@@ -20,7 +20,7 @@ hex_bytes checksum_addr(const hex_bytes &addr) {
 
 hex_bytes gen_addr_from_pkey(const bytes &pkey) {
   bytes be_pkey(pkey);
-  ypc::utc::change_endian(be_pkey);
+  ypc::utc::change_pubkey_endian(be_pkey);
   auto hash = keccak256_hash(be_pkey).as<hex_bytes>();
   hex_bytes sub(hash.data() + 40, hash.size() - 40);
   return checksum_addr(sub);

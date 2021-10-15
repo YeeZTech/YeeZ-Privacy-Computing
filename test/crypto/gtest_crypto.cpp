@@ -111,6 +111,13 @@ TEST_F(crypto_test, sign) {
 
   ypc::bytes sig = m_module->sign_message(sk, cipher);
 
+  ypc::bytes data_hash =
+      ypc::hex_bytes(
+          "3e0d3a43f4f45ba7a1234759c2ffa4028a44599d4ab29bec532bd2057c0f9141")
+          .as<ypc::bytes>();
+  ypc::bytes data_hash_sig = m_module->sign_message(sk, data_hash);
+  std::cout << "data hash sig: " << data_hash_sig << std::endl;
+
   ypc::bytes pkey =
       ypc::hex_bytes(
           "362a609ab5a6eecafdb2289890bd7261871c04fb5d7323d4fc750f6444b067a12a96"

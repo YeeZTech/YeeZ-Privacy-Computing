@@ -1,4 +1,5 @@
 #pragma once
+#include "common/endian.h"
 #include "sgx_trts.h"
 #include "stbox/stx_status.h"
 #include "stbox/tsgx/channel/dh_session_initiator.h"
@@ -54,6 +55,7 @@ public:
     stbox::bytes cost_gas_str(sizeof(m_cost_gas));
     memcpy((uint8_t *)&cost_gas_str[0], (uint8_t *)&m_cost_gas,
            sizeof(m_cost_gas));
+    ypc::utc::endian_swap(cost_gas_str);
     m_result_signature_str = stbox::bytes(sig_size);
     m_cost_signature_str = stbox::bytes(sig_size);
 
