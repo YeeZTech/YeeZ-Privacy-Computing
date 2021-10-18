@@ -140,7 +140,6 @@ protected:
   const std::string m_extra_param;
   std::unique_ptr<::ff::sql::mysql<ff::sql::cppconn>> m_engine;
   typename Table::row_collection_type m_all_items;
-  // std::vector<item_t> m_all_items;
   size_t m_to_read_index;
 };
 } // namespace plugins

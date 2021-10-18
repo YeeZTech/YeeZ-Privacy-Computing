@@ -24,6 +24,6 @@ int main(int argc, char *argv[]) {
   std::cout << p.get<v1>() << ", " << p.get<s1>() << ", " << p.get<v2>()
             << std::endl;
 
-  delete buf;
+  delete[] buf;
   return 0;
 }

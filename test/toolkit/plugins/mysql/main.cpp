@@ -58,6 +58,6 @@ int main(int argc, char *argv[]) {
   std::cout << p.get<cv1>() << ", " << p.get<cs1>() << ", " << p.get<cv2>()
             << std::endl;
 
-  delete buf;
+  delete[] buf;
   return 0;
 }
