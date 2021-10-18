@@ -99,6 +99,7 @@ public:
   virtual int close_item_reader() {
     m_reader.reset();
     m_stream.reset();
+    return 0;
   }
   virtual int get_item_number() {
     std::ifstream s(m_file_path);

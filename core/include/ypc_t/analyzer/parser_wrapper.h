@@ -6,15 +6,17 @@
 #include "stbox/tsgx/crypto/ecc.h"
 #include "stbox/tsgx/log.h"
 #include "stbox/tsgx/ocall.h"
+#include "ypc_t/analyzer/ntpackage_item_parser.h"
 #include "ypc_t/analyzer/parser_wrapper_base.h"
 #include "ypc_t/analyzer/sealed_raw_data.h"
 #include "ypc_t/ecommon/package.h"
 #include <string.h>
 
 namespace ypc {
+namespace internal {
 
 template <typename UserItemT, typename ParserT>
-class parser_wrapper : public parser_wrapper_base {
+class typed_parser_wrapper : public parser_wrapper_base {
 public:
   typedef UserItemT (*item_parser_t)(const stbox::bytes::byte_t *, size_t);
 
@@ -38,6 +40,7 @@ public:
 
   virtual uint32_t parse_data_item(const uint8_t *sealed_data, uint32_t len) {
     uint32_t r1 = parser_wrapper_base::parse_data_item(sealed_data, len);
+
     if (r1 == static_cast<uint32_t>(stbox::stx_status::success)) {
       m_result_str = m_parser->do_parse(m_param);
       // TODO Calculate actual gas cost
@@ -103,4 +106,25 @@ protected:
   std::unique_ptr<sealed_data_provider<UserItemT>> m_data_source;
 };
 
+} // namespace internal
+
+template <typename UserItemT, typename ParserT>
+using parser_wrapper = internal::typed_parser_wrapper<UserItemT, ParserT>;
+
+template <typename UserItemT, typename ParserT>
+class plugin_parser_wrapper
+    : public internal::typed_parser_wrapper<UserItemT, ParserT> {
+public:
+  virtual uint32_t parse_data_item(const uint8_t *sealed_data, uint32_t len) {
+    if (!internal::typed_parser_wrapper<UserItemT,
+                                        ParserT>::m_item_parser_func) {
+      set_item_parser(::ypc::ntpackage_item_parser<stbox::bytes::byte_t,
+                                                   UserItemT>::parser);
+    }
+
+    return internal::typed_parser_wrapper<UserItemT, ParserT>::parse_data_item(
+        sealed_data, len);
+
+  }
+};
 } // namespace ypc

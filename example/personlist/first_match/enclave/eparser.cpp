@@ -10,4 +10,4 @@
 
 ypc::parser_wrapper<user_item_t, first_match_parser> pw;
 
-YPC_PARSER_IMPL(pw);
+YPC_PARSER_IMPL(pw, ypc::ecall_parse_item_data);

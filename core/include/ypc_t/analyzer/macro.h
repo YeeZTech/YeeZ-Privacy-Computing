@@ -1,7 +1,7 @@
 #include "ypc_t/analyzer/parser_wrapper.h"
 #include "ypc_t/analyzer/parser_wrapper_for_offchain.h"
 
-#define YPC_PARSER_IMPL(pw)                                                    \
+#define COMMON_PARSER_IMPL(pw)                                                 \
   uint32_t begin_parse_data_item() {                                           \
     stbox::bytes hash(get_enclave_hash_size());                                \
     get_enclave_hash(hash.data(), hash.size());                                \
@@ -9,10 +9,6 @@
     pw.set_enclave_hash(hash.data(), hash.size());                             \
                                                                                \
     return pw.begin_parse_data_item();                                         \
-  }                                                                            \
-  uint32_t parse_data_item(uint8_t *sealed_data, uint32_t len) {               \
-    pw.set_item_parser(ypc::ecall_parse_item_data);                            \
-    return pw.parse_data_item(sealed_data, len);                               \
   }                                                                            \
   uint32_t end_parse_data_item() { return pw.end_parse_data_item(); }          \
                                                                                \
@@ -69,3 +65,19 @@
     return pw.get_result_encrypt_key(key, key_size);                           \
   }                                                                            \
   uint32_t get_parser_type() { return pw.get_parser_type(); }
+
+#define YPC_PARSER_IMPL(...)                                                   \
+  JOIN(YPC_PARSER_IMPL_, PP_NARG(__VA_ARGS__))(__VA_ARGS__)
+
+#define YPC_PARSER_IMPL_1(pw)                                                  \
+  COMMON_PARSER_IMPL(pw)                                                       \
+  uint32_t parse_data_item(uint8_t *sealed_data, uint32_t len) {               \
+    return pw.parse_data_item(sealed_data, len);                               \
+  }
+#define YPC_PARSER_IMPL_2(pw, parser_item_func)                                \
+  COMMON_PARSER_IMPL(pw)                                                       \
+  uint32_t parse_data_item(uint8_t *sealed_data, uint32_t len) {               \
+    pw.set_item_parser(parser_item_func);                                      \
+    return pw.parse_data_item(sealed_data, len);                               \
+  }
+

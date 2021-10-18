@@ -16,8 +16,6 @@ def generate_top_cmake(target_dir, name):
     with open(fp, 'w') as cm:
         cm.write("project({})\n".format(name))
         cm.write("cmake_minimum_required(VERSION 3.9.3)\n")
-        cm.write("list(APPEND CMAKE_MODULE_PATH {})\n".format(os.path.join(sdk_dir, "cmake")))
-        cm.write("find_package(SGX REQUIRED)\n")
         cm.write("add_definitions(-std=c++11)\n")
         cm.write("include_directories(${PROJECT_SOURCE_DIR})\n")
         cm.write("include_directories({})\n".format(sdk_dir))
@@ -27,38 +25,6 @@ def generate_top_cmake(target_dir, name):
         cm.write("set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/output/)\n")
         cm.write("set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/output/)\n")
         cm.write("add_subdirectory(reader)\n")
-        cm.write("add_subdirectory(parser)\n")
-
-def generate_parser_cmake(target_dir, name, config):
-    fp = os.path.join(target_dir, "CMakeLists.txt")
-    with open(fp, 'w') as cm:
-        cm.write("add_sgx_library({}_csv_parser_t {}_csv_parser_t SRCS parser.cpp)".format(name, name))
-        pass
-
-def generate_csv_parser_file(cpp, name):
-    cpp.write("#include <toolkit/plugins/csv/csv_parser.h>\n")
-    cpp.write("impl_csv_parser({}_item_t)".format(name))
-
-def generate_mysql_parser_file(cpp, name):
-    cpp.write("impl_mysql_parser({}_item_t)".format(name))
-
-def generate_parser_file(target_dir, name, config):
-    parser_dir = os.path.join(target_dir, "parser");
-    os.mkdir(parser_dir)
-
-    generate_parser_cmake(parser_dir, name, config);
-    parser_cpp = os.path.join(parser_dir, "parser.cpp");
-    with open(parser_cpp, 'w') as cpp:
-        cpp.write('#include "output/user_type.h"\n');
-        if config["type"] == "csv":
-            generate_csv_parser_file(cpp, name)
-        elif config["type"] == "mysql":
-            generate_mysql_parser_file(cpp, name)
-        else:
-            print("invalid type {}".format(config["type"]))
-            exit()
-
-    pass
 
 def generate_reader_cmake(reader_dir, name, config):
     fp = os.path.join(reader_dir, "CMakeLists.txt")
@@ -99,7 +65,7 @@ def generate_reader_file(target_dir, name, config):
 def build_all(target_dir, config):
     build_dir = os.path.join(target_dir, "build")
     os.mkdir(build_dir)
-    cmd = "cd {} && cmake -DSGX_MODE={} -DSGX_HW={} ../ && make".format(build_dir, config["SGX_MODE"], config["SGX_HW"])
+    cmd = "cd {} && cmake ../ && make".format(build_dir)
     os.system(cmd)
     pass
 

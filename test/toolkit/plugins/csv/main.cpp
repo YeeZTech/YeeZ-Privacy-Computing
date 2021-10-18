@@ -1,13 +1,12 @@
 #include "toolkit/plugins/csv/csv_reader.h"
+#include "ypc_t/analyzer/ntpackage_item_parser.h"
 #include <iostream>
 
 define_nt(v1, int);
 define_nt(s1, std::string);
 define_nt(v2, double);
 typedef ::ff::util::ntobject<v1, s1, v2> mt;
-#include "toolkit/plugins/csv/csv_parser.h"
 
-impl_csv_parser(mt);
 
 int main(int argc, char *argv[]) {
   // clang-format off
@@ -21,8 +20,7 @@ int main(int argc, char *argv[]) {
   r.read_item_data(nullptr, &len);
   char *buf = new char[len];
   r.read_item_data(buf, &len);
-  mt p;
-  parse_item_data((uint8_t *)buf, len, &p);
+  mt p = ypc::ntpackage_item_parser<char, mt>::parser(buf, len);
   std::cout << p.get<v1>() << ", " << p.get<s1>() << ", " << p.get<v2>()
             << std::endl;
 
