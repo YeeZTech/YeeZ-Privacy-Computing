@@ -31,25 +31,28 @@ void generate_mysql_data(ff::sql::mysql<ff::sql::cppconn> &engine) {
   mytable::row_collection_type rows;
   mytable::row_collection_type::row_type t1;
   t1.set<cv1, cs1, cv2>(1, "test", 2.3f);
-  rows.push_back(t1);
+  rows.push_back(t1.make_copy());
   t1.set<cv1, cs1, cv2>(2, "test2", 2.4f);
-  rows.push_back(t1);
+  rows.push_back(t1.make_copy());
   t1.set<cv1, cs1, cv2>(3, "test3", 3.4f);
-  rows.push_back(t1);
+  rows.push_back(t1.make_copy());
   mytable::insert_or_replace_rows(&engine, rows);
 }
 
 int main(int argc, char *argv[]) {
-  ff::sql::mysql<ff::sql::cppconn> engine("tcp://127.0.0.1:3306", "root", "",
-                                          "test");
+  ff::sql::mysql<ff::sql::cppconn> engine("tcp://127.0.0.1:3306", argv[1],
+                                          argv[2], "testdb");
+  std::cout << "done init" << std::endl;
   generate_mysql_data(engine);
   // clang-format off
-  std::string json("{\"url\":\"tcp://127.0.0.1:3306\", \"username\":\"root\", \"password\":\"\", \"dbname\":\"test\"}");
+  std::stringstream ss;
+  ss<<"{\"url\":\"tcp://127.0.0.1:3306\", \"username\":\""<<argv[1]<<"\", \"password\":\""<<argv[2]<<"\", \"dbname\":\"testdb\"}";
+  std::string json =ss.str();
   // clang-format on
   std::cout << json << std::endl;
   ypc::plugins::typed_mysql_reader<mt, mytable> r(json);
 
-  std::cout << r.get_item_number() << std::endl;
+  std::cout << "item number: " << r.get_item_number() << std::endl;
   int len;
   r.read_item_data(nullptr, &len);
   char *buf = new char[len];

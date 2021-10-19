@@ -100,11 +100,6 @@ public:
     }
   };
 
-  void
-  read_all_items() {
-    read_helper<item_t>::template read_item_data<Table>(m_engine.get(),
-                                                        m_all_items);
-  }
   virtual int read_item_data(char *buf, int *len) {
     typedef typename cast_obj_to_package<item_t>::type package_t;
     if (m_all_items.empty()) {
@@ -134,9 +129,21 @@ public:
     m_all_items.clear();
     return 0;
   }
-  virtual int get_item_number() { return static_cast<int>(m_all_items.size()); }
+  virtual int get_item_number() {
+    if (m_all_items.empty()) {
+      read_all_items();
+    }
+    return static_cast<int>(m_all_items.size());
+  }
+  const item_t &item_at(size_t index) const { return m_all_items[index]; }
 
 protected:
+  void read_all_items() {
+    read_helper<item_t>::template read_item_data<Table>(m_engine.get(),
+                                                        m_all_items);
+    m_to_read_index = 0;
+  }
+
   const std::string m_extra_param;
   std::unique_ptr<::ff::sql::mysql<ff::sql::cppconn>> m_engine;
   typename Table::row_collection_type m_all_items;
