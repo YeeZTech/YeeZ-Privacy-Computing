@@ -77,7 +77,8 @@ void check_file(const std::string &path) {
   int i = 0;
   while (f.next_item(r)) {
 
-    ff::net::marshaler m(r.data(), r.len(), ff::net::marshaler::deseralizer);
+    ff::net::marshaler m((char *)r.data(), r.size(),
+                         ff::net::marshaler::deseralizer);
     row_t t;
     t.arch(m);
     std::cout << t.get<ZJHM>() << std::endl;

@@ -35,8 +35,8 @@ int read_item_data(void *handle, char *buf, int *len) {
   ypc::memref r;
   bool t = f->next_item(r);
   if (t) {
-    memcpy(buf, r.data(), r.len());
-    *len = r.len();
+    memcpy(buf, r.data(), r.size());
+    *len = r.size();
     r.dealloc();
     return 0;
   } else {

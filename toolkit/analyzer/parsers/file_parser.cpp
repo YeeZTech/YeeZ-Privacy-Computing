@@ -37,12 +37,12 @@ uint32_t file_parser::do_parse() {
 uint32_t file_parser::next_sealed_item_data(uint8_t **data, uint32_t *len) {
   ypc::memref item_data;
   m_sf->next_item(item_data);
-  if (item_data.len() == 0) {
+  if (item_data.size() == 0) {
     LOG(ERROR) << "cannot read any data";
     return static_cast<uint32_t>(stx_status::error_unexpected);
   }
   *data = reinterpret_cast<uint8_t *>(item_data.data());
-  *len = item_data.len();
+  *len = item_data.size();
   return static_cast<uint32_t>(stx_status::success);
 }
 void file_parser::free_sealed_item_data(uint8_t *data) { delete[] data; }

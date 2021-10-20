@@ -1,5 +1,5 @@
+#include "common.h"
 #include "enclave_t.h" /* print_string */
-#include "iris/analyzer/enclave/sgx_plugin.h"
 #include "sgx_trts.h"
 #include "sgx_tseal.h"
 #include "stbox/scope_guard.h"

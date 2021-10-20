@@ -1,7 +1,7 @@
 
 include_directories(${PROJECT_SOURCE_DIR}/example)
 include_directories(${PROJECT_SOURCE_DIR}/toolkit/datahub)
-set(E_SRCS enclave.cpp
+set(E_SRCS enclave.cpp hosting_data.cpp
   ${FF_SRC_PATH}/net/common/archive.cpp
   ${PROJECT_SOURCE_DIR}/core/src/ypc_t/ecommon/signer_verify.cpp
   )

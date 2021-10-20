@@ -15,6 +15,28 @@ enclave {
     public uint32_t exchange_report([in] sgx_dh_msg2_t *dh_msg2, [out] sgx_dh_msg3_t *dh_msg3, uint32_t session_id);
     public uint32_t generate_response([in, size = req_message_size] secure_message_t* req_message, size_t req_message_size, size_t max_payload_size, [out, size=resp_message_size] secure_message_t* resp_message, size_t resp_message_size, uint32_t session_id);
     public uint32_t end_session(uint32_t session_id);
+
+    //for encrypt data
+    public uint32_t begin_encrypt_sealed_data();
+    public uint32_t end_encrypt_sealed_data();
+    public uint32_t get_encrypted_sealed_data_size([in, size=sealed_size] uint8_t * sealed_data, uint32_t sealed_size);
+    public uint32_t encrypt_sealed_data([in, size=in_size] uint8_t * sealed_data, uint32_t in_size,
+          [out, size=out_size] uint8_t * encrypted_data, uint32_t out_size);
+
+    public uint32_t get_encrypted_data_credential_size();
+
+    public uint32_t get_encrypted_data_credential([out, size=credential_size] uint8_t * credential,
+          uint32_t credential_size);
+
+    public uint32_t get_data_usage_license_size();
+    public uint32_t generate_data_usage_license([in, size=credential_size]uint8_t * credential,
+          uint32_t credential_size,
+          [in, size=encrypt_param_size] uint8_t * encrypt_param, uint32_t encrypt_param_size,
+          [in, size=enclave_hash_size] uint8_t * enclave_hash, uint32_t enclave_hash_size,
+          [in, size=pkey4v_size] uint8_t * pkey4v, uint32_t pkey4v_size,
+          [in, size=tee_pkey_size] uint8_t * tee_pkey, uint32_t tee_pkey_size,
+          [out, size=license_size]uint8_t *license, uint32_t license_size);
+
     };
     untrusted {
         /* define OCALLs here. */

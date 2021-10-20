@@ -35,7 +35,7 @@ stbox::bytes test_m_data(FT &f, const char *name, size_t item_num,
   stbox::bytes kdata_hash = stbox::eth::keccak256_hash(stbox::bytes("test"));
 
   while (f.next_item(r)) {
-    stbox::bytes item(r.data(), r.len());
+    stbox::bytes item(r.data(), r.size());
     read_items.push_back(item);
     kdata_hash = stbox::eth::keccak256_hash(kdata_hash + item);
     r.dealloc();

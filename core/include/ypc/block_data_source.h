@@ -33,7 +33,7 @@ public:
 
   virtual OutputObjType output_value() {
     user_item_t ret;
-    ff::net::marshaler m(m_ret.data(), m_ret.len(),
+    ff::net::marshaler m((char *)m_ret.data(), m_ret.size(),
                          ff::net::marshaler::deseralizer);
     ret.arch(m);
     return ret;

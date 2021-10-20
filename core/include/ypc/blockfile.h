@@ -122,8 +122,15 @@ public:
     if (m_file.eof()) {
       return false;
     }
-    s.alloc(len);
-    m_file.read(s.data(), s.len());
+    if (!s.data()) {
+      s.alloc(len);
+    }
+    if (s.size() < len) {
+      s.dealloc();
+      s.alloc(len);
+    }
+
+    m_file.read((char *)s.data(), s.size());
     return true;
   }
 
