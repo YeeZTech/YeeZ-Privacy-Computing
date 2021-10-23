@@ -18,7 +18,7 @@ TEST(paged_https_extractor, basic) {
       });
 
   std::cout << "start data" << std::endl;
-  while (phe.next_output()) {
+  while (phe.process()) {
     std::cout << phe.output_value() << std::endl;
   }
   std::cout << "end data" << std::endl;

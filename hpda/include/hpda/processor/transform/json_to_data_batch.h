@@ -28,12 +28,14 @@ public:
 
   typedef processor_base<std::string, OutputObjType> base;
 
-  virtual bool next_output() {
+  virtual bool process() {
     m_next_data_index++;
     if (m_next_data_index >= m_all_data.size()) {
-      parse_data();
+      if (!parse_data()) {
+        return false;
+      }
     }
-    return m_next_data_index < m_all_data.size();
+    return true;
   }
 
   virtual OutputObjType output_value() { return m_all_data[m_next_data_index]; }
@@ -42,8 +44,9 @@ protected:
   bool parse_data() {
     m_next_data_index = 0;
     m_all_data.clear();
-    if (!base::next_input())
+    if (!base::has_input_value()) {
       return false;
+    }
     try {
       std::string v = base::input_value();
       std::stringstream ss;
@@ -59,7 +62,6 @@ protected:
           // ignore this data
           continue;
         }
-        // std::cout << v.second.data() << std::endl;
       }
 
       return true;

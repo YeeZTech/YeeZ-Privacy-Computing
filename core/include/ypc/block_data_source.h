@@ -20,7 +20,7 @@ public:
     }
   }
 
-  virtual bool next_output() {
+  virtual bool process() {
     if (m_data_reach_end) {
       return false;
     }

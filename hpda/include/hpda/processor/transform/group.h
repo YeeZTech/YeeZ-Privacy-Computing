@@ -13,17 +13,22 @@ public:
   typedef InputColumnType input_type;
   typedef OutputColumnType output_type;
 
+  sum() : m_data(), m_grouping(false) {}
+
   void begin_group() { m_data = 0; }
   template <typename T> void group(const T &t) {
     m_data += t.template get<InputColumnType>();
+    m_grouping = true;
   }
-  void end_group() {}
+  void end_group() { m_grouping = false; }
   typename ::ff::util::internal::nt_traits<output_type>::type output() const {
     return m_data;
   }
+  bool grouping() { return m_grouping; }
 
 protected:
   typename ::ff::util::internal::nt_traits<OutputColumnType>::type m_data;
+  bool m_grouping;
 };
 
 template <typename InputColumnType, typename OutputColumnType>
@@ -32,6 +37,7 @@ public:
   typedef InputColumnType input_type;
   typedef OutputColumnType output_type;
 
+  avg() : m_data(), m_grouping(false) {}
   void begin_group() {
     m_data = 0;
     m_count = 0;
@@ -39,13 +45,17 @@ public:
   template <typename T> void group(const T &t) {
     m_data += t.template get<InputColumnType>();
     m_count += 1;
+    m_grouping = true;
   }
   void end_group() {
     if (m_count == 0) {
       return;
     }
     m_data = m_data / m_count;
+    m_grouping = false;
   }
+
+  bool grouping() { return m_grouping; }
   typename ::ff::util::internal::nt_traits<output_type>::type output() const {
     return m_data;
   }
@@ -53,6 +63,7 @@ public:
 protected:
   typename ::ff::util::internal::nt_traits<OutputColumnType>::type m_data;
   size_t m_count;
+  bool m_grouping;
 };
 
 template <typename InputColumnType, typename OutputColumnType>
@@ -61,18 +72,25 @@ public:
   typedef InputColumnType input_type;
   typedef OutputColumnType output_type;
 
+  max() : m_data(), m_grouping(false) {}
+
   void begin_group() { m_data = 0; }
   template <typename T> void group(const T &t) {
     auto d = t.template get<InputColumnType>();
     m_data = m_data > d ? m_data : d;
+    m_grouping = true;
   }
-  void end_group() {}
+  void end_group() { m_grouping = false; }
+  bool grouping() {
+    return m_grouping;
+  }
   typename ::ff::util::internal::nt_traits<output_type>::type output() const {
     return m_data;
   }
 
 protected:
   typename ::ff::util::internal::nt_traits<OutputColumnType>::type m_data;
+  bool m_grouping;
 };
 
 template <typename InputColumnType, typename OutputColumnType>
@@ -81,18 +99,22 @@ public:
   typedef InputColumnType input_type;
   typedef OutputColumnType output_type;
 
+  min() : m_data(), m_grouping(false) {}
   void begin_group() { m_data = 0; }
   template <typename T> void group(const T &t) {
     auto d = t.template get<InputColumnType>();
     m_data = m_data < d ? m_data : d;
+    m_grouping = true;
   }
-  void end_group() {}
+  void end_group() { m_grouping = false; }
+  bool grouping() { return m_grouping; }
   typename ::ff::util::internal::nt_traits<output_type>::type output() const {
     return m_data;
   }
 
 protected:
   typename ::ff::util::internal::nt_traits<OutputColumnType>::type m_data;
+  bool m_grouping;
 };
 
 template <typename InputColumnType, typename OutputColumnType>
@@ -101,17 +123,21 @@ public:
   typedef InputColumnType input_type;
   typedef OutputColumnType output_type;
 
+  count() : m_data(), m_grouping(false) {}
   void begin_group() { m_data = 0; }
   template <typename T> void group(const T &t) {
     m_data += 1;
+    m_grouping = true;
   }
-  void end_group() {}
+  void end_group() { m_grouping = false; }
+  bool grouping() { return m_grouping; }
   typename ::ff::util::internal::nt_traits<output_type>::type output() const {
     return m_data;
   }
 
 protected:
   typename ::ff::util::internal::nt_traits<OutputColumnType>::type m_data;
+  bool m_grouping;
 };
 
 template <typename InputObjType, typename OutputObjType, typename GroupByType,
@@ -127,36 +153,41 @@ public:
 
   typedef processor_base<InputObjType, OutputObjType> base;
 
-  virtual bool next_output() {
+  virtual bool process() {
     typename ::ff::util::internal::nt_traits<GroupByType>::type t;
-    if (m_continue || base::next_input()) {
-      t = base::input_value().template get<GroupByType>();
-      m_last_group_id = t;
-      m_aggregator.begin_group();
-      m_aggregator.group(base::input_value());
-      m_data = base::input_value();
-    } else {
+    if (!base::has_input_value()) {
+      if (m_aggregator.grouping()) {
+        m_aggregator.end_group();
+        m_data.template set<typename AggregatorType::output_type>(
+            m_aggregator.output());
+        return true;
+      }
       return false;
     }
-    while (base::next_input()) {
-      t = base::input_value().template get<GroupByType>();
+    t = base::input_value().template get<GroupByType>();
+    if (m_aggregator.grouping()) {
       if (m_last_group_id == t) {
         m_aggregator.group(base::input_value());
+        return false;
       } else {
-        break;
+        m_aggregator.end_group();
+        m_data.template set<typename AggregatorType::output_type>(
+            m_aggregator.output());
+        m_aggregator.begin_group();
+        m_last_group_id = t;
+        m_data.template set<GroupByType>(t);
+        m_aggregator.group(base::input_value());
+        return true;
       }
-    }
-    m_aggregator.end_group();
-    m_data.template set<typename AggregatorType::output_type>(
-        m_aggregator.output());
-
-    if (m_last_group_id != t) {
-      m_continue = true;
     } else {
-      m_continue = false;
+      m_aggregator.begin_group();
+      m_last_group_id = t;
+      m_data.template set<GroupByType>(t);
+      m_aggregator.group(base::input_value());
+      return false;
     }
-    return true;
   }
+
   virtual OutputObjType output_value() {
     return m_data.make_copy();
   }

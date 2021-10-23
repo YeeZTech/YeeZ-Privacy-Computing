@@ -53,9 +53,9 @@ public:
     }
   }
 
-  virtual bool next_output() {
+  virtual bool process() {
     if (m_data_reach_end) {
-      return m_data_reach_end;
+      return false;
     }
     char *out_buff = nullptr;
     size_t out_buff_len;
@@ -75,7 +75,7 @@ public:
       return false;
     }
     m_phandler.handle_pkg(out_buff, out_buff_len);
-    return !m_data_reach_end;
+    return true;
   }
 
   virtual OutputObjType output_value() { return m_data; }

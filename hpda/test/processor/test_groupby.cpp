@@ -8,6 +8,8 @@ typedef hpda::ntobject<hash, value> data_item_t;
 
 TEST(groupby, sum) {
   hpda::extractor::raw_data<hash, value> rd;
+  hpda::engine engine;
+  rd.set_engine(&engine);
   int sum = 0;
   for (int i = 0; i < 1000; i++) {
     data_item_t d;
@@ -40,6 +42,8 @@ TEST(groupby, sum) {
 
 TEST(groupby, avg) {
   hpda::extractor::raw_data<hash, value> rd;
+  hpda::engine engine;
+  rd.set_engine(&engine);
   int sum = 0;
   for (int i = 0; i < 1000; i++) {
     data_item_t d;
@@ -72,6 +76,8 @@ TEST(groupby, avg) {
 
 TEST(groupby, max) {
   hpda::extractor::raw_data<hash, value> rd;
+  hpda::engine engine;
+  rd.set_engine(&engine);
   int sum = 0;
   for (int i = 0; i < 1000; i++) {
     data_item_t d;
@@ -104,6 +110,8 @@ TEST(groupby, max) {
 
 TEST(groupby, min) {
   hpda::extractor::raw_data<hash, value> rd;
+  hpda::engine engine;
+  rd.set_engine(&engine);
   int sum = 0;
   for (int i = 0; i < 1000; i++) {
     data_item_t d;
@@ -136,6 +144,8 @@ TEST(groupby, min) {
 
 TEST(groupby, count) {
   hpda::extractor::raw_data<hash, value> rd;
+  hpda::engine engine;
+  rd.set_engine(&engine);
   int sum = 0;
   for (int i = 0; i < 10; i++) {
     data_item_t d;

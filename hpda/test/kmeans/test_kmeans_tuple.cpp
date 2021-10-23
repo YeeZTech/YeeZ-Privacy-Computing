@@ -9,6 +9,9 @@ typedef hpda::ntobject<hash, point> data_item_t;
 
 TEST(kmeans, empty) {
   hpda::extractor::raw_data<hash, point> rd;
+  hpda::engine engine;
+  rd.set_engine(&engine);
+
   typedef hpda::algorithm::kmeans::kmeans_processor<data_item_t, point, double,
                                                     iid>
       kmeans_t;
@@ -27,6 +30,8 @@ TEST(kmeans, empty) {
 
 TEST(kmeans, massive_points) {
   hpda::extractor::raw_data<hash, point> rd;
+  hpda::engine engine;
+  rd.set_engine(&engine);
   typedef hpda::algorithm::kmeans::kmeans_processor<data_item_t, point, double,
                                                     iid>
       kmeans_t;

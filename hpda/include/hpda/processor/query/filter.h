@@ -19,14 +19,12 @@ public:
 
   typedef processor_base<InputObjType, InputObjType> base;
 
-  virtual bool next_output() {
-    while (base::next_input()) {
-      if (!m_func(base::input_value())) {
-        continue;
-      }
-      return true;
+  virtual bool process() {
+    if (!base::has_input_value()) {
+      return false;
     }
-    return false;
+    auto b = m_func(base::input_value());
+    return b;
   }
 
   virtual InputObjType output_value() { return base::input_value(); }

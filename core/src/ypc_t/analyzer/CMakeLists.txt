@@ -3,6 +3,8 @@ set(src parser_wrapper_base.cpp
   ../ecommon/package.cpp
   ../ecommon/signer_verify.cpp
   ${FF_SRC_PATH}/net/common/archive.cpp
+  ${PROJECT_SOURCE_DIR}/hpda/src/engine/engine.cpp
+  ${PROJECT_SOURCE_DIR}/hpda/src/engine/functor.cpp
   #${FF_SRC_PATH}/net/middleware/package.cpp
   )
 

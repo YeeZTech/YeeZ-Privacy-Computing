@@ -17,14 +17,17 @@ public:
     m_data.push_back(obj);
   }
 
-  virtual bool next_output() {
+  virtual bool process() {
+    if (m_data.empty()) {
+      return false;
+    }
+    m_index++;
+
     int s = static_cast<int>(m_data.size());
     if (m_index >= s) {
       return false;
     }
-
-    m_index++;
-    return m_index < s;
+    return true;
   }
 
   virtual OutputObjType output_value() {

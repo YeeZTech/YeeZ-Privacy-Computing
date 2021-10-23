@@ -92,6 +92,9 @@ TEST(kmeans_iris, basic) {
         return tree.get<int>("end");
       });
 
+  hpda::engine engine;
+  phe.set_engine(&engine);
+
   hpda::processor::json_to_data_batch<iris_data, species> trans(
       &phe,
       [](const boost::property_tree::ptree &ptree)

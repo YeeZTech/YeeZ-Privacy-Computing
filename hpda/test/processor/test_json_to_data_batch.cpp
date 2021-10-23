@@ -48,6 +48,9 @@ TEST(json_to_data_batch, basic) {
         return tree.get<int>("end");
       });
 
+  hpda::engine engine;
+  phe.set_engine(&engine);
+
   hpda::processor::json_to_data_batch<sepal_len, sepal_wid, petal_len,
                                       petal_wid, species>
   trans(
@@ -59,7 +62,7 @@ TEST(json_to_data_batch, basic) {
       convert_to_iris);
 
   std::cout << "start data" << std::endl;
-  while (trans.next_output()) {
+  while (trans.process()) {
     std::cout << trans.output_value() << std::endl;
   }
   std::cout << "end data" << std::endl;

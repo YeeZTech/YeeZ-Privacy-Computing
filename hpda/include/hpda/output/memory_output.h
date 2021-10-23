@@ -17,9 +17,15 @@ public:
   typedef output_base<InputObjType> base;
 
   virtual void run() {
-    while (output_base<InputObjType>::next_input()) {
-      m_data.push_back(output_base<InputObjType>::input_value());
+    functor::m_engine->run();
+  }
+
+  virtual bool process() {
+    if (!base::has_input_value()) {
+      return false;
     }
+    m_data.push_back(output_base<InputObjType>::input_value());
+    return true;
   }
 
   std::vector<InputObjType> &values() { return m_data; }
