@@ -1,3 +1,4 @@
+#include "./extra_data_source.h"
 #include "parser.h"
 #include "sgx_bridge.h"
 #include "ypc/configuration.h"
@@ -41,7 +42,8 @@ boost::program_options::variables_map parse_command_line(int argc,
     ("request-hash", bp::value<std::string>(), "request hash")
     // params read from json file
     ("param-path", bp::value<std::string>(), "forward param path")
-    ("result-path", bp::value<std::string>(), "output result path");
+    ("result-path", bp::value<std::string>(), "output result path")
+    ("extra-data-source", bp::value<std::string>(), "JSON file path which include extra data source information");
   // clang-format on
 
   boost::program_options::variables_map vm;
@@ -128,11 +130,31 @@ int main(int argc, char *argv[]) {
     parser = std::make_shared<file_parser>(
         psource.get(), rtarget.get(), sealer_enclave_file, parser_enclave_file,
         keymgr_enclave_file, sealed_file);
+
+    if (vm.count("extra-data-source")) {
+      extra_data_source_t eds;
+      try {
+        eds = ypc::read_extra_data_source_from_file(
+            vm["extra-data-source"].as<std::string>());
+      } catch (const std::exception &e) {
+        std::cout << "cannot read extra-data-source file path: "
+                  << vm["extra-data-source"].as<std::string>();
+        return -1;
+      }
+      parser->set_extra_data_source(eds);
+    }
+
     uint32_t ret = parser->parse();
     if (ret) {
       std::cout << "got error: " << ypc::status_string(ret) << std::endl;
     }
   } else {
+    if (vm.count("extra-data-source")) {
+      // TODO we may support this later.
+      std::cout << "do not support parallel mode with extra data source"
+                << std::endl;
+      return -1;
+    }
     if (source_type != "json") {
       std::cout << "parallel parser now only supports file type!" << std::endl;
       return -1;

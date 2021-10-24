@@ -37,6 +37,11 @@ enclave {
                                     [in, size=vpkey_size] uint8_t * verify_key, uint32_t vpkey_size,
                                     [in, size=sig_size] uint8_t * sig, uint32_t sig_size);
 
+    public uint32_t forward_extra_data_usage_license([in, size=epkey_size] uint8_t * enclave_pkey, uint32_t epkey_size,
+                  [in, size=hash_size] uint8_t * data_hash, uint32_t hash_size,
+                  [in, size=license_size] uint8_t * usage_license, uint32_t license_size);
+
+
     };
 
     untrusted {

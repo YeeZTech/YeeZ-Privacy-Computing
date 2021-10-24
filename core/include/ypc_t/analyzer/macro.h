@@ -64,7 +64,10 @@
   uint32_t get_result_encrypt_key(uint8_t *key, uint32_t key_size) {           \
     return pw.get_result_encrypt_key(key, key_size);                           \
   }                                                                            \
-  uint32_t get_parser_type() { return pw.get_parser_type(); }
+  uint32_t get_parser_type() { return pw.get_parser_type(); }                  \
+  uint32_t set_extra_data(uint8_t *extra_data, uint32_t in_size) {             \
+    return pw.set_extra_data(extra_data, in_size);                             \
+  }
 
 #define YPC_PARSER_IMPL(...)                                                   \
   JOIN(YPC_PARSER_IMPL_, PP_NARG(__VA_ARGS__))(__VA_ARGS__)

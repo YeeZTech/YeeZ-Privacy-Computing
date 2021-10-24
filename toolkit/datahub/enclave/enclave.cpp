@@ -187,7 +187,7 @@ stbox::bytes get_data_and_unseal(const uint8_t *data_buf, size_t data_len,
         return stbox::bytes();
       }
       response_pkg_t p;
-      p.set<data>(std::move(raw_str));
+      p.template set<ypc::nt<stbox::bytes>::data>(std::move(raw_str));
       sgx_marshaler lm(sgx_marshaler::length_retriver);
       p.arch(lm);
       stbox::bytes ret(lm.get_length());

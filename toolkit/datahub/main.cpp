@@ -160,7 +160,7 @@ boost::program_options::variables_map parse_command_line(int argc,
 
   common.add_options()
     ("sealed-data-url", bp::value<std::string>(), "Sealed Data URL")
-    ("output", bp::value<std::string>(), "output file path");
+    ("output", bp::value<std::string>(), "output file path")
     ("sealer-path", bp::value<std::string>(), "sealer path");
 
   general.add_options()
@@ -193,7 +193,8 @@ int main(int argc, char *argv[]) {
   boost::program_options::variables_map vm;
   try {
     vm = parse_command_line(argc, argv);
-  } catch (...) {
+  } catch (const std::exception &e) {
+    std::cout << e.what() << std::endl;
     std::cout << "invalid cmd line parameters!" << std::endl;
     return -1;
   }

@@ -169,3 +169,11 @@ uint32_t keymgr_sgx_module::forward_message(
                          vpkey_size, (uint8_t *)sig, sig_size);
 }
 
+uint32_t keymgr_sgx_module::forward_extra_data_usage_license(
+    const ypc::bytes &enclave_pkey, const ypc::bytes &data_hash,
+    const ypc::bytes &data_usage_license) {
+  return ecall<uint32_t>(
+      ::forward_extra_data_usage_license, (uint8_t *)enclave_pkey.data(),
+      enclave_pkey.size(), (uint8_t *)data_hash.data(), data_hash.size(),
+      (uint8_t *)data_usage_license.data(), data_usage_license.size());
+}

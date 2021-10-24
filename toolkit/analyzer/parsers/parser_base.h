@@ -1,4 +1,5 @@
 #pragma once
+#include "../extra_data_source.h"
 #include "keymgr/default/keymgr_sgx_module.h"
 #include "params/param_source.h"
 #include "result/result_target.h"
@@ -14,6 +15,10 @@ public:
               const std::string &keymgr_enclave_path);
 
   virtual ~parser_base();
+
+  inline void set_extra_data_source(const ypc::extra_data_source_t &eds) {
+    m_extra_data_source = eds;
+  };
 
   virtual uint32_t parse();
 
@@ -32,6 +37,8 @@ public:
 protected:
   virtual uint32_t do_parse() = 0;
 
+  void forward_extra_data_usage_license(const ypc::bytes &enclave_pkey);
+
 protected:
   param_source *m_psource;
   result_target *m_rtarget;
@@ -43,4 +50,6 @@ protected:
   std::shared_ptr<ypc::datahub_sgx_module> m_sealer;
   std::shared_ptr<parser_sgx_module> m_parser;
   std::shared_ptr<keymgr_sgx_module> m_keymgr;
+
+  ypc::extra_data_source_t m_extra_data_source;
 };

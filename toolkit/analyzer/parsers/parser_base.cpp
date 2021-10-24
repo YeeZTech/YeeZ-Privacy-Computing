@@ -33,6 +33,9 @@ uint32_t parser_base::parse() {
                                        eskey.size(), epkey.data(), epkey.size(),
                                        ehash.data(), ehash.size(), vpkey.data(),
                                        vpkey.size(), sig.data(), sig.size());
+
+  forward_extra_data_usage_license(epkey);
+
   if (ret) {
     return ret;
   }
@@ -58,6 +61,18 @@ uint32_t parser_base::parse() {
   m_rtarget->write_to_target(encrypted_res, result_sig, cost_sig, data_hash);
   LOG(INFO) << "write result target done";
   return ypc::success;
+}
+
+void parser_base::forward_extra_data_usage_license(
+    const ypc::bytes &enclave_pkey) {
+  for (auto edg : m_extra_data_source) {
+    for (auto ed_item : edg.get<ypc::extra_data_set>()) {
+      ypc::bytes data_hash = ed_item.get<ypc::data_hash>();
+      ypc::bytes data_use_license = ed_item.get<ypc::data_use_license>();
+      m_keymgr->forward_extra_data_usage_license(enclave_pkey, data_hash,
+                                                 data_use_license);
+    }
+  }
 }
 
 bool parser_base::merge(

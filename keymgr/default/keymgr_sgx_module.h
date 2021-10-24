@@ -7,6 +7,7 @@
 #include "stbox/tsgx/channel/dh_cdef.h"
 #include "stbox/usgx/sgx_module.h"
 #include "ypc/ref.h"
+#include <ypc/byte.h>
 
 using stx_status = stbox::stx_status;
 using bref = ypc::bref;
@@ -63,4 +64,9 @@ public:
                            uint32_t ehash_size, const uint8_t *verify_key,
                            uint32_t vpkey_size, const uint8_t *sig,
                            uint32_t sig_size);
+
+  uint32_t
+  forward_extra_data_usage_license(const ypc::bytes &enclave_pkey,
+                                   const ypc::bytes &data_hash,
+                                   const ypc::bytes &data_usage_license);
 };

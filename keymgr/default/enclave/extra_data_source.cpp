@@ -1,0 +1,103 @@
+#include "common.h"
+#include <common/crypto_prefix.h>
+#include <corecommon/datahub/package.h>
+#include <stbox/stx_common.h>
+#include <stbox/tsgx/crypto/ecc.h>
+
+define_nt(data_skey_nt, stbox::bytes);
+define_nt(signature_nt, stbox::bytes);
+typedef ::ff::util::ntobject<data_skey_nt, signature_nt>
+    extra_data_usage_license_t;
+std::unordered_map<stbox::bytes, extra_data_usage_license_t>
+    extra_data_usage_licenses;
+
+stbox::bytes tee_pkey;
+uint32_t forward_extra_data_usage_license(
+    uint8_t *enclave_pkey, uint32_t epkey_size, uint8_t *_data_hash,
+    uint32_t hash_size, uint8_t *usage_license, uint32_t license_size) {
+
+  if (tee_pkey.empty()) {
+    tee_pkey = stbox::bytes(enclave_pkey, epkey_size);
+  }
+
+  typedef ypc::datahub::data_host<stbox::bytes> dhost_t;
+  dhost_t::usage_license_package_t lp;
+  ::ff::net::marshaler ar((char *)usage_license, license_size,
+                          ::ff::net::marshaler::deseralizer);
+  ar.archive(lp);
+
+  stbox::bytes data_hash(_data_hash, hash_size);
+  if (extra_data_usage_licenses.find(data_hash) !=
+      extra_data_usage_licenses.end()) {
+    LOG(ERROR) << "already have usage license for data " << data_hash;
+    return static_cast<uint32_t>(stbox::stx_status::error_unexpected);
+  }
+
+  stbox::bytes eskey = lp.get<dhost_t::encrypted_skey>();
+  stbox::bytes license = lp.get<dhost_t::signature>();
+
+  uint32_t se_ret = SGX_SUCCESS;
+  stbox::bytes skey;
+  se_ret = load_and_check_key_pair(enclave_pkey, epkey_size, skey);
+  if (se_ret) {
+    return se_ret;
+  }
+
+  uint32_t decrypted_size =
+      ::stbox::crypto::get_decrypt_message_size_with_prefix(eskey.size());
+  stbox::bytes data_skey(decrypted_size);
+  se_ret = (sgx_status_t)::stbox::crypto::decrypt_message_with_prefix(
+      skey.data(), skey.size(), eskey.data(), eskey.size(), data_skey.data(),
+      data_skey.size(), ::ypc::utc::crypto_prefix_host_data_private_key);
+
+  if (se_ret) {
+    LOG(ERROR) << "decrypt_message_with_prefix forward returns " << se_ret;
+    return se_ret;
+  }
+
+  extra_data_usage_license_t edul;
+  edul.set<data_skey_nt>(std::move(data_skey));
+  edul.set<signature_nt>(std::move(license));
+  extra_data_usage_licenses.insert(std::make_pair(data_hash, edul));
+  return se_ret;
+}
+
+stbox::bytes handle_data_usage_license_pkg(
+    stbox::dh_session *context,
+    const request_extra_data_usage_license_pkg_t &pkg) {
+  using ntt = ypc::nt<stbox::bytes>;
+
+  stbox::bytes data_hash = pkg.get<ntt::data_hash>();
+  stbox::bytes encrypted_param = pkg.get<ntt::encrypted_param>();
+  stbox::bytes enclave_hash((char *)&context->peer_identity().mr_enclave,
+                            sizeof(sgx_measurement_t));
+  stbox::bytes pkey4v = pkg.get<ntt::pkey4v>();
+  stbox::bytes data =
+      encrypted_param + enclave_hash + pkey4v + tee_pkey + data_hash;
+
+  auto it = extra_data_usage_licenses.find(data_hash);
+  if (it == extra_data_usage_licenses.end()) {
+    return ypc::make_bytes<stbox::bytes>::for_package<
+        ack_extra_data_usage_license_pkg_t, ntt::reserve>(0);
+  } else {
+    auto edul = it->second;
+    stbox::bytes data_skey = edul.get<data_skey_nt>();
+    stbox::bytes signature = edul.get<signature_nt>();
+
+    stbox::bytes expect_pkey(stbox::crypto::get_secp256k1_public_key_size());
+    stbox::crypto::generate_secp256k1_pkey_from_skey(
+        data_skey.data(), expect_pkey.data(), expect_pkey.size());
+    auto se_ret = (sgx_status_t)verify_signature(
+        data.data(), data.size(), signature.data(), signature.size(),
+        expect_pkey.data(), expect_pkey.size());
+    if (se_ret) {
+      LOG(ERROR) << "invalid data usage license for extra data: " << data_hash;
+      return ypc::make_bytes<stbox::bytes>::for_package<
+          ack_extra_data_usage_license_pkg_t, ntt::reserve>(0);
+
+    } else {
+      return ypc::make_bytes<stbox::bytes>::for_package<
+          ack_extra_data_usage_license_pkg_t, ntt::reserve>(1);
+    }
+  }
+}

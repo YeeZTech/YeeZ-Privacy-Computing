@@ -36,6 +36,7 @@ public:
 
     m_phandler.add_to_handle_pkg<response_pkg_t>(
         [&](std::shared_ptr<response_pkg_t> p) {
+          using data = typename nt<stbox::bytes>::data;
           const stbox::bytes &response = p->get<data>();
           stbox::bytes k = m_data_hash + response;
           m_data_hash = stbox::eth::keccak256_hash(k);

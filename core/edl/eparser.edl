@@ -32,6 +32,8 @@ enclave {
                                           uint32_t sig_size);
     public uint32_t merge_parse_result([in, size=len] uint8_t * encrypted_param, uint32_t len);
     public uint32_t need_continue();
+
+    public uint32_t set_extra_data([in, size=in_size] uint8_t * extra_data, uint32_t in_size);
   };
 
 

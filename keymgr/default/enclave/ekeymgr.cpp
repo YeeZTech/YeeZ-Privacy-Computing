@@ -14,6 +14,7 @@
 #include <sgx_tseal.h>
 #include <sgx_utils.h>
 
+#include "common.h"
 #include "keymgr/common/message_type.h"
 #include "stbox/ebyte.h"
 #include "stbox/eth/eth_hash.h"
@@ -240,6 +241,7 @@ uint32_t load_and_check_key_pair(const uint8_t *pkey, uint32_t pkey_size,
 
 std::unordered_map<stbox::bytes, forward_message_st> message_table;
 
+
 uint32_t forward_message(uint32_t msg_id, uint8_t *cipher, uint32_t cipher_size,
                          uint8_t *epublic_key, uint32_t epkey_size,
                          uint8_t *ehash, uint32_t ehash_size,
@@ -292,24 +294,41 @@ uint32_t forward_message(uint32_t msg_id, uint8_t *cipher, uint32_t cipher_size,
   message_table.insert(std::make_pair(
       str_msg_key,
       forward_message_st{msg_id, decrypted_msg, bytes(ehash, ehash_size)}));
+
   return se_ret;
 }
 
 stbox::bytes handle_pkg(const uint8_t *data, size_t data_len,
                         stbox::dh_session *context) {
-  uint32_t msg_key_size = data_len + sizeof(sgx_measurement_t);
-  stbox::bytes str_msg_key(msg_key_size);
-  memcpy(&str_msg_key[0], data, data_len);
-  memcpy(&str_msg_key[data_len], &context->peer_identity().mr_enclave,
-         sizeof(sgx_measurement_t));
-  LOG(INFO) << "got request: " << str_msg_key;
 
-  auto iter = message_table.find(str_msg_key);
-  if (iter != message_table.end()) {
-    return iter->second.m_msg;
-  }
-  LOG(ERROR) << "Request message not exist in message table!";
-  throw std::runtime_error("Request message not exist in message table!");
+  sgx_package_handler pkg_handler;
+  stbox::bytes ret;
+  pkg_handler.add_to_handle_pkg<request_private_key_pkg_t>(
+      [context, &ret](std::shared_ptr<request_private_key_pkg_t> f) {
+        uint32_t msg_key_size =
+            sizeof(f->template get<ypc::nt<stbox::bytes>::id>()) +
+            sizeof(sgx_measurement_t);
+        auto id = f->template get<ypc::nt<stbox::bytes>::id>();
+        stbox::bytes str_msg_key(msg_key_size);
+        memcpy(&str_msg_key[0], &id, sizeof(id));
+        memcpy(&str_msg_key[sizeof(id)], &context->peer_identity().mr_enclave,
+               sizeof(sgx_measurement_t));
+        LOG(INFO) << "got request: " << str_msg_key;
+
+        auto iter = message_table.find(str_msg_key);
+        if (iter != message_table.end()) {
+          ret = iter->second.m_msg;
+          return;
+        }
+        LOG(ERROR) << "Request message not exist in message table!";
+        throw std::runtime_error("Request message not exist in message table!");
+      });
+
+  pkg_handler.add_to_handle_pkg<request_extra_data_usage_license_pkg_t>(
+      [context,
+       &ret](std::shared_ptr<request_extra_data_usage_license_pkg_t> f) {
+        ret = handle_data_usage_license_pkg(context, *f);
+      });
 }
 
 uint32_t mgenerate_response(secure_message_t *req_message,

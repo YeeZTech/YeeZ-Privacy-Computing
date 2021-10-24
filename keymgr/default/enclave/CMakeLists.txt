@@ -1,6 +1,8 @@
 
 set(T_SRCS ekeymgr.cpp
+  extra_data_source.cpp
   ${PROJECT_SOURCE_DIR}/core/src/ypc_t/ecommon/signer_verify.cpp
+  ${FF_SRC_PATH}/net/common/archive.cpp
   )
 
 set(edl_path ${PROJECT_SOURCE_DIR}/stbox/src/tsgx/crypto/:${PROJECT_SOURCE_DIR}/stbox/src)

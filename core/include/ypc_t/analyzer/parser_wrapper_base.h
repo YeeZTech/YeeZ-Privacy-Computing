@@ -55,9 +55,13 @@ public:
     m_enclave_hash = stbox::bytes(hash, hash_size);
   }
 
+  uint32_t set_extra_data(const uint8_t *extra_data, uint32_t in_size);
+
 protected:
   uint32_t request_private_key();
   uint32_t decrypt_param(const uint8_t *encrypted_param, uint32_t len);
+
+  uint32_t request_extra_data_usage();
 
 protected:
   std::unique_ptr<stbox::dh_session_initiator> m_datahub_session;
@@ -68,11 +72,14 @@ protected:
   stbox::bytes m_result_str;
   stbox::bytes m_private_key;
   stbox::bytes m_param;
+  stbox::bytes m_pkey4v;
   stbox::bytes m_encrypted_param;
   uint64_t m_cost_gas;
   stbox::bytes m_encrypted_result_str;
   stbox::bytes m_cost_signature_str;
   stbox::bytes m_result_signature_str;
+
+  ypc::nt<stbox::bytes>::extra_data_package_t m_extra_data;
 
   //! for merge block result
 

@@ -1,6 +1,7 @@
 #pragma once
 #include "stbox/ebyte.h"
 #include "stbox/tsgx/log.h"
+#include <corecommon/nt_cols.h>
 #include <ff/net/middleware/ntpackage.h>
 #include <functional>
 #include <unordered_map>
@@ -15,14 +16,27 @@ enum {
   request_data_item,
   ctrl_type,
   response_data_item,
+  request_private_key_item,
+  request_extra_data_usage_license_item,
+  ack_extra_data_usage_license_item,
+  request_extra_data_item
 };
 
-define_nt(reserve, uint32_t);
-define_nt(data, stbox::bytes);
-
-typedef sgx_package<request_data_item, reserve> request_pkg_t;
-typedef sgx_package<response_data_item, data> response_pkg_t;
-typedef sgx_package<ctrl_type, reserve> ctrl_pkg_t;
+typedef sgx_package<request_data_item, ypc::nt<stbox::bytes>::reserve>
+    request_pkg_t;
+typedef sgx_package<response_data_item, ypc::nt<stbox::bytes>::data>
+    response_pkg_t;
+typedef sgx_package<ctrl_type, ypc::nt<stbox::bytes>::reserve> ctrl_pkg_t;
+typedef sgx_package<request_private_key_item, ypc::nt<stbox::bytes>::id>
+    request_private_key_pkg_t;
+typedef sgx_package<request_extra_data_usage_license_item,
+                    ypc::nt<stbox::bytes>::encrypted_param,
+                    ypc::nt<stbox::bytes>::pkey4v,
+                    ypc::nt<stbox::bytes>::data_hash>
+    request_extra_data_usage_license_pkg_t;
+typedef sgx_package<ack_extra_data_usage_license_item,
+                    ypc::nt<stbox::bytes>::reserve>
+    ack_extra_data_usage_license_pkg_t;
 
 class sgx_package_handler {
 public:
@@ -44,6 +58,10 @@ public:
     handle_pkg((const uint8_t *)buf, len);
   }
   void handle_pkg(const uint8_t *buf, size_t len);
+
+  template <typename PkgType> bool is_pkg_handled() const {
+    return m_all_handlers.find(PkgType::package_id) != m_all_handlers.end();
+  }
 
 protected:
   typedef std::function<void(const uint8_t *buf, size_t s)> base_pkg_handler_t;

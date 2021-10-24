@@ -125,7 +125,8 @@ public:
 
     uint32_t istatus = stbox::crypto::encrypt_message_with_prefix(
         tee_pkey.data(), tee_pkey.size(), skey.data(), skey.size(),
-        ::ypc::utc::crypto_prefix_host_data, eskey.data(), eskey.size());
+        ::ypc::utc::crypto_prefix_host_data_private_key, eskey.data(),
+        eskey.size());
 
     ret.set<dhost_t::encrypted_skey>(eskey);
     return ret;
@@ -168,15 +169,8 @@ uint32_t get_encrypted_data_credential(uint8_t *credential,
     return stbox::stx_status::datahub_not_init;
   }
   auto cred = g_hd->get_encrypted_data_credential();
-  ff::net::marshaler lm(ff::net::marshaler::length_retriver);
-  cred.archive(lm);
-  if (lm.get_length() > credential_size) {
-    LOG(ERROR) << "credential_size too small";
-    return stbox::stx_status::invalid_parameter;
-  }
-  ff::net::marshaler sm((char *)credential, credential_size,
-                        ff::net::marshaler::seralizer);
-  cred.archive(sm);
+
+  ypc::make_bytes<stbox::bytes>::for_package(credential, credential_size, cred);
 
   return stbox::stx_status::success;
 }
@@ -219,16 +213,7 @@ generate_data_usage_license(uint8_t *credential, uint32_t credential_size,
       cred, stbox::bytes(encrypt_param, encrypt_param_size),
       stbox::bytes(enclave_hash, enclave_hash_size),
       stbox::bytes(pkey4v, pkey4v_size), stbox::bytes(tee_pkey, tee_pkey_size));
-  {
-    ff::net::marshaler lm(ff::net::marshaler::length_retriver);
-    l.archive(lm);
-    if (lm.get_length() > license_size) {
-      LOG(ERROR) << "credential_size too small";
-      return stbox::stx_status::invalid_parameter;
-    }
-    ff::net::marshaler sm((char *)license, license_size,
-                          ff::net::marshaler::seralizer);
-    l.archive(sm);
-  }
+
+  ypc::make_bytes<stbox::bytes>::for_package(license, license_size, l);
   return stbox::stx_status::success;
 }

@@ -1,6 +1,8 @@
 #include "ypc_t/analyzer/parser_wrapper_base.h"
 #include "common/crypto_prefix.h"
+#include "common/limits.h"
 #include "common/param_id.h"
+#include "corecommon/package.h"
 #include "stbox/ebyte.h"
 #include "stbox/eth/util.h"
 #include "stbox/stx_common.h"
@@ -79,13 +81,19 @@ uint32_t parser_wrapper_base::request_private_key() {
     return stbox::stx_status::success;
   }
   uint32_t private_key_id = param_id::PRIVATE_KEY;
-  size_t max_out_buff_size = 4096;
+  /*
   std::string request_msg((const char *)&private_key_id, sizeof(uint32_t));
+  */
+
+  stbox::bytes request_msg = ypc::make_bytes<stbox::bytes>::for_package<
+      request_private_key_pkg_t, nt<stbox::bytes>::id>(private_key_id);
+
+  // TODO will this cause memory leak?
   char *out_buff;
   size_t out_buff_len;
   auto status = m_keymgr_session->send_request_recv_response(
-      request_msg.c_str(), request_msg.size(), max_out_buff_size, &out_buff,
-      &out_buff_len);
+      (char *)request_msg.data(), request_msg.size(),
+      utc::max_keymgr_response_buf_size, &out_buff, &out_buff_len);
   if (status != stbox::stx_status::success) {
     LOG(ERROR) << "error for m_keymgr_session->send_request_recv_response: "
                << status;
@@ -93,6 +101,16 @@ uint32_t parser_wrapper_base::request_private_key() {
   }
   m_private_key = bytes(out_buff, out_buff_len);
   LOG(INFO) << "request private key done";
+
+  uint32_t pkey_size = stbox::crypto::get_secp256k1_public_key_size();
+  m_pkey4v = stbox::bytes(pkey_size);
+  status = (stbox::stx_status)stbox::crypto::generate_secp256k1_pkey_from_skey(
+      (const uint8_t *)&m_private_key[0], (uint8_t *)&m_pkey4v[0], pkey_size);
+  if (status) {
+    LOG(ERROR) << "error for generate_secp256k1_pkey_from_skey: " << status;
+    return status;
+  }
+
   return status;
 }
 
@@ -126,9 +144,16 @@ uint32_t parser_wrapper_base::parse_data_item(const uint8_t *encrypted_param,
     LOG(ERROR) << "error for request_private_key: " << status;
     return status;
   }
+
   status = decrypt_param(encrypted_param, len);
   if (status != stbox::stx_status::success) {
     LOG(ERROR) << "error for decrypt_param: " << status;
+    return status;
+  }
+
+  status = request_extra_data_usage();
+  if (status != stbox::stx_status::success) {
+    LOG(ERROR) << "error for request_extra_data_usage: " << status;
     return status;
   }
 
@@ -139,22 +164,15 @@ uint32_t parser_wrapper_base::end_parse_data_item() {
   auto t1 = m_datahub_session->close_session();
   auto t2 = m_keymgr_session->close_session();
 
-  uint32_t pkey_size = stbox::crypto::get_secp256k1_public_key_size();
-  stbox::bytes pkey(pkey_size);
-  auto status = stbox::crypto::generate_secp256k1_pkey_from_skey(
-      (const uint8_t *)&m_private_key[0], (uint8_t *)&pkey[0], pkey_size);
-  if (status) {
-    LOG(ERROR) << "error for generate_secp256k1_pkey_from_skey: " << status;
-    return status;
-  }
   // TODO Suppose to get address from blockchain
-  stbox::hex_bytes addr = stbox::eth::gen_addr_from_pkey(pkey);
+  // stbox::hex_bytes addr = stbox::eth::gen_addr_from_pkey(m_pkey4v);
 
   uint32_t cipher_size =
       stbox::crypto::get_encrypt_message_size_with_prefix(m_result_str.size());
   m_encrypted_result_str = bytes(cipher_size);
-  status = stbox::crypto::encrypt_message_with_prefix(
-      (const uint8_t *)&pkey[0], pkey_size,
+
+  auto status = stbox::crypto::encrypt_message_with_prefix(
+      (const uint8_t *)&m_pkey4v[0], m_pkey4v.size(),
       (const uint8_t *)m_result_str.data(), m_result_str.size(),
       utc::crypto_prefix_arbitrary, (uint8_t *)&m_encrypted_result_str[0],
       cipher_size);
