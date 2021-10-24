@@ -29,7 +29,7 @@ using namespace stbox;
 
 namespace stbox {
 namespace crypto {
-std::shared_ptr<ecc_context> context = std::make_shared<ecc_context>();
+std::shared_ptr<ecc_context> context;
 }
 } // namespace stbox
 
@@ -166,6 +166,9 @@ uint32_t unseal_secp256k1_private_key(const uint8_t *sealed_private_key,
 
 uint32_t generate_secp256k1_pkey_from_skey(const uint8_t *skey, uint8_t *pkey,
                                            uint32_t pkey_size) {
+  if (!context) {
+    context = std::make_shared<ecc_context>();
+  }
   auto se_ret = (sgx_status_t)gen_pkey_from_skey(context->ctx(), skey,
                                                  (secp256k1_pubkey *)pkey);
   return se_ret;
@@ -179,6 +182,10 @@ uint32_t sign_message(const uint8_t *skey, uint32_t skey_size,
                       uint32_t sig_size) {
   sgx_status_t se_ret;
 
+  if (!context) {
+    context = std::make_shared<ecc_context>();
+  }
+
   secp256k1_context *ctx = context->ctx();
   auto hash = stbox::eth::msg_hash(data, data_size);
   sig_size = get_secp256k1_signature_size();
@@ -189,6 +196,10 @@ uint32_t verify_signature(const uint8_t *data, uint32_t data_size,
                           const uint8_t *sig, uint32_t sig_size,
                           const uint8_t *public_key, uint32_t pkey_size) {
   sgx_status_t se_ret;
+
+  if (!context) {
+    context = std::make_shared<ecc_context>();
+  }
   secp256k1_context *ctx = context->ctx();
 
   secp256k1_pubkey secp256k1_pkey;
@@ -234,6 +245,9 @@ uint32_t encrypt_message_with_prefix(const uint8_t *public_key,
                                      uint32_t pkey_size, const uint8_t *data,
                                      uint32_t data_size, uint32_t prefix,
                                      uint8_t *cipher, uint32_t cipher_size) {
+  if (!context) {
+    context = std::make_shared<ecc_context>();
+  }
   sgx_status_t se_ret;
   uint32_t _pkey_size = get_secp256k1_public_key_size();
   uint8_t *_public_key = cipher + data_size;

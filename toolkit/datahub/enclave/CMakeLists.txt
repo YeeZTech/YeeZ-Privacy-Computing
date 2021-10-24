@@ -9,7 +9,7 @@ set(E_SRCS enclave.cpp hosting_data.cpp
 add_enclave_library(edatahub SRCS ${E_SRCS}
   EDL enclave.edl
   EDL_SEARCH_PATHS ${PROJECT_SOURCE_DIR}/core/edl/:${PROJECT_SOURCE_DIR}/stbox/src/)
-target_link_libraries(edatahub stbox_common_t stbox_channel_t ypc_analyzer_t)
+target_link_libraries(edatahub stbox_crypto_t stbox_common_t stbox_channel_t )
 
 enclave_sign(edatahub KEY enclave_private.pem
   CONFIG enclave.config.xml)

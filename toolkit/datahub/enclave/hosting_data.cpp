@@ -11,16 +11,17 @@
 #include "stbox/tsgx/crypto/ecc.h"
 #include "stbox/tsgx/log.h"
 using stx_status = stbox::stx_status;
-extern char aad_mac_text[64];
+// extern char aad_mac_text[64];
 using scope_guard = stbox::scope_guard;
 using namespace stbox;
 
 typedef ypc::datahub::data_host<stbox::bytes> dhost_t;
 
-
 class hosting_data {
 public:
-  hosting_data() {
+  hosting_data() {}
+
+  uint32_t init() {
     auto s = stbox::crypto::get_secp256k1_private_key_size();
     m_skey = stbox::bytes(s);
     s = stbox::crypto::get_secp256k1_public_key_size();
@@ -138,10 +139,15 @@ protected:
   stbox::bytes m_data_hash;
 };
 
-std::unique_ptr<hosting_data> g_hd;
+std::shared_ptr<hosting_data> g_hd;
 
-uint32_t begin_encrypt_sealed_data() { g_hd.reset(new hosting_data()); }
+uint32_t begin_encrypt_sealed_data() {
+  g_hd.reset(new hosting_data());
+  g_hd->init();
+  return 0;
+}
 uint32_t end_encrypt_sealed_data() { /*g_hd.reset(nullptr); */
+  return 0;
 }
 uint32_t get_encrypted_sealed_data_size(uint8_t *sealed_data,
                                         uint32_t sealed_size) {
@@ -200,20 +206,20 @@ generate_data_usage_license(uint8_t *credential, uint32_t credential_size,
                             uint8_t *pkey4v, uint32_t pkey4v_size,
                             uint8_t *tee_pkey, uint32_t tee_pkey_size,
                             uint8_t *license, uint32_t license_size) {
+    dhost_t::credential_package_t cred;
 
-  dhost_t::credential_package_t cred;
+    {
+      ff::net::marshaler lm((const char *)credential, credential_size,
+                            ff::net::marshaler::deseralizer);
+      cred.archive(lm);
+    }
 
-  {
-    ff::net::marshaler lm((const char *)credential, credential_size,
-                          ff::net::marshaler::deseralizer);
-    cred.archive(lm);
-  }
+    auto l = hosting_data::generate_data_usage_license(
+        cred, stbox::bytes(encrypt_param, encrypt_param_size),
+        stbox::bytes(enclave_hash, enclave_hash_size),
+        stbox::bytes(pkey4v, pkey4v_size), stbox::bytes(tee_pkey,
+    tee_pkey_size));
 
-  auto l = hosting_data::generate_data_usage_license(
-      cred, stbox::bytes(encrypt_param, encrypt_param_size),
-      stbox::bytes(enclave_hash, enclave_hash_size),
-      stbox::bytes(pkey4v, pkey4v_size), stbox::bytes(tee_pkey, tee_pkey_size));
-
-  ypc::make_bytes<stbox::bytes>::for_package(license, license_size, l);
+    ypc::make_bytes<stbox::bytes>::for_package(license, license_size, l);
   return stbox::stx_status::success;
 }
