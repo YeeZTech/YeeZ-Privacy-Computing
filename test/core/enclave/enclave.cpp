@@ -82,7 +82,8 @@ uint32_t get_encrypted_result_and_signature(
                                        (uint8_t *)&cost_msg[0], cost_msg.size(),
                                        _cost_sig, cost_sig_size);
 
-  auto msg = cost_msg + result;
+  auto msg = cost_msg + stbox::bytes(_encrypted_res, res_size);
+  LOG(INFO) << "result message: " << msg;
   status = stbox::crypto::sign_message(_private_key, private_key_size,
                                        (uint8_t *)&msg[0], msg.size(),
                                        _result_sig, sig_size);
