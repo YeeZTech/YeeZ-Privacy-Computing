@@ -2,6 +2,7 @@
 add_executable(fid_analyzer main.cpp
   sgx_bridge.cpp
   extra_data_source.cpp
+  extra_data_source_reader.cpp
   parsers/file_parser.cpp
   parsers/parser_base.cpp
   params/param_from_json.cpp

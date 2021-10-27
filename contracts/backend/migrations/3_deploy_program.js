@@ -8,6 +8,7 @@ async function performMigration(deployer, network, accounts) {
     network.includes("ganache")
     ){
     await deployer.deploy(ProgramStore);
+    await deployer.deploy(TestProgramStore);
   }
 }
 module.exports = function(deployer, network, accounts){

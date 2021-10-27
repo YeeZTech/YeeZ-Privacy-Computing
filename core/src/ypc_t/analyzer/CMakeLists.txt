@@ -1,6 +1,7 @@
 
 set(src parser_wrapper_base.cpp
   extra_data_usage.cpp
+  extra_data_source.cpp
   ../ecommon/package.cpp
   ../ecommon/signer_verify.cpp
   ${FF_SRC_PATH}/net/common/archive.cpp

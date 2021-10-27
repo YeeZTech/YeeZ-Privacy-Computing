@@ -24,3 +24,14 @@ void write_extra_data_source_to_file(const extra_data_source_t _data_source,
                                      const std::string &file_path);
 
 } // namespace ypc
+
+extern "C" {
+uint32_t ocall_read_next_extra_data_item(uint8_t *data_hash,
+                                         uint32_t hash_size);
+uint32_t ocall_get_next_extra_data_item_size();
+uint32_t ocall_get_next_extra_data_item_data(uint8_t *item_data,
+                                             uint32_t ndi_size);
+}
+
+class extra_data_source_reader;
+extern std::shared_ptr<extra_data_source_reader> g_data_source_reader;

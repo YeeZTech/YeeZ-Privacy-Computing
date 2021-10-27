@@ -19,7 +19,8 @@ enum {
   request_private_key_item,
   request_extra_data_usage_license_item,
   ack_extra_data_usage_license_item,
-  request_extra_data_item
+  request_extra_data_item,
+  ack_extra_data_item
 };
 
 typedef sgx_package<request_data_item, ypc::nt<stbox::bytes>::reserve>
@@ -37,6 +38,11 @@ typedef sgx_package<request_extra_data_usage_license_item,
 typedef sgx_package<ack_extra_data_usage_license_item,
                     ypc::nt<stbox::bytes>::reserve>
     ack_extra_data_usage_license_pkg_t;
+
+typedef sgx_package<request_extra_data_item, ypc::nt<stbox::bytes>::data_hash>
+    request_extra_data_pkg_t;
+typedef sgx_package<ack_extra_data_item, ypc::nt<stbox::bytes>::data>
+    ack_extra_data_pkg_t;
 
 class sgx_package_handler {
 public:

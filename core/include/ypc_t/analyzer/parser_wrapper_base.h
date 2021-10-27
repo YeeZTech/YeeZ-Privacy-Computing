@@ -9,12 +9,18 @@
 
 #include "stbox/ebyte.h"
 #include "stdlib.h"
+#include "ypc_t/analyzer/extra_data_source.h"
 #include <stdio.h> //vsnprintf
 
 namespace ypc {
 
 class parser_wrapper_base {
 public:
+  struct extra_data_source_group {
+    std::string name;
+    std::vector<std::shared_ptr<extra_data_source>> data_sources;
+  };
+
   parser_wrapper_base();
   parser_wrapper_base(const parser_wrapper_base &) = delete;
   parser_wrapper_base &operator=(const parser_wrapper_base &) = delete;
@@ -80,6 +86,7 @@ protected:
   stbox::bytes m_result_signature_str;
 
   ypc::nt<stbox::bytes>::extra_data_package_t m_extra_data;
+  std::vector<extra_data_source_group> m_extra_data_sources;
 
   //! for merge block result
 

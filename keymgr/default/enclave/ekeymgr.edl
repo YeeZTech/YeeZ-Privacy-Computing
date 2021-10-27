@@ -46,8 +46,13 @@ enclave {
 
     untrusted {
         /* define OCALLs here. */
-        uint32_t ocall_load_key_pair([in, size=path_size] const char * key_path, uint32_t path_size,
-                                     [in, size=pkey_size] uint8_t * public_key, uint32_t pkey_size,
-                                     [out, size=sealed_size] uint8_t * sealed_privated_key, uint32_t sealed_size);
+    uint32_t ocall_load_key_pair([in, size=path_size] const char * key_path, uint32_t path_size,
+                                  [in, size=pkey_size] uint8_t * public_key, uint32_t pkey_size,
+                                  [out, size=sealed_size] uint8_t * sealed_privated_key, uint32_t sealed_size);
+
+    uint32_t ocall_read_next_extra_data_item([in, size=hash_size] uint8_t *data_hash, uint32_t hash_size);
+    uint32_t ocall_get_next_extra_data_item_size();
+    uint32_t ocall_get_next_extra_data_item_data([out, size=ndi_size] uint8_t *item_data,
+                          uint32_t ndi_size);
     };
 };

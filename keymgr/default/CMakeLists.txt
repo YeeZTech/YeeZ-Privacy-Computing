@@ -11,7 +11,7 @@ target_link_libraries(keymgr_module stbox_common_u ypc_core keymgr_utils)
 install(TARGETS keymgr_module DESTINATION lib)
 
 add_sgx_executable(keymgr_tool
-  SRCS "main.cpp")
+  SRCS "main.cpp no_use_extra_data_bridge.cpp")
 add_dependencies(keymgr_tool keymgr-sign)
 target_link_libraries(keymgr_tool keymgr_module)
 install(TARGETS keymgr_tool DESTINATION bin)

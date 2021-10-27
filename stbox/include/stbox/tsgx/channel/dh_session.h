@@ -50,12 +50,12 @@ public:
   virtual stx_status send_request_recv_response(const char *inp_buff,
                                                 size_t inp_buff_len,
                                                 size_t max_out_buff_size,
-                                                char **out_buff,
-                                                size_t *out_buff_len);
+                                                bytes &out_buff);
 
   typedef std::function<bytes(const uint8_t *data, size_t data_len,
                               dh_session *context)>
       handler_func_t;
+
   virtual stx_status
   generate_response(secure_message_t *req_message, size_t req_message_size,
                     const handler_func_t &handler, size_t max_payload_size,

@@ -27,7 +27,7 @@ public:
     if (m_item_parser_func) {
       m_data_source->set_item_parser(m_item_parser_func);
     }
-    m_parser.reset(new ParserT(m_data_source.get()));
+    m_parser.reset(new ParserT(m_data_source.get(), m_extra_data_sources));
     return r1;
   }
 

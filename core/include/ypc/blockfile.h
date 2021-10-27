@@ -130,7 +130,8 @@ public:
       s.alloc(len);
     }
 
-    m_file.read((char *)s.data(), s.size());
+    m_file.read((char *)s.data(), len);
+    s.size() = len;
     return true;
   }
 

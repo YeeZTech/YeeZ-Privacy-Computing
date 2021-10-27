@@ -8,6 +8,7 @@ add_executable(hpda_gtest gtest_main.cpp
   processor/test_filter.cpp
   processor/test_groupby.cpp
   processor/test_json_to_data_batch.cpp
+  processor/test_concat.cpp
   kmeans/test_loyd_vector.cpp
   kmeans/test_loyd_tuple.cpp
   kmeans/test_kmeans_tuple.cpp

@@ -1,4 +1,5 @@
 #include "./extra_data_source.h"
+#include "extra_data_source_reader.h"
 #include "parser.h"
 #include "sgx_bridge.h"
 #include "ypc/configuration.h"
@@ -142,6 +143,7 @@ int main(int argc, char *argv[]) {
         return -1;
       }
       parser->set_extra_data_source(eds);
+      g_data_source_reader.reset(new extra_data_source_reader(eds));
     }
 
     uint32_t ret = parser->parse();

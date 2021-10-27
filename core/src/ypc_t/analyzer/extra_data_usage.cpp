@@ -28,24 +28,32 @@ uint32_t parser_wrapper_base::request_extra_data_usage() {
   using ntt = nt<stbox::bytes>;
   for (auto data_item : m_extra_data.get<ntt::extra_data_items>()) {
     const std::string &name = data_item.get<ntt::extra_data_group_name>();
+    extra_data_source_group edsg;
+    edsg.name = name;
     for (auto datahash : data_item.get<ntt::extra_data_hashes>()) {
       stbox::bytes request_msg = make_bytes<stbox::bytes>::for_package<
           request_extra_data_usage_license_pkg_t, ntt::encrypted_param,
           ntt::pkey4v, ntt::data_hash>(m_encrypted_param, m_pkey4v, datahash);
 
-      // TODO will this cause memory leak?
-      char *out_buff;
-      size_t out_buff_len;
+      stbox::bytes recv;
       auto status = m_keymgr_session->send_request_recv_response(
           (char *)request_msg.data(), request_msg.size(),
-          utc::max_keymgr_response_buf_size, &out_buff, &out_buff_len);
+          utc::max_keymgr_response_buf_size, recv);
+
       if (status != stbox::stx_status::success) {
         LOG(ERROR) << "error for m_keymgr_session->send_request_recv_response: "
                    << status;
         return status;
       }
-      // TODO, as we recv response, we need check it and build datasource from
-      // it.
+      auto pkg =
+          make_package<ack_extra_data_usage_license_pkg_t>::from_bytes(recv);
+      auto succ = pkg.get<ntt::reserve>();
+      if(succ){
+        edsg.data_sources.push_back(
+            std::make_shared<extra_data_source>(m_keymgr_session, datahash));
+      }else{
+        return stbox::stx_status::extra_data_invalid_license;
+      }
     }
   }
   return stbox::stx_status::success;

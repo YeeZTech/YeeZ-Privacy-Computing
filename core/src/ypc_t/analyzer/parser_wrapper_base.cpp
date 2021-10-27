@@ -88,18 +88,15 @@ uint32_t parser_wrapper_base::request_private_key() {
   stbox::bytes request_msg = ypc::make_bytes<stbox::bytes>::for_package<
       request_private_key_pkg_t, nt<stbox::bytes>::id>(private_key_id);
 
-  // TODO will this cause memory leak?
-  char *out_buff;
-  size_t out_buff_len;
   auto status = m_keymgr_session->send_request_recv_response(
       (char *)request_msg.data(), request_msg.size(),
-      utc::max_keymgr_response_buf_size, &out_buff, &out_buff_len);
+      utc::max_keymgr_response_buf_size, m_private_key);
+
   if (status != stbox::stx_status::success) {
     LOG(ERROR) << "error for m_keymgr_session->send_request_recv_response: "
                << status;
     return status;
   }
-  m_private_key = bytes(out_buff, out_buff_len);
   LOG(INFO) << "request private key done";
 
   uint32_t pkey_size = stbox::crypto::get_secp256k1_public_key_size();

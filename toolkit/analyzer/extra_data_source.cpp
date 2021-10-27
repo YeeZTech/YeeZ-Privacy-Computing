@@ -3,7 +3,9 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 
+#include "./extra_data_source_reader.h"
 #include <boost/foreach.hpp>
+
 namespace ypc {
 
 extra_data_source_t
@@ -37,3 +39,16 @@ void write_extra_data_source_to_file(const extra_data_source_t _data_source,
                                      const std::string &file_path) {}
 
 } // namespace ypc
+
+uint32_t ocall_read_next_extra_data_item(uint8_t *data_hash,
+                                         uint32_t hash_size) {
+  return g_data_source_reader->next_extra_data_item(data_hash, hash_size);
+}
+uint32_t ocall_get_next_extra_data_item_size() {
+  return g_data_source_reader->get_next_extra_data_item_size();
+}
+uint32_t ocall_get_next_extra_data_item_data(uint8_t *item_data,
+                                             uint32_t ndi_size) {
+  return g_data_source_reader->get_next_extra_data_item_data(item_data,
+                                                             ndi_size);
+}
