@@ -40,8 +40,21 @@ def generate_csv_reader_file(cpp, name):
     cpp.write("typedef ypc::plugins::typed_csv_reader<{}_item_t> {}_reader_t;\n".format(name, name));
     cpp.write("impl_csv_reader({}_reader_t)".format(name))
 
-def generate_mysql_reader_file(cpp, name):
-    cpp.write("impl_mysql_reader({}_item_t)".format(name))
+def generate_mysql_reader_file(cpp, name, config):
+    cpp.write("#include<toolkit/plugins/mysql/mysql_reader.h>\n")
+    cpp.write("struct _mysql_table_t{")
+    cpp.write("constexpr static const char * table_name = \"{}\";".format(config["table_name"]))
+    cpp.write("};\n")
+    cpp.write("typedef ff::sql::table<ff::sql::mysql<ff::sql::cppconn>, _mysql_table_t");
+
+
+    schema = config["schema"]
+    for item in schema:
+        cpp.write(", {}".format(item["name"]))
+    cpp.write("> _table_t;")
+
+    cpp.write("typedef ypc::plugins::typed_mysql_reader<{}_item_t, _table_t> {}_reader_t;\n".format(name, name));
+    cpp.write("impl_mysql_reader({}_reader_t)".format(name))
 
 def generate_reader_file(target_dir, name, config):
     reader_dir = os.path.join(target_dir, "reader");
@@ -54,7 +67,7 @@ def generate_reader_file(target_dir, name, config):
         if config["type"] == "csv":
             generate_csv_reader_file(cpp, name)
         elif config["type"] == "mysql":
-            generate_mysql_reader_file(cpp, name)
+            generate_mysql_reader_file(cpp, name, config)
         else:
             print("invalid type {}".format(config["type"]))
             exit()
@@ -105,10 +118,16 @@ def generate_user_data_type(target_dir, config, name):
         udth.write("#include <ff/util/ntobject.h>\n")
         udth.write("#include <string>\n")
 
+        if config["type"] == "mysql":
+            udth.write("#include <ff/sql.h>\n")
         schema = config["schema"]
         ft = "typedef ff::util::ntobject<"
         for item in schema:
-            udth.write("define_nt({}, {});\n".format(item["name"], item["type"]))
+            if config["type"] == "csv":
+                udth.write("define_nt({}, {});\n".format(item["name"], item["type"]))
+
+            if config["type"] == "mysql":
+                udth.write("define_column({}, {}, {}, \"{}\");\n".format(item["name"], item["col"], item["type"], item["colname"]))
             ft = ft+ item["name"] + ","
         ft = ft.strip(',')
         ft = ft + '> {}_item_t;\n'.format(name)
@@ -134,5 +153,5 @@ if __name__ == "__main__":
 
     generate_top_cmake(target_dir, args.name)
     generate_reader_file(target_dir, args.name, conf)
-    generate_parser_file(target_dir, args.name, conf)
+    # generate_parser_file(target_dir, args.name, conf)
     build_all(target_dir, conf)

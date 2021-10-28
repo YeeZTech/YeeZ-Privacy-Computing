@@ -5,6 +5,7 @@
 #include <ff/sql/mysql.hpp>
 #include <ff/util/ntobject.h>
 #include <fstream>
+#include <iostream>
 #include <memory>
 #include <stdint.h>
 
@@ -50,9 +51,7 @@ public:
   typed_mysql_reader(const std::string &extra_param)
       : m_extra_param(extra_param) {
     boost::property_tree::ptree pt;
-    std::stringstream ss;
-    ss << extra_param;
-    boost::property_tree::json_parser::read_json(ss, pt);
+    boost::property_tree::json_parser::read_json(m_extra_param, pt);
 
     auto url = pt.get_child("url").get_value<std::string>();
     auto username = pt.get_child("username").get_value<std::string>();
@@ -159,26 +158,27 @@ protected:
           new type(std::string(extra_param, len));                             \
       return reader;                                                           \
     } catch (const std::exception &e) {                                        \
+      std::cout << "create_item_reader got: " << e.what() << std::endl;        \
       return nullptr;                                                          \
     }                                                                          \
   }                                                                            \
   int reset_for_read(void *handle) {                                           \
-    ypc::plugins::mysql_reader *reader = (ypc::plugins::csv_reader *)handle;   \
+    ypc::plugins::mysql_reader *reader = (ypc::plugins::mysql_reader *)handle; \
     return reader->reset_for_read();                                           \
   }                                                                            \
   int read_item_data(void *handle, char *buf, int *len) {                      \
-    ypc::plugins::mysql_reader *reader = (ypc::plugins::csv_reader *)handle;   \
+    ypc::plugins::mysql_reader *reader = (ypc::plugins::mysql_reader *)handle; \
     return reader->read_item_data(buf, len);                                   \
   }                                                                            \
   int close_item_reader(void *handle) {                                        \
-    ypc::plugins::mysql_reader *reader = (ypc::plugins::csv_reader *)handle;   \
+    ypc::plugins::mysql_reader *reader = (ypc::plugins::mysql_reader *)handle; \
     reader->close_item_reader();                                               \
     delete reader;                                                             \
     return 0;                                                                  \
   }                                                                            \
                                                                                \
   uint64_t get_item_number(void *handle) {                                     \
-    ypc::plugins::mysql_reader *reader = (ypc::plugins::csv_reader *)handle;   \
+    ypc::plugins::mysql_reader *reader = (ypc::plugins::mysql_reader *)handle; \
     return reader->get_item_number();                                          \
   }
 

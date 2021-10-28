@@ -5,6 +5,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <ff/util/ntobject.h>
 #include <fstream>
+#include <iostream>
 #include <memory>
 #include <stdint.h>
 
@@ -58,13 +59,15 @@ public:
   /// @extra_param should be a json string, like this
   // {file_path: "xxx"}
   typed_csv_reader(const std::string &extra_param)
-      : m_extra_param(extra_param) {
+      : m_extra_param(extra_param), m_file_path(extra_param) {
+    std::cout << "extra param: " << extra_param << std::endl;
+    /*
     boost::property_tree::ptree pt;
     std::stringstream ss;
     ss << extra_param;
     boost::property_tree::json_parser::read_json(ss, pt);
     m_file_path = pt.get_child("file_path").get_value<std::string>();
-
+*/
     m_stream.reset(new std::ifstream(m_file_path));
     if (!m_stream->is_open()) {
       throw std::runtime_error("file not exist");
@@ -81,10 +84,21 @@ public:
         new io::CSVReader<ntobject_size<item_t>::size>(m_file_path, *m_stream));
     return 0;
   }
-  virtual int read_item_data(char *buf, int *len) {
+  item_t read_typed_item() {
     typedef typename cast_obj_to_package<item_t>::type package_t;
     package_t v;
     internal::assign_helper<item_t>::read_row(m_reader.get(), v);
+    item_t ret = v;
+    return ret;
+  }
+
+  virtual int read_item_data(char *buf, int *len) {
+    typedef typename cast_obj_to_package<item_t>::type package_t;
+    package_t v;
+    bool rv = internal::assign_helper<item_t>::read_row(m_reader.get(), v);
+    if (!rv) {
+      return 1;
+    }
     if (len) {
       ff::net::marshaler lm(ff::net::marshaler::length_retriver);
       v.archive(lm);
@@ -127,6 +141,8 @@ protected:
           new type(std::string(extra_param, len));                             \
       return reader;                                                           \
     } catch (const std::exception &e) {                                        \
+      std::cout << "create_item_reader got exception: " << e.what()            \
+                << std::endl;                                                  \
       return nullptr;                                                          \
     }                                                                          \
   }                                                                            \

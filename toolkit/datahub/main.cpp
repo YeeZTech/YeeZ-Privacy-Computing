@@ -131,7 +131,8 @@ void seal_file(const std::string &plugin, const std::string &file,
 
   std::cout << "Reading " << item_number << " items ..." << std::endl;
   boost::progress_display pd(item_number);
-  while (!item_data.empty()) {
+  uint counter = 0;
+  while (!item_data.empty() && counter < item_number) {
     bytes s = sm.seal_data(item_data);
     sf.write_item(s);
     stbox::bytes k = data_hash + item_data;
@@ -139,6 +140,7 @@ void seal_file(const std::string &plugin, const std::string &file,
     // data_hash = SHA256(s.c_str(), s.size());
     item_data = reader.read_item_data();
     ++pd;
+    ++counter;
   }
   std::cout << "\nDone read data count: " << pd.count() << std::endl;
 }
