@@ -19,7 +19,7 @@ TEST(concat, basic) {
     rd1.add_data(d);
     rd2.add_data(d);
   }
-  hpda::concat<data_item_t> con(&rd1);
+  hpda::processor::concat<hash, value> con(&rd1);
   con.add_upper_stream(&rd2);
 
   hpda::processor::filter<hash, value> f(

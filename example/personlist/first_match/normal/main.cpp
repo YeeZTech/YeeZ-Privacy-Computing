@@ -1,4 +1,5 @@
 #include "../../common.h"
+#include "common/ignore.h"
 #include "stbox/ebyte.h"
 #include "ypc/block_data_source.h"
 #define EXAMPLE_FM_NORMAL
@@ -14,7 +15,7 @@ int main(int argc, char *argv[]) {
 
   ypc::block_data_source<user_item_t, file_t> sds(&ssf);
 
-  first_match_parser fmp(&sds);
+  first_match_parser fmp(&sds, ypc::ignore);
 
   fmp.do_parse(param);
   return 0;

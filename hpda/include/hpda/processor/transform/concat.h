@@ -22,13 +22,13 @@ public:
   }
   virtual bool process() {
     while (m_index < m_upper_streams.size() &&
-           !m_upper_streams[m_index]->has_input_value()) {
+           !m_upper_streams[m_index]->has_value()) {
       m_index++;
     }
     if (m_index >= m_upper_streams.size()) {
       return false;
     }
-    return m_upper_streams[m_index]->has_input_value();
+    return m_upper_streams[m_index]->has_value();
   }
 
   virtual InputObjType output_value() {

@@ -1,4 +1,7 @@
 #include "ypc_t/analyzer/extra_data_source.h"
+#include "corecommon/package.h"
+
+namespace ypc {
 
 extra_data_source::extra_data_source(::stbox::dh_session_initiator *dh_session,
                                      const stbox::bytes &data_hash)
@@ -17,7 +20,7 @@ extra_data_source::extra_data_source(::stbox::dh_session_initiator *dh_session,
         const stbox::bytes &response = p->get<data>();
         stbox::bytes k = m_data_hash + response;
         m_data_hash = stbox::eth::keccak256_hash(k);
-        m_data = response;
+        m_data.set<nt<bytes>::data>(response);
       });
   m_phandler.add_to_handle_pkg<ctrl_pkg_t>(
       [&](std::shared_ptr<ctrl_pkg_t> p) { m_data_reach_end = true; });
@@ -43,3 +46,4 @@ bool extra_data_source::process() {
 }
 
 extra_data_source_output_t extra_data_source::output_value() { return m_data; }
+} // namespace ypc

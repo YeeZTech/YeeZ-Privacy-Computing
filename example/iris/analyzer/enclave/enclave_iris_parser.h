@@ -1,7 +1,7 @@
-
 #include "stbox/ebyte.h"
 #include "stbox/stx_common.h"
 #include "user_type.h"
+
 #include <hpda/extractor/raw_data.h>
 #include <hpda/output/memory_output.h>
 
@@ -48,9 +48,12 @@ define_nt(iid, int);
 class enclave_iris_parser {
 public:
   enclave_iris_parser() {}
+  template <typename ET>
   enclave_iris_parser(
-      ::hpda::extractor::internal::extractor_base<user_item_t> *source)
-      : m_source(source){};
+      ::hpda::extractor::internal::extractor_base<user_item_t> *source,
+      ET &&ignore)
+      : m_source(source) {
+  };
 
   inline stbox::bytes do_parse(const stbox::bytes &param) {
     hpda::algorithm::kmeans::kmeans_processor<

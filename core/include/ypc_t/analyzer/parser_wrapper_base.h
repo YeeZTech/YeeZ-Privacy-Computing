@@ -5,6 +5,7 @@
 #include "stbox/tsgx/channel/dh_session_initiator.h"
 #include "stbox/tsgx/ocall.h"
 #include "ypc_t/ecommon/package.h"
+#include <hpda/engine/engine.h>
 #include <string.h>
 
 #include "stbox/ebyte.h"
@@ -97,6 +98,7 @@ protected:
   };
   std::unordered_map<uint16_t, block_meta_t> m_block_results;
   bool m_continue;
+  hpda::engine m_engine;
 };
 
 } // namespace ypc

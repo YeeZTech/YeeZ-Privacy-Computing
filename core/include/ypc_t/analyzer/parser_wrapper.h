@@ -24,6 +24,7 @@ public:
     uint32_t r1 = parser_wrapper_base::begin_parse_data_item();
     m_data_source.reset(
         new sealed_data_provider<UserItemT>(m_datahub_session.get()));
+    m_data_source->set_engine(&m_engine);
     if (m_item_parser_func) {
       m_data_source->set_item_parser(m_item_parser_func);
     }

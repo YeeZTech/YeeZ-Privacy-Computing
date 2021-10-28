@@ -49,8 +49,10 @@ uint32_t parser_wrapper_base::request_extra_data_usage() {
           make_package<ack_extra_data_usage_license_pkg_t>::from_bytes(recv);
       auto succ = pkg.get<ntt::reserve>();
       if(succ){
-        edsg.data_sources.push_back(
-            std::make_shared<extra_data_source>(m_keymgr_session, datahash));
+        auto eds = std::make_shared<extra_data_source>(m_keymgr_session.get(),
+                                                       datahash);
+        eds->set_engine(&m_engine);
+        edsg.data_sources.push_back(eds);
       }else{
         return stbox::stx_status::extra_data_invalid_license;
       }

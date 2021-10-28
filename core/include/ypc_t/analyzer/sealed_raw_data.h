@@ -1,5 +1,6 @@
 #pragma once
 #include "common/limits.h"
+#include "corecommon/package.h"
 #include "hpda/extractor/extractor_base.h"
 #include "stbox/ebyte.h"
 #include "stbox/eth/eth_hash.h"
@@ -20,7 +21,9 @@ public:
 
   sealed_data_provider(::stbox::dh_session_initiator *dh_session)
       : m_datahub_session(dh_session) {
-    m_request_bytes = make_bytes<bytes>::for_package<request_pkg_t>();
+    m_request_bytes =
+        make_bytes<bytes>::for_package<request_pkg_t,
+                                       ypc::nt<stbox::bytes>::reserve>(0);
 
     // magic string here, Do Not Change!
     m_data_hash = stbox::eth::keccak256_hash(stbox::bytes("Fidelius"));

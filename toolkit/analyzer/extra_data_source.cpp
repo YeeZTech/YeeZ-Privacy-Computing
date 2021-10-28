@@ -40,6 +40,8 @@ void write_extra_data_source_to_file(const extra_data_source_t _data_source,
 
 } // namespace ypc
 
+std::shared_ptr<extra_data_source_reader> g_data_source_reader;
+
 uint32_t ocall_read_next_extra_data_item(uint8_t *data_hash,
                                          uint32_t hash_size) {
   return g_data_source_reader->next_extra_data_item(data_hash, hash_size);

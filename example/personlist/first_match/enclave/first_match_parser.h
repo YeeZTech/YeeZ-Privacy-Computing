@@ -14,8 +14,10 @@
 class first_match_parser {
 public:
   first_match_parser() {}
+  template <typename ET>
   first_match_parser(
-      ::hpda::extractor::internal::extractor_base<user_item_t> *source)
+      ::hpda::extractor::internal::extractor_base<user_item_t> *source,
+      ET &&ignore)
       : m_source(source){};
 
   inline stbox::bytes do_parse(const stbox::bytes &param) {

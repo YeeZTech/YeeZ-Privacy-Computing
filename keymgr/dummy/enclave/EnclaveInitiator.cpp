@@ -116,8 +116,6 @@ uint32_t request_forward(uint32_t msg_id) {
   stbox::stx_status ke_status = stbox::stx_status::success;
   char *marshalled_inp_buff;
   size_t marshalled_inp_buff_len;
-  char *out_buff;
-  size_t out_buff_len = 0;
   size_t max_out_buff_size;
 
   // it's assumed the maximum payload size in response message is 1024 bytes,
@@ -133,10 +131,10 @@ uint32_t request_forward(uint32_t msg_id) {
   if (!dh_init_session) {
     return static_cast<uint32_t>(stbox::stx_status::error_unexpected);
   }
+  stbox::bytes out;
   ke_status = dh_init_session->send_request_recv_response(
-      marshalled_inp_buff, marshalled_inp_buff_len, max_out_buff_size,
-      &out_buff, &out_buff_len);
-  printf("response: %s\n", out_buff);
+      marshalled_inp_buff, marshalled_inp_buff_len, max_out_buff_size, out);
+  // printf("response: %s\n", out_buff);
   if (ke_status != stbox::stx_status::success) {
     return (uint32_t)ke_status;
   }
