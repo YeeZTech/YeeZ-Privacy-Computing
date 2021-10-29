@@ -1,6 +1,7 @@
 #include "stbox/tsgx/crypto/ecc_context.h"
 #include "common/endian.h"
 #include "stbox/tsgx/crypto/ecc.h"
+#include "stbox/tsgx/log.h"
 
 #define SECP256K1_PRIVATE_KEY_SIZE 32
 
@@ -8,8 +9,10 @@ namespace stbox {
 namespace crypto {
 
 ecc_context::ecc_context() {
+  LOG(INFO) << "ecc_context create";
   m_ctx = secp256k1_context_create(SECP256K1_CONTEXT_VERIFY |
                                    SECP256K1_CONTEXT_SIGN);
+  LOG(INFO) << "ecc_context create done";
 }
 const bytes &ecc_context::skey() {
   if (m_skey.empty()) {

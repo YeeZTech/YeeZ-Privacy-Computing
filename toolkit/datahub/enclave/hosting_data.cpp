@@ -24,9 +24,9 @@ public:
   uint32_t init() {
     auto s = stbox::crypto::get_secp256k1_private_key_size();
     m_skey = stbox::bytes(s);
+    stbox::crypto::gen_secp256k1_skey(m_skey.size(), m_skey.data());
     s = stbox::crypto::get_secp256k1_public_key_size();
     m_pkey = stbox::bytes(s);
-    stbox::crypto::gen_secp256k1_skey(m_skey.size(), m_skey.data());
     stbox::crypto::generate_secp256k1_pkey_from_skey(
         m_skey.data(), m_pkey.data(), m_pkey.size());
 

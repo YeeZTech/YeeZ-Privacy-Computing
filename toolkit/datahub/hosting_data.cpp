@@ -9,6 +9,7 @@
 #include <boost/program_options.hpp>
 #include <exception>
 #include <fstream>
+#include <glog/logging.h>
 #include <iostream>
 using namespace ypc;
 
@@ -18,6 +19,7 @@ int gen_host_data(datahub_sgx_module &sm, ypc::simple_sealed_file &sf,
   // m_sf = std::shared_ptr<ypc::internal::sealed_file_base>(
   // new ypc::simple_sealed_file(m_sealfile_path, true));
 
+  LOG(INFO) << "start generate host data";
   ypc::simple_sealed_file output(encrypted_data_path, false);
   sm.begin_encrypt_sealed_data();
   ypc::memref item_data;
@@ -31,9 +33,11 @@ int gen_host_data(datahub_sgx_module &sm, ypc::simple_sealed_file &sf,
     output.write_item(encrypted_data);
   }
   sm.end_encrypt_sealed_data();
+  LOG(INFO) << "end generate host data";
 
   ypc::bytes credential;
   sm.get_encrypted_data_credential(credential);
+  LOG(INFO) << "got credential data";
   std::ofstream cf(credential_path, std::ios::out | std::ios::binary);
   if (cf.is_open()) {
     cf.write((const char *)credential.data(), credential.size());
@@ -72,6 +76,15 @@ int hosting_data_main(boost::program_options::variables_map &vm) {
   }
   std::string enclave_file = vm["sealer-path"].as<std::string>();
   std::string credential_path = vm["credential-path"].as<std::string>();
+  if (!vm.count("credential-path")) {
+    std::cout << " missing 'credential-path' " << std::endl;
+    return -1;
+  }
+  if (!vm.count("output")) {
+    std::cout << "missing 'output' " << std::endl;
+    return -1;
+  }
+
   datahub_sgx_module sm(enclave_file.c_str());
   if (vm.count("gen-host-data")) {
     std::string sealed_file_path = vm["sealed-data-url"].as<std::string>();

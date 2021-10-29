@@ -29,7 +29,7 @@ using namespace stbox;
 
 namespace stbox {
 namespace crypto {
-std::shared_ptr<ecc_context> context;
+std::shared_ptr<ecc_context> context(nullptr);
 }
 } // namespace stbox
 
@@ -96,7 +96,12 @@ uint32_t get_secp256k1_sealed_private_key_size() {
       strlen(aad_mac_text), SECP256K1_PRIVATE_KEY_SIZE * sizeof(unsigned char));
 }
 uint32_t gen_secp256k1_skey(uint32_t skey_size, uint8_t *skey) {
-  secp256k1_context *ctx = ::stbox::crypto::context->ctx();
+  if (!context) {
+    context = std::make_shared<ecc_context>();
+  }
+
+  secp256k1_context *ctx = context->ctx();
+
   if (!ctx) {
     LOG(ERROR) << "Context or Secret key or Public key is null";
     return stbox::stx_status::ecc_invalid_ctx_or_skey;
