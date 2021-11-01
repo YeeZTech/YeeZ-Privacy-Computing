@@ -44,9 +44,7 @@ public:
     m_parser.reset(new ParserT(m_data_source.get(), m_extra_data_sources));
 
     if (r1 == static_cast<uint32_t>(stbox::stx_status::success)) {
-      LOG(INFO) << "start do_parse";
       m_result_str = m_parser->do_parse(m_param);
-      LOG(INFO) << "end do_parse";
       // TODO Calculate actual gas cost
       m_cost_gas = 0;
     }
@@ -54,9 +52,7 @@ public:
   }
 
   virtual uint32_t end_parse_data_item() {
-    LOG(INFO) << "end_parse_data_item()";
     uint32_t r1 = parser_wrapper_base::end_parse_data_item();
-    LOG(INFO) << "end_parse_data_item() 2";
     if (r1 != static_cast<uint32_t>(stbox::stx_status::success)) {
       return r1;
     }

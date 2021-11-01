@@ -168,6 +168,7 @@ public:
     if (m_aggregator.grouping()) {
       if (m_last_group_id == t) {
         m_aggregator.group(base::input_value());
+        base::consume_input_value();
         return false;
       } else {
         m_aggregator.end_group();
@@ -177,6 +178,7 @@ public:
         m_last_group_id = t;
         m_data.template set<GroupByType>(t);
         m_aggregator.group(base::input_value());
+        base::consume_input_value();
         return true;
       }
     } else {
@@ -184,6 +186,7 @@ public:
       m_last_group_id = t;
       m_data.template set<GroupByType>(t);
       m_aggregator.group(base::input_value());
+      base::consume_input_value();
       return false;
     }
   }

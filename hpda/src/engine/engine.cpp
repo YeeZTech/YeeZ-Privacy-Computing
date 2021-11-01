@@ -65,15 +65,16 @@ void engine::run() {
       } else {
         f->reset_done_value();
       }
-      for (auto input : f->predecessors()) {
-        input->reset_done_value();
-      }
+      // for (auto input : f->predecessors()) {
+      // input->reset_done_value();
+      //}
       if (f->has_value()) {
         processing.pop();
       } else {
         bool end = true;
         for (auto input : f->predecessors()) {
-          if (m_reach_ends.find(input) == m_reach_ends.end()) {
+          if (m_reach_ends.find(input) == m_reach_ends.end() &&
+              !(input->has_value())) {
             to_process.push(input);
             end = false;
           }

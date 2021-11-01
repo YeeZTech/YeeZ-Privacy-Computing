@@ -94,6 +94,7 @@ public:
     // int point_count = 0;
     if (base::has_input_value() && m_all_points.size() < m_max_points) {
       m_all_points.push_back(base::input_value());
+      base::consume_input_value();
       return false;
     }
     // while (base::next_input() && point_count < m_max_points) {

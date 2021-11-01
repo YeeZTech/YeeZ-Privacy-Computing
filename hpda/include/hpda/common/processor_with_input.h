@@ -31,6 +31,8 @@ public:
 
   inline bool has_input_value() const { return m_upper_stream->has_value(); }
 
+  inline void consume_input_value() { m_upper_stream->reset_done_value(); }
+
 protected:
   internal::processor_with_output<InputObjType> *m_upper_stream;
 };

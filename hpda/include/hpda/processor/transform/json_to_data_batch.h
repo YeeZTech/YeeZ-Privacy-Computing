@@ -32,6 +32,7 @@ public:
     m_next_data_index++;
     if (m_next_data_index >= m_all_data.size()) {
       if (!parse_data()) {
+        base::consume_input_value();
         return false;
       }
     }

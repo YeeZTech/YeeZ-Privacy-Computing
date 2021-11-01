@@ -5,7 +5,6 @@
 #include "stbox/eth/eth_hash.h"
 #include "stbox/stx_common.h"
 #include "stbox/tsgx/channel/dh_session_initiator.h"
-#include "stbox/tsgx/log.h"
 #include "ypc_t/ecommon/package.h"
 #include <ff/util/ntobject.h>
 
@@ -41,5 +40,6 @@ protected:
 
   sgx_package_handler m_phandler;
   bool m_data_reach_end;
+  uint32_t m_counter;
 };
 } // namespace ypc

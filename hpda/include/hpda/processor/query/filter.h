@@ -24,14 +24,19 @@ public:
       return false;
     }
     auto b = m_func(base::input_value());
+    if (b) {
+      m_data = base::input_value().make_copy();
+    }
+    base::consume_input_value();
     return b;
   }
 
-  virtual InputObjType output_value() { return base::input_value(); }
+  virtual InputObjType output_value() { return m_data; }
 
 protected:
   typedef std::function<bool(const InputObjType &)> predicate_func_t;
   predicate_func_t m_func;
+  InputObjType m_data;
 };
 } // namespace internal
 template <typename... ARGS>

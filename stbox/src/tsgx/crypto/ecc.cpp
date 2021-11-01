@@ -289,16 +289,13 @@ uint32_t decrypt_message_with_prefix(const uint8_t *skey, uint32_t skey_size,
                                      uint32_t data_size, uint32_t prefix) {
   sgx_status_t se_ret;
   sgx_ec_key_128bit_t derived_key;
-  LOG(INFO) << "01";
   uint32_t pkey_size = get_secp256k1_public_key_size();
-  LOG(INFO) << "02";
   se_ret = (sgx_status_t)internal::gen_sgx_ec_key_128bit(
       cipher + data_size, pkey_size, skey, skey_size, (uint8_t *)&derived_key);
   if (se_ret) {
     LOG(ERROR) << "gen_sgx_ec_key_128bit fail: " << se_ret;
     return se_ret;
   }
-  LOG(INFO) << "1";
 
   uint8_t mac_text[AAD_MAC_TEXT_LEN];
   memset(mac_text, 0, AAD_MAC_TEXT_LEN);
@@ -306,7 +303,6 @@ uint32_t decrypt_message_with_prefix(const uint8_t *skey, uint32_t skey_size,
   uint32_t *p_prefix = (uint32_t *)(mac_text + AAD_MAC_PREFIX_POS);
   *p_prefix = prefix;
 
-  LOG(INFO) << "2";
   se_ret = sgx_rijndael128GCM_decrypt(
       (const sgx_aes_gcm_128bit_key_t *)derived_key, cipher, data_size, data,
       p_iv_text, INITIALIZATION_VECTOR_SIZE, mac_text, AAD_MAC_TEXT_LEN,

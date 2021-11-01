@@ -12,7 +12,7 @@ typedef ::ff::util::ntobject<data_skey_nt, signature_nt>
     extra_data_usage_license_t;
 std::unordered_map<stbox::bytes, extra_data_usage_license_t>
     extra_data_usage_licenses;
-std::unordered_set<stbox::bytes> authorized_extra_data;
+std::unordered_map<stbox::bytes, stbox::bytes> authorized_extra_data;
 
 stbox::bytes tee_pkey;
 
@@ -102,8 +102,8 @@ stbox::bytes handle_data_usage_license_pkg(
           ack_extra_data_usage_license_pkg_t, ntt::reserve>(0);
 
     } else {
-      LOG(INFO) << "got extra data item";
-      authorized_extra_data.insert(data_hash + enclave_hash);
+      authorized_extra_data.insert(
+          std::make_pair(data_hash + enclave_hash, data_skey));
 
       return ypc::make_bytes<stbox::bytes>::for_package<
           ack_extra_data_usage_license_pkg_t, ntt::reserve>(1);
@@ -116,17 +116,19 @@ stbox::bytes handle_extra_data_pkg(stbox::dh_session *context,
   stbox::bytes enclave_hash((char *)&context->peer_identity().mr_enclave,
                             sizeof(sgx_measurement_t));
   auto key = data_hash + enclave_hash;
-  if (authorized_extra_data.find(key) == authorized_extra_data.end()) {
+  auto it = authorized_extra_data.find(key);
+  if (it == authorized_extra_data.end()) {
     LOG(ERROR) << "unauthroized extra data request";
 
     return ypc::make_bytes<stbox::bytes>::for_package<ack_extra_data_pkg_t,
                                                       ntt::data>(
         stbox::bytes());
   } else {
+    stbox::bytes data_skey = it->second;
+
     uint32_t r = stbox::ocall_cast<uint32_t>(ocall_read_next_extra_data_item)(
         data_hash.data(), data_hash.size());
     if (r != stbox::stx_status::success) {
-      LOG(INFO) << "read data: " << data_hash << ", reach end";
       return ypc::make_bytes<stbox::bytes>::for_package<ack_extra_data_pkg_t,
                                                         ntt::data>(
           stbox::bytes());
@@ -134,9 +136,24 @@ stbox::bytes handle_extra_data_pkg(stbox::dh_session *context,
 
     uint32_t s =
         stbox::ocall_cast<uint32_t>(ocall_get_next_extra_data_item_size)();
-    stbox::bytes data(s);
+    stbox::bytes edata(s);
     stbox::ocall_cast<uint32_t>(ocall_get_next_extra_data_item_data)(
-        data.data(), data.size());
+        edata.data(), edata.size());
+
+    uint32_t decrypted_size =
+        ::stbox::crypto::get_decrypt_message_size_with_prefix(edata.size());
+    stbox::bytes data(decrypted_size);
+    r = (sgx_status_t)::stbox::crypto::decrypt_message_with_prefix(
+        data_skey.data(), data_skey.size(), edata.data(), edata.size(),
+        data.data(), data.size(), ::ypc::utc::crypto_prefix_host_data);
+
+    if (r != stbox::stx_status::success) {
+      LOG(ERROR) << "decrypt data : " << data_hash << " got error " << r;
+      return ypc::make_bytes<stbox::bytes>::for_package<ack_extra_data_pkg_t,
+                                                        ntt::data>(
+          stbox::bytes());
+    }
+
     return ypc::make_bytes<stbox::bytes>::for_package<ack_extra_data_pkg_t,
                                                       ntt::data>(data);
   }

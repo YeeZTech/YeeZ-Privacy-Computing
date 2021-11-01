@@ -4,7 +4,6 @@
 #include "stbox/eth/eth_hash.h"
 #include "stbox/stx_common.h"
 #include "stbox/tsgx/channel/dh_session_initiator.h"
-#include "stbox/tsgx/log.h"
 #include "ypc_t/analyzer/ntpackage_item_parser.h"
 #include "ypc_t/ecommon/package.h"
 #include <ff/util/ntobject.h>
@@ -36,6 +35,8 @@ public:
         base::input_value().template get<typename ntt::data>();
     m_data = ntpackage_item_parser<stbox::byte_t, NTObj>::parser(data.data(),
                                                                  data.size());
+
+    base::consume_input_value();
     return true;
   }
 

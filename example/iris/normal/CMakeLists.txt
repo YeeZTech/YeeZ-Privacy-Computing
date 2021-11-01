@@ -1,6 +1,5 @@
 add_executable(iris_normal
   main.cpp
-  ../analyzer/enclave/iris_parser.cpp
   ../analyzer/enclave/sgx_plugin.cpp
   )
 

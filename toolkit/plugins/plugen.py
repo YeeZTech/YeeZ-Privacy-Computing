@@ -19,6 +19,7 @@ def generate_top_cmake(target_dir, name):
         cm.write("add_definitions(-std=c++11)\n")
         cm.write("include_directories(${PROJECT_SOURCE_DIR})\n")
         cm.write("include_directories({})\n".format(sdk_dir))
+        cm.write("include_directories({})\n".format(os.path.join(sdk_dir, "core/include")))
         cm.write("include_directories({})\n".format(os.path.join(sdk_dir, "vendor/fflib/include")))
         cm.write("link_directories({})\n".format(os.path.join(sdk_dir, "vendor/fflib/lib")))
         cm.write("set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/output/)\n")

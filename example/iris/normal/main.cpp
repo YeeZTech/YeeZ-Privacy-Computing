@@ -4,6 +4,7 @@
 #include "common/ignore.h"
 #include "stbox/ebyte.h"
 #include "ypc/block_data_source.h"
+#include <iostream>
 
 int main(int argc, char *argv[]) {
 
@@ -14,6 +15,7 @@ int main(int argc, char *argv[]) {
 
   enclave_iris_parser fmp(&pds, ypc::ignore);
 
-  fmp.do_parse(param);
+  auto result = fmp.do_parse(param);
+  std::cout << result << std::endl;
   return 0;
 }

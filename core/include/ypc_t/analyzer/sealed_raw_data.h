@@ -20,7 +20,7 @@ public:
   typedef user_item_t (*item_parser_t)(const stbox::bytes::byte_t *, size_t);
 
   sealed_data_provider(::stbox::dh_session_initiator *dh_session)
-      : m_datahub_session(dh_session) {
+      : m_datahub_session(dh_session), m_data_reach_end(false), m_counter(0) {
     m_request_bytes =
         make_bytes<bytes>::for_package<request_pkg_t,
                                        ypc::nt<stbox::bytes>::reserve>(0);
@@ -31,13 +31,16 @@ public:
     m_phandler.add_to_handle_pkg<response_pkg_t>(
         [&](std::shared_ptr<response_pkg_t> p) {
           using data = typename nt<stbox::bytes>::data;
-          const stbox::bytes &response = p->get<data>();
+          stbox::bytes response = p->get<data>();
           stbox::bytes k = m_data_hash + response;
           m_data_hash = stbox::eth::keccak256_hash(k);
           m_data = m_item_parser_func(response.data(), response.size());
+          m_counter++;
         });
     m_phandler.add_to_handle_pkg<ctrl_pkg_t>(
-        [&](std::shared_ptr<ctrl_pkg_t> p) { m_data_reach_end = true; });
+        [&](std::shared_ptr<ctrl_pkg_t> p) {
+          m_data_reach_end = true;
+        });
   }
 
   inline void set_item_parser(item_parser_t func) { m_item_parser_func = func; }
@@ -49,18 +52,21 @@ public:
       return false;
     }
     bytes recv;
-    LOG(INFO) << "send request";
     auto ret = m_datahub_session->send_request_recv_response(
         (char *)m_request_bytes.data(), m_request_bytes.size(),
         ::ypc::utc::max_item_size, recv);
-    LOG(INFO) << "send request and got " << ret;
     if (ret != stbox::stx_status::success) {
       LOG(ERROR) << "error for m_datahub_session->send_request_recv_response: "
                  << ret;
+      m_data_reach_end = true;
+      return false;
+    }
+    if (recv.size() == 0) {
+      m_data_reach_end = true;
       return false;
     }
     m_phandler.handle_pkg(recv.data(), recv.size());
-    return true;
+    return !m_data_reach_end;
   }
 
   virtual OutputObjType output_value() { return m_data; }
@@ -78,5 +84,6 @@ protected:
 
   sgx_package_handler m_phandler;
   bool m_data_reach_end;
+  uint32_t m_counter;
 };
 } // namespace ypc
