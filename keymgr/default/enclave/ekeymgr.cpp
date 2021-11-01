@@ -291,6 +291,7 @@ uint32_t forward_message(uint32_t msg_id, uint8_t *cipher, uint32_t cipher_size,
     return se_ret;
   }
 
+  LOG(INFO) << " insert message: " << str_msg_key;
   message_table.insert(std::make_pair(
       str_msg_key,
       forward_message_st{msg_id, decrypted_msg, bytes(ehash, ehash_size)}));
@@ -329,6 +330,13 @@ stbox::bytes handle_pkg(const uint8_t *data, size_t data_len,
        &ret](std::shared_ptr<request_extra_data_usage_license_pkg_t> f) {
         ret = handle_data_usage_license_pkg(context, *f);
       });
+  pkg_handler.add_to_handle_pkg<request_extra_data_pkg_t>(
+      [context, &ret](std::shared_ptr<request_extra_data_pkg_t> f) {
+        ret = handle_extra_data_pkg(context, *f);
+      });
+
+  pkg_handler.handle_pkg(data, data_len);
+  return ret;
 }
 
 uint32_t mgenerate_response(secure_message_t *req_message,

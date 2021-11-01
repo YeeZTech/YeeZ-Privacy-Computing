@@ -67,7 +67,7 @@ public:
   uint32_t get_encrypted_data_credential_size() {
     auto t = get_encrypted_data_credential();
     ff::net::marshaler lm(ff::net::marshaler::length_retriver);
-    t.archive(lm);
+    t.arch(lm);
     return lm.get_length();
   }
 
@@ -195,7 +195,7 @@ uint32_t get_data_usage_license_size() {
   ret.set<dhost_t::encrypted_skey>(eskey);
 
   ff::net::marshaler lm(ff::net::marshaler::length_retriver);
-  ret.archive(lm);
+  ret.arch(lm);
   return lm.get_length();
 }
 
@@ -207,11 +207,10 @@ generate_data_usage_license(uint8_t *credential, uint32_t credential_size,
                             uint8_t *tee_pkey, uint32_t tee_pkey_size,
                             uint8_t *license, uint32_t license_size) {
     dhost_t::credential_package_t cred;
-
     {
       ff::net::marshaler lm((const char *)credential, credential_size,
                             ff::net::marshaler::deseralizer);
-      cred.archive(lm);
+      cred.arch(lm);
     }
 
     auto l = hosting_data::generate_data_usage_license(

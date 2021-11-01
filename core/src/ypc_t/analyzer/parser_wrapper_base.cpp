@@ -57,12 +57,15 @@ stbox::stx_status km_verify_peer_enclave_trust(
 }
 
 uint32_t parser_wrapper_base::begin_parse_data_item() {
+  LOG(INFO) << "begin_parse_data_item()";
   m_datahub_session.reset(new stbox::dh_session_initiator(
       stbox::ocall_cast<uint32_t>(datahub_session_request_ocall),
       stbox::ocall_cast<uint32_t>(datahub_exchange_report_ocall),
       stbox::ocall_cast<uint32_t>(datahub_send_request_ocall),
       stbox::ocall_cast<uint32_t>(datahub_end_session_ocall)));
   m_datahub_session->set_verify_peer(datahub_verify_peer_enclave_trust);
+
+  LOG(INFO) << "done init datahub session";
 
   m_keymgr_session.reset(new stbox::dh_session_initiator(
       stbox::ocall_cast<uint32_t>(km_session_request_ocall),
@@ -71,8 +74,12 @@ uint32_t parser_wrapper_base::begin_parse_data_item() {
       stbox::ocall_cast<uint32_t>(km_end_session_ocall)));
   m_keymgr_session->set_verify_peer(km_verify_peer_enclave_trust);
 
+  LOG(INFO) << "done init keymgr session";
+
   auto t1 = m_datahub_session->create_session();
+  LOG(INFO) << "done create datahub session";
   auto t2 = m_keymgr_session->create_session();
+  LOG(INFO) << "done create keymgr session";
   return t1 | t2;
 }
 
@@ -85,6 +92,7 @@ uint32_t parser_wrapper_base::request_private_key() {
   std::string request_msg((const char *)&private_key_id, sizeof(uint32_t));
   */
 
+  LOG(INFO) << "request_private_key()";
   stbox::bytes request_msg = ypc::make_bytes<stbox::bytes>::for_package<
       request_private_key_pkg_t, nt<stbox::bytes>::id>(private_key_id);
 

@@ -16,7 +16,7 @@ template <typename ByteType, typename UserItemT> struct ntpackage_item_parser {
     package_t pt;
     ff::net::marshaler dm((const char *)data, len,
                           ff::net::marshaler::deseralizer);
-    pt.archive(dm);
+    pt.arch(dm);
     UserItemT ret = pt;
     return ret;
   }

@@ -101,4 +101,6 @@ protected:
   hpda::engine m_engine;
 };
 
+using extra_data_source_group = parser_wrapper_base::extra_data_source_group;
+
 } // namespace ypc

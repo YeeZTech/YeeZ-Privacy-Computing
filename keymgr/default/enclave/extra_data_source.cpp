@@ -3,6 +3,8 @@
 #include <corecommon/datahub/package.h>
 #include <stbox/stx_common.h>
 #include <stbox/tsgx/crypto/ecc.h>
+#include <stbox/tsgx/ocall.h>
+#include <unordered_set>
 
 define_nt(data_skey_nt, stbox::bytes);
 define_nt(signature_nt, stbox::bytes);
@@ -10,8 +12,12 @@ typedef ::ff::util::ntobject<data_skey_nt, signature_nt>
     extra_data_usage_license_t;
 std::unordered_map<stbox::bytes, extra_data_usage_license_t>
     extra_data_usage_licenses;
+std::unordered_set<stbox::bytes> authorized_extra_data;
 
 stbox::bytes tee_pkey;
+
+using ntt = ypc::nt<stbox::bytes>;
+
 uint32_t forward_extra_data_usage_license(
     uint8_t *enclave_pkey, uint32_t epkey_size, uint8_t *_data_hash,
     uint32_t hash_size, uint8_t *usage_license, uint32_t license_size) {
@@ -65,7 +71,6 @@ uint32_t forward_extra_data_usage_license(
 stbox::bytes handle_data_usage_license_pkg(
     stbox::dh_session *context,
     const request_extra_data_usage_license_pkg_t &pkg) {
-  using ntt = ypc::nt<stbox::bytes>;
 
   stbox::bytes data_hash = pkg.get<ntt::data_hash>();
   stbox::bytes encrypted_param = pkg.get<ntt::encrypted_param>();
@@ -77,6 +82,7 @@ stbox::bytes handle_data_usage_license_pkg(
 
   auto it = extra_data_usage_licenses.find(data_hash);
   if (it == extra_data_usage_licenses.end()) {
+    LOG(WARNING) << "no license";
     return ypc::make_bytes<stbox::bytes>::for_package<
         ack_extra_data_usage_license_pkg_t, ntt::reserve>(0);
   } else {
@@ -96,8 +102,42 @@ stbox::bytes handle_data_usage_license_pkg(
           ack_extra_data_usage_license_pkg_t, ntt::reserve>(0);
 
     } else {
+      LOG(INFO) << "got extra data item";
+      authorized_extra_data.insert(data_hash + enclave_hash);
+
       return ypc::make_bytes<stbox::bytes>::for_package<
           ack_extra_data_usage_license_pkg_t, ntt::reserve>(1);
     }
+  }
+}
+stbox::bytes handle_extra_data_pkg(stbox::dh_session *context,
+                                   const request_extra_data_pkg_t &pkg) {
+  stbox::bytes data_hash = pkg.get<ntt::data_hash>();
+  stbox::bytes enclave_hash((char *)&context->peer_identity().mr_enclave,
+                            sizeof(sgx_measurement_t));
+  auto key = data_hash + enclave_hash;
+  if (authorized_extra_data.find(key) == authorized_extra_data.end()) {
+    LOG(ERROR) << "unauthroized extra data request";
+
+    return ypc::make_bytes<stbox::bytes>::for_package<ack_extra_data_pkg_t,
+                                                      ntt::data>(
+        stbox::bytes());
+  } else {
+    uint32_t r = stbox::ocall_cast<uint32_t>(ocall_read_next_extra_data_item)(
+        data_hash.data(), data_hash.size());
+    if (r != stbox::stx_status::success) {
+      LOG(INFO) << "read data: " << data_hash << ", reach end";
+      return ypc::make_bytes<stbox::bytes>::for_package<ack_extra_data_pkg_t,
+                                                        ntt::data>(
+          stbox::bytes());
+    }
+
+    uint32_t s =
+        stbox::ocall_cast<uint32_t>(ocall_get_next_extra_data_item_size)();
+    stbox::bytes data(s);
+    stbox::ocall_cast<uint32_t>(ocall_get_next_extra_data_item_data)(
+        data.data(), data.size());
+    return ypc::make_bytes<stbox::bytes>::for_package<ack_extra_data_pkg_t,
+                                                      ntt::data>(data);
   }
 }

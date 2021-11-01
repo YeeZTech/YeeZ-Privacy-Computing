@@ -114,12 +114,12 @@ public:
 
     if (len) {
       ff::net::marshaler lm(ff::net::marshaler::length_retriver);
-      v.archive(lm);
+      v.arch(lm);
       *len = static_cast<int>(lm.get_length());
     }
     if (buf) {
       ff::net::marshaler sm(buf, *len, ff::net::marshaler::seralizer);
-      v.archive(sm);
+      v.arch(sm);
     }
     return 0;
   }

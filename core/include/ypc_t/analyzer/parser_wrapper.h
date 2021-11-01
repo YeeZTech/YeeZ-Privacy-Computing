@@ -28,7 +28,6 @@ public:
     if (m_item_parser_func) {
       m_data_source->set_item_parser(m_item_parser_func);
     }
-    m_parser.reset(new ParserT(m_data_source.get(), m_extra_data_sources));
     return r1;
   }
 
@@ -42,8 +41,12 @@ public:
   virtual uint32_t parse_data_item(const uint8_t *sealed_data, uint32_t len) {
     uint32_t r1 = parser_wrapper_base::parse_data_item(sealed_data, len);
 
+    m_parser.reset(new ParserT(m_data_source.get(), m_extra_data_sources));
+
     if (r1 == static_cast<uint32_t>(stbox::stx_status::success)) {
+      LOG(INFO) << "start do_parse";
       m_result_str = m_parser->do_parse(m_param);
+      LOG(INFO) << "end do_parse";
       // TODO Calculate actual gas cost
       m_cost_gas = 0;
     }
@@ -51,7 +54,9 @@ public:
   }
 
   virtual uint32_t end_parse_data_item() {
+    LOG(INFO) << "end_parse_data_item()";
     uint32_t r1 = parser_wrapper_base::end_parse_data_item();
+    LOG(INFO) << "end_parse_data_item() 2";
     if (r1 != static_cast<uint32_t>(stbox::stx_status::success)) {
       return r1;
     }

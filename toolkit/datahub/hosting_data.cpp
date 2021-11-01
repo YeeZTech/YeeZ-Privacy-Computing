@@ -57,14 +57,17 @@ int gen_data_usage_license(datahub_sgx_module &sm,
                            const ypc::bytes &pkey4v, const ypc::bytes &tee_pkey,
                            const std::string &license_path) {
   std::ifstream _if(credential_path, std::ios::in | std::ios::binary);
+  _if.seekg(0, std::ios::end);
   std::fstream::pos_type size = _if.tellg();
   ypc::bytes credential(size);
+  _if.seekg(0, std::ios::beg);
   _if.read((char *)credential.data(), credential.size());
   ypc::bytes license;
   sm.generate_data_usage_license(credential, encrypted_param, enclave_hash,
                                  pkey4v, tee_pkey, license);
   std::ofstream of(license_path, std::ios::out | std::ios::binary);
-  of.write((const char *)license.data(), license.size());
+  ypc::hex_bytes hex_license = license.as<ypc::hex_bytes>();
+  of.write((const char *)hex_license.data(), hex_license.size());
   return 0;
 }
 

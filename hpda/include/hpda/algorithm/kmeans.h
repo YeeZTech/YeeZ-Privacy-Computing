@@ -104,6 +104,9 @@ public:
     // return;
     //}
 
+    if (m_all_points.size() == 0) {
+      return false;
+    }
     using loyd_impl_type =
         loyd_impl<typename std::vector<InputObjType>::iterator, point_type,
                   DistanceType, point_traits<std::vector<InputObjType>>,
@@ -114,7 +117,6 @@ public:
     loyd_impl_type lit(m_all_points.begin(), m_all_points.end(), initial_points,
                        m_k, m_delta);
     lit.run();
-    m_all_points.clear();
 
     typedef typename ::ff::util::append_type<InputObjType, ClassifiedID>::type
         output_obj_type;
@@ -127,7 +129,7 @@ public:
           output_obj_type ot =
               ::ff::util::append_type<InputObjType, ClassifiedID>::value(*it,
                                                                          i);
-          m_cluster_stream->add_data(std::move(ot));
+          m_cluster_stream->add_data(ot);
         }
       }
     }
@@ -142,7 +144,9 @@ public:
         m_means_stream->add_data(std::move(ot));
       }
     }
+    m_all_points.clear();
     m_calculate_flag = true;
+    return true;
   }
   /*
   class data_with_cluster_stream_t
@@ -198,6 +202,8 @@ public:
             "kmeans before dump the output");
       }
       m_cluster_stream.reset(new data_with_cluster_stream_t());
+      m_cluster_stream->set_engine(functor::get_engine());
+      m_cluster_stream->add_predecessor(this);
     }
     return m_cluster_stream.get();
   };
@@ -209,6 +215,8 @@ public:
             "you should call means_stream() in kmeans before dump the output");
       }
       m_means_stream.reset(new means_stream_t());
+      m_means_stream->set_engine(functor::get_engine());
+      m_means_stream->add_predecessor(this);
     }
     return m_means_stream.get();
   }

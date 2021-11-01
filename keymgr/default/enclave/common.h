@@ -12,3 +12,6 @@ uint32_t load_key_pair_if_not_exist(uint8_t *pkey_ptr, uint32_t pkey_size,
 stbox::bytes handle_data_usage_license_pkg(
     stbox::dh_session *context,
     const request_extra_data_usage_license_pkg_t &pkg);
+
+stbox::bytes handle_extra_data_pkg(stbox::dh_session *context,
+                                   const request_extra_data_pkg_t &pkg);

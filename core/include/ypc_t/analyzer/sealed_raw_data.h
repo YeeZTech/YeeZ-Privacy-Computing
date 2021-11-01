@@ -49,9 +49,11 @@ public:
       return false;
     }
     bytes recv;
+    LOG(INFO) << "send request";
     auto ret = m_datahub_session->send_request_recv_response(
         (char *)m_request_bytes.data(), m_request_bytes.size(),
         ::ypc::utc::max_item_size, recv);
+    LOG(INFO) << "send request and got " << ret;
     if (ret != stbox::stx_status::success) {
       LOG(ERROR) << "error for m_datahub_session->send_request_recv_response: "
                  << ret;

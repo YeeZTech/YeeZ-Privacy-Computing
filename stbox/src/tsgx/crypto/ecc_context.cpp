@@ -9,10 +9,8 @@ namespace stbox {
 namespace crypto {
 
 ecc_context::ecc_context() {
-  LOG(INFO) << "ecc_context create";
   m_ctx = secp256k1_context_create(SECP256K1_CONTEXT_VERIFY |
                                    SECP256K1_CONTEXT_SIGN);
-  LOG(INFO) << "ecc_context create done";
 }
 const bytes &ecc_context::skey() {
   if (m_skey.empty()) {

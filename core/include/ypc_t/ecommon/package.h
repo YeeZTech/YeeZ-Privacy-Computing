@@ -13,7 +13,7 @@ using sgx_package = ff::net::ntpackage<PackageID, ARGS...>;
 using sgx_marshaler = ff::net::marshaler;
 
 enum {
-  request_data_item,
+  request_data_item = 1,
   ctrl_type,
   response_data_item,
   request_private_key_item,

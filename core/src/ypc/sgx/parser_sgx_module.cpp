@@ -100,6 +100,11 @@ uint32_t parser_sgx_module::merge_parse_result(const uint8_t *encrypted_param,
   return retval;
 }
 
+uint32_t parser_sgx_module::set_extra_data(const uint8_t *extra_data,
+                                           uint32_t in_size) {
+  return ecall<uint32_t>(::set_extra_data, (uint8_t *)extra_data, in_size);
+}
+
 bool parser_sgx_module::need_continue() {
   auto retval = ecall<uint32_t>(::need_continue);
   return retval != 0;

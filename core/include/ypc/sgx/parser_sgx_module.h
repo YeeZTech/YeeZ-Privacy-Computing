@@ -50,5 +50,7 @@ public:
     return merge_parse_result(encrypted_param.data(), encrypted_param.size());
   }
 
+  uint32_t set_extra_data(const uint8_t *extra_data, uint32_t in_size);
+
   bool need_continue();
 };

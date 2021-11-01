@@ -1,5 +1,7 @@
 #include "parsers/parser_base.h"
 #include "common/param_id.h"
+#include "corecommon/nt_cols.h"
+#include "corecommon/package.h"
 #include "ypc/sealed_file.h"
 #include <glog/logging.h>
 
@@ -65,14 +67,31 @@ uint32_t parser_base::parse() {
 
 void parser_base::forward_extra_data_usage_license(
     const ypc::bytes &enclave_pkey) {
+  typedef ypc::nt<ypc::bytes> ntt;
+
+  std::vector<ntt::extra_data_group_t> data_items;
+  LOG(INFO) << "extra data source group size: " << m_extra_data_source.size();
   for (auto edg : m_extra_data_source) {
+    ntt::extra_data_group_t group;
+    group.set<ntt::extra_data_group_name>(
+        edg.get<ypc::extra_data_group_name>());
+    std::vector<ypc::bytes> hashes;
+    LOG(INFO) << "extra data item size in group "
+              << edg.get<ypc::extra_data_group_name>() << ", "
+              << edg.get<ypc::extra_data_set>().size();
     for (auto ed_item : edg.get<ypc::extra_data_set>()) {
       ypc::bytes data_hash = ed_item.get<ypc::data_hash>();
       ypc::bytes data_use_license = ed_item.get<ypc::data_use_license>();
       m_keymgr->forward_extra_data_usage_license(enclave_pkey, data_hash,
                                                  data_use_license);
+      hashes.push_back(data_hash);
     }
+    group.set<ntt::extra_data_hashes>(hashes);
+    data_items.push_back(group);
   }
+  ypc::bytes extra = ypc::make_bytes<ypc::bytes>::for_package<
+      ntt::extra_data_package_t, ntt::extra_data_items>(data_items);
+  m_parser->set_extra_data(extra.data(), extra.size());
 }
 
 bool parser_base::merge(

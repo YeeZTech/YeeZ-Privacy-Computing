@@ -1,6 +1,9 @@
 #pragma once
 #include <hpda/common/stream_policy.h>
 #include <hpda/output/output_base.h>
+#ifdef YPC_SGX
+#include <stbox/tsgx/log.h>
+#endif
 
 namespace hpda {
 namespace output {
@@ -17,10 +20,17 @@ public:
   typedef output_base<InputObjType> base;
 
   virtual void run() {
+#ifdef YPC_SGX
+    LOG(INFO) << "engine: " << (size_t)functor::m_engine;
+#endif
     functor::m_engine->run();
   }
 
   virtual bool process() {
+
+#ifdef YPC_SGX
+    LOG(INFO) << "memory outpu process ";
+#endif
     if (!base::has_input_value()) {
       return false;
     }

@@ -37,7 +37,7 @@ boost::program_options::variables_map parse_command_line(int argc,
     ("sealer-path", bp::value<std::string>(), "sealer enclave path")
     ("parser-path", bp::value<std::string>(), "parser enclave path")
     ("keymgr-path", bp::value<std::string>(), "keymgr enclave path")
-    ("source-type", bp::value<std::string>(), "input and output source type")
+    ("source-type", bp::value<std::string>(), "input and output source type [json | db]")
     // params read from database
     ("db-conf", bp::value<std::string>(), "database configuration file")
     ("request-hash", bp::value<std::string>(), "request hash")
