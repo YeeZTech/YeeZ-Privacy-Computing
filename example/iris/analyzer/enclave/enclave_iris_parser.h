@@ -115,7 +115,7 @@ public:
 
     LOG(INFO) << "4";
     mo.run();
-    LOG(INFO) << "5";
+    LOG(INFO) << "5: " << mo.values().size();
     stbox::bytes result;
     for (auto it : mo.values()) {
       result += it.get<species>();

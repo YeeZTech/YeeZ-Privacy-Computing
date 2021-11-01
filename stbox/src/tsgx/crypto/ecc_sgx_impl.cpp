@@ -2,6 +2,7 @@
 #include "ecc_t.h"
 #include "stbox/tsgx/crypto/ecc.h"
 #include "stbox/tsgx/crypto/ecc_context.h"
+#include "stbox/tsgx/log.h"
 
 #define SECP256K1_PRIVATE_KEY_SIZE 32
 
@@ -105,9 +106,14 @@ uint32_t decrypt_message(uint8_t *sealed_private_key, uint32_t sealed_size,
   auto se_ret = stbox::crypto::unseal_secp256k1_private_key(sealed_private_key,
                                                             sealed_size, skey);
   if (se_ret) {
+    LOG(ERROR) << "failed to unseal private key";
     return se_ret;
   }
-  return stbox::crypto::decrypt_message_with_prefix(
+  se_ret = stbox::crypto::decrypt_message_with_prefix(
       skey, SECP256K1_PRIVATE_KEY_SIZE, cipher, cipher_size, data, data_size,
       ypc::utc::crypto_prefix_arbitrary);
+  if (se_ret) {
+    LOG(ERROR) << "failed to unseal private key " << se_ret;
+  }
+  return se_ret;
 }
