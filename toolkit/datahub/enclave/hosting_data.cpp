@@ -56,6 +56,7 @@ public:
       LOG(ERROR) << "unseal_data return " << status;
       return status;
     }
+    LOG(INFO) << "to encrypt raw data: " << d;
 
     uint32_t istatus = stbox::crypto::encrypt_message_with_prefix(
         m_pkey.data(), m_pkey.size(), d.data(), d.size(),

@@ -154,6 +154,7 @@ stbox::bytes handle_extra_data_pkg(stbox::dh_session *context,
           stbox::bytes());
     }
 
+    LOG(INFO) << "decrypt and got raw data: " << data;
     return ypc::make_bytes<stbox::bytes>::for_package<ack_extra_data_pkg_t,
                                                       ntt::data>(data);
   }
