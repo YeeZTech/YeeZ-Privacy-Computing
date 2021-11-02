@@ -71,7 +71,7 @@ int gen_data_usage_license(datahub_sgx_module &sm,
   return 0;
 }
 
-int hosting_data_main(boost::program_options::variables_map &vm) {
+int hosting_data_main(const boost::program_options::variables_map &vm) {
 
   if (!vm.count("sealer-path")) {
     std::cout << "missing 'sealer-path'" << std::endl;

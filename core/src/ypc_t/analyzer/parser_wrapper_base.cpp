@@ -146,15 +146,20 @@ uint32_t parser_wrapper_base::parse_data_item(const uint8_t *encrypted_param,
   // request key and param
   auto status = request_private_key();
   if (status != stbox::stx_status::success) {
-    LOG(ERROR) << "error for request_private_key: " << status;
+    LOG(ERROR) << "error for request_private_key: " << status
+               << ", this is caused by using wrong enclave or wrong encrypted "
+                  "private key";
     return status;
   }
+  LOG(INFO) << "Done checking enclave hash";
 
   status = decrypt_param(encrypted_param, len);
   if (status != stbox::stx_status::success) {
-    LOG(ERROR) << "error for decrypt_param: " << status;
+    LOG(ERROR) << "error for decrypt_param: " << status
+               << ", this is caused by using wrong parameters";
     return status;
   }
+  LOG(INFO) << "Done checking parameters";
 
   status = request_extra_data_usage();
   if (status != stbox::stx_status::success) {
@@ -162,6 +167,7 @@ uint32_t parser_wrapper_base::parse_data_item(const uint8_t *encrypted_param,
     return status;
   }
 
+  LOG(INFO) << "Done checking extra data usage license";
   return stbox::stx_status::success;
 }
 

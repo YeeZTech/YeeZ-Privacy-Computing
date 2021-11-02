@@ -314,7 +314,6 @@ stbox::bytes handle_pkg(const uint8_t *data, size_t data_len,
         memcpy(&str_msg_key[0], &id, sizeof(id));
         memcpy(&str_msg_key[sizeof(id)], &context->peer_identity().mr_enclave,
                sizeof(sgx_measurement_t));
-        LOG(INFO) << "got request: " << str_msg_key;
 
         auto iter = message_table.find(str_msg_key);
         if (iter != message_table.end()) {

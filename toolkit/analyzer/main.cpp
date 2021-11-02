@@ -1,4 +1,5 @@
-#include "./extra_data_source.h"
+#include "check_data.h"
+#include "extra_data_source.h"
 #include "extra_data_source_reader.h"
 #include "parser.h"
 #include "sgx_bridge.h"
@@ -44,7 +45,8 @@ boost::program_options::variables_map parse_command_line(int argc,
     // params read from json file
     ("param-path", bp::value<std::string>(), "forward param path")
     ("result-path", bp::value<std::string>(), "output result path")
-    ("extra-data-source", bp::value<std::string>(), "JSON file path which include extra data source information");
+    ("extra-data-source", bp::value<std::string>(), "JSON file path which include extra data source information")
+    ("check-data-hash", bp::value<std::string>(), "check sealed hash before running parser");
   // clang-format on
 
   boost::program_options::variables_map vm;
@@ -92,6 +94,18 @@ int main(int argc, char *argv[]) {
   std::string parser_enclave_file = vm["parser-path"].as<std::string>();
   std::string keymgr_enclave_file = vm["keymgr-path"].as<std::string>();
   std::string source_type = vm["source-type"].as<std::string>();
+
+  if (vm.count("check-data-hash")) {
+    ypc::bytes data_hash =
+        ypc::hex_bytes(vm["check-data-hash"].as<std::string>())
+            .as<ypc::bytes>();
+    auto t = check_sealed_data(sealer_enclave_file, sealed_file, data_hash);
+    if (!t) {
+      std::cout << "Invalid sealed data, exit now." << std::endl;
+      return t;
+    }
+    std::cout << "Done checking data hash, start parser now!" << std::endl;
+  }
 
   std::shared_ptr<param_source> psource;
   std::shared_ptr<result_target> rtarget;

@@ -11,6 +11,7 @@ add_executable(fid_analyzer main.cpp
   result/result_to_json.cpp
   result/result_to_db.cpp
   db/db.cpp
+  check_data.cpp
   )
 install(TARGETS fid_analyzer DESTINATION bin)
 
