@@ -31,6 +31,7 @@ public:
         m_skey.data(), m_pkey.data(), m_pkey.size());
 
     m_data_hash = stbox::eth::keccak256_hash(stbox::bytes("Fidelius"));
+    return 0;
   }
 
   uint32_t get_encrypted_sealed_data_size(const uint8_t *sealed_data,
