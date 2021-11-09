@@ -49,18 +49,15 @@ uint32_t parser_base::parse() {
   }
   LOG(INFO) << "parse done";
 
-  ypc::bref encrypted_res, result_sig, data_hash, cost_sig;
-  ret = m_parser->get_encrypted_result_and_signature(encrypted_res, result_sig,
-                                                     cost_sig);
-  if (ret) {
-    return ret;
-  }
-  ret = m_parser->get_data_hash(data_hash);
+  result_pkg_t result_pkg;
+  ret = m_parser->get_analyze_result(result_pkg);
   if (ret) {
     return ret;
   }
 
-  m_rtarget->write_to_target(encrypted_res, result_sig, cost_sig, data_hash);
+  // TODO, check data hash
+
+  m_rtarget->write_to_target(result_pkg);
   LOG(INFO) << "write result target done";
   return ypc::success;
 }
@@ -155,19 +152,15 @@ bool parser_base::merge(
     return ret;
   }
 
-  ypc::bref encrypted_res, result_sig, data_hash, cost_sig;
-  ret = m_parser->get_encrypted_result_and_signature(encrypted_res, result_sig,
-                                                     cost_sig);
+  result_pkg_t result_pkg;
+  ret = m_parser->get_analyze_result(result_pkg);
   if (ret) {
     return ret;
   }
-  ret = m_parser->get_data_hash(data_hash);
-  if (ret) {
-    return ret;
-  }
-  LOG(INFO) << "get_encrypted_result done";
 
-  m_rtarget->write_to_target(encrypted_res, result_sig, cost_sig, data_hash);
+  // TODO, check data hash
+
+  m_rtarget->write_to_target(result_pkg);
   LOG(INFO) << "write result target done";
   return m_parser->need_continue();
 }

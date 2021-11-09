@@ -17,6 +17,7 @@ namespace ypc {
 
 class parser_wrapper_base {
 public:
+  typedef nt<stbox::bytes>::ypc_result_package_t result_t;
   struct extra_data_source_group {
     std::string name;
     std::vector<std::shared_ptr<extra_data_source>> data_sources;
@@ -31,13 +32,11 @@ public:
   virtual uint32_t parse_data_item(const uint8_t *sealed_data, uint32_t len);
   virtual uint32_t end_parse_data_item();
 
-  virtual inline uint32_t get_encrypted_result_size() const {
-    return m_encrypted_result_str.size();
-  }
-  virtual uint32_t
-  get_encrypted_result_and_signature(uint8_t *encrypted_res, uint32_t res_size,
-                                     uint8_t *result_sig, uint32_t sig_size,
-                                     uint8_t *cost_sig, uint32_t cost_sig_size);
+  virtual uint32_t get_analyze_result(result_t &res);
+
+  // get_encrypted_result_and_signature(uint8_t *encrypted_res, uint32_t
+  // res_size, uint8_t *result_sig, uint32_t sig_size, uint8_t *cost_sig,
+  // uint32_t cost_sig_size);
 
   virtual uint32_t add_block_parse_result(uint16_t block_index,
                                           uint8_t *block_result,
@@ -51,8 +50,8 @@ public:
   virtual bool user_def_block_result_merge(
       const std::vector<stbox::bytes> &block_results) = 0;
 
-  virtual uint32_t get_result_encrypt_key_size() = 0;
-  virtual uint32_t get_result_encrypt_key(uint8_t *key, uint32_t key_size) = 0;
+  virtual stbox::bytes get_result_encrypt_key() const = 0;
+  virtual stbox::bytes data_hash() const = 0;
 
   virtual utc::parser_type_t get_parser_type() = 0;
 

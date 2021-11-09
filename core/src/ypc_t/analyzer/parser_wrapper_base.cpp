@@ -175,9 +175,6 @@ uint32_t parser_wrapper_base::end_parse_data_item() {
   auto t1 = m_datahub_session->close_session();
   auto t2 = m_keymgr_session->close_session();
 
-  // TODO Suppose to get address from blockchain
-  // stbox::hex_bytes addr = stbox::eth::gen_addr_from_pkey(m_pkey4v);
-
   uint32_t cipher_size =
       stbox::crypto::get_encrypt_message_size_with_prefix(m_result_str.size());
   m_encrypted_result_str = bytes(cipher_size);
@@ -195,15 +192,15 @@ uint32_t parser_wrapper_base::end_parse_data_item() {
   return t1 | t2;
 }
 
-uint32_t parser_wrapper_base::get_encrypted_result_and_signature(
-    uint8_t *encrypted_res, uint32_t res_size, uint8_t *result_sig,
-    uint32_t sig_size, uint8_t *cost_sig, uint32_t cost_sig_size) {
-  memcpy(encrypted_res, (uint8_t *)&m_encrypted_result_str[0],
-         m_encrypted_result_str.size());
-  memcpy(result_sig, (uint8_t *)&m_result_signature_str[0],
-         m_result_signature_str.size());
-  memcpy(cost_sig, (uint8_t *)&m_cost_signature_str[0],
-         m_cost_signature_str.size());
+uint32_t
+parser_wrapper_base::get_analyze_result(parser_wrapper_base::result_t &res) {
+  using ntt = ypc::nt<stbox::bytes>;
+
+  res.set<ntt::data_hash>(data_hash());
+  res.set<ntt::encrypted_result>(m_encrypted_result_str);
+  res.set<ntt::result_signature>(m_result_signature_str);
+  res.set<ntt::cost_signature>(m_cost_signature_str);
+  res.set<ntt::result_encrypt_key>(get_result_encrypt_key());
   return stbox::stx_status::success;
 }
 

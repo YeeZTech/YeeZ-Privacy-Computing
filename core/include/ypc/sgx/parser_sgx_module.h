@@ -1,5 +1,6 @@
 #pragma once
 #include "common/parser_type.h"
+#include "corecommon/nt_cols.h"
 #include "sgx_eid.h"
 #include "sgx_error.h"
 #include "ypc/byte.h"
@@ -20,14 +21,11 @@ public:
   uint32_t end_parse_data_item();
 
   uint32_t get_enclave_hash(ypc::bref &enclave_hash);
-  uint32_t get_encrypted_result_and_signature(ypc::bref &encrypted_res,
-                                              ypc::bref &result_sig,
-                                              ypc::bref &cost_sig);
 
-  uint32_t get_data_hash(ypc::bref &data_hash);
-
-  uint32_t get_result_encrypt_skey(ypc::bref &key);
   uint32_t get_encrypted_result_hash(ypc::bref &hash);
+
+  uint32_t get_analyze_result(ypc::nt<ypc::bytes>::ypc_result_package_t &res);
+
   parser_type_t get_parser_type();
 
   uint32_t add_block_parse_result(uint16_t block_index,

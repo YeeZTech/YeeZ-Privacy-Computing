@@ -85,7 +85,7 @@ public:
     return static_cast<uint32_t>(status);
   }
 
-  const bytes &data_hash() const { return m_data_source->data_hash(); }
+  virtual stbox::bytes data_hash() const { return m_data_source->data_hash(); }
 
   virtual bool
   user_def_block_result_merge(const std::vector<stbox::bytes> &block_results) {
@@ -97,10 +97,7 @@ public:
     return utc::onchain_result_parser;
   }
 
-  virtual uint32_t get_result_encrypt_key_size() { return 0; }
-  virtual uint32_t get_result_encrypt_key(uint8_t *key, uint32_t key_size) {
-    return 0;
-  }
+  virtual stbox::bytes get_result_encrypt_key() const { return stbox::bytes(); }
 
 protected:
   std::unique_ptr<ParserT> m_parser;

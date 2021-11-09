@@ -5,19 +5,14 @@
 
 result_to_json::result_to_json(const std::string &path) : m_path(path) {}
 
-void result_to_json::write_to_target(const ypc::bref &encrypted_result,
-                                     const ypc::bref &result_signature,
-                                     const ypc::bref &cost_signature,
-                                     const ypc::bref &data_hash) {
+void result_to_json::write_to_target(const result_pkg_t &res) {
   try {
     boost::property_tree::ptree pt;
-    pt.put("encrypted-result",
-           ypc::bytes(encrypted_result.data(), encrypted_result.size()));
-    pt.put("result-signature",
-           ypc::bytes(result_signature.data(), result_signature.size()));
-    pt.put("cost-signature",
-           ypc::bytes(cost_signature.data(), cost_signature.size()));
-    pt.put("data-hash", ypc::bytes(data_hash.data(), data_hash.size()));
+    using ntt = ypc::nt<ypc::bytes>;
+    pt.put("encrypted-result", res.get<ntt::encrypted_result>());
+    pt.put("result-signature", res.get<ntt::result_signature>());
+    pt.put("cost-signature", res.get<ntt::cost_signature>());
+    pt.put("data-hash", res.get<ntt::data_hash>());
     boost::property_tree::json_parser::write_json(m_path, pt);
   } catch (const std::exception &e) {
     throw std::runtime_error(boost::str(

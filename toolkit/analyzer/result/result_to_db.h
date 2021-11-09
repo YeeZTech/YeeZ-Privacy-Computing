@@ -9,10 +9,7 @@ public:
                const std::string &passwd, const std::string &dbname,
                const ypc::bytes &request_hash);
 
-  virtual void write_to_target(const ypc::bref &encrypted_result,
-                               const ypc::bref &result_signature,
-                               const ypc::bref &cost_signature,
-                               const ypc::bref &data_hash);
+  virtual void write_to_target(const result_pkg_t &res);
 
   virtual void read_from_target(ypc::bytes &encrypted_result,
                                 ypc::bytes &result_signature,

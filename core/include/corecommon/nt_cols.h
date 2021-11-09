@@ -26,5 +26,13 @@ template <typename BytesType> struct nt {
 
   define_nt(encrypted_param, BytesType);
   define_nt(pkey4v, BytesType);
+  define_nt(encrypted_result, BytesType);
+  define_nt(result_signature, BytesType);
+  define_nt(cost_signature, BytesType);
+  define_nt(result_encrypt_key, BytesType);
+  typedef ::ff::net::ntpackage<0xf13e1f40, encrypted_result, data_hash,
+                               result_signature, cost_signature,
+                               result_encrypt_key>
+      ypc_result_package_t;
 };
 } // namespace ypc

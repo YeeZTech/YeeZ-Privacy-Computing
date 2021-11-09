@@ -18,18 +18,19 @@ uint32_t file_parser::do_parse() {
 
   auto ret = m_parser->begin_parse_data_item();
   if (ret != stx_status::success) {
-    LOG(ERROR) << "got error: " << std::to_string(ret);
+    LOG(ERROR) << "begin_parse_data_item, got error: " << std::to_string(ret);
     return ret;
   }
   ret = m_parser->parse_data_item((const char *)m_psource->input().data(),
                                   m_psource->input().size());
   if (ret) {
+    LOG(ERROR) << "parse_data_item, got error: " << std::to_string(ret);
     return ret;
   }
 
   ret = m_parser->end_parse_data_item();
   if (ret != stx_status::success) {
-    LOG(ERROR) << "got error: " << std::to_string(ret);
+    LOG(ERROR) << "end_parse_data_item, got error: " << std::to_string(ret);
   }
   return ret;
 }

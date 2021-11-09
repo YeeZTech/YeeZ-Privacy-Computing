@@ -124,7 +124,7 @@ public:
     return static_cast<uint32_t>(status);
   }
 
-  const bytes &data_hash() const { return m_data_source->data_hash(); }
+  virtual stbox::bytes data_hash() const { return m_data_source->data_hash(); }
 
   virtual bool
   user_def_block_result_merge(const std::vector<stbox::bytes> &block_results) {
@@ -132,16 +132,7 @@ public:
     return m.merge_parse_result(block_results, m_param, m_result_str);
   }
 
-  virtual uint32_t get_result_encrypt_key_size() {
-    return m_encrypted_c.size();
-  }
-  virtual uint32_t get_result_encrypt_key(uint8_t *key, uint32_t key_size) {
-    if (!key || key_size < m_encrypted_c.size()) {
-      return stbox::stx_status::invalid_parameter_error;
-    }
-    memcpy(key, m_encrypted_c.data(), m_encrypted_c.size());
-    return stbox::stx_status::success;
-  }
+  virtual stbox::bytes get_result_encrypt_key() const { return m_encrypted_c; }
 
   virtual utc::parser_type_t get_parser_type() {
     return utc::offchain_result_parser;

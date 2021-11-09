@@ -26,17 +26,24 @@
     return ret;                                                                \
   }                                                                            \
                                                                                \
-  uint32_t get_encrypted_result_size() {                                       \
-    return pw.get_encrypted_result_size();                                     \
+  uint32_t get_analyze_result_size() {                                         \
+    using ntt = ypc::nt<stbox::bytes>;                                         \
+    ntt::ypc_result_package_t pkg;                                             \
+    auto ret = pw.get_analyze_result(pkg);                                     \
+    ff::net::marshaler lm(ff::net::marshaler::length_retriver);                \
+    pkg.arch(lm);                                                              \
+    return lm.get_length();                                                    \
   }                                                                            \
-  uint32_t get_encrypted_result_and_signature(                                 \
-      uint8_t *encrypted_res, uint32_t res_size, uint8_t *result_sig,          \
-      uint32_t sig_size, uint8_t *cost_sig, uint32_t cost_sig_size) {          \
-    return pw.get_encrypted_result_and_signature(encrypted_res, res_size,      \
-                                                 result_sig, sig_size,         \
-                                                 cost_sig, cost_sig_size);     \
-  }                                                                            \
+  uint32_t get_analyze_result(uint8_t *res, uint32_t res_size) {               \
+    using ntt = ypc::nt<stbox::bytes>;                                         \
+    ntt::ypc_result_package_t pkg;                                             \
+    auto ret = pw.get_analyze_result(pkg);                                     \
                                                                                \
+    ff::net::marshaler ld((char *)res, res_size,                               \
+                          ff::net::marshaler::seralizer);                      \
+    pkg.arch(ld);                                                              \
+    return ret;                                                                \
+  }                                                                            \
   uint32_t add_block_parse_result(uint16_t block_index, uint8_t *block_result, \
                                   uint32_t res_size, uint8_t *data_hash,       \
                                   uint32_t hash_size, uint8_t *sig,            \
@@ -51,19 +58,6 @@
                                                                                \
   uint32_t need_continue() { return pw.need_continue(); }                      \
                                                                                \
-  uint32_t get_data_hash_size() { return pw.data_hash().size(); }              \
-  uint32_t get_data_hash(uint8_t *hash, uint32_t hash_size) {                  \
-    auto t = pw.data_hash();                                                   \
-    uint32_t ret = SGX_SUCCESS;                                                \
-    memcpy(hash, t.data(), t.size());                                          \
-    return ret;                                                                \
-  }                                                                            \
-  uint32_t get_result_encrypt_key_size() {                                     \
-    return pw.get_result_encrypt_key_size();                                   \
-  }                                                                            \
-  uint32_t get_result_encrypt_key(uint8_t *key, uint32_t key_size) {           \
-    return pw.get_result_encrypt_key(key, key_size);                           \
-  }                                                                            \
   uint32_t get_parser_type() { return pw.get_parser_type(); }                  \
   uint32_t set_extra_data(uint8_t *extra_data, uint32_t in_size) {             \
     return pw.set_extra_data(extra_data, in_size);                             \

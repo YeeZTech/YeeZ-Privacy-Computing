@@ -15,16 +15,8 @@ enclave {
     public uint32_t get_enclave_hash_size();
     public uint32_t get_enclave_hash([out, size=hash_size] uint8_t * hash, uint32_t hash_size);
 
-    public uint32_t get_encrypted_result_size();
-    public uint32_t get_encrypted_result_and_signature([out, size=res_size] uint8_t * encrypted_res, uint32_t res_size,
-                                                       [out, size=sig_size] uint8_t * result_sig, uint32_t sig_size,
-                                                       [out, size=cost_sig_size] uint8_t * cost_sig, uint32_t cost_sig_size);
-
-    public uint32_t get_result_encrypt_key_size();
-    public uint32_t get_result_encrypt_key([out, size=key_size] uint8_t * key, uint32_t key_size);
-
-    public uint32_t get_data_hash_size();
-    public uint32_t get_data_hash([out, size=hash_size] uint8_t * hash, uint32_t hash_size);
+    public uint32_t get_analyze_result_size();
+    public uint32_t get_analyze_result([out, size=res_size] uint8_t * analyze_result, uint32_t res_size);
 
     public uint32_t add_block_parse_result(uint16_t block_index,
     [in, size=res_size] uint8_t * block_result, uint32_t res_size, [in, size=hash_size] uint8_t *data_hash,

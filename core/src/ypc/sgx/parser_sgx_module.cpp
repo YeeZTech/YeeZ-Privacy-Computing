@@ -1,4 +1,5 @@
 #include "ypc/sgx/parser_sgx_module.h"
+#include "corecommon/package.h"
 #include "eparser_u.h"
 #include "sgx_urts.h"
 #include <stdexcept>
@@ -43,36 +44,21 @@ uint32_t parser_sgx_module::get_enclave_hash(ypc::bref &_enclave_hash) {
   return t;
 }
 
-uint32_t parser_sgx_module::get_encrypted_result_and_signature(
-    ypc::bref &_encrypted_res, ypc::bref &_result_sig, ypc::bref &_cost_sig) {
-  uint32_t res_size, sig_size, cost_sig_size;
-  uint8_t *encrypted_res, *result_sig, *cost_sig;
-  stbox::buffer_length_t buf_res(&res_size, &encrypted_res,
-                                 ::get_encrypted_result_size);
-  stbox::buffer_length_t buf_sig(&sig_size, &result_sig,
-                                 ::get_secp256k1_signature_size);
-  stbox::buffer_length_t cost_buf_sig(&cost_sig_size, &cost_sig,
-                                      ::get_encrypted_result_size);
-  auto t = ecall<uint32_t>(
-      ::get_encrypted_result_and_signature, stbox::xmem(buf_res),
-      stbox::xlen(buf_res), stbox::xmem(buf_sig), stbox::xlen(buf_sig),
-      stbox::xmem(cost_buf_sig), stbox::xlen(cost_buf_sig));
-  _encrypted_res = ypc::bref(encrypted_res, res_size);
-  _result_sig = ypc::bref(result_sig, sig_size);
-  _cost_sig = ypc::bref(cost_sig, cost_sig_size);
-  return t;
-}
-
-uint32_t parser_sgx_module::get_data_hash(ypc::bref &_data_hash) {
-  uint32_t hash_size;
-  uint8_t *data_hash;
-  stbox::buffer_length_t buf_res(&hash_size, &data_hash, ::get_data_hash_size);
-  auto t = ecall<uint32_t>(::get_data_hash, stbox::xmem(buf_res),
+uint32_t parser_sgx_module::get_analyze_result(
+    ypc::nt<ypc::bytes>::ypc_result_package_t &pkg) {
+  uint32_t res_size;
+  uint8_t *res;
+  stbox::buffer_length_t buf_res(&res_size, &res, ::get_analyze_result_size);
+  auto t = ecall<uint32_t>(::get_analyze_result, stbox::xmem(buf_res),
                            stbox::xlen(buf_res));
 
-  _data_hash = ypc::bref(data_hash, hash_size);
+  if (t == stbox::stx_status::success) {
+    pkg = ypc::make_package<
+        ypc::nt<ypc::bytes>::ypc_result_package_t>::from_bytes(res, res_size);
+  }
   return t;
 }
+
 
 uint32_t parser_sgx_module::add_block_parse_result(
     uint16_t block_index, const uint8_t *block_result, uint32_t res_size,
