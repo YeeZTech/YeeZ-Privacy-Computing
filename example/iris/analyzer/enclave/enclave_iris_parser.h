@@ -133,8 +133,8 @@ public:
       result += std::to_string(it.get<iid>());
       result += "\n";
       i++;
-      LOG(INFO) << i << ": " << it.get<species>() << " - "
-                << std::to_string(it.get<iid>());
+      // LOG(INFO) << i << ": " << it.get<species>() << " - "
+      //<< std::to_string(it.get<iid>());
     }
     return result;
   }

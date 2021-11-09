@@ -42,7 +42,7 @@ int check_sealed_data(const std::string &sealer_path,
   sm.get_encrypted_data_credential(credential);
   auto t =
       ypc::make_package<dhost_t::credential_package_t>::from_bytes(credential);
-  if (data_hash != t.get<dhost_t::data_hash>()) {
+  if (data_hash == t.get<dhost_t::data_hash>()) {
     std::cout << "correct data hash" << std::endl;
     return 0;
   } else {

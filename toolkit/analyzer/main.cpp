@@ -100,7 +100,7 @@ int main(int argc, char *argv[]) {
         ypc::hex_bytes(vm["check-data-hash"].as<std::string>())
             .as<ypc::bytes>();
     auto t = check_sealed_data(sealer_enclave_file, sealed_file, data_hash);
-    if (!t) {
+    if (t) {
       std::cout << "Invalid sealed data, exit now." << std::endl;
       return t;
     }

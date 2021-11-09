@@ -36,14 +36,6 @@ public:
                            uint32_t sealed_size, const uint8_t *cipher,
                            uint32_t cipher_size, bref &data);
 
-  uint32_t backup_private_key(const uint8_t *sealed_private_key,
-                              uint32_t sealed_size, const uint8_t *pub_key,
-                              uint32_t pkey_size, bref &backup_private_key);
-
-  uint32_t restore_private_key(const uint8_t *backup_private_key,
-                               uint32_t bp_size, const uint8_t *priv_key,
-                               uint32_t skey_size, bref &sealed_private_key);
-
   uint32_t forward_private_key(const uint8_t *sealed_private_key,
                                uint32_t sealed_size, const uint8_t *pub_key,
                                uint32_t pkey_size, bref &forward_private_key);

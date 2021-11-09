@@ -75,13 +75,9 @@ public:
       return status;
     }
 
-    /*
     auto msg = m_encrypted_param + m_data_source->data_hash() + m_enclave_hash +
                cost_gas_str + m_encrypted_result_str;
-               */
-    auto msg = m_encrypted_param +
-               m_data_source->data_hash() /*+ m_enclave_hash*/ + cost_gas_str +
-               m_encrypted_result_str;
+
     status = stbox::crypto::sign_message(
         (uint8_t *)m_private_key.data(), m_private_key.size(),
         (uint8_t *)&msg[0], msg.size(), (uint8_t *)&m_result_signature_str[0],

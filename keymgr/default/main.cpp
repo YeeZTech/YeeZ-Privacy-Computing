@@ -12,8 +12,6 @@ boost::program_options::variables_map parse_command_line(int argc,
                                                          char *argv[]) {
   namespace bp = boost::program_options;
   bp::options_description all("YeeZ Key Manager options");
-  bp::options_description backup("YeeZ Backup options");
-  bp::options_description restore("YeeZ Restore options");
   bp::options_description encrypt("YeeZ Encrypt options");
   bp::options_description decrypt("YeeZ Decrypt options");
   bp::options_description sign("YeeZ Sign options");
@@ -25,17 +23,10 @@ boost::program_options::variables_map parse_command_line(int argc,
     ("create", "create a secp256k1 key pair")
     ("list", "list secp256k1 keys")
     ("remove", bp::value<std::string>(), "remove a secp256k1 key pair")
-    ("backup", bp::value<std::string>(), "backup a secp256k1 private key")
-    ("restore", bp::value<std::string>(), "restore a secp256k1 private key")
     ("sign", bp::value<std::string>(), "sign a message")
     ("verify", bp::value<std::string>(), "verify a signature")
     ("encrypt", bp::value<std::string>(), "encrypt a message")
     ("decrypt", bp::value<std::string>(), "decrypt from cipher message");
-
-  backup.add_options()
-    ("backup.public-key", bp::value<std::string>(), "public key which is to encrypt a secp256k1 private key");
-  restore.add_options()
-    ("restore.private-key", bp::value<std::string>(), "sealed private key which is to decrypt a secp256k1 private key");
 
   sign.add_options()
     ("sign.hex", "message is hex enable")
@@ -53,7 +44,7 @@ boost::program_options::variables_map parse_command_line(int argc,
     ("decrypt.private-key", bp::value<std::string>(), "sealed private key which is to decrypt a cipher message");
   // clang-format on
 
-  all.add(backup).add(restore).add(encrypt).add(decrypt).add(sign).add(verify);
+  all.add(encrypt).add(decrypt).add(sign).add(verify);
   boost::program_options::variables_map vm;
   boost::program_options::store(
       boost::program_options::parse_command_line(argc, argv, all), vm);
@@ -128,67 +119,6 @@ void remove_key(const boost::program_options::variables_map &vm,
     throw std::runtime_error(ss.str());
   }
   std::cout << "Successfully remove key pair " << name << std::endl;
-}
-
-void backup_key(const boost::program_options::variables_map &vm,
-                const std::shared_ptr<keymgr_sgx_module> &ptr,
-                const std::string &key_dir, const std::string &bak_dir) {
-  std::string name = vm["backup"].as<std::string>();
-  std::stringstream ss;
-  if (!vm.count("backup.public-key")) {
-    ss << "`public-key` must be specified!" << std::endl;
-    throw std::runtime_error(ss.str());
-  }
-  boost::filesystem::path p = key_dir / boost::filesystem::path(name);
-  if (!ypc::is_file_exists(p.generic_string())) {
-    ss << "File not exist " << p.generic_string() << std::endl;
-    throw std::runtime_error(ss.str());
-  }
-  ypc::bytes b_pkey, b_skey;
-  read_key_pair_from_file(p.generic_string(), b_pkey, b_skey);
-
-  ypc::bytes public_key =
-      ypc::hex_bytes(vm["backup.public-key"].as<std::string>())
-          .as<ypc::bytes>();
-  ypc::bref backup_key;
-  ptr->backup_private_key(b_skey.data(), b_skey.size(), public_key.data(),
-                          public_key.size(), backup_key);
-
-  p = bak_dir / boost::filesystem::path(name);
-  std::string output = p.generic_string();
-  write_key_pair_to_file(output, b_pkey,
-                         ypc::bytes(backup_key.data(), backup_key.len()));
-  std::cout << "Backup key pair in file " << output << std::endl;
-}
-
-void restore_key(const boost::program_options::variables_map &vm,
-                 const std::shared_ptr<keymgr_sgx_module> &ptr,
-                 const std::string &key_dir, const std::string &bak_dir) {
-  std::string name = vm["restore"].as<std::string>();
-  std::stringstream ss;
-  if (!vm.count("restore.private-key")) {
-    ss << "`priavte-key` must be specified!" << std::endl;
-    throw std::runtime_error(ss.str());
-  }
-  boost::filesystem::path p = bak_dir / boost::filesystem::path(name);
-  if (!ypc::is_file_exists(p.generic_string())) {
-    ss << "File not exist " << p.generic_string() << std::endl;
-    throw std::runtime_error(ss.str());
-  }
-  ypc::bytes b_pkey, b_skey;
-  read_key_pair_from_file(p.generic_string(), b_pkey, b_skey);
-
-  ypc::bytes decrypt_skey =
-      ypc::hex_bytes(vm["restore.private-key"].as<std::string>())
-          .as<ypc::bytes>();
-  ypc::bref sealed_key;
-  ptr->restore_private_key(b_skey.data(), b_skey.size(), decrypt_skey.data(),
-                           decrypt_skey.size(), sealed_key);
-  p = key_dir / boost::filesystem::path(name);
-  std::string output = p.generic_string();
-  write_key_pair_to_file(output, b_pkey,
-                         ypc::bytes(sealed_key.data(), sealed_key.len()));
-  std::cout << "Restore key pair in file " << output << std::endl;
 }
 
 void encrypt_message(const boost::program_options::variables_map &vm,
@@ -303,8 +233,8 @@ int main(int argc, char *argv[]) {
   }
 
   if (!vm.count("create") && !vm.count("list") && !vm.count("remove") &&
-      !vm.count("sign") && !vm.count("verify") && !vm.count("backup") &&
-      !vm.count("restore") && !vm.count("encrypt") && !vm.count("decrypt")) {
+      !vm.count("sign") && !vm.count("verify") && !vm.count("encrypt") &&
+      !vm.count("decrypt")) {
     std::cout << "one of these options must be specified!" << std::endl;
     return -1;
   }
@@ -325,16 +255,6 @@ int main(int argc, char *argv[]) {
 
   if (vm.count("remove")) {
     remove_key(vm, key_dir);
-    return 0;
-  }
-
-  if (vm.count("backup")) {
-    backup_key(vm, ptr, key_dir, bak_dir);
-    return 0;
-  }
-
-  if (vm.count("restore")) {
-    restore_key(vm, ptr, key_dir, bak_dir);
     return 0;
   }
 
