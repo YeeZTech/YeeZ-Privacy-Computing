@@ -17,9 +17,10 @@ TEST(test_configuration, find_db_config_file) {
   EXPECT_THROW(ins.find_db_config_file(filename), std::runtime_error);
 
   filename = "xx";
-  ypc::command_executor::execute_command("sudo rm -rf /etc/yeez/xx ~/xx ./xx");
   ypc::command_executor::execute_command(
-      "sudo mkdir -p /etc/yeez && sudo touch /etc/yeez/xx");
+      "sudo -S rm -rf /etc/yeez/xx ~/xx ./xx");
+  ypc::command_executor::execute_command(
+      "sudo -S mkdir -p /etc/yeez && sudo -S touch /etc/yeez/xx");
   auto ret = ins.find_db_config_file(filename);
   EXPECT_EQ(ret, "/etc/yeez/xx");
 

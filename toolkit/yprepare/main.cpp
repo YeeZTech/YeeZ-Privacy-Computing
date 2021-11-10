@@ -275,4 +275,5 @@ int main(int argc, char *argv[]) {
     }
     boost::property_tree::json_parser::write_json(output_path, pt);
   }
+  return 0;
 }
