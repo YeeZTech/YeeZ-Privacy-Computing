@@ -3,7 +3,8 @@ set(stbox_src stx_status.cpp stx_common.cpp exception.cpp eth/eth_hash.cpp eth/u
 
 set(stbox_t_src ${stbox_src}
   ./tsgx/stx_common_trusted.cpp
-  ./tsgx/log.cpp)
+  ./tsgx/log.cpp
+  ./tsgx/util.cpp)
 
 add_trusted_library(stbox_common_t
   stbox_common

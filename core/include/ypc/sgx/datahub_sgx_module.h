@@ -39,6 +39,8 @@ public:
                                        const bytes &enclave_hash,
                                        const bytes &pkey4v,
                                        const bytes &tee_pkey, bytes &license);
+
+  uint32_t set_access_control_policy(const bytes &policy);
 };
 
 } // namespace ypc

@@ -43,4 +43,5 @@ int sprintf(char *buf, const char *fmt, ...) {
   va_end(ap);
   return (int)strnlen(buf, BUFSIZ - 1) + 1;
 }
+
 } // namespace stbox

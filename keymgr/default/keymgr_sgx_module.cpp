@@ -146,3 +146,9 @@ uint32_t keymgr_sgx_module::forward_extra_data_usage_license(
       enclave_pkey.size(), (uint8_t *)data_hash.data(), data_hash.size(),
       (uint8_t *)data_usage_license.data(), data_usage_license.size());
 }
+
+uint32_t
+keymgr_sgx_module::set_access_control_policy(const ypc::bytes &policy) {
+  return ecall<uint32_t>(::set_access_control_policy, (uint8_t *)policy.data(),
+                         policy.size());
+}

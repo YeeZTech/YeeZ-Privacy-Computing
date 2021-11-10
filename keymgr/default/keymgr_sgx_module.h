@@ -61,4 +61,6 @@ public:
   forward_extra_data_usage_license(const ypc::bytes &enclave_pkey,
                                    const ypc::bytes &data_hash,
                                    const ypc::bytes &data_usage_license);
+
+  uint32_t set_access_control_policy(const ypc::bytes &policy);
 };

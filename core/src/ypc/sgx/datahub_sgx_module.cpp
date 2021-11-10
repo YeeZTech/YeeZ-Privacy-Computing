@@ -1,5 +1,5 @@
 #include "ypc/sgx/datahub_sgx_module.h"
-#include "enclave_u.h"
+#include "datahub_enclave_u.h"
 #include "sgx_urts.h"
 #include <iostream>
 #include <stdexcept>
@@ -15,6 +15,7 @@ uint32_t datahub_sgx_module::get_sealed_data_size(uint32_t encrypt_data_size) {
 
   return sealed_data_size;
 }
+
 bytes datahub_sgx_module::seal_data(const bytes &_data) {
   uint32_t sealed_data_size = get_sealed_data_size(_data.size());
   uint8_t *tmp_sealed_buf = (uint8_t *)malloc(sealed_data_size);
@@ -91,6 +92,11 @@ uint32_t datahub_sgx_module::generate_data_usage_license(
       (uint8_t *)enclave_hash.data(), enclave_hash.size(),
       (uint8_t *)pkey4v.data(), pkey4v.size(), (uint8_t *)tee_pkey.data(),
       tee_pkey.size(), (uint8_t *)license.data(), license.size());
+}
+
+uint32_t datahub_sgx_module::set_access_control_policy(const bytes &policy) {
+  return ecall<uint32_t>(::set_access_control_policy, (uint8_t *)policy.data(),
+                         policy.size());
 }
 } // namespace ypc
 

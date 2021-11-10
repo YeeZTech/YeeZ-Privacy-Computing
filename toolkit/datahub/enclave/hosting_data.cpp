@@ -1,7 +1,7 @@
 #include "common.h"
 #include "common/crypto_prefix.h"
 #include "corecommon/datahub/package.h"
-#include "enclave_t.h"
+#include "datahub_enclave_t.h"
 #include "sgx_trts.h"
 #include "sgx_tseal.h"
 #include "stbox/ebyte.h"

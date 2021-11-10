@@ -21,15 +21,6 @@ parser_wrapper_base::parser_wrapper_base() {
 }
 parser_wrapper_base::~parser_wrapper_base() {}
 
-/* Function Description:
- *   This is to verify peer enclave's identity.
- * For demonstration purpose, we verify below points:
- *   1. peer enclave's MRSIGNER is as expected
- *   2. peer enclave's PROD_ID is as expected
- *   3. peer enclave's attribute is reasonable: it's INITIALIZED'ed enclave; in
- *non-debug build configuraiton, the enlave isn't loaded with enclave debug
- *mode.
- **/
 stbox::stx_status datahub_verify_peer_enclave_trust(
     sgx_dh_session_enclave_identity_t *peer_enclave_identity) {
   if (!peer_enclave_identity) {
@@ -37,9 +28,6 @@ stbox::stx_status datahub_verify_peer_enclave_trust(
     return stbox::stx_status::invalid_parameter_error;
   }
 
-  if (!ypc::is_certified_signer(peer_enclave_identity)) {
-    return stbox::stx_status::enclave_trust_error;
-  }
   return stbox::stx_status::success;
 }
 
@@ -50,9 +38,6 @@ stbox::stx_status km_verify_peer_enclave_trust(
     return stbox::stx_status::invalid_parameter_error;
   }
 
-  if (!ypc::is_certified_signer(peer_enclave_identity)) {
-    return stbox::stx_status::enclave_trust_error;
-  }
   return stbox::stx_status::success;
 }
 

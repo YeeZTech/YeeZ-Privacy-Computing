@@ -39,5 +39,13 @@ template <typename BytesType> struct nt {
   typedef ::ff::net::ntpackage<0x314234b9, pkey, sealed_skey, user_id,
                                timestamp>
       keymgr_key_package_t;
+
+  define_nt(access_list_type, uint8_t);
+  define_nt(access_data_type, uint8_t);
+  typedef ::ff::net::ntpackage<0x71185aff, data, access_data_type>
+      access_item_t;
+  define_nt(access_list, std::vector<access_item_t>);
+  typedef ::ff::net::ntpackage<0x3c92350f, access_list_type, access_list>
+      access_list_package_t;
 };
 } // namespace ypc

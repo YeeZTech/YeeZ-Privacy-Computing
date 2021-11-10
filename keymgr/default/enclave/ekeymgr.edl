@@ -30,6 +30,7 @@ enclave {
                   [in, size=hash_size] uint8_t * data_hash, uint32_t hash_size,
                   [in, size=license_size] uint8_t * usage_license, uint32_t license_size);
 
+    public uint32_t set_access_control_policy([in, size=in_size] uint8_t * policy, uint32_t in_size);
 
     };
 

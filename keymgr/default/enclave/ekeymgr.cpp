@@ -72,14 +72,29 @@ uint32_t forward_private_key(uint8_t *sealed_private_key, uint32_t sealed_size,
 }
 
 std::shared_ptr<stbox::dh_session_responder> dh_resp_session(nullptr);
+std::shared_ptr<ypc::nt<stbox::bytes>::access_list_package_t>
+    access_control_policy;
+
+uint32_t set_access_control_policy(uint8_t *policy, uint32_t in_size) {
+  try {
+    *access_control_policy = ypc::make_package<
+        ypc::nt<stbox::bytes>::access_list_package_t>::from_bytes(policy,
+                                                                  in_size);
+  } catch (const std::exception &e) {
+    LOG(ERROR) << "error when make_package::from_bytes " << e.what();
+    return stbox::stx_status::invalid_parameter;
+  }
+  return stbox::stx_status::success;
+}
+
 stbox::stx_status verify_peer_enclave_trust(
     sgx_dh_session_enclave_identity_t *peer_enclave_identity) {
   if (!peer_enclave_identity) {
     LOG(ERROR) << "(!peer_enclave_identity): invalid peer enclave identity";
     return stbox::stx_status::invalid_parameter_error;
   }
-  // TODO, we should hard-code this signer
-  if (!ypc::is_certified_signer(peer_enclave_identity)) {
+
+  if (!ypc::is_certified_signer(peer_enclave_identity, access_control_policy)) {
     return stbox::stx_status::enclave_trust_error;
   }
   return stbox::stx_status::success;

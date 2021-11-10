@@ -35,7 +35,9 @@ enclave {
           [in, size=enclave_hash_size] uint8_t * enclave_hash, uint32_t enclave_hash_size,
           [in, size=pkey4v_size] uint8_t * pkey4v, uint32_t pkey4v_size,
           [in, size=tee_pkey_size] uint8_t * tee_pkey, uint32_t tee_pkey_size,
-          [out, size=license_size]uint8_t *license, uint32_t license_size);
+          [out, size=license_size] uint8_t *license, uint32_t license_size);
+
+    public uint32_t set_access_control_policy([in, size=in_size] uint8_t * policy, uint32_t in_size);
 
     };
     untrusted {
