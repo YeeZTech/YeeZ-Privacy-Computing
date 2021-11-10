@@ -218,7 +218,6 @@ uint32_t forward_message(uint32_t msg_id, uint8_t *cipher, uint32_t cipher_size,
     return se_ret;
   }
 
-  LOG(INFO) << " insert message: " << str_msg_key;
   message_table.insert(std::make_pair(
       str_msg_key,
       forward_message_st{msg_id, decrypted_msg, bytes(ehash, ehash_size)}));

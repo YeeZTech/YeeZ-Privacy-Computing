@@ -10,25 +10,16 @@ parser_sgx_module::~parser_sgx_module() {}
 
 uint32_t parser_sgx_module::begin_parse_data_item() {
   auto retval = ecall<uint32_t>(::begin_parse_data_item);
-  if (retval != SGX_SUCCESS) {
-    throw std::runtime_error(std::to_string(retval));
-  }
   return retval;
 }
 
 uint32_t parser_sgx_module::parse_data_item(const char *data, size_t len) {
   auto retval = ecall<uint32_t>(::parse_data_item, (uint8_t *)data, (len));
-  if (retval != SGX_SUCCESS) {
-    throw std::runtime_error(std::to_string(retval));
-  }
   return retval;
 }
 
 uint32_t parser_sgx_module::end_parse_data_item() {
   auto retval = ecall<uint32_t>(::end_parse_data_item);
-  if (retval != SGX_SUCCESS) {
-    throw std::runtime_error(std::to_string(retval));
-  }
   return retval;
 }
 
@@ -69,9 +60,6 @@ uint32_t parser_sgx_module::add_block_parse_result(
       ::add_block_parse_result, block_index, (uint8_t *)block_result, res_size,
       (uint8_t *)data_hash, hash_size, (uint8_t *)sig, sig_size);
 
-  if (retval != SGX_SUCCESS) {
-    throw std::runtime_error(std::to_string(retval));
-  }
   return retval;
 }
 
@@ -80,9 +68,6 @@ uint32_t parser_sgx_module::merge_parse_result(const uint8_t *encrypted_param,
   auto retval =
       ecall<uint32_t>(::merge_parse_result, (uint8_t *)encrypted_param, (len));
 
-  if (retval != SGX_SUCCESS) {
-    throw std::runtime_error(std::to_string(retval));
-  }
   return retval;
 }
 

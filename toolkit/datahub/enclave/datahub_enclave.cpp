@@ -152,6 +152,10 @@ stbox::bytes get_data_and_unseal(const uint8_t *data_buf, size_t data_len,
     stx_status ret = static_cast<stx_status>(stbox::ocall_cast<uint32_t>(
         next_sealed_item_data)(&t_sealed_data, &t_sealed_data_len));
 
+    if (ret != stx_status::success) {
+      return stbox::bytes();
+    }
+
     uint8_t *sealed_data = (uint8_t *)malloc(t_sealed_data_len);
     scope_guard _s([&sealed_data]() {
       if (sealed_data) {

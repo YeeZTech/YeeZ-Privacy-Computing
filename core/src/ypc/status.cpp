@@ -8,7 +8,7 @@ const char *status_string(uint32_t status) {
   }
   if (status & 0x20000) {
 #define YPC_STATUS(a, b)                                                       \
-  case b:                                                                      \
+  case 0x20000 | b:                                                            \
     return #a;
 
     switch (status) {

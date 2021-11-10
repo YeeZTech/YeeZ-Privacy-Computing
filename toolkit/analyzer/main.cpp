@@ -100,8 +100,8 @@ int main(int argc, char *argv[]) {
         ypc::hex_bytes(vm["check-data-hash"].as<std::string>())
             .as<ypc::bytes>();
     auto t = check_sealed_data(sealer_enclave_file, sealed_file, data_hash);
-    if (t) {
-      std::cout << "Invalid sealed data, exit now." << std::endl;
+    if (t != ypc::success) {
+      std::cerr << "Invalid sealed data, exit now." << std::endl;
       return t;
     }
     std::cout << "Done checking data hash, start parser now!" << std::endl;
@@ -136,9 +136,12 @@ int main(int argc, char *argv[]) {
     ypc::simple_sealed_file ssf(sealed_file, true);
     std::cout << "valid sealed block file, use sequential mode" << std::endl;
   } catch (ypc::invalid_blockfile &e) {
-    std::cout << "invalid sealed block file, try switch to parallel mode"
+    std::cerr << "invalid sealed block file, try switch to parallel mode"
               << std::endl;
     is_sealed_file = false;
+  } catch (const std::exception &e) {
+    std::cerr << "error while open " << sealed_file << std::endl;
+    return -1;
   }
 
   if (is_sealed_file) {
@@ -152,7 +155,7 @@ int main(int argc, char *argv[]) {
         eds = ypc::read_extra_data_source_from_file(
             vm["extra-data-source"].as<std::string>());
       } catch (const std::exception &e) {
-        std::cout << "cannot read extra-data-source file path: "
+        std::cerr << "cannot read extra-data-source file path: "
                   << vm["extra-data-source"].as<std::string>();
         return -1;
       }
@@ -160,7 +163,12 @@ int main(int argc, char *argv[]) {
       g_data_source_reader.reset(new extra_data_source_reader(eds));
     }
 
-    uint32_t ret = parser->parse();
+    ypc::bytes expect_data_hash;
+    if (vm.count("check-data-hash")) {
+      expect_data_hash = ypc::hex_bytes(vm["check-data-hash"].as<std::string>())
+                             .as<ypc::bytes>();
+    }
+    uint32_t ret = parser->parse(expect_data_hash);
     if (ret) {
       std::cout << "got error: " << ypc::status_string(ret) << std::endl;
     }
@@ -228,7 +236,7 @@ void parallel_parse(std::shared_ptr<param_source> psource,
         parser = std::make_shared<file_parser>(
             tmp_source.get(), crtarget.get(), sealer_enclave_file,
             parser_enclave_file, keymgr_enclave_file, sf);
-        parser->parse();
+        parser->parse(ypc::bytes());
         continue_flag = false;
         break;
       } else {

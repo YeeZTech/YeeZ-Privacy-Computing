@@ -20,7 +20,7 @@ public:
     m_extra_data_source = eds;
   };
 
-  virtual uint32_t parse();
+  virtual uint32_t parse(const ypc::bytes &expect_data_hash);
 
   virtual bool
   merge(std::vector<std::shared_ptr<result_target>> &block_results);
@@ -37,7 +37,7 @@ public:
 protected:
   virtual uint32_t do_parse() = 0;
 
-  void forward_extra_data_usage_license(const ypc::bytes &enclave_pkey);
+  uint32_t forward_extra_data_usage_license(const ypc::bytes &enclave_pkey);
 
 protected:
   param_source *m_psource;

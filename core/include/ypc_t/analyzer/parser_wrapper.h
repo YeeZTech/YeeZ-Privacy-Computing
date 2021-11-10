@@ -40,6 +40,9 @@ public:
 
   virtual uint32_t parse_data_item(const uint8_t *sealed_data, uint32_t len) {
     uint32_t r1 = parser_wrapper_base::parse_data_item(sealed_data, len);
+    if (r1 != static_cast<uint32_t>(stbox::stx_status::success)) {
+      return r1;
+    }
 
     m_parser.reset(new ParserT(m_data_source.get(), m_extra_data_sources));
 

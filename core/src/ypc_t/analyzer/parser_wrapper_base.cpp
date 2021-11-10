@@ -102,7 +102,7 @@ uint32_t parser_wrapper_base::request_private_key() {
 
   if (status != stbox::stx_status::success) {
     LOG(ERROR) << "error for m_keymgr_session->send_request_recv_response: "
-               << status;
+               << stbox::status_string(status);
     return status;
   }
   LOG(INFO) << "request private key done";
@@ -146,7 +146,8 @@ uint32_t parser_wrapper_base::parse_data_item(const uint8_t *encrypted_param,
   // request key and param
   auto status = request_private_key();
   if (status != stbox::stx_status::success) {
-    LOG(ERROR) << "error for request_private_key: " << status
+    LOG(ERROR) << "error for request_private_key: "
+               << stbox::status_string(status)
                << ", this is caused by using wrong enclave or wrong encrypted "
                   "private key";
     return status;
@@ -155,7 +156,7 @@ uint32_t parser_wrapper_base::parse_data_item(const uint8_t *encrypted_param,
 
   status = decrypt_param(encrypted_param, len);
   if (status != stbox::stx_status::success) {
-    LOG(ERROR) << "error for decrypt_param: " << status
+    LOG(ERROR) << "error for decrypt_param: " << stbox::status_string(status)
                << ", this is caused by using wrong parameters";
     return status;
   }
@@ -163,7 +164,8 @@ uint32_t parser_wrapper_base::parse_data_item(const uint8_t *encrypted_param,
 
   status = request_extra_data_usage();
   if (status != stbox::stx_status::success) {
-    LOG(ERROR) << "error for request_extra_data_usage: " << status;
+    LOG(ERROR) << "error for request_extra_data_usage: "
+               << stbox::status_string(status);
     return status;
   }
 
@@ -185,7 +187,7 @@ uint32_t parser_wrapper_base::end_parse_data_item() {
       utc::crypto_prefix_arbitrary, (uint8_t *)&m_encrypted_result_str[0],
       cipher_size);
   if (status != stbox::stx_status::success) {
-    LOG(ERROR) << "error for encrypt_message: " << status;
+    LOG(ERROR) << "error for encrypt_message: " << stbox::status_string(status);
     return status;
   }
 
@@ -249,7 +251,7 @@ uint32_t parser_wrapper_base::merge_parse_result(const uint8_t *encrypted_param,
         (uint8_t *)&_param[0], data_len, utc::crypto_prefix_arbitrary);
 
     if (ret != stbox::stx_status::success) {
-      LOG(ERROR) << "error for decrypt_message: " << ret;
+      LOG(ERROR) << "error for decrypt_message: " << stbox::status_string(ret);
       return ret;
     }
     return stbox::stx_status::success;
@@ -268,7 +270,8 @@ uint32_t parser_wrapper_base::merge_parse_result(const uint8_t *encrypted_param,
     stbox::bytes r;
     status = decrypt_block_result(s, r);
     if (status != stbox::stx_status::success) {
-      LOG(ERROR) << "error for decrypt_block_result: " << status;
+      LOG(ERROR) << "error for decrypt_block_result: "
+                 << stbox::status_string(status);
       return status;
     }
     auto msg = stbox::bytes(encrypted_param, len) +

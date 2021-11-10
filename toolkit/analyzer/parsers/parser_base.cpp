@@ -16,7 +16,7 @@ parser_base::parser_base(param_source *psource, result_target *rtarget,
 
 parser_base::~parser_base() {}
 
-uint32_t parser_base::parse() {
+uint32_t parser_base::parse(const ypc::bytes &expect_data_hash) {
   m_sealer =
       std::make_shared<ypc::datahub_sgx_module>(m_sealer_enclave_path.c_str());
   m_parser = std::make_shared<parser_sgx_module>(m_parser_enclave_path.c_str());
@@ -36,15 +36,24 @@ uint32_t parser_base::parse() {
                                        ehash.data(), ehash.size(), vpkey.data(),
                                        vpkey.size(), sig.data(), sig.size());
 
-  forward_extra_data_usage_license(epkey);
-
   if (ret) {
+    LOG(ERROR) << "forward_message got error " << ypc::status_string(ret);
     return ret;
   }
+
+  ret = forward_extra_data_usage_license(epkey);
+
+  if (ret) {
+    LOG(ERROR) << "forward_extra_data_usage_license got error "
+               << ypc::status_string(ret);
+    return ret;
+  }
+
   LOG(INFO) << "forward private key done";
   ret = do_parse();
 
   if (ret) {
+    LOG(ERROR) << "do_parse got error " << ypc::status_string(ret);
     return ret;
   }
   LOG(INFO) << "parse done";
@@ -52,18 +61,28 @@ uint32_t parser_base::parse() {
   result_pkg_t result_pkg;
   ret = m_parser->get_analyze_result(result_pkg);
   if (ret) {
+    LOG(ERROR) << "get_analyze_result got error " << ypc::status_string(ret);
     return ret;
   }
 
-  // TODO, check data hash
+  using ntt = ypc::nt<ypc::bytes>;
+  if (expect_data_hash.size() != 0 &&
+      expect_data_hash != result_pkg.get<ntt::data_hash>()) {
+    LOG(ERROR)
+        << "parser returned wrong data hash, expect " << expect_data_hash
+        << ", got " << result_pkg.get<ntt::data_hash>()
+        << ". This could be caused by 1) using wrong data, 2) using "
+           "wrong expect data hash, 3) encountering error when reading file";
+    return ypc::parser_return_wrong_data_hash;
+  }
 
   m_rtarget->write_to_target(result_pkg);
   LOG(INFO) << "write result target done";
   return ypc::success;
 }
 
-void parser_base::forward_extra_data_usage_license(
-    const ypc::bytes &enclave_pkey) {
+uint32_t
+parser_base::forward_extra_data_usage_license(const ypc::bytes &enclave_pkey) {
   typedef ypc::nt<ypc::bytes> ntt;
 
   std::vector<ntt::extra_data_group_t> data_items;
@@ -88,7 +107,7 @@ void parser_base::forward_extra_data_usage_license(
   }
   ypc::bytes extra = ypc::make_bytes<ypc::bytes>::for_package<
       ntt::extra_data_package_t, ntt::extra_data_items>(data_items);
-  m_parser->set_extra_data(extra.data(), extra.size());
+  return m_parser->set_extra_data(extra.data(), extra.size());
 }
 
 bool parser_base::merge(
