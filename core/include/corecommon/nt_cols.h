@@ -7,6 +7,8 @@ template <typename BytesType> struct nt {
   define_nt(reserve, uint32_t);
   define_nt(data, BytesType);
   define_nt(id, uint32_t);
+  define_nt(user_id, std::string);
+  define_nt(timestamp, uint64_t);
 
   define_nt(encrypted_skey, BytesType);
   define_nt(pkey, BytesType);
@@ -34,5 +36,8 @@ template <typename BytesType> struct nt {
                                result_signature, cost_signature,
                                result_encrypt_key>
       ypc_result_package_t;
+  typedef ::ff::net::ntpackage<0x314234b9, pkey, sealed_skey, user_id,
+                               timestamp>
+      keymgr_key_package_t;
 };
 } // namespace ypc

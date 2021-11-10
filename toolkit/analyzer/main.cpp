@@ -61,6 +61,10 @@ boost::program_options::variables_map parse_command_line(int argc,
 }
 
 int main(int argc, char *argv[]) {
+
+  google::InitGoogleLogging(argv[0]);
+  google::InstallFailureSignalHandler();
+
   boost::program_options::variables_map vm;
   try {
     vm = parse_command_line(argc, argv);

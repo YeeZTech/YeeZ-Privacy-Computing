@@ -4,10 +4,13 @@
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <boost/range/iterator_range.hpp>
+#include <chrono>
+#include <ctime>
 #include <iostream>
 #include <sstream>
 
 using namespace stbox;
+using ntt = ypc::nt<ypc::bytes>;
 boost::program_options::variables_map parse_command_line(int argc,
                                                          char *argv[]) {
   namespace bp = boost::program_options;
@@ -67,7 +70,20 @@ void create_key(const std::shared_ptr<keymgr_sgx_module> &ptr,
                     std::string((const char *)pkey.as<ypc::hex_bytes>().data(),
                                 PKEY_FILE_NAME_LENGTH));
   std::string output = output_path.generic_string();
-  write_key_pair_to_file(output, pkey, skey);
+  const auto now = std::chrono::system_clock::now();
+
+  uint64_t s =
+      std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch())
+          .count();
+  ntt::keymgr_key_package_t key;
+  key.set<ntt::pkey, ntt::sealed_skey, ntt::timestamp>(pkey, skey, s);
+  std::cout << "Input user id: ";
+  std::string userid;
+  std::cin >> userid;
+
+  // TODO check userid
+  key.set<ntt::user_id>(userid);
+  write_key_pair_to_file(output, key);
   std::cout << "Create key pair in file " << output << std::endl;
 }
 
@@ -78,18 +94,22 @@ void list_keys(const std::string &key_dir) {
     ss << "Directory not exist " << key_dir << std::endl;
     throw std::runtime_error(ss.str());
   }
-  std::cout << key_dir << std::endl;
-  std::cout << std::string(key_dir.size(), '-') << std::endl;
+  std::cout << "listing keys in " << key_dir << std::endl;
+  std::cout << std::string(key_dir.size() + 18, '-') << std::endl;
+  uint counter = 0;
   for (auto &f : boost::make_iterator_range(
            boost::filesystem::directory_iterator(key_path), {})) {
     auto name = f.path().filename().generic_string();
     if (name != "backup") {
-      ypc::bytes b_pkey, b_skey;
-      read_key_pair_from_file(f.path().generic_string(), b_pkey, b_skey);
-      std::cout << name << std::endl;
-      std::cout << '\t' << "public key: " << b_pkey << std::endl;
-      std::cout << '\t' << "user name : " << std::endl;
-      std::cout << '\t' << "create at : " << std::endl;
+      counter++;
+      ntt::keymgr_key_package_t key;
+      read_key_pair_from_file(f.path().generic_string(), key);
+      std::cout << ">> key " << counter << ": " << name << std::endl;
+      std::cout << '\t' << "public key: " << key.get<ntt::pkey>() << std::endl;
+      std::cout << '\t' << "user id: " << key.get<ntt::user_id>() << std::endl;
+      uint64_t s = key.get<ntt::timestamp>();
+      char *dt = ctime((time_t *)&s);
+      std::cout << '\t' << "create at : " << dt << std::endl;
       std::cout << std::endl;
     }
   }
@@ -99,8 +119,10 @@ std::pair<ypc::bytes, ypc::bytes>
 load_key_pair_from_file(const std::string &key_dir,
                         const std::string &filename) {
   boost::filesystem::path p = key_dir / boost::filesystem::path(filename);
-  ypc::bytes b_pkey, b_skey;
-  read_key_pair_from_file(p.generic_string(), b_pkey, b_skey);
+  ntt::keymgr_key_package_t key;
+  read_key_pair_from_file(p.generic_string(), key);
+  ypc::bytes b_pkey = key.get<ntt::pkey>();
+  ypc::bytes b_skey = key.get<ntt::sealed_skey>();
   return std::make_pair(b_pkey, b_skey);
 }
 
@@ -228,14 +250,16 @@ int main(int argc, char *argv[]) {
   try {
     vm = parse_command_line(argc, argv);
   } catch (...) {
-    std::cout << "invalid cmd line parameters!" << std::endl;
+    std::cerr << "invalid cmd line parameters!" << std::endl;
     return -1;
   }
 
   if (!vm.count("create") && !vm.count("list") && !vm.count("remove") &&
       !vm.count("sign") && !vm.count("verify") && !vm.count("encrypt") &&
       !vm.count("decrypt")) {
-    std::cout << "one of these options must be specified!" << std::endl;
+    std::cerr << "one of [create, list, remove, sign, verify, encrypt, "
+                 "decrypt] must be specified!"
+              << std::endl;
     return -1;
   }
 

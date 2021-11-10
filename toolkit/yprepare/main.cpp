@@ -1,4 +1,5 @@
 #include "common/param_id.h"
+#include "corecommon/nt_cols.h"
 #include "onchain_data_reader.h"
 #include "ypc/filesystem.h"
 #include <boost/algorithm/string/replace.hpp>
@@ -65,7 +66,11 @@ uint32_t load_key_pair(const std::string &key_path_name, const ypc::bytes &pkey,
     auto name = f.path().filename().generic_string();
     if (fname == name) {
       boost::filesystem::path p = key_dir / boost::filesystem::path(name);
-      ret = read_key_pair_from_file(p.generic_string(), b_pkey, b_skey);
+      using ntt = ypc::nt<ypc::bytes>;
+      ntt::keymgr_key_package_t key;
+      ret = read_key_pair_from_file(p.generic_string(), key);
+      b_pkey = key.get<ntt::pkey>();
+      b_skey = key.get<ntt::sealed_skey>();
       break;
     }
   }

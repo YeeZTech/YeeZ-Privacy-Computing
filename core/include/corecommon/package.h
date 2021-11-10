@@ -31,6 +31,17 @@ template <typename BytesType> struct make_bytes {
                           ff::net::marshaler::seralizer);
     pkg.arch(ld);
   }
+  template <typename PackageType>
+  static BytesType for_package(const PackageType &pkg) {
+    ff::net::marshaler lm(ff::net::marshaler::length_retriver);
+    pkg.arch(lm);
+
+    BytesType ret(lm.get_length());
+    ff::net::marshaler ld((char *)ret.data(), ret.size(),
+                          ff::net::marshaler::seralizer);
+    pkg.arch(ld);
+    return ret;
+  }
 };
 
 template <typename PackageType> struct make_package {

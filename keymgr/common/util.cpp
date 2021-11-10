@@ -24,13 +24,16 @@ std::string create_dir_if_not_exist(const std::string &base,
   return h.generic_string();
 }
 
-uint32_t write_key_pair_to_file(const std::string &filename,
-                                const ypc::bytes &pkey,
-                                const ypc::bytes &skey) {
+uint32_t
+write_key_pair_to_file(const std::string &filename,
+                       const ypc::nt<ypc::bytes>::keymgr_key_package_t &key) {
   try {
     boost::property_tree::ptree pt;
-    pt.put("public_key", pkey);
-    pt.put("private_key", skey);
+    using ntt = ypc::nt<ypc::bytes>;
+    pt.put("public_key", key.get<ntt::pkey>().as<ypc::hex_bytes>());
+    pt.put("private_key", key.get<ntt::sealed_skey>().as<ypc::hex_bytes>());
+    pt.put("user_id", key.get<ntt::user_id>());
+    pt.put("timestamp", key.get<ntt::timestamp>());
     boost::property_tree::json_parser::write_json(filename, pt);
   } catch (const std::exception &e) {
     throw std::runtime_error(boost::str(
@@ -39,13 +42,19 @@ uint32_t write_key_pair_to_file(const std::string &filename,
   return 0;
 }
 
-uint32_t read_key_pair_from_file(const std::string &filename,
-                                 ypc::bytes &b_pkey, ypc::bytes &b_skey) {
+uint32_t
+read_key_pair_from_file(const std::string &filename,
+                        ypc::nt<ypc::bytes>::keymgr_key_package_t &key) {
   try {
     boost::property_tree::ptree pt;
     boost::property_tree::json_parser::read_json(filename, pt);
-    b_pkey = pt.get<ypc::hex_bytes>("public_key").as<::ypc::bytes>();
-    b_skey = pt.get<ypc::hex_bytes>("private_key").as<::ypc::bytes>();
+    using ntt = ypc::nt<ypc::bytes>;
+    auto b_pkey = pt.get<ypc::hex_bytes>("public_key").as<::ypc::bytes>();
+    auto b_skey = pt.get<ypc::hex_bytes>("private_key").as<::ypc::bytes>();
+    auto uid = pt.get<std::string>("user_id");
+    auto ts = pt.get<uint64_t>("timestamp");
+    key.set<ntt::pkey, ntt::sealed_skey, ntt::user_id, ntt::timestamp>(
+        b_pkey, b_skey, uid, ts);
   } catch (const std::exception &e) {
     throw std::runtime_error(
         boost::str(boost::format("Read key pair from file failed! Error: %1%") %
@@ -74,8 +83,10 @@ uint32_t ocall_load_key_pair(const char *key_path_name, uint32_t path_size,
         name) {
       boost::filesystem::path p = key_dir / boost::filesystem::path(name);
       ypc::bytes b_pkey, b_skey;
-      ret = read_key_pair_from_file(p.generic_string(), b_pkey, b_skey);
-      memcpy(sealed_private_key, b_skey.data(), b_skey.size());
+      ypc::nt<ypc::bytes>::keymgr_key_package_t key;
+      ret = read_key_pair_from_file(p.generic_string(), key);
+      auto skey = key.get<ypc::nt<ypc::bytes>::sealed_skey>();
+      memcpy(sealed_private_key, skey.data(), skey.size());
       break;
     }
   }

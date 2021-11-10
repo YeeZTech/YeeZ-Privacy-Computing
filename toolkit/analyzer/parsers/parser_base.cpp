@@ -74,6 +74,10 @@ uint32_t parser_base::parse(const ypc::bytes &expect_data_hash) {
         << ". This could be caused by 1) using wrong data, 2) using "
            "wrong expect data hash, 3) encountering error when reading file";
     return ypc::parser_return_wrong_data_hash;
+  } else if (expect_data_hash.size() == 0) {
+    LOG(INFO) << "no expect_data_hash, ignore check it";
+  } else {
+    LOG(INFO) << "check expect_data_hash done";
   }
 
   m_rtarget->write_to_target(result_pkg);
