@@ -115,10 +115,10 @@ TEST(kmeans_iris, basic) {
 
   hpda::output::memory_output<iris_data, species, iid> mo(
       km.data_with_cluster_stream());
-  LOG(INFO) << "mo.run() start";
-  mo.run();
+  LOG(INFO) << "engine.run() start";
+  engine.run();
 
-  LOG(INFO) << "mo.run() end";
+  LOG(INFO) << "engine.run() end";
   for (auto it : mo.values()) {
     std::cout << it.get<species>() << ", " << it.get<iid>() << std::endl;
   }

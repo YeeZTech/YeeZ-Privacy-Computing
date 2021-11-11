@@ -124,7 +124,7 @@ public:
     hpda::output::memory_output<iris_data, species, iid> mo(
         km.data_with_cluster_stream());
 
-    mo.run();
+    mo.get_engine()->run();
     stbox::bytes result;
     int i = 0;
     for (auto it : mo.values()) {

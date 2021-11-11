@@ -27,7 +27,8 @@ TEST(concat, basic) {
 
   hpda::output::memory_output<hash, value> mo(&f);
 
-  mo.run();
+  engine.run();
+
   auto s = mo.values().size();
   EXPECT_EQ(s, 1000);
 }

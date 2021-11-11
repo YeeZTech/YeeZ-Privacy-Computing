@@ -14,7 +14,7 @@ TEST(input_output, empty) {
 
   hpda::output::memory_output<hash, value> mo(&rd);
 
-  mo.run();
+  engine.run();
   auto s = mo.values().size();
   EXPECT_EQ(s, 0);
 }
@@ -32,7 +32,7 @@ TEST(input_output, basic) {
 
   hpda::output::memory_output<hash, value> mo(&rd);
 
-  mo.run();
+  engine.run();
 
   auto vs = mo.values();
   EXPECT_EQ(vs.size(), 1000);

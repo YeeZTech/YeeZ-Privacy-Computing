@@ -1,8 +1,13 @@
+#include <hpda/common/common.h>
 #include <hpda/engine/engine.h>
 #include <queue>
 #include <stack>
 #include <unordered_map>
 #include <unordered_set>
+
+constexpr static uint32_t status_n = 0;
+constexpr static uint32_t status_to_p = 1;
+constexpr static uint32_t status_p = 2;
 
 namespace hpda {
 
@@ -13,12 +18,14 @@ void engine::add_functor(functor *f) {
 void engine::run() {
   build_graph();
   auto outputs = find_outputs();
-  if (outputs.size() != 1) {
-    throw std::runtime_error("only support 1 output this version");
+  if (outputs.size() == 0) {
+    throw std::runtime_error("cannot find output");
   }
   std::queue<functor *> to_process;
   std::stack<functor *> processing;
+
   for (auto output : outputs) {
+    output->m_status = status_to_p;
     to_process.push(output);
   }
 
@@ -28,6 +35,7 @@ void engine::run() {
       auto f = to_process.front();
       to_process.pop();
       if (f->predecessors().empty()) {
+        f->m_status = status_n;
         // it's an extractor
         bool v = f->process();
         if (v) {
@@ -36,11 +44,13 @@ void engine::run() {
           m_reach_ends.insert(f);
         }
       } else {
+        f->m_status = status_p;
         processing.push(f);
       }
       for (auto input : f->predecessors()) {
-        if (!input->has_value()) {
+        if (!input->has_value() && input->m_status != status_to_p) {
           to_process.push(input);
+          input->m_status = status_to_p;
         }
       }
 
@@ -52,7 +62,6 @@ void engine::run() {
     } while (!to_process.empty());
 
     while (!processing.empty()) {
-      //<< std::endl;
       auto f = processing.top();
 
       if (!functor_has_input(f)) {
@@ -65,23 +74,23 @@ void engine::run() {
       } else {
         f->reset_done_value();
       }
-      // for (auto input : f->predecessors()) {
-      // input->reset_done_value();
-      //}
       if (f->has_value()) {
         processing.pop();
+        f->m_status = status_n;
       } else {
         bool end = true;
         for (auto input : f->predecessors()) {
           if (m_reach_ends.find(input) == m_reach_ends.end() &&
               !(input->has_value())) {
             to_process.push(input);
+            input->m_status = status_to_p;
             end = false;
           }
         }
         if (end) {
           m_reach_ends.insert(f);
           processing.pop();
+          f->m_status = status_n;
         }
       }
     }
@@ -89,6 +98,7 @@ void engine::run() {
       for (auto output : outputs) {
         if (m_reach_ends.find(output) == m_reach_ends.end()) {
           to_process.push(output);
+          output->m_status = status_to_p;
         }
       }
     }
@@ -112,6 +122,7 @@ void engine::build_graph() {
       m_successors[input].insert(f);
       m_predecessors[f].insert(input);
     }
+    f->m_status = status_n;
   }
 }
 std::vector<functor *> engine::find_outputs() const {

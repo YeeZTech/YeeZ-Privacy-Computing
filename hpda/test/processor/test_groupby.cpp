@@ -33,7 +33,7 @@ TEST(groupby, sum) {
 
   hpda::output::memory_output<hash, sum_v> mo(&f);
 
-  mo.run();
+  engine.run();
   auto s = mo.values().size();
   EXPECT_EQ(s, 2);
   EXPECT_EQ(mo.values()[0].get<sum_v>(), sum);
@@ -67,7 +67,7 @@ TEST(groupby, avg) {
 
   hpda::output::memory_output<hash, sum_v> mo(&f);
 
-  mo.run();
+  engine.run();
   auto s = mo.values().size();
   EXPECT_EQ(s, 2);
   EXPECT_EQ(mo.values()[0].get<sum_v>(), sum / 1000);
@@ -101,7 +101,7 @@ TEST(groupby, max) {
 
   hpda::output::memory_output<hash, sum_v> mo(&f);
 
-  mo.run();
+  engine.run();
   auto s = mo.values().size();
   EXPECT_EQ(s, 2);
   EXPECT_EQ(mo.values()[0].get<sum_v>(), 999);
@@ -135,7 +135,7 @@ TEST(groupby, min) {
 
   hpda::output::memory_output<hash, sum_v> mo(&f);
 
-  mo.run();
+  engine.run();
   auto s = mo.values().size();
   EXPECT_EQ(s, 2);
   EXPECT_EQ(mo.values()[0].get<sum_v>(), 0);
@@ -169,7 +169,7 @@ TEST(groupby, count) {
 
   hpda::output::memory_output<hash, sum_v> mo(&f);
 
-  mo.run();
+  engine.run();
   auto s = mo.values().size();
   EXPECT_EQ(s, 2);
   EXPECT_EQ(mo.values()[0].get<sum_v>(), 10);

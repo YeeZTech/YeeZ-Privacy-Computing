@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 #include <vector>
 
 namespace hpda {
@@ -9,7 +10,7 @@ public:
   virtual ~functor();
   virtual bool process() = 0;
   inline void reset_done_value() { m_has_value = false; }
-  inline void done_value() { m_has_value = true; }
+  virtual void done_value();
   inline bool has_value() const { return m_has_value; }
   inline engine *get_engine() const { return m_engine; }
 
@@ -23,8 +24,10 @@ public:
 
 protected:
   bool m_has_value;
-  bool m_has_more_data;
   std::vector<functor *> m_predecessors;
   engine *m_engine;
+
+  friend class engine;
+  uint32_t m_status;
 };
 } // namespace ypc

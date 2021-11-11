@@ -34,7 +34,7 @@ public:
         });
 
     hpda::output::internal::memory_output_impl<user_item_t> mo(&match);
-    mo.run();
+    mo.get_engine()->run();
     LOG(INFO) << "do parse done";
 
     stbox::bytes result;

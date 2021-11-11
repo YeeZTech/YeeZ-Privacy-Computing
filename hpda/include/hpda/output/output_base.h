@@ -21,7 +21,8 @@ public:
   // inline bool next_input() { return base::next_input(); }
 
   InputObjType input_value() const { return base::input_value(); }
-  virtual void run() = 0;
+
+  virtual void done_value() { functor::m_has_value = false; };
 };
 } // namespace internal
 } // namespace output

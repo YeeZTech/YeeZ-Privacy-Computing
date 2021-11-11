@@ -16,12 +16,7 @@ public:
 
   typedef output_base<InputObjType> base;
 
-  virtual void run() {
-    functor::m_engine->run();
-  }
-
   virtual bool process() {
-
     if (!base::has_input_value()) {
       return false;
     }

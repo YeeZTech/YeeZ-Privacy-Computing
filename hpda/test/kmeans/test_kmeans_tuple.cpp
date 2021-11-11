@@ -24,8 +24,7 @@ TEST(kmeans, empty) {
                               kmeans_t::average_distance>
       m2(km.means_stream());
 
-  mo.run();
-  m2.run();
+  engine.run();
 }
 
 TEST(kmeans, massive_points) {
@@ -57,7 +56,5 @@ TEST(kmeans, massive_points) {
   hpda::output::memory_output<iid, kmeans_t::mean_point,
                               kmeans_t::average_distance>
       m2(km.means_stream());
-
-  mo.run();
-  m2.run();
+  engine.run();
 }
