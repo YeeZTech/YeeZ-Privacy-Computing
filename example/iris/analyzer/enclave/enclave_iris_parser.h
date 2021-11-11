@@ -87,18 +87,18 @@ public:
   enclave_iris_parser() {}
 #ifdef YPC_SGX
   enclave_iris_parser(
-      ::hpda::extractor::internal::extractor_base<user_item_t> *source,
+      ::hpda::internal::processor_with_output<user_item_t> *source,
       const std::vector<ypc::extra_data_source_group> &extra_data_sources)
       : m_source(source), m_extra_data_source(extra_data_sources){};
 #else
   template <typename ET>
   enclave_iris_parser(
-      ::hpda::extractor::internal::extractor_base<user_item_t> *source, ET &&t)
+      ::hpda::internal::processor_with_output<user_item_t> *source, ET &&t)
       : m_source(source) {}
 #endif
 
   inline stbox::bytes do_parse(const stbox::bytes &param) {
-#if 1
+#ifdef YPC_SGX
     hpda::processor::concat<iris_data, species> concat(m_source);
     std::vector<std::shared_ptr<ypc::to_type<extra_nt_t>>> m_tts;
     std::vector<std::shared_ptr<transform_format>> tfs;
@@ -145,7 +145,7 @@ public:
   }
 
 protected:
-  hpda::extractor::internal::extractor_base<user_item_t> *m_source;
+  hpda::internal::processor_with_output<user_item_t> *m_source;
 #ifdef YPC_SGX
   std::vector<ypc::extra_data_source_group> m_extra_data_source;
 #endif

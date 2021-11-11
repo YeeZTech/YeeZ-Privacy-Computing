@@ -29,7 +29,7 @@ bool is_certified_signer(
     // default policy: require the peer has the same signer with self signer
     LOG(INFO) << "using default policy";
     auto self_signer = stbox::get_enclave_signer();
-    if (self_signer.size() == sizeof(sgx_measurement_t)) {
+    if (self_signer.size() != sizeof(sgx_measurement_t)) {
       LOG(ERROR) << "failed to get self signer";
       return false;
     }
@@ -38,6 +38,7 @@ bool is_certified_signer(
       LOG(ERROR) << "not a trusted signer";
       return false;
     }
+    return true;
   }
   using ntt = ypc::nt<stbox::bytes>;
   auto tag = policy->get<ntt::access_list_type>();

@@ -60,7 +60,6 @@ public:
   // {file_path: "xxx"}
   typed_csv_reader(const std::string &extra_param)
       : m_extra_param(extra_param), m_file_path(extra_param) {
-    std::cout << "extra param: " << extra_param << std::endl;
     /*
     boost::property_tree::ptree pt;
     std::stringstream ss;

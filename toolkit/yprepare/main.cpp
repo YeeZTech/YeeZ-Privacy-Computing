@@ -147,7 +147,6 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
-  // TODO: we should refine the logic here, currently we use sample.json
   auto sample_json = boost::filesystem::path("../toolkit/yprepare/sample.json");
   if (vm.count("sample-path")) {
     sample_json = boost::filesystem::path(vm["sample-path"].as<std::string>());
@@ -189,9 +188,17 @@ int main(int argc, char *argv[]) {
 
   result["data-hash"] = d.get<data_hash>();
   result["provider-pkey"] = d.get<provider_pub_key>();
+  std::string kmgr_enclave_path = ypc::join_path(
+      ypc::dirname(ypc::complete_path(argv[0])), "../lib/keymgr.signed.so");
 
   if (vm.count("use-pubkey") || vm.count("use-param")) {
-    ptr = std::make_shared<keymgr_sgx_module>(ENCLAVE_KEYMGR_PATH);
+    try {
+      ptr = std::make_shared<keymgr_sgx_module>(kmgr_enclave_path.c_str());
+    } catch (const std::exception &e) {
+      std::cerr << "cannot open enclave file " << kmgr_enclave_path << ", "
+                << e.what();
+      return -1;
+    }
     std::cout << "init keymgr enclave done." << std::endl;
   }
 
