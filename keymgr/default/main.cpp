@@ -263,7 +263,17 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
-  auto ptr = std::make_shared<keymgr_sgx_module>("../lib/keymgr.signed.so");
+  std::string kmgr_enclave_path = ypc::join_path(
+      ypc::dirname(ypc::complete_path(argv[0])), "../lib/keymgr.signed.so");
+  std::shared_ptr<keymgr_sgx_module> ptr;
+  try {
+    ptr = std::make_shared<keymgr_sgx_module>(kmgr_enclave_path.c_str());
+  } catch (const std::exception &e) {
+    std::cerr << "cannot open enclave file " << kmgr_enclave_path << ", "
+              << e.what();
+    return -1;
+  }
+
   std::string key_dir = create_dir_if_not_exist(".", ".yeez.key/");
   std::string bak_dir = create_dir_if_not_exist(".yeez.key/", "backup/");
 

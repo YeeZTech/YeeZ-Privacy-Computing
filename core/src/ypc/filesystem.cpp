@@ -15,6 +15,15 @@ std::string complete_path(const std::string &ph, const std::string &base) {
   return t.generic_string();
 }
 
+std::string dirname(const std::string &ph) {
+  boost::filesystem::path p(ph);
+  return p.parent_path().generic_string();
+}
+std::string join_path(const std::string &ph, const std::string &sub) {
+  boost::filesystem::path p1(ph);
+  return (p1 / sub).generic_string();
+}
+
 bool is_portable_name(const std::string &name) {
   return boost::filesystem::portable_name(name);
 }
