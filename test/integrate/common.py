@@ -6,7 +6,7 @@ import subprocess
 current_file = os.path.abspath(__file__)
 current_dir = os.path.dirname(current_file)
 test_dir = os.path.dirname(current_dir)
-sdk_dir = os.path.dirname(test_dir)
+sdk_dir = os.path.dirname(test_dir).replace(" ", "\ ")
 
 bin_dir = os.path.join(sdk_dir, "./bin")
 lib_dir = os.path.join(sdk_dir, "./lib")
@@ -43,7 +43,6 @@ def fid_keymgr_list():
 
 def fid_data_provider(**kwargs):
     cmd = os.path.join(bin_dir, "./data_provider")
-    cmd = os.path.normpath(cmd)
     for k, v in kwargs.items():
         cmd = cmd + " --{} {}".format(k, v)
     output = execute_cmd(cmd);
