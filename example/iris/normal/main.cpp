@@ -11,12 +11,7 @@
 int main(int argc, char *argv[]) {
 
   hpda::engine e;
-  // ypc::privacy_data_stream<user_item_t> pds(argv[1], argv[2],
-  // parse_item_data);
 
-  // clang-format off
-  std::string json("{\"file_path\":\"../bin/iris.data\"}");
-  // clang-format on
   ypc::plugins::typed_csv_reader<extra_nt_t> r("./iris.data");
 
   hpda::extractor::internal::raw_data_impl<extra_nt_t> raw;

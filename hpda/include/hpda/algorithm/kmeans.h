@@ -1,8 +1,8 @@
 #pragma once
 #include <hpda/algorithm/internal/kmeans_loyd.h>
-#include <hpda/common/processor_with_input.h>
 #include <hpda/extractor/extractor_base.h>
 #include <hpda/extractor/raw_data.h>
+#include <hpda/output/output_base.h>
 
 namespace hpda {
 
@@ -52,13 +52,13 @@ template <typename InputObjType, typename PointFlag, typename DistanceType,
           typename ClassifiedID,
           typename InitialPointPicker = initial_point_picker_even_k<PointFlag>>
 class loyd_kmeans_impl
-    : public ::hpda::internal::processor_with_input<InputObjType> {
+    : public ::hpda::output::internal::output_base<InputObjType> {
 public:
   loyd_kmeans_impl(
       ::hpda::internal::processor_with_output<InputObjType> *upper_stream,
       int k, DistanceType delta,
       int max_points = std::numeric_limits<int>::max())
-      : ::hpda::internal::processor_with_input<InputObjType>(upper_stream),
+      : ::hpda::output::internal::output_base<InputObjType>(upper_stream),
         m_calculate_flag(false), m_k(k), m_delta(delta),
         m_max_points(max_points) {}
 
@@ -91,23 +91,18 @@ public:
 
   std::vector<InputObjType> m_all_points;
   virtual bool process() {
-    // int point_count = 0;
-    if (base::has_input_value() && m_all_points.size() < m_max_points) {
-      m_all_points.push_back(base::input_value());
+    if (base::has_input_value()) {
+      m_all_points.push_back(base::input_value().make_copy());
       base::consume_input_value();
-      return false;
+      if (m_all_points.size() < m_max_points) {
+        return false;
+      }
+    } else {
+      if (m_all_points.size() == 0) {
+        return false;
+      }
     }
-    // while (base::next_input() && point_count < m_max_points) {
-    // all_points.push_back(base::input_value());
-    // point_count++;
-    //}
-    // if (all_points.size() < m_k) {
-    // return;
-    //}
 
-    if (m_all_points.size() == 0) {
-      return false;
-    }
     using loyd_impl_type =
         loyd_impl<typename std::vector<InputObjType>::iterator, point_type,
                   DistanceType, point_traits<std::vector<InputObjType>>,
@@ -149,51 +144,6 @@ public:
     m_calculate_flag = true;
     return true;
   }
-  /*
-  class data_with_cluster_stream_t
-      : public ::hpda::extractor::internal::raw_data_impl<
-            typename ::ff::util::append_type<InputObjType,
-                                             ClassifiedID>::type> {
-  public:
-    data_with_cluster_stream_t(self_type *self)
-        : ::hpda::extractor::internal::raw_data_impl<
-              typename ::ff::util::append_type<InputObjType,
-                                               ClassifiedID>::type>(),
-          m_self(self){};
-
-    typedef ::hpda::extractor::internal::raw_data_impl<
-        typename ::ff::util::append_type<InputObjType, ClassifiedID>::type>
-        cluster_stream_base_type;
-
-    virtual bool process() {
-      m_self->calculate();
-      return true;
-      // return cluster_stream_base_type::next_output();
-    }
-
-  protected:
-    self_type *m_self;
-  };
-
-  class means_stream_t : public ::hpda::extractor::internal::raw_data_impl<
-                             means_stream_output_type> {
-  public:
-    means_stream_t(self_type *self)
-        : ::hpda::extractor::internal::raw_data_impl<
-              means_stream_output_type>(),
-          m_self(self){};
-
-    typedef ::hpda::extractor::internal::raw_data_impl<means_stream_output_type>
-        means_stream_base_type;
-
-    virtual bool process() {
-      m_self->calculate();
-      return true;
-    }
-
-  protected:
-    self_type *m_self;
-  };*/
 
   data_with_cluster_stream_t *data_with_cluster_stream() {
     if (!m_cluster_stream) {

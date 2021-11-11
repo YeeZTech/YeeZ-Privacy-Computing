@@ -96,7 +96,6 @@ protected:
   void assign(const PointIteratorType &p) {
     DistanceType min = std::numeric_limits<DistanceType>::max();
     int index;
-
     for (int i = 0; i < m_means.size(); ++i) {
       auto d = euclidean<PointType, DistanceType>::distance_square(
           PointTraitsType::point(p), m_means[i]);
