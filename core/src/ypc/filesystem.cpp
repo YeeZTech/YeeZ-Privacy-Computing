@@ -19,6 +19,7 @@ std::string dirname(const std::string &ph) {
   boost::filesystem::path p(ph);
   return p.parent_path().generic_string();
 }
+
 std::string join_path(const std::string &ph, const std::string &sub) {
   boost::filesystem::path p1(ph);
   return (p1 / sub).generic_string();
