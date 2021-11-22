@@ -30,32 +30,12 @@
  */
 
 #include "sgx_ecp_types.h"
+#include "stbox/ebyte.h"
 #include "stbox/tsgx/crypto/ecp_interface.h"
 #include "stbox/tsgx/log.h"
 #include "stdlib.h"
 #include "string.h"
 
-#ifndef ERROR_BREAK
-#define ERROR_BREAK(x)                                                         \
-  if (x != ippStsNoErr) {                                                      \
-    break;                                                                     \
-  }
-#endif
-#ifndef NULL_BREAK
-#define NULL_BREAK(x)                                                          \
-  if (!x) {                                                                    \
-    break;                                                                     \
-  }
-#endif
-#ifndef SAFE_FREE
-#define SAFE_FREE(ptr)                                                         \
-  {                                                                            \
-    if (NULL != (ptr)) {                                                       \
-      free(ptr);                                                               \
-      (ptr) = NULL;                                                            \
-    }                                                                          \
-  }
-#endif
 
 #define MAC_KEY_SIZE 16
 static uint8_t cmac_key[MAC_KEY_SIZE] = "yeez.tech.stbox";
@@ -75,7 +55,6 @@ sgx_status_t derive_key(const sgx_ec256_dh_shared_t *shared_key,
     return SGX_ERROR_INVALID_PARAMETER;
   }
 
-  memset(cmac_key, 0, MAC_KEY_SIZE);
   se_ret = sgx_rijndael128_cmac_msg(
       (sgx_cmac_128bit_key_t *)cmac_key, (uint8_t *)shared_key,
       sizeof(sgx_ec256_dh_shared_t), (sgx_cmac_128bit_tag_t *)&key_derive_key);

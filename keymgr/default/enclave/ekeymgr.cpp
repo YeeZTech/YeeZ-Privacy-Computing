@@ -39,38 +39,6 @@ using scope_guard = stbox::scope_guard;
 using namespace stbox;
 // using namespace stbox::crypto;
 
-uint32_t get_forward_private_key_size(uint32_t sealed_size) {
-  if (sealed_size != stbox::crypto::get_secp256k1_sealed_private_key_size()) {
-    return SGX_ERROR_UNEXPECTED;
-  }
-
-  return stbox::crypto::get_encrypt_message_size_with_prefix(
-      stbox::crypto::get_secp256k1_private_key_size());
-}
-
-uint32_t forward_private_key(uint8_t *sealed_private_key, uint32_t sealed_size,
-                             uint8_t *pub_key, uint32_t pkey_size,
-                             uint8_t *fwd_private_key, uint32_t fwd_size) {
-
-  uint32_t se_ret;
-  uint8_t *skey;
-  uint32_t skey_size = stbox::crypto::get_secp256k1_private_key_size();
-  ff::scope_guard _skey_ptr([&]() { skey = new uint8_t[skey_size]; },
-                            [&]() { delete[] skey; });
-
-  se_ret = stbox::crypto::unseal_secp256k1_private_key(sealed_private_key,
-                                                       sealed_size, skey);
-  if (se_ret) {
-    LOG(ERROR) << "unseal_secp256k1_private_key returns: " << se_ret;
-    return se_ret;
-  }
-
-  se_ret = stbox::crypto::encrypt_message_with_prefix(
-      pub_key, pkey_size, skey, skey_size, ypc::utc::crypto_prefix_forward,
-      fwd_private_key, fwd_size);
-  return se_ret;
-}
-
 std::shared_ptr<stbox::dh_session_responder> dh_resp_session(nullptr);
 std::shared_ptr<ypc::nt<stbox::bytes>::access_list_package_t>
     access_control_policy;

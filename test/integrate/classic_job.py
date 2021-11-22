@@ -81,9 +81,6 @@ class classic_job:
 
         pass
 
-
-
-
 if __name__ == "__main__":
     name = "iris"
     data = os.path.join(common.bin_dir, "iris.data")
