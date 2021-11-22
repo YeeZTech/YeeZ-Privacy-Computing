@@ -49,7 +49,7 @@ TEST_F(crypto_test, ecdh) {
 
   ypc::bytes shared_key = m_module->ecdh(pkey, skey);
 
-  ypc::hex_bytes expect("226c29a1a26844169ad4e6ce33bcb7bd");
+  ypc::hex_bytes expect("bb6ad3431e19a07471acd2778267d8a5");
   EXPECT_TRUE(shared_key.as<ypc::hex_bytes>() == expect);
 }
 
@@ -77,18 +77,16 @@ TEST_F(crypto_test, decrypt_data) {
       "539e856e0cefe5e48b47b24018ab3d640ae77982bfe0e255fec843bb6180a6fe");
   ypc::bytes skey = skey_hex.as<ypc::bytes>();
 
-  ypc::bytes cipher = ypc::hex_bytes("af4145ab19e5a354c2118032d4a6ca81ac4ddf1ff"
-                                     "cd0e227cd648fb1701d95f917e31481"
-                                     "e38d832d38f0ffbbba80228ab1ee9c05e88f997ca"
-                                     "e4354677f4fe0b9dce23ca07309cddc"
-                                     "32dd0997517aec00687314")
-                          .as<ypc::bytes>();
-
-  ypc::bytes dd =
-      m_module->decrypt(skey, cipher, ypc::utc::crypto_prefix_arbitrary);
+  ypc::bytes cipher =
+      ypc::hex_bytes("1d6bb778c4683dbc7af7afa5e7747cbfd67c27fd9ccb5c7df45d11bb8"
+                     "aefcb56c9252ef741629637f8865739454ba6013632dd5292800f278d"
+                     "d1f069060fdd3a44c75c9930a813a3da995807b0c4747ed70a49")
+          .as<ypc::bytes>();
 
   ypc::bytes data("xxx");
 
+  ypc::bytes dd =
+      m_module->decrypt(skey, cipher, ypc::utc::crypto_prefix_arbitrary);
   EXPECT_TRUE(dd == data);
 }
 
