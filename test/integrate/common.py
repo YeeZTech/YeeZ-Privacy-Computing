@@ -16,6 +16,10 @@ kmgr_enclave = os.path.join(lib_dir, "keymgr.signed.so")
 def execute_cmd(cmd):
     print("execute_cmd: {}".format(cmd))
     p = subprocess.Popen(cmd, shell=True, stdout = subprocess.PIPE)
+    p.wait()
+    if p.returncode != 0:
+        raise RuntimeError('Failed to execute cmd {}'.format(cmd))
+
     return p.stdout.read().decode('utf-8')
 
 def fid_keymgr_create(user_id):
