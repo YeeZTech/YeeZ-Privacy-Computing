@@ -33,6 +33,7 @@ boost::program_options::variables_map parse_command_line(int argc,
     ("use-param", bp::value<std::string>(), "param that need to be encrypted")
     ("param-format", bp::value<std::string>(), "[text|hex], default is [hex], param format")
     ("use-enclave-hash", bp::value<std::string>(), "parser enclave hash")
+    ("decrypt-hex", bp::value<std::string>(), "to decrypt message with hex")
     ("output", bp::value<std::string>(), "output result to file with JSON format, only valid for '--use-pubkey' and '--use-param'");
 
   // clang-format on
@@ -132,6 +133,49 @@ int gen_key(ypc::terminus::crypto_pack *crypto,
   return 0;
 }
 
+int decrypt_message(ypc::terminus::crypto_pack *crypto,
+                    const boost::program_options::variables_map &vm) {
+  ypc::bytes message =
+      ypc::hex_bytes(vm["decrypt-hex"].as<std::string>()).as<ypc::bytes>();
+
+  ypc::bytes private_key;
+  if (!vm.count("use-privatekey-file") && !vm.count("use-privatekey-hex")) {
+    std::cerr << "missing private key, use 'use-privatekey-file' or "
+                 "'use-privatekey-hex'"
+              << std::endl;
+    exit(-1);
+  }
+
+  if (vm.count("use-privatekey-hex")) {
+    private_key = ypc::hex_bytes(vm["use-privatekey-hex"].as<std::string>())
+                      .as<ypc::bytes>();
+  } else if (vm.count("use-privatekey-file")) {
+    boost::property_tree::ptree pt;
+    boost::property_tree::json_parser::read_json(
+        vm["use-privatekey-file"].as<std::string>(), pt);
+    private_key = pt.get<ypc::bytes>("private-key");
+    std::cout << "private key: " << private_key;
+  }
+
+  ypc::bytes data = crypto->ecc_decrypt(message, private_key,
+                                        ypc::utc::crypto_prefix_arbitrary);
+  if (data.size() == 0) {
+    std::cerr << "failed to decrypt data" << std::endl;
+    exit(-1);
+  }
+
+  if (vm.count("output")) {
+    std::string output_path =
+        ypc::complete_path(vm["output"].as<std::string>());
+    std::ofstream os(output_path, std::ios::out | std::ios::binary);
+    os.write((const char *)data.data(), data.size());
+  } else {
+    std::cout << data << std::endl;
+  }
+
+  return 0;
+}
+
 int main(int argc, char *argv[]) {
   boost::program_options::variables_map vm;
   try {
@@ -146,6 +190,10 @@ int main(int argc, char *argv[]) {
 
   if (vm.count("gen-key")) {
     return gen_key(crypto.get(), vm);
+  }
+
+  if (vm.count("decrypt-hex")) {
+    return decrypt_message(crypto.get(), vm);
   }
 
   if (!vm.count("dhash")) {

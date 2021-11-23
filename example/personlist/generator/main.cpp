@@ -81,7 +81,7 @@ void check_file(const std::string &path) {
                          ff::net::marshaler::deseralizer);
     row_t t;
     t.arch(m);
-    std::cout << t.get<ZJHM>() << std::endl;
+    // std::cout << t.get<ZJHM>() << std::endl;
     r.dealloc();
     i++;
   }

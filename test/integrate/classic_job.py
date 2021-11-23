@@ -16,10 +16,11 @@ class classic_job:
     def run(self):
         '''1. call data provider
         2. call yprepare
-        3. call fid_analyzer'''
+        3. call fid_analyzer
+        4. call terminus to decrypt'''
 
-        sealed_data_url = name + ".sealed"
-        sealed_output = name + ".sealed.output"
+        sealed_data_url = self.name + ".sealed"
+        sealed_output = self.name + ".sealed.output"
 
         param = {"data-url":self.data_url,
                 "plugin-path":self.plugin_url,
@@ -41,17 +42,17 @@ class classic_job:
 
         sample_json = {"data":[{"data-hash":data_hash, "provider-pkey":pkey}]}
 
-        key_file = name + ".key.json"
+        key_file = self.name + ".key.json"
         param = {"gen-key": "",
                 "no-password":"",
                 "output":key_file}
         common.fid_terminus(**param)
 
-        sample_json_path = name +".sample.json"
+        sample_json_path = self.name +".sample.json"
         with open(sample_json_path, "w") as of:
             json.dump(sample_json, of)
 
-        param_output_url = name + "_param.json"
+        param_output_url = self.name + "_param.json"
         param = {"dhash":data_hash,
                 "tee-pubkey":pkey,
                 "use-param":self.input,
@@ -63,7 +64,7 @@ class classic_job:
         r = common.fid_terminus(**param)
         print("done termins with cmd: {}".format(r[0]))
 
-        result_url = name + ".result"
+        result_url = self.name + ".result.encrypted"
         param = {"sealed-data-url":sealed_data_url,
                 "sealer-path":common.sealer_enclave,
                 "parser-path":self.parser_url,
@@ -76,6 +77,21 @@ class classic_job:
         r = common.fid_analyzer(**param);
         print("done fid_analyzer with cmd: {}".format(r[0]))
 
+        encrypted_result = ''
+        with open(result_url) as f:
+            data = json.load(f)
+            encrypted_result = data["encrypted-result"]
+
+        decrypted_result = self.name + ".result"
+
+        param = {"decrypt-hex":encrypted_result,
+                "use-privatekey-file":key_file,
+                "output":decrypted_result}
+        r = common.fid_terminus(**param);
+
+        with open(decrypted_result) as f:
+            self.result = f.readlines();
+
 
     @staticmethod
     def read_data_hash(fp):
@@ -87,6 +103,7 @@ class classic_job:
                     return ks[1].strip()
 
         pass
+
     def read_parser_hash(self):
         param = {"enclave":self.parser_url,
                 "output": "info.json"}
