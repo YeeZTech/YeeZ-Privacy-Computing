@@ -45,8 +45,6 @@ public:
       result += it.get<ZJHM>();
       result += " .";
     }
-    stbox::printf("result: %s\n", result.data());
-    stbox::printf("checked %d items\n", counter);
     return result;
   }
 
