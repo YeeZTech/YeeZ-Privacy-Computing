@@ -82,10 +82,14 @@ class classic_job:
         pass
 
 if __name__ == "__main__":
-    name = "iris"
-    data = os.path.join(common.bin_dir, "iris.data")
-    parser = os.path.join(common.lib_dir, "iris_parser.signed.so")
-    plugin = os.path.join("~/output/iris/output/libiris_csv_reader.so")
-    input_param = "123"
-    cj = classic_job(name, data, parser, plugin, input_param)
-    cj.run()
+    try:
+        name = "iris"
+        data = os.path.join(common.bin_dir, "iris.data")
+        parser = os.path.join(common.lib_dir, "iris_parser.signed.so")
+        plugin = os.path.join("~/output/iris/output/libiris_csv_reader.so")
+        input_param = "123"
+        cj = classic_job(name, data, parser, plugin, input_param)
+        cj.run()
+    except error:
+        print("error: ", error)
+        sys.exit(-1)
