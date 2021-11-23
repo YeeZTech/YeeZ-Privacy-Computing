@@ -203,10 +203,7 @@ int main(int argc, char *argv[]) {
   ypc::terminus::single_data_onchain_result std_interaction(crypto.get());
 
   auto pubkey = crypto->gen_ecc_public_key_from_private_key(private_key);
-  auto encrypted_skey = crypto->ecc_encrypt(private_key, tee_pubkey,
-                                            ypc::utc::crypto_prefix_forward);
 
-  result["encrypted-skey"] = encrypted_skey;
   result["analyzer-pkey"] = pubkey;
 
   ypc::bytes enclave_hash;
@@ -234,6 +231,7 @@ int main(int argc, char *argv[]) {
 
   result["encrypted-input"] = response.encrypted_param;
   result["forward-sig"] = response.signature;
+  result["encrypted-skey"] = response.encrypted_skey;
 
   if (vm.count("output")) {
     std::string output_path =

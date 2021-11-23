@@ -4,6 +4,8 @@
 #include "sgx_urts.h"
 #include <stdexcept>
 
+namespace ypc {
+
 parser_sgx_module::parser_sgx_module(const char *mod_path)
     : ::stbox::sgx_module(mod_path) {}
 parser_sgx_module::~parser_sgx_module() {}
@@ -80,3 +82,4 @@ bool parser_sgx_module::need_continue() {
   auto retval = ecall<uint32_t>(::need_continue);
   return retval != 0;
 }
+} // namespace ypc

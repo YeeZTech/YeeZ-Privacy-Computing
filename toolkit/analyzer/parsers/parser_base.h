@@ -31,7 +31,9 @@ public:
   inline std::shared_ptr<ypc::datahub_sgx_module> sealer() const {
     return m_sealer;
   }
-  inline std::shared_ptr<parser_sgx_module> parser() const { return m_parser; }
+  inline std::shared_ptr<ypc::parser_sgx_module> parser() const {
+    return m_parser;
+  }
   inline std::shared_ptr<keymgr_sgx_module> keymgr() const { return m_keymgr; }
 
 protected:
@@ -48,7 +50,7 @@ protected:
   std::string m_keymgr_enclave_path;
 
   std::shared_ptr<ypc::datahub_sgx_module> m_sealer;
-  std::shared_ptr<parser_sgx_module> m_parser;
+  std::shared_ptr<ypc::parser_sgx_module> m_parser;
   std::shared_ptr<keymgr_sgx_module> m_keymgr;
 
   ypc::extra_data_source_t m_extra_data_source;

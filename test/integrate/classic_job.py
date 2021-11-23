@@ -41,20 +41,27 @@ class classic_job:
 
         sample_json = {"data":[{"data-hash":data_hash, "provider-pkey":pkey}]}
 
+        key_file = name + ".key.json"
+        param = {"gen-key": "",
+                "no-password":"",
+                "output":key_file}
+        common.fid_terminus(**param)
+
         sample_json_path = name +".sample.json"
         with open(sample_json_path, "w") as of:
             json.dump(sample_json, of)
 
         param_output_url = name + "_param.json"
         param = {"dhash":data_hash,
-                "use-pubkey":pkey,
+                "tee-pubkey":pkey,
                 "use-param":self.input,
                 "param-format":"text",
-                "use-enclave":self.parser_url,
+                "use-enclave-hash":self.read_parser_hash(),
                 "output":param_output_url,
-                "sample-path":sample_json_path}
-        r = common.fid_yprepare(**param)
-        print("done yprepare with cmd: {}".format(r[0]))
+                "use-privatekey-file":key_file
+                }
+        r = common.fid_terminus(**param)
+        print("done termins with cmd: {}".format(r[0]))
 
         result_url = name + ".result"
         param = {"sealed-data-url":sealed_data_url,
@@ -80,6 +87,13 @@ class classic_job:
                     return ks[1].strip()
 
         pass
+    def read_parser_hash(self):
+        param = {"enclave":self.parser_url,
+                "output": "info.json"}
+        r = common.fid_dump(**param)
+        with open("info.json") as f:
+            data = json.load(f)
+            return data["enclave-hash"]
 
 if __name__ == "__main__":
     name = "iris"

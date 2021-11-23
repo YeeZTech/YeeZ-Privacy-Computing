@@ -10,7 +10,7 @@
 
 using stx_status = stbox::stx_status;
 using parser_type_t = ypc::utc::parser_type_t;
-
+namespace ypc {
 class parser_sgx_module : public stbox::sgx_module {
 public:
   parser_sgx_module(const char *mod_path);
@@ -52,3 +52,4 @@ public:
 
   bool need_continue();
 };
+} // namespace ypc

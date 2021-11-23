@@ -49,9 +49,6 @@ int derive_key(const uint8_t *shared_key, size_t shared_key_len,
   if (se_ret) {
     return se_ret;
   }
-  LOG(INFO) << "cmac key: " << ypc::bytes(cmac_key, 16)
-            << ", shared_key: " << ypc::bytes(shared_key, shared_key_len)
-            << "key derive: " << key_derive_key;
 
   uint32_t derivation_buffer_length = EC_DERIVATION_BUFFER_SIZE(label_length);
   ypc::bytes p_derivation_buffer(derivation_buffer_length);
@@ -69,10 +66,6 @@ int derive_key(const uint8_t *shared_key, size_t shared_key_len,
   se_ret = sgx.rijndael128_cmac_msg(
       key_derive_key.data(), p_derivation_buffer.data(),
       derivation_buffer_length, derived_128bit_key);
-  LOG(INFO) << "label: " << ypc::bytes(label, label_length);
-  LOG(INFO) << "len: " << derivation_buffer_length;
-  LOG(INFO) << "1: " << key_derive_key << ", 2: " << p_derivation_buffer
-            << ", 3: " << ypc::bytes(derived_128bit_key, 16);
   if (se_ret) {
     return se_ret;
   }
@@ -221,7 +214,6 @@ public:
       LOG(ERROR) << "secp256k1_ecdh returns: " << (uint32_t)se_ret;
       return bytes();
     }
-    LOG(INFO) << "ecdh key: " << ec256_dh_shared_key;
     uint32_t aad_mac_len = strlen(aad_mac_text);
     bytes derived_key(16);
 
@@ -248,7 +240,6 @@ public:
     if (pkey.size() == 0) {
       return bytes();
     }
-    LOG(INFO) << "ecc_encrypt: skey: " << skey << ", pkey: " << pkey;
 
     bytes cipher(msg.size() + pkey.size() + 16);
 
@@ -281,7 +272,6 @@ public:
 
     auto data_size = cipher.size() - 16 - sizeof(secp256k1_pubkey);
     auto pkey = bytes(cipher.data() + data_size, sizeof(secp256k1_pubkey));
-    LOG(INFO) << "decrypt pkey: " << pkey;
     auto derived_key = ecdh_key(private_key, pkey);
     if (derived_key.size() == 0) {
       LOG(ERROR) << "derived_key invalid";
@@ -296,7 +286,6 @@ public:
 
     bytes data(data_size);
     ypc::openssl::sgx sgx;
-    LOG(INFO) << "decrypt key: " << derived_key;
     auto se_ret = sgx.rijndael128GCM_decrypt(
         derived_key.data(), cipher.data(), data_size, data.data(), p_iv_text,
         INITIALIZATION_VECTOR_SIZE, mac_text, AAD_MAC_TEXT_LEN,

@@ -19,7 +19,8 @@ parser_base::~parser_base() {}
 uint32_t parser_base::parse(const ypc::bytes &expect_data_hash) {
   m_sealer =
       std::make_shared<ypc::datahub_sgx_module>(m_sealer_enclave_path.c_str());
-  m_parser = std::make_shared<parser_sgx_module>(m_parser_enclave_path.c_str());
+  m_parser =
+      std::make_shared<ypc::parser_sgx_module>(m_parser_enclave_path.c_str());
   m_keymgr = std::make_shared<keymgr_sgx_module>(m_keymgr_enclave_path.c_str());
   LOG(INFO) << "initializing datahub/parser/keymgr module done";
 
@@ -120,7 +121,7 @@ bool parser_base::merge(
     m_sealer = std::make_shared<ypc::datahub_sgx_module>(
         m_sealer_enclave_path.c_str());
     m_parser =
-        std::make_shared<parser_sgx_module>(m_parser_enclave_path.c_str());
+        std::make_shared<ypc::parser_sgx_module>(m_parser_enclave_path.c_str());
 
     m_keymgr =
         std::make_shared<keymgr_sgx_module>(m_keymgr_enclave_path.c_str());

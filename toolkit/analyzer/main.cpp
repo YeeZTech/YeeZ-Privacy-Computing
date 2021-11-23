@@ -174,12 +174,13 @@ int main(int argc, char *argv[]) {
     }
     uint32_t ret = parser->parse(expect_data_hash);
     if (ret) {
-      std::cout << "got error: " << ypc::status_string(ret) << std::endl;
+      std::cerr << "got error: " << ypc::status_string(ret) << std::endl;
+      return ret;
     }
   } else {
     if (vm.count("extra-data-source")) {
       // TODO we may support this later.
-      std::cout << "do not support parallel mode with extra data source"
+      std::cerr << "do not support parallel mode with extra data source"
                 << std::endl;
       return -1;
     }

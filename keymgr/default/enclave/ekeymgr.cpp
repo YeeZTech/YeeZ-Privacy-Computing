@@ -194,6 +194,7 @@ uint32_t forward_message(uint32_t msg_id, uint8_t *cipher, uint32_t cipher_size,
   memcpy(all.data() + sizeof(msg_id) + cipher_size, epublic_key, epkey_size);
   memcpy(all.data() + sizeof(msg_id) + cipher_size + epkey_size, ehash,
          ehash_size);
+
   se_ret = (sgx_status_t)verify_signature(all.data(), all.size(), sig, sig_size,
                                           verify_key, vpkey_size);
   if (se_ret) {

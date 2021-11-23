@@ -52,8 +52,15 @@ def fid_data_provider(**kwargs):
     output = execute_cmd(cmd);
     return [cmd, output]
 
-def fid_yprepare(**kwargs):
-    cmd = os.path.join(bin_dir, "./yprepare")
+def fid_dump(**kwargs):
+    cmd = os.path.join(bin_dir, "./ydump")
+    for k, v in kwargs.items():
+        cmd = cmd + " --{} {}".format(k, v)
+    output = execute_cmd(cmd);
+    return [cmd, output]
+
+def fid_terminus(**kwargs):
+    cmd = os.path.join(bin_dir, "./yterminus")
     for k, v in kwargs.items():
         cmd = cmd + " --{} {}".format(k, v)
     output = execute_cmd(cmd);
