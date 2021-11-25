@@ -7,12 +7,12 @@ namespace terminus {
 single_data_onchain_result::single_data_onchain_result(crypto_pack *crypto)
     : interaction_base(crypto) {}
 
-single_data_onchain_result::response_t
-single_data_onchain_result::generate_response(const bytes &param,
-                                              const bytes &tee_pub_key,
-                                              const bytes &data_hash,
-                                              const bytes &enclave_hash,
-                                              const bytes &private_key) {
+single_data_onchain_result::request
+single_data_onchain_result::generate_request(const bytes &param,
+                                             const bytes &tee_pub_key,
+                                             const bytes &data_hash,
+                                             const bytes &enclave_hash,
+                                             const bytes &private_key) {
 
   auto pubkey = m_crypto->gen_ecc_public_key_from_private_key(private_key);
   ypc::bytes encrypted_param =
@@ -20,7 +20,7 @@ single_data_onchain_result::generate_response(const bytes &param,
 
   if (encrypted_param.size() == 0) {
     LOG(ERROR) << "encrypt param failed";
-    return response_t(ypc::bytes(), ypc::bytes(), ypc::bytes());
+    return request(ypc::bytes(), ypc::bytes(), ypc::bytes());
   }
   ypc::bytes encrypted_skey = m_crypto->ecc_encrypt(
       private_key, tee_pub_key, ypc::utc::crypto_prefix_forward);
@@ -31,7 +31,7 @@ single_data_onchain_result::generate_response(const bytes &param,
 
   auto sig = m_crypto->sign_message(to_sign_message, private_key);
 
-  return response_t(encrypted_param, encrypted_skey, sig);
+  return request(encrypted_param, encrypted_skey, sig);
 }
 
 ypc::bytes

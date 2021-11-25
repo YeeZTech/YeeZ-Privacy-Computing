@@ -1,3 +1,6 @@
 [submodule "vendor/fflib"]
 	path = vendor/fflib
 	url = https://github.com/AthrunArthur/fflib.git
+[submodule "vendor/pybind11"]
+	path = vendor/pybind11
+	url = https://github.com/pybind/pybind11.git

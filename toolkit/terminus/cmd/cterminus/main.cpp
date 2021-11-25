@@ -266,20 +266,20 @@ int main(int argc, char *argv[]) {
   result["program-enclave-hash"] =
       ypc::bytes(enclave_hash.data(), enclave_hash.size());
 
-  auto response = std_interaction.generate_response(param, tee_pubkey, dhash,
-                                                    enclave_hash, private_key);
-  if (response.encrypted_param.size() == 0) {
+  auto request = std_interaction.generate_request(param, tee_pubkey, dhash,
+                                                  enclave_hash, private_key);
+  if (request.encrypted_param.size() == 0) {
     std::cerr << "failed to encrypt param" << std::endl;
     return -1;
   }
-  if (response.signature.size() == 0) {
+  if (request.signature.size() == 0) {
     std::cerr << "failed to generate signature" << std::endl;
     return -1;
   }
 
-  result["encrypted-input"] = response.encrypted_param;
-  result["forward-sig"] = response.signature;
-  result["encrypted-skey"] = response.encrypted_skey;
+  result["encrypted-input"] = request.encrypted_param;
+  result["forward-sig"] = request.signature;
+  result["encrypted-skey"] = request.encrypted_skey;
 
   if (vm.count("output")) {
     std::string output_path =
