@@ -32,7 +32,8 @@ template <typename BytesType> struct make_bytes {
     pkg.arch(ld);
   }
   template <typename PackageType>
-  static BytesType for_package(const PackageType &pkg) {
+  static BytesType for_package(const PackageType &_pkg) {
+    PackageType &pkg = (PackageType &)_pkg;
     ff::net::marshaler lm(ff::net::marshaler::length_retriver);
     pkg.arch(lm);
 

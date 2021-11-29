@@ -277,3 +277,24 @@ uint32_t mend_session(uint32_t session_id) {
     return static_cast<uint32_t>(stx_status::error_unexpected);
   }
 }
+
+uint32_t create_report_for_pkey(const sgx_target_info_t *p_qe3_target,
+                                const uint8_t *pkey, uint32_t pkey_size,
+                                sgx_report_t *p_report) {
+  stbox::bytes skey;
+  auto se_ret = load_and_check_key_pair(pkey, pkey_size, skey);
+  LOG(INFO) << "start create report";
+  if (se_ret) {
+    LOG(ERROR) << "load and check key pair error: " << se_ret;
+    return se_ret;
+  }
+
+  sgx_report_data_t report_data = {0};
+  // TODO we may add more info here, like version
+  stbox::bytes hash = stbox::eth::keccak256_hash(stbox::bytes(pkey, pkey_size));
+  memcpy(report_data.d, hash.data(), hash.size());
+
+  sgx_status_t sgx_error =
+      sgx_create_report(p_qe3_target, &report_data, p_report);
+  return sgx_error;
+}

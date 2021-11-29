@@ -27,6 +27,11 @@ enclave {
 
     public uint32_t set_access_control_policy([in, size=in_size] uint8_t * policy, uint32_t in_size);
 
+    public uint32_t create_report_for_pkey([in]const sgx_target_info_t* p_qe3_target,
+                                           [in, size=pkey_size] const uint8_t * pkey,
+                                           uint32_t pkey_size,
+                                           [out]sgx_report_t* p_report);
+
     };
 
     untrusted {

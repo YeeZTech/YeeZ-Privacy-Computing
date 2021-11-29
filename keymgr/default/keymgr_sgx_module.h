@@ -59,4 +59,8 @@ public:
                                    const ypc::bytes &data_usage_license);
 
   uint32_t set_access_control_policy(const ypc::bytes &policy);
+
+  uint32_t create_report_for_pkey(const sgx_target_info_t *p_qe3_target,
+                                  const stbox::bytes &pkey,
+                                  sgx_report_t *p_report);
 };

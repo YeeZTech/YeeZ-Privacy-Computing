@@ -137,3 +137,12 @@ keymgr_sgx_module::set_access_control_policy(const ypc::bytes &policy) {
   return ecall<uint32_t>(::set_access_control_policy, (uint8_t *)policy.data(),
                          policy.size());
 }
+
+uint32_t
+keymgr_sgx_module::create_report_for_pkey(const sgx_target_info_t *p_qe3_target,
+                                          const stbox::bytes &pkey,
+                                          sgx_report_t *p_report) {
+
+  return ecall<uint32_t>(::create_report_for_pkey, p_qe3_target, pkey.data(),
+                         pkey.size(), p_report);
+}
