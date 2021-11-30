@@ -36,11 +36,18 @@
 #include "stdlib.h"
 #include "string.h"
 
-
 #define MAC_KEY_SIZE 16
 static uint8_t cmac_key[MAC_KEY_SIZE] = "yeez.tech.stbox";
 #define EC_DERIVATION_BUFFER_SIZE(label_length) ((label_length) + 4)
 
+#ifndef INTERNAL_SGX_ERROR_CODE_CONVERTOR
+#define INTERNAL_SGX_ERROR_CODE_CONVERTOR(x)                                   \
+  if (x != SGX_ERROR_OUT_OF_MEMORY) {                                          \
+    x = SGX_ERROR_UNEXPECTED;                                                  \
+  }
+#endif
+
+namespace stbox {
 sgx_status_t derive_key(const sgx_ec256_dh_shared_t *shared_key,
                         const char *label, uint32_t label_length,
                         sgx_ec_key_128bit_t *derived_key) {
@@ -94,3 +101,4 @@ sgx_status_t derive_key(const sgx_ec256_dh_shared_t *shared_key,
   }
   return se_ret;
 }
+} // namespace stbox

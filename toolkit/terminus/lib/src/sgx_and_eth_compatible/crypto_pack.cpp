@@ -210,6 +210,7 @@ public:
         secp256k1_ecdh(m_ctx, ec256_dh_shared_key.data(), &lpkey,
                        private_key.data(), ecdh_hash_function_sha256, NULL);
 
+
     if (!se_ret) {
       LOG(ERROR) << "secp256k1_ecdh returns: " << (uint32_t)se_ret;
       return bytes();
@@ -286,6 +287,7 @@ public:
 
     bytes data(data_size);
     ypc::openssl::sgx sgx;
+
     auto se_ret = sgx.rijndael128GCM_decrypt(
         derived_key.data(), cipher.data(), data_size, data.data(), p_iv_text,
         INITIALIZATION_VECTOR_SIZE, mac_text, AAD_MAC_TEXT_LEN,

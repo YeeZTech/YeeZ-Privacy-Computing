@@ -1,7 +1,17 @@
+#include "stbox/tsgx/crypto/ecc.h"
 #include "common/endian.h"
+#include "stbox/ebyte.h"
+#include "stbox/eth/eth_hash.h"
 #include "stbox/scope_guard.h"
 #include "stbox/stx_common.h"
+#include "stbox/stx_status.h"
+#include "stbox/tsgx/crypto/ecc_context.h"
 #include "stbox/tsgx/crypto/ecp_interface.h"
+#include "stbox/tsgx/log.h"
+#include "stbox/tsgx/secp256k1/secp256k1.h"
+#include "stbox/tsgx/secp256k1/secp256k1_ecdh.h"
+#include "stbox/tsgx/secp256k1/secp256k1_preallocated.h"
+#include "stbox/tsgx/secp256k1/secp256k1_recovery.h"
 #include <sgx_tcrypto.h>
 #include <sgx_trts.h>
 #include <sgx_tseal.h>
@@ -9,17 +19,6 @@
 #include <stdio.h> /* vsnprintf */
 #include <stdlib.h>
 #include <string.h>
-
-#include "stbox/ebyte.h"
-#include "stbox/eth/eth_hash.h"
-#include "stbox/stx_status.h"
-#include "stbox/tsgx/crypto/ecc.h"
-#include "stbox/tsgx/crypto/ecc_context.h"
-#include "stbox/tsgx/log.h"
-#include "stbox/tsgx/secp256k1/secp256k1.h"
-#include "stbox/tsgx/secp256k1/secp256k1_ecdh.h"
-#include "stbox/tsgx/secp256k1/secp256k1_preallocated.h"
-#include "stbox/tsgx/secp256k1/secp256k1_recovery.h"
 
 #define SECP256K1_PRIVATE_KEY_SIZE 32
 #define INITIALIZATION_VECTOR_SIZE 12
@@ -343,9 +342,9 @@ uint32_t gen_sgx_ec_key_128bit(const uint8_t *pkey, uint32_t pkey_size,
     return stbox::stx_status::ecc_secp256k1_ecdh_error;
   }
   uint32_t aad_mac_len = strlen(aad_mac_text);
-  se_ret =
-      (sgx_status_t)derive_key(&ec256_dh_shared_key, aad_mac_text, aad_mac_len,
-                               (sgx_ec_key_128bit_t *)derived_key);
+  se_ret = (sgx_status_t)::stbox::derive_key(
+      &ec256_dh_shared_key, aad_mac_text, aad_mac_len,
+      (sgx_ec_key_128bit_t *)derived_key);
   return se_ret;
 }
 } // namespace internal

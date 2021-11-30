@@ -25,11 +25,14 @@ boost::program_options::variables_map parse_command_line(int argc,
   all.add_options()
     ("help", "help message")
     ("gen-key", "generate a ECC key pair to encrypt/decrypt request")
+    ("encrypt-hex", bp::value<std::string>(), "to encrypt message with hex")
     ("no-password", "no password when gen-key")
     ("dhash", bp::value<std::string>(), "data hash, show data info with hash")
     ("tee-pubkey", bp::value<std::string>(), "TEE public key")
     ("use-privatekey-file", bp::value<std::string>(), "local private key file")
     ("use-privatekey-hex", bp::value<std::string>(), "local private key")
+    ("use-publickey-file", bp::value<std::string>(), "local private key file")
+    ("use-publickey-hex", bp::value<std::string>(), "local private key")
     ("use-param", bp::value<std::string>(), "param that need to be encrypted")
     ("param-format", bp::value<std::string>(), "[text|hex], default is [hex], param format")
     ("use-enclave-hash", bp::value<std::string>(), "parser enclave hash")
@@ -176,6 +179,41 @@ int decrypt_message(ypc::terminus::crypto_pack *crypto,
   return 0;
 }
 
+int encrypt_message(ypc::terminus::crypto_pack *crypto,
+                    const boost::program_options::variables_map &vm) {
+  ypc::bytes public_key;
+  if (!vm.count("use-publickey-file") && !vm.count("use-publickey-hex")) {
+    std::cerr << "missing public key, use 'use-publickey-file' or "
+                 "'use-publickey-hex'"
+              << std::endl;
+    exit(-1);
+  }
+  if (vm.count("use-publickey-hex")) {
+    public_key = ypc::hex_bytes(vm["use-publickey-hex"].as<std::string>())
+                     .as<ypc::bytes>();
+  } else if (vm.count("use-publickey-file")) {
+    boost::property_tree::ptree pt;
+    boost::property_tree::json_parser::read_json(
+        vm["use-publickey-file"].as<std::string>(), pt);
+    public_key = pt.get<ypc::bytes>("public-key");
+    std::cout << "public key: " << public_key << std::endl;
+  }
+
+  ypc::bytes message =
+      ypc::hex_bytes(vm["encrypt-hex"].as<std::string>()).as<ypc::bytes>();
+  ypc::bytes data = crypto->ecc_encrypt(message, public_key,
+                                        ypc::utc::crypto_prefix_arbitrary);
+  if (vm.count("output")) {
+    std::string output_path =
+        ypc::complete_path(vm["output"].as<std::string>());
+    std::ofstream os(output_path, std::ios::out | std::ios::binary);
+    os.write((const char *)data.data(), data.size());
+  } else {
+    std::cout << data << std::endl;
+  }
+  return 0;
+}
+
 int main(int argc, char *argv[]) {
   boost::program_options::variables_map vm;
   try {
@@ -194,6 +232,9 @@ int main(int argc, char *argv[]) {
 
   if (vm.count("decrypt-hex")) {
     return decrypt_message(crypto.get(), vm);
+  }
+  if (vm.count("encrypt-hex")) {
+    return encrypt_message(crypto.get(), vm);
   }
 
   if (!vm.count("dhash")) {
