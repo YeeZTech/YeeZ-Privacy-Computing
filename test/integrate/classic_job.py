@@ -5,12 +5,12 @@ import sys
 import json
 
 def get_first_key():
-    keys = ypcmd.fid_keymgr_list()
+    keys = common.fid_keymgr_list()
 
     if len(keys) == 0:
         ypcmd.fid_keymgr_create("test")
 
-    keys = ypcmd.fid_keymgr_list()
+    keys = common.fid_keymgr_list()
     pkey = ''
     for k, v in keys.items():
         pkey = v
