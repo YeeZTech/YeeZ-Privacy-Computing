@@ -8,7 +8,7 @@ def get_first_key():
     keys = common.fid_keymgr_list()
 
     if len(keys) == 0:
-        ypcmd.fid_keymgr_create("test")
+        common.fid_keymgr_create("test")
 
     keys = common.fid_keymgr_list()
     pkey = ''
