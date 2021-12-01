@@ -23,7 +23,12 @@ def execute_cmd(cmd):
     return p.stdout.read().decode('utf-8')
 
 def fid_keymgr_create(user_id):
-    pass
+    cmd = os.path.join(bin_dir, "./keymgr_tool")
+    param = {"create":"", "user-id":user_id}
+    for k, v in param.items():
+        cmd = cmd + " --{} {}".format(k, v)
+    output = execute_cmd(cmd);
+    return [cmd, output]
 
 def fid_keymgr_list():
     cmd = os.path.join(bin_dir, "./keymgr_tool")

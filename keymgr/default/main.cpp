@@ -11,6 +11,18 @@
 
 using namespace stbox;
 using ntt = ypc::nt<ypc::bytes>;
+bool is_user_id_valid(const std::string &user_id) {
+  std::string blacklists("!#$%^&*()-+=\\|`{}[]:;\"<>'?/");
+  for (auto c : blacklists) {
+    if (user_id.find(c) != std::string::npos) {
+      std::cerr << "can't have " << blacklists << ", yet found " << c
+                << std::endl;
+      return false;
+    }
+  }
+  return true;
+}
+
 boost::program_options::variables_map parse_command_line(int argc,
                                                          char *argv[]) {
   namespace bp = boost::program_options;
@@ -19,6 +31,7 @@ boost::program_options::variables_map parse_command_line(int argc,
   bp::options_description decrypt("YeeZ Decrypt options");
   bp::options_description sign("YeeZ Sign options");
   bp::options_description verify("YeeZ Verify options");
+  bp::options_description create("YeeZ Create Key options");
 
   // clang-format off
   all.add_options()
@@ -30,6 +43,9 @@ boost::program_options::variables_map parse_command_line(int argc,
     ("verify", bp::value<std::string>(), "verify a signature")
     ("encrypt", bp::value<std::string>(), "encrypt a message")
     ("decrypt", bp::value<std::string>(), "decrypt from cipher message");
+
+  create.add_options()
+    ("--user-id", bp::value<std::string>(), "user id for created key");
 
   sign.add_options()
     ("sign.hex", "message is hex enable")
@@ -47,7 +63,7 @@ boost::program_options::variables_map parse_command_line(int argc,
     ("decrypt.private-key", bp::value<std::string>(), "sealed private key which is to decrypt a cipher message");
   // clang-format on
 
-  all.add(encrypt).add(decrypt).add(sign).add(verify);
+  all.add(create).add(encrypt).add(decrypt).add(sign).add(verify);
   boost::program_options::variables_map vm;
   boost::program_options::store(
       boost::program_options::parse_command_line(argc, argv, all), vm);
@@ -60,7 +76,8 @@ boost::program_options::variables_map parse_command_line(int argc,
 }
 
 void create_key(const std::shared_ptr<keymgr_sgx_module> &ptr,
-                const std::string &key_dir) {
+                const std::string &key_dir,
+                const boost::program_options::variables_map &vm) {
   ypc::bref public_key, private_key;
   ptr->generate_secp256k1_key_pair(public_key, private_key);
   ypc::bytes pkey(public_key.data(), public_key.len());
@@ -77,9 +94,18 @@ void create_key(const std::shared_ptr<keymgr_sgx_module> &ptr,
           .count();
   ntt::keymgr_key_package_t key;
   key.set<ntt::pkey, ntt::sealed_skey, ntt::timestamp>(pkey, skey, s);
-  std::cout << "Input user id: ";
   std::string userid;
-  std::cin >> userid;
+  if (vm.count("user-id")) {
+    userid = vm["user-id"].as<std::string>();
+  } else {
+    std::cout << "Input user id: ";
+    std::cin >> userid;
+  }
+
+  bool v = is_user_id_valid(userid);
+  if (!v) {
+    return;
+  }
 
   // TODO check userid
   key.set<ntt::user_id>(userid);
@@ -278,7 +304,7 @@ int main(int argc, char *argv[]) {
   std::string bak_dir = create_dir_if_not_exist(".yeez.key/", "backup/");
 
   if (vm.count("create")) {
-    create_key(ptr, key_dir);
+    create_key(ptr, key_dir, vm);
     return 0;
   }
 

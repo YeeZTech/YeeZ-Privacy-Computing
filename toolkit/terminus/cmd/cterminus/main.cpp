@@ -206,8 +206,9 @@ int encrypt_message(ypc::terminus::crypto_pack *crypto,
   if (vm.count("output")) {
     std::string output_path =
         ypc::complete_path(vm["output"].as<std::string>());
-    std::ofstream os(output_path, std::ios::out | std::ios::binary);
-    os.write((const char *)data.data(), data.size());
+    std::ofstream os(output_path, std::ios::out);
+    os << data;
+    // os.write((const char *)data.data(), data.size());
   } else {
     std::cout << data << std::endl;
   }
