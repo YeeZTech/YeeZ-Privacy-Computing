@@ -4,6 +4,19 @@ import os
 import sys
 import json
 
+def get_first_key():
+    keys = ypcmd.fid_keymgr_list()
+
+    if len(keys) == 0:
+        ypcmd.fid_keymgr_create("test")
+
+    keys = ypcmd.fid_keymgr_list()
+    pkey = ''
+    for k, v in keys.items():
+        pkey = v
+        break;
+    return pkey
+
 class classic_job:
 
     def __init__(self, name, data_url, parser_url, plugin_url, input_param):
@@ -34,11 +47,7 @@ class classic_job:
         print("done seal data with hash: {}, cmd: {}".format(data_hash, r[0]))
 
         #use first pkey
-        keys = common.fid_keymgr_list()
-        pkey = ''
-        for k, v in keys.items():
-            pkey = v
-            break;
+        pkey = get_first_key()
 
         sample_json = {"data":[{"data-hash":data_hash, "provider-pkey":pkey}]}
 
