@@ -45,7 +45,7 @@ boost::program_options::variables_map parse_command_line(int argc,
     ("decrypt", bp::value<std::string>(), "decrypt from cipher message");
 
   create.add_options()
-    ("--user-id", bp::value<std::string>(), "user id for created key");
+    ("user-id", bp::value<std::string>(), "user id for created key");
 
   sign.add_options()
     ("sign.hex", "message is hex enable")
