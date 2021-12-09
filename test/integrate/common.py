@@ -73,8 +73,9 @@ def fid_terminus(**kwargs):
 
 def fid_analyzer(**kwargs):
     cmd = os.path.join(bin_dir, "./fid_analyzer")
+    cmd = "GLOG_logtostderr=1 " + cmd
     for k, v in kwargs.items():
-        cmd = "GLOG_logtostderr=1 " + cmd + " --{} {}".format(k, v)
+        cmd = cmd + " --{} {}".format(k, v)
     output = execute_cmd(cmd);
     return [cmd, output]
 

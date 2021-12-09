@@ -19,10 +19,12 @@ bool is_certified_signer(
   // check the enclave isn't loaded in enclave debug mode, except that the
   // project is built for debug purpose
 #ifdef NDEBUG
+#ifndef EDEBUG // disable check in PreRelease mode
   if (peer_enclave_identity->attributes.flags & SGX_FLAGS_DEBUG) {
     LOG(ERROR) << "shouldn't loaded as DEBUG";
     return false;
   }
+#endif
 #endif
 
   if (!policy) {
