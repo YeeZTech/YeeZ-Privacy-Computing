@@ -100,6 +100,7 @@ uint32_t parser_wrapper_base::request_private_key() {
     LOG(ERROR) << "error for generate_secp256k1_pkey_from_skey: " << status;
     return status;
   }
+  LOG(INFO) << "using private key whose public key is: " << m_pkey4v;
 
   return status;
 }
