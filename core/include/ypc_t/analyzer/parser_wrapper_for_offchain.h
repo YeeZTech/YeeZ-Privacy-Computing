@@ -101,11 +101,12 @@ public:
     stbox::bytes cost_gas_str(sizeof(m_cost_gas));
     memcpy((uint8_t *)&cost_gas_str[0], (uint8_t *)&m_cost_gas,
            sizeof(m_cost_gas));
+    ypc::utc::endian_swap(cost_gas_str);
     m_result_signature_str = stbox::bytes(sig_size);
     m_cost_signature_str = stbox::bytes(sig_size);
 
-    auto cost_msg =
-        m_encrypted_param + m_data_source->data_hash() + cost_gas_str;
+    auto cost_msg = m_encrypted_param + m_data_source->data_hash() +
+                    m_enclave_hash + cost_gas_str;
     status = stbox::crypto::sign_message(
         (uint8_t *)m_private_key.data(), m_private_key.size(),
         (uint8_t *)&cost_msg[0], cost_msg.size(),
@@ -115,8 +116,9 @@ public:
       return status;
     }
 
-    auto msg = m_encrypted_c + hash_m + m_data_source->data_hash() +
-               cost_gas_str + m_enclave_hash + m_encrypted_param;
+    auto msg = m_encrypted_c + hash_m + m_encrypted_param +
+               m_data_source->data_hash() + cost_gas_str + m_enclave_hash;
+
     status = stbox::crypto::sign_message(
         (uint8_t *)m_private_key.data(), m_private_key.size(),
         (uint8_t *)&msg[0], msg.size(), (uint8_t *)&m_result_signature_str[0],

@@ -50,7 +50,7 @@ public:
   void
   add_to_handle_pkg(const std::function<void(std::shared_ptr<PkgType>)> &f) {
     auto p = [f](const uint8_t *buf, size_t s) {
-      sgx_marshaler m((const char *)buf, s, sgx_marshaler::deseralizer);
+      sgx_marshaler m((const char *)buf, s, sgx_marshaler::deserializer);
       std::shared_ptr<PkgType> pkg(new PkgType());
       pkg->arch(m);
       f(pkg);

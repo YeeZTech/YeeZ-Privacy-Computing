@@ -104,7 +104,7 @@ public:
       *len = static_cast<int>(lm.get_length());
     }
     if (buf) {
-      ff::net::marshaler sm(buf, *len, ff::net::marshaler::seralizer);
+      ff::net::marshaler sm(buf, *len, ff::net::marshaler::serializer);
       v.arch(sm);
     }
     return 0;

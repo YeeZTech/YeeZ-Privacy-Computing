@@ -40,7 +40,7 @@
     auto ret = pw.get_analyze_result(pkg);                                     \
                                                                                \
     ff::net::marshaler ld((char *)res, res_size,                               \
-                          ff::net::marshaler::seralizer);                      \
+                          ff::net::marshaler::serializer);                     \
     pkg.arch(ld);                                                              \
     return ret;                                                                \
   }                                                                            \

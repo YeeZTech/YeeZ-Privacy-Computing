@@ -15,7 +15,7 @@ template <typename BytesType> struct make_bytes {
 
     BytesType ret(lm.get_length());
     ff::net::marshaler ld((char *)ret.data(), ret.size(),
-                          ff::net::marshaler::seralizer);
+                          ff::net::marshaler::serializer);
     p.arch(ld);
     return ret;
   }
@@ -28,7 +28,7 @@ template <typename BytesType> struct make_bytes {
 
     BytesType ret(lm.get_length());
     ff::net::marshaler ld((char *)data, data_size,
-                          ff::net::marshaler::seralizer);
+                          ff::net::marshaler::serializer);
     pkg.arch(ld);
   }
   template <typename PackageType>
@@ -39,7 +39,7 @@ template <typename BytesType> struct make_bytes {
 
     BytesType ret(lm.get_length());
     ff::net::marshaler ld((char *)ret.data(), ret.size(),
-                          ff::net::marshaler::seralizer);
+                          ff::net::marshaler::serializer);
     pkg.arch(ld);
     return ret;
   }
@@ -50,7 +50,7 @@ template <typename PackageType> struct make_package {
   static PackageType from_bytes(const BytesType &data) {
     PackageType ret;
     ::ff::net::marshaler ar((char *)data.data(), data.size(),
-                            ::ff::net::marshaler::deseralizer);
+                            ::ff::net::marshaler::deserializer);
     ret.arch(ar);
     return ret;
   }
@@ -58,7 +58,7 @@ template <typename PackageType> struct make_package {
   static PackageType from_bytes(const ByteType *data, uint32_t data_size) {
     PackageType ret;
     ::ff::net::marshaler ar((char *)data, data_size,
-                            ::ff::net::marshaler::deseralizer);
+                            ::ff::net::marshaler::deserializer);
     ret.arch(ar);
     return ret;
   }

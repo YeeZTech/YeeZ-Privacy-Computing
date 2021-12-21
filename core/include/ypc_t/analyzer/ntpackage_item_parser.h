@@ -18,7 +18,7 @@ namespace ypc {
 
       package_t pt;
       ff::net::marshaler dm((const char *)data, len,
-                            ff::net::marshaler::deseralizer);
+                            ff::net::marshaler::deserializer);
       pt.arch(dm);
       UserItemT ret(pt);
       return ret;

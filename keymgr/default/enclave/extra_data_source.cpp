@@ -29,7 +29,7 @@ uint32_t forward_extra_data_usage_license(
   typedef ypc::datahub::data_host<stbox::bytes> dhost_t;
   dhost_t::usage_license_package_t lp;
   ::ff::net::marshaler ar((char *)usage_license, license_size,
-                          ::ff::net::marshaler::deseralizer);
+                          ::ff::net::marshaler::deserializer);
   ar.archive(lp);
 
   stbox::bytes data_hash(_data_hash, hash_size);

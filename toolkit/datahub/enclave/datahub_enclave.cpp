@@ -150,13 +150,13 @@ stbox::stx_status verify_peer_enclave_trust(
 stbox::bytes get_data_and_unseal(const uint8_t *data_buf, size_t data_len,
                                  stbox::dh_session *context) {
   uint32_t type_id;
-  ::ff::net::deseralize((const char *)data_buf, type_id);
+  ::ff::net::deserialize((const char *)data_buf, type_id);
   if (type_id != request_data_item) {
     LOG(ERROR) << "invalid type id " << type_id;
 
     char buf[256];
     ctrl_pkg_t p;
-    sgx_marshaler m(buf, 256, sgx_marshaler::seralizer);
+    sgx_marshaler m(buf, 256, sgx_marshaler::serializer);
     p.arch(m);
     size_t len = m.get_length();
     return stbox::bytes(buf, len);
@@ -189,7 +189,7 @@ stbox::bytes get_data_and_unseal(const uint8_t *data_buf, size_t data_len,
     if (ret != stx_status::success) {
       char buf[256];
       ctrl_pkg_t p;
-      sgx_marshaler m(buf, 256, sgx_marshaler::seralizer);
+      sgx_marshaler m(buf, 256, sgx_marshaler::serializer);
       p.arch(m);
       size_t len = m.get_length();
       return stbox::bytes(buf, len);
@@ -210,7 +210,7 @@ stbox::bytes get_data_and_unseal(const uint8_t *data_buf, size_t data_len,
       p.arch(lm);
       stbox::bytes ret(lm.get_length());
 
-      sgx_marshaler m((char *)&ret[0], ret.size(), sgx_marshaler::seralizer);
+      sgx_marshaler m((char *)&ret[0], ret.size(), sgx_marshaler::serializer);
       p.arch(m);
       return ret;
     }

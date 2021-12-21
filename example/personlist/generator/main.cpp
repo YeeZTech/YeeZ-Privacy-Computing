@@ -60,7 +60,7 @@ void write_to_file(const std::string &path, int num) {
     t.arch(lr);
     size_t len = lr.get_length();
     char *buf = new char[len];
-    ff::net::marshaler m(buf, len, ff::net::marshaler::seralizer);
+    ff::net::marshaler m(buf, len, ff::net::marshaler::serializer);
     t.arch(m);
     f.append_item(buf, len);
     delete[] buf;
@@ -78,7 +78,7 @@ void check_file(const std::string &path) {
   while (f.next_item(r)) {
 
     ff::net::marshaler m((char *)r.data(), r.size(),
-                         ff::net::marshaler::deseralizer);
+                         ff::net::marshaler::deserializer);
     row_t t;
     t.arch(m);
     // std::cout << t.get<ZJHM>() << std::endl;

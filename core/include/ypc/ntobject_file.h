@@ -34,7 +34,7 @@ public:
     memset(buf, 0, size);
     fs.read(buf, size);
     stbox::print_hex((uint8_t *)buf, size);
-    ff::net::marshaler m(buf, size, ff::net::marshaler::deseralizer);
+    ff::net::marshaler m(buf, size, ff::net::marshaler::deserializer);
     m_sfm_data.arch(m);
     delete[] buf;
 
@@ -52,7 +52,7 @@ public:
     size_t len = m.get_length();
     char *buf = new char[len];
 
-    ff::net::marshaler sm(buf, len, ff::net::marshaler::seralizer);
+    ff::net::marshaler sm(buf, len, ff::net::marshaler::serializer);
     m_sfm_data.arch(sm);
 
     fs.write(buf, len);

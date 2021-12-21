@@ -210,7 +210,7 @@ generate_data_usage_license(uint8_t *credential, uint32_t credential_size,
     dhost_t::credential_package_t cred;
     {
       ff::net::marshaler lm((const char *)credential, credential_size,
-                            ff::net::marshaler::deseralizer);
+                            ff::net::marshaler::deserializer);
       cred.arch(lm);
     }
 
