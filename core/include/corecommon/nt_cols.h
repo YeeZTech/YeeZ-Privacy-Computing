@@ -18,6 +18,8 @@ template <typename BytesType> struct nt {
 
   define_nt(extra_data_group_name, std::string);
   define_nt(extra_data_hashes, std::vector<BytesType>);
+  define_nt(msg, std::string);
+  define_nt(succ, bool);
 
   typedef ::ff::net::ntpackage<0x35d22084, extra_data_group_name,
                                extra_data_hashes>
@@ -47,5 +49,7 @@ template <typename BytesType> struct nt {
   define_nt(access_list, std::vector<access_item_t>);
   typedef ::ff::net::ntpackage<0x3c92350f, access_list_type, access_list>
       access_list_package_t;
+
+  typedef ::ff::net::ntpackage<0, succ, msg, data> auth_parser_response_pkg_t;
 };
 } // namespace ypc
