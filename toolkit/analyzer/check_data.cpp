@@ -6,7 +6,6 @@
 #include "ypc/privacy_data_reader.h"
 #include "ypc/sealed_file.h"
 #include "ypc/sgx/datahub_sgx_module.h"
-#include "ypc/sha.h"
 #include "ypc/status.h"
 #include <boost/program_options.hpp>
 #include <exception>

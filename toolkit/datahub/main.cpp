@@ -5,7 +5,6 @@
 #include "ypc/privacy_data_reader.h"
 #include "ypc/sealed_file.h"
 #include "ypc/sgx/datahub_sgx_module.h"
-#include "ypc/sha.h"
 #include <boost/program_options.hpp>
 #include <boost/progress.hpp>
 #include <exception>
@@ -137,7 +136,6 @@ void seal_file(const std::string &plugin, const std::string &file,
     sf.write_item(s);
     stbox::bytes k = data_hash + item_data;
     data_hash = stbox::eth::keccak256_hash(k);
-    // data_hash = SHA256(s.c_str(), s.size());
     item_data = reader.read_item_data();
     ++pd;
     ++counter;

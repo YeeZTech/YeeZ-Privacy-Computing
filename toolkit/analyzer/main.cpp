@@ -6,7 +6,6 @@
 #include "ypc/configuration.h"
 #include "ypc/ntobject_file.h"
 #include "ypc/sealed_file.h"
-#include "ypc/sha.h"
 #include <boost/program_options.hpp>
 #include <exception>
 #include <fstream>
