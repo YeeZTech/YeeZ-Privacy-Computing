@@ -1,3 +1,4 @@
+
 enclave  {
     include "sgx_eid.h"
     from "stbox.edl" import *;

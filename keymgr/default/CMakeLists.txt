@@ -1,7 +1,7 @@
 add_subdirectory(enclave)
 
 
-set(edl_path ${PROJECT_SOURCE_DIR}/stbox/src/tsgx/crypto/:${PROJECT_SOURCE_DIR}/stbox/src)
+set(edl_path ${PROJECT_SOURCE_DIR}/core/edl/:${PROJECT_SOURCE_DIR}/stbox/src)
 
 add_untrusted_library(keymgr_module SHARED
   SRCS "keymgr_sgx_module.cpp"

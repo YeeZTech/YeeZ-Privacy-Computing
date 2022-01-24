@@ -1,4 +1,3 @@
-/* Enclave.edl - Top EDL file. */
 
 enclave {
     include "sgx_eid.h"
