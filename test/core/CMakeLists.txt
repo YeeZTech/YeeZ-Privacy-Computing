@@ -19,7 +19,7 @@ target_link_libraries(gtest_core gtest ypc_core stbox_common_u)
 add_test(NAME test-core
   COMMAND gtest_core)
 
-set(edl_path ${PROJECT_SOURCE_DIR}/stbox/src/tsgx/crypto/:${PROJECT_SOURCE_DIR}/stbox/src)
+set(edl_path ${PROJECT_SOURCE_DIR}/core/edl/:${PROJECT_SOURCE_DIR}/stbox/src)
 
 
 add_untrusted_library(test_ypc_lib SHARED

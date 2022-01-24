@@ -1,7 +1,7 @@
 add_subdirectory(enclave)
 
 set(src main.cpp gtest_crypto.cpp)
-set(edl_path ${PROJECT_SOURCE_DIR}/stbox/src/tsgx/crypto/:${PROJECT_SOURCE_DIR}/stbox/src)
+set(edl_path ${PROJECT_SOURCE_DIR}/core/edl/:${PROJECT_SOURCE_DIR}/stbox/src)
 
 
 add_untrusted_library(test_crypto_lib SHARED
