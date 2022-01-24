@@ -6,7 +6,6 @@ add_executable(gtest_core
   gtest_byte.cpp
   gtest_base58.cpp
   gtest_base64.cpp
-  gtest_sha.cpp
   gtest_command_executor.cpp
   gtest_filesystem.cpp
   gtest_configuration.cpp
