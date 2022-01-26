@@ -9,9 +9,6 @@
 #include "stbox/scope_guard.h"
 #include "stbox/stx_common.h"
 #include <sgx_report.h>
-#include <sgx_tcrypto.h>
-#include <sgx_trts.h>
-#include <sgx_tseal.h>
 #include <sgx_utils.h>
 
 #include "common.h"
@@ -20,10 +17,10 @@
 #include "stbox/eth/eth_hash.h"
 #include "stbox/tsgx/channel/dh_session_responder.h"
 #include "stbox/tsgx/crypto/ecc.h"
+#include "stbox/tsgx/crypto/seal.h"
+#include "stbox/tsgx/crypto/seal_sgx.h"
+#include "stbox/tsgx/crypto/secp256k1/ecc_secp256k1.h"
 #include "stbox/tsgx/log.h"
-#include "stbox/tsgx/secp256k1/secp256k1.h"
-#include "stbox/tsgx/secp256k1/secp256k1_ecdh.h"
-#include "stbox/tsgx/secp256k1/secp256k1_recovery.h"
 #include "ypc_t/ecommon/signer_verify.h"
 
 #define SECP256K1_PRIVATE_KEY_SIZE 32
@@ -36,6 +33,10 @@ extern "C" {
 
 using stx_status = stbox::stx_status;
 using scope_guard = stbox::scope_guard;
+using intel_sgx = stbox::crypto::intel_sgx;
+using secp256k1 = stbox::crypto::secp256k1;
+using ecc = stbox::crypto::ecc<secp256k1>;
+using raw_ecc = stbox::crypto::raw_ecc<secp256k1>;
 using namespace stbox;
 // using namespace stbox::crypto;
 
@@ -99,28 +100,28 @@ uint32_t mexchange_report(sgx_dh_msg2_t *dh_msg2, sgx_dh_msg3_t *dh_msg3,
 
 uint32_t load_key_pair_if_not_exist(uint8_t *pkey_ptr, uint32_t pkey_size,
                                     uint8_t *skey_ptr, uint32_t *skey_size) {
-  *skey_size = stbox::crypto::get_secp256k1_private_key_size();
+  *skey_size = ecc::get_private_key_size();
   if (!skey_ptr) {
     return SGX_SUCCESS;
   }
 
-  uint32_t sealed_size = get_secp256k1_sealed_private_key_size();
-  uint8_t *sealed_key;
-  ff::scope_guard _sealed_key_ptr_desc(
-      [&]() { sealed_key = new uint8_t[sealed_size]; },
-      [&]() { delete[] sealed_key; });
+  uint32_t sealed_size = stbox::crypto::device_sealer<
+      stbox::crypto::intel_sgx>::get_sealed_data_size(*skey_size);
+  stbox::bytes sealed_key(sealed_size);
 
   std::string key_path(".yeez.key/");
   uint32_t ret = stbox::ocall_cast<uint32_t>(ocall_load_key_pair)(
-      key_path.c_str(), key_path.size(), pkey_ptr, pkey_size, sealed_key,
+      key_path.c_str(), key_path.size(), pkey_ptr, pkey_size, sealed_key.data(),
       sealed_size);
   if (ret != 0) {
     LOG(ERROR) << "failed to load key pair: " << stbox::status_string(ret);
     return ret;
   }
 
-  ret = stbox::crypto::unseal_secp256k1_private_key(sealed_key, sealed_size,
-                                                    skey_ptr);
+  ret = stbox::crypto::raw_device_sealer<stbox::crypto::intel_sgx>::unseal_data(
+      sealed_key.data(), sealed_key.size(), skey_ptr, *skey_size);
+  // unseal_secp256k1_private_key(sealed_key, sealed_size,
+  // skey_ptr);
   return ret;
 }
 
@@ -140,9 +141,8 @@ uint32_t load_and_check_key_pair(const uint8_t *pkey, uint32_t pkey_size,
     return se_ret;
   }
 
-  stbox::bytes expect_pkey(stbox::crypto::get_secp256k1_public_key_size());
-  stbox::crypto::generate_secp256k1_pkey_from_skey(
-      skey.data(), expect_pkey.data(), expect_pkey.size());
+  stbox::bytes expect_pkey;
+  ecc::generate_pkey_from_skey(skey, expect_pkey);
   if (memcmp(expect_pkey.data(), pkey, expect_pkey.size()) != 0) {
     return stbox::stx_status::kmgr_pkey_skey_mismatch;
   }
@@ -176,9 +176,9 @@ uint32_t forward_message(uint32_t msg_id, uint8_t *cipher, uint32_t cipher_size,
   }
 
   uint32_t decrypted_size =
-      ::stbox::crypto::get_decrypt_message_size_with_prefix(cipher_size);
+      ecc::get_decrypt_message_size_with_prefix(cipher_size);
   stbox::bytes decrypted_msg(decrypted_size);
-  se_ret = (sgx_status_t)::stbox::crypto::decrypt_message_with_prefix(
+  se_ret = (sgx_status_t)raw_ecc::decrypt_message_with_prefix(
       skey.data(), skey.size(), cipher, cipher_size, decrypted_msg.data(),
       decrypted_size, ::ypc::utc::crypto_prefix_forward);
 
@@ -195,8 +195,8 @@ uint32_t forward_message(uint32_t msg_id, uint8_t *cipher, uint32_t cipher_size,
   memcpy(all.data() + sizeof(msg_id) + cipher_size + epkey_size, ehash,
          ehash_size);
 
-  se_ret = (sgx_status_t)verify_signature(all.data(), all.size(), sig, sig_size,
-                                          verify_key, vpkey_size);
+  se_ret = (sgx_status_t)raw_ecc::verify_signature(
+      all.data(), all.size(), sig, sig_size, verify_key, vpkey_size);
   if (se_ret) {
     LOG(ERROR) << "Invalid signature";
     return se_ret;

@@ -9,10 +9,16 @@
 #include "stbox/scope_guard.h"
 #include "stbox/stx_common.h"
 #include "stbox/tsgx/crypto/ecc.h"
+#include "stbox/tsgx/crypto/seal.h"
+#include "stbox/tsgx/crypto/seal_sgx.h"
+#include "stbox/tsgx/crypto/secp256k1/ecc_secp256k1.h"
 #include "stbox/tsgx/log.h"
+
 using stx_status = stbox::stx_status;
-// extern char aad_mac_text[64];
 using scope_guard = stbox::scope_guard;
+using ecc = stbox::crypto::ecc<stbox::crypto::secp256k1>;
+using raw_ecc = stbox::crypto::raw_ecc<stbox::crypto::secp256k1>;
+using sealer = stbox::crypto::raw_device_sealer<stbox::crypto::intel_sgx>;
 using namespace stbox;
 
 typedef ypc::datahub::data_host<stbox::bytes> dhost_t;
@@ -22,13 +28,8 @@ public:
   hosting_data() {}
 
   uint32_t init() {
-    auto s = stbox::crypto::get_secp256k1_private_key_size();
-    m_skey = stbox::bytes(s);
-    stbox::crypto::gen_secp256k1_skey(m_skey.size(), m_skey.data());
-    s = stbox::crypto::get_secp256k1_public_key_size();
-    m_pkey = stbox::bytes(s);
-    stbox::crypto::generate_secp256k1_pkey_from_skey(
-        m_skey.data(), m_pkey.data(), m_pkey.size());
+    ecc::gen_private_key(m_skey);
+    ecc::generate_pkey_from_skey(m_skey, m_pkey);
 
     m_data_hash = stbox::eth::keccak256_hash(stbox::bytes("Fidelius"));
     return 0;
@@ -37,7 +38,7 @@ public:
   uint32_t get_encrypted_sealed_data_size(const uint8_t *sealed_data,
                                           uint32_t sealed_size) {
     uint32_t data_size = unsealed_data_len(sealed_data, sealed_size);
-    return stbox::crypto::get_encrypt_message_size_with_prefix(data_size);
+    return ecc::get_encrypt_message_size_with_prefix(data_size);
   }
 
   uint32_t encrypt_sealed_data(const uint8_t *sealed_data,
@@ -58,7 +59,7 @@ public:
       return status;
     }
 
-    uint32_t istatus = stbox::crypto::encrypt_message_with_prefix(
+    uint32_t istatus = raw_ecc::encrypt_message_with_prefix(
         m_pkey.data(), m_pkey.size(), d.data(), d.size(),
         ::ypc::utc::crypto_prefix_host_data, encrypted_data,
         encrypted_data_size);
@@ -86,11 +87,9 @@ public:
     ret.set<dhost_t::data_hash>(m_data_hash);
 
     {
-      auto len = stbox::crypto::get_secp256k1_signature_size();
-      stbox::bytes sig(len);
+      stbox::bytes sig;
       stbox::bytes data = m_pkey + m_skey + m_data_hash;
-      stbox::crypto::sign_message(m_skey.data(), m_skey.size(), data.data(),
-                                  data.size(), sig.data(), sig.size());
+      ecc::sign_message(m_skey, data, sig);
       ret.set<dhost_t::signature>(sig);
     }
 
@@ -110,25 +109,21 @@ public:
     sgx_status_t status = unseal_data(sealed_skey.data(), sealed_skey.size(),
                                       skey.data(), skey.size());
 
-    stbox::bytes data =
-        encrypted_param + enclave_hash + pkey4v + tee_pkey + data_hash;
-
-    auto len = stbox::crypto::get_secp256k1_signature_size();
-    stbox::bytes sig(len);
-    stbox::crypto::sign_message(skey.data(), skey.size(), data.data(),
-                                data.size(), sig.data(), sig.size());
-
     dhost_t::usage_license_package_t ret;
-    ret.set<dhost_t::signature>(std::move(sig));
 
-    auto eskey_len =
-        stbox::crypto::get_encrypt_message_size_with_prefix(skey.size());
+    {
+      stbox::bytes sig;
+      stbox::bytes data =
+          encrypted_param + enclave_hash + pkey4v + tee_pkey + data_hash;
+      ecc::sign_message(skey, data, sig);
+      ret.set<dhost_t::signature>(std::move(sig));
+    }
+
+    auto eskey_len = ecc::get_encrypt_message_size_with_prefix(skey.size());
     stbox::bytes eskey(eskey_len);
 
-    uint32_t istatus = stbox::crypto::encrypt_message_with_prefix(
-        tee_pkey.data(), tee_pkey.size(), skey.data(), skey.size(),
-        ::ypc::utc::crypto_prefix_host_data_private_key, eskey.data(),
-        eskey.size());
+    uint32_t istatus = ecc::encrypt_message_with_prefix(
+        tee_pkey, skey, ::ypc::utc::crypto_prefix_host_data_private_key, eskey);
 
     ret.set<dhost_t::encrypted_skey>(eskey);
     return ret;
@@ -183,14 +178,13 @@ uint32_t get_encrypted_data_credential(uint8_t *credential,
 }
 
 uint32_t get_data_usage_license_size() {
-  auto len = stbox::crypto::get_secp256k1_signature_size();
+  auto len = ecc::get_signature_size();
   stbox::bytes sig(len);
   dhost_t::usage_license_package_t ret;
   ret.set<dhost_t::signature>(std::move(sig));
 
-  auto skey_size = stbox::crypto::get_secp256k1_private_key_size();
-  auto eskey_len =
-      stbox::crypto::get_encrypt_message_size_with_prefix(skey_size);
+  auto skey_size = ecc::get_private_key_size();
+  auto eskey_len = ecc::get_encrypt_message_size_with_prefix(skey_size);
   stbox::bytes eskey(eskey_len);
 
   ret.set<dhost_t::encrypted_skey>(eskey);

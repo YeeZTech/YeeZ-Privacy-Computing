@@ -4,6 +4,7 @@
 #include "stbox/stx_status.h"
 #include "stbox/tsgx/channel/dh_session_initiator.h"
 #include "stbox/tsgx/crypto/ecc.h"
+#include "stbox/tsgx/crypto/secp256k1/ecc_secp256k1.h"
 #include "stbox/tsgx/log.h"
 #include "stbox/tsgx/ocall.h"
 #include "ypc_t/analyzer/ntpackage_item_parser.h"
@@ -11,6 +12,9 @@
 #include "ypc_t/analyzer/sealed_raw_data.h"
 #include "ypc_t/ecommon/package.h"
 #include <string.h>
+
+using ecc = stbox::crypto::ecc<stbox::crypto::secp256k1>;
+using raw_ecc = stbox::crypto::raw_ecc<stbox::crypto::secp256k1>;
 
 namespace ypc {
 
@@ -56,61 +60,42 @@ public:
     }
     // m_encrypted_result_str is the first round encrypt
 
-    auto skey_size = stbox::crypto::get_secp256k1_private_key_size();
-    auto pkey_size = stbox::crypto::get_secp256k1_public_key_size();
+    stbox::bytes skey;
 
-    stbox::bytes skey(skey_size);
-
-    stbox::crypto::gen_secp256k1_skey(skey_size, skey.data());
-    stbox::bytes pkey(pkey_size);
-    stbox::crypto::generate_secp256k1_pkey_from_skey(skey.data(), pkey.data(),
-                                                     pkey_size);
+    ecc::gen_private_key(skey);
+    stbox::bytes pkey;
+    ecc::generate_pkey_from_skey(skey, pkey);
 
     auto rs = m_encrypted_result_str;
-    uint32_t cipher_size =
-        stbox::crypto::get_encrypt_message_size_with_prefix(rs.size());
-    m_encrypted_result_str = bytes(cipher_size);
 
-    auto status = stbox::crypto::encrypt_message_with_prefix(
-        pkey.data(), pkey_size, rs.data(), rs.size(),
-        utc::crypto_prefix_arbitrary, (uint8_t *)&m_encrypted_result_str[0],
-        cipher_size);
+    auto status = ecc::encrypt_message_with_prefix(
+        pkey, rs, utc::crypto_prefix_arbitrary, m_encrypted_result_str);
+
     if (status != stbox::stx_status::success) {
       LOG(ERROR) << "error for encrypt_message: " << status;
       return status;
     }
     auto hash_m = stbox::eth::keccak256_hash(m_encrypted_result_str);
 
-    stbox::bytes pkey_a(pkey_size);
-    status = stbox::crypto::generate_secp256k1_pkey_from_skey(
-        (const uint8_t *)&m_private_key[0], (uint8_t *)&pkey_a[0], pkey_size);
+    stbox::bytes pkey_a;
+    status = ecc::generate_pkey_from_skey(m_private_key, pkey_a);
 
-    cipher_size =
-        stbox::crypto::get_encrypt_message_size_with_prefix(skey.size());
-    m_encrypted_c = stbox::bytes(cipher_size);
-    status = stbox::crypto::encrypt_message_with_prefix(
-        pkey_a.data(), pkey_size, skey.data(), skey.size(),
-        utc::crypto_prefix_arbitrary, m_encrypted_c.data(),
-        m_encrypted_c.size());
+    status = ecc::encrypt_message_with_prefix(
+        pkey_a, skey, utc::crypto_prefix_arbitrary, m_encrypted_c);
+
     if (status != stbox::stx_status::success) {
       LOG(ERROR) << "error for encrypt_message: " << status;
       return status;
     }
 
-    uint32_t sig_size = stbox::crypto::get_secp256k1_signature_size();
     stbox::bytes cost_gas_str(sizeof(m_cost_gas));
     memcpy((uint8_t *)&cost_gas_str[0], (uint8_t *)&m_cost_gas,
            sizeof(m_cost_gas));
     ypc::utc::endian_swap(cost_gas_str);
-    m_result_signature_str = stbox::bytes(sig_size);
-    m_cost_signature_str = stbox::bytes(sig_size);
 
     auto cost_msg = m_encrypted_param + m_data_source->data_hash() +
                     m_enclave_hash + cost_gas_str;
-    status = stbox::crypto::sign_message(
-        (uint8_t *)m_private_key.data(), m_private_key.size(),
-        (uint8_t *)&cost_msg[0], cost_msg.size(),
-        (uint8_t *)&m_cost_signature_str[0], sig_size);
+    status = ecc::sign_message(m_private_key, cost_msg, m_cost_signature_str);
     if (status != stbox::stx_status::success) {
       LOG(ERROR) << "error for sign cost: " << status;
       return status;
@@ -118,11 +103,8 @@ public:
 
     auto msg = m_encrypted_c + hash_m + m_encrypted_param +
                m_data_source->data_hash() + cost_gas_str + m_enclave_hash;
+    status = ecc::sign_message(m_private_key, msg, m_result_signature_str);
 
-    status = stbox::crypto::sign_message(
-        (uint8_t *)m_private_key.data(), m_private_key.size(),
-        (uint8_t *)&msg[0], msg.size(), (uint8_t *)&m_result_signature_str[0],
-        sig_size);
     return static_cast<uint32_t>(status);
   }
 

@@ -19,12 +19,12 @@
 #include "stbox/tsgx/channel/dh_session_responder.h"
 #include "stbox/tsgx/crypto/ecc.h"
 #include "stbox/tsgx/crypto/ecp_interface.h"
+#include "stbox/tsgx/crypto/secp256k1/ecc_secp256k1.h"
 #include "stbox/tsgx/log.h"
-#include "stbox/tsgx/secp256k1/secp256k1.h"
-#include "stbox/tsgx/secp256k1/secp256k1_ecdh.h"
-#include "stbox/tsgx/secp256k1/secp256k1_recovery.h"
 #include "ypc_t/ecommon/signer_verify.h"
 
+using ecc = stbox::crypto::ecc<stbox::crypto::secp256k1>;
+using raw_ecc = stbox::crypto::raw_ecc<stbox::crypto::secp256k1>;
 #define SECP256K1_PRIVATE_KEY_SIZE 32
 #define INITIALIZATION_VECTOR_SIZE 12
 #define SGX_AES_GCM_128BIT_TAG_T_SIZE sizeof(sgx_aes_gcm_128bit_tag_t)
@@ -33,6 +33,17 @@ extern "C" {
 #include "stbox/../../src/tsgx/secp256k1/hash.h"
 #include "stbox/keccak/keccak.h"
 }
+namespace stbox {
+namespace crypto {
+namespace internal {
+// We declare this for testing
+//@pkey is little endian
+uint32_t gen_sgx_ec_key_128bit(const uint8_t *pkey, uint32_t pkey_size,
+                               const uint8_t *skey, uint32_t skey_size,
+                               uint8_t *derived_key);
+} // namespace internal
+} // namespace crypto
+} // namespace stbox
 
 using stx_status = stbox::stx_status;
 using scope_guard = stbox::scope_guard;
@@ -75,39 +86,37 @@ uint32_t test_ecdh(uint8_t *skey, uint8_t *pkey, uint8_t *shared_key) {
 }
 
 uint32_t test_generate_pkey(uint8_t *skey, uint8_t *pkey) {
-  return ::stbox::crypto::generate_secp256k1_pkey_from_skey(skey, pkey, 64);
+  return raw_ecc::generate_pkey_from_skey(skey, 32, pkey, 64);
 }
 
 uint32_t encrypt_message_with_prefix(uint8_t *public_key, uint32_t prefix,
                                      uint8_t *data, uint32_t data_size,
                                      uint8_t *cipher, uint32_t cipher_size) {
-  return ::stbox::crypto::encrypt_message_with_prefix(
-      public_key, 64, data, data_size, prefix, cipher, cipher_size);
+  return raw_ecc::encrypt_message_with_prefix(public_key, 64, data, data_size,
+                                              prefix, cipher, cipher_size);
 }
 
 uint32_t decrypt_message_with_prefix(uint8_t *skey, uint32_t prefix,
                                      uint8_t *cipher, uint32_t cipher_size,
                                      uint8_t *data, uint32_t data_size) {
-  return ::stbox::crypto::decrypt_message_with_prefix(
-      skey, 32, cipher, cipher_size, data, data_size, prefix);
+  return raw_ecc::decrypt_message_with_prefix(skey, 32, cipher, cipher_size,
+                                              data, data_size, prefix);
 }
 
 uint32_t get_encrypt_message_size_with_prefix(uint32_t data_size) {
-  return ::stbox::crypto::get_encrypt_message_size_with_prefix(data_size);
+  return raw_ecc::get_encrypt_message_size_with_prefix(data_size);
 }
 uint32_t get_decrypt_message_size_with_prefix(uint32_t data_size) {
-  return ::stbox::crypto::get_decrypt_message_size_with_prefix(data_size);
+  return raw_ecc::get_decrypt_message_size_with_prefix(data_size);
 }
 uint32_t test_sign_message(uint8_t *skey, uint32_t skey_size, uint8_t *data,
                            uint32_t data_size, uint8_t *sig) {
-  return ::stbox::crypto::sign_message(skey, skey_size, data, data_size, sig,
-                                       65);
+  return raw_ecc::sign_message(skey, skey_size, data, data_size, sig, 65);
 }
 
 uint32_t test_verify_message(uint8_t *data, uint32_t data_size, uint8_t *sig,
                              uint32_t sig_size, uint8_t *pkey) {
 
-  return ::stbox::crypto::verify_signature(data, data_size, sig, sig_size, pkey,
-                                           64);
+  return raw_ecc::verify_signature(data, data_size, sig, sig_size, pkey, 64);
 }
 

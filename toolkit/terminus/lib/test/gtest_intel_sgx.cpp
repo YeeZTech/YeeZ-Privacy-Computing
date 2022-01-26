@@ -1,4 +1,5 @@
 #include "common/crypto_prefix.h"
+#include "ypc/byte.h"
 #include "ypc/terminus/crypto_pack.h"
 #include <gtest/gtest.h>
 
@@ -25,7 +26,7 @@ TEST(test_terminus_intel_sgx, decrypt) {
   EXPECT_TRUE(ret.size() > 0);
   ypc::bytes expect("hello world!");
   LOG(INFO) << "ret: " << std::string((const char *)ret.data(), ret.size());
-  EXPECT_EQ(ret, expect);
+  EXPECT_EQ(ret == expect, true);
 }
 
 TEST(test_terminus_intel_sgx, encrypt_decrypt) {
@@ -44,7 +45,7 @@ TEST(test_terminus_intel_sgx, encrypt_decrypt) {
   ypc::bytes expect =
       cp->ecc_decrypt(ret, skey, ypc::utc::crypto_prefix_arbitrary);
   EXPECT_TRUE(expect.size() > 0);
-  EXPECT_EQ(content, expect);
+  EXPECT_TRUE(content == expect);
 }
 
 TEST(test_terminus_intel_sgx, sign) {

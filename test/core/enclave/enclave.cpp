@@ -21,11 +21,11 @@
 #include "stbox/tsgx/channel/dh_session_responder.h"
 #include "stbox/tsgx/crypto/ecc.h"
 #include "stbox/tsgx/crypto/ecp_interface.h"
+#include "stbox/tsgx/crypto/secp256k1/ecc_secp256k1.h"
 #include "stbox/tsgx/log.h"
-#include "stbox/tsgx/secp256k1/secp256k1.h"
-#include "stbox/tsgx/secp256k1/secp256k1_ecdh.h"
-#include "stbox/tsgx/secp256k1/secp256k1_recovery.h"
 #include "ypc_t/ecommon/signer_verify.h"
+using ecc = stbox::crypto::ecc<stbox::crypto::secp256k1>;
+using raw_ecc = stbox::crypto::raw_ecc<stbox::crypto::secp256k1>;
 
 #define SECP256K1_PRIVATE_KEY_SIZE 32
 #define INITIALIZATION_VECTOR_SIZE 12
@@ -61,13 +61,13 @@ uint32_t get_encrypted_result_and_signature(
   auto data_hash = stbox::bytes(_data_hash, data_hash_size);
 
   uint32_t cipher_size =
-      stbox::crypto::get_encrypt_message_size_with_prefix(result.size());
+      ecc::get_encrypt_message_size_with_prefix(result.size());
 
   uint8_t pkey[64];
-  ::stbox::crypto::generate_secp256k1_pkey_from_skey(_private_key, pkey, 64);
+  raw_ecc::generate_pkey_from_skey(_private_key, private_key_size, pkey, 64);
   LOG(INFO) << "pkey: " << stbox::bytes(pkey, 64);
 
-  auto status = stbox::crypto::encrypt_message_with_prefix(
+  auto status = raw_ecc::encrypt_message_with_prefix(
       (const uint8_t *)&pkey[0], 64, (const uint8_t *)result.data(),
       result.size(), ::ypc::utc::crypto_prefix_arbitrary, _encrypted_res,
       res_size);
@@ -78,18 +78,18 @@ uint32_t get_encrypted_result_and_signature(
   LOG(INFO) << "enclave_hash: " << enclave_hash;
   LOG(INFO) << "cost message: " << cost_msg;
 
-  status = stbox::crypto::sign_message(_private_key, private_key_size,
-                                       (uint8_t *)&cost_msg[0], cost_msg.size(),
-                                       _cost_sig, cost_sig_size);
+  status = raw_ecc::sign_message(_private_key, private_key_size,
+                                 (uint8_t *)&cost_msg[0], cost_msg.size(),
+                                 _cost_sig, cost_sig_size);
 
   auto msg = cost_msg + stbox::bytes(_encrypted_res, res_size);
   LOG(INFO) << "result message: " << msg;
-  status = stbox::crypto::sign_message(_private_key, private_key_size,
-                                       (uint8_t *)&msg[0], msg.size(),
-                                       _result_sig, sig_size);
+  status =
+      raw_ecc::sign_message(_private_key, private_key_size, (uint8_t *)&msg[0],
+                            msg.size(), _result_sig, sig_size);
   return status;
 }
 
 uint32_t get_encrypt_message_size_with_prefix(uint32_t data_size) {
-  return ::stbox::crypto::get_encrypt_message_size_with_prefix(data_size);
+  return ecc::get_encrypt_message_size_with_prefix(data_size);
 }

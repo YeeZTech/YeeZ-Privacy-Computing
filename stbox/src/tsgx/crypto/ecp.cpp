@@ -48,6 +48,8 @@ static uint8_t cmac_key[MAC_KEY_SIZE] = "yeez.tech.stbox";
 #endif
 
 namespace stbox {
+namespace crypto {
+
 sgx_status_t derive_key(const sgx_ec256_dh_shared_t *shared_key,
                         const char *label, uint32_t label_length,
                         sgx_ec_key_128bit_t *derived_key) {
@@ -101,4 +103,5 @@ sgx_status_t derive_key(const sgx_ec256_dh_shared_t *shared_key,
   }
   return se_ret;
 }
+} // namespace crypto
 } // namespace stbox
