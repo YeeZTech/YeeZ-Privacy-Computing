@@ -20,6 +20,9 @@ enclave {
         [out, size=cost_sig_size] uint8_t * cost_sig, uint32_t cost_sig_size);
 
     public uint32_t get_encrypt_message_size_with_prefix(uint32_t data_size);
+    public uint32_t get_sealed_data_size(uint32_t data_size);
+    public uint32_t test_seal_data([in, size=data_size] uint8_t * data, uint32_t data_size,
+                  [out, size=sealed_size] uint8_t * sealed_data, uint32_t sealed_size);
 
     };
 

@@ -14,4 +14,6 @@ public:
       const ypc::bytes &result, const ypc::bytes &private_key,
       const ypc::bytes &data_hash, uint64_t cost, ypc::bytes &encrypted_res,
       ypc::bytes &res_sig, ypc::bytes &cost_sig);
+
+  uint32_t seal_data(const ypc::bytes &data, ypc::bytes &sealed_data);
 };

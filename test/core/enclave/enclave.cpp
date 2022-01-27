@@ -21,11 +21,16 @@
 #include "stbox/tsgx/channel/dh_session_responder.h"
 #include "stbox/tsgx/crypto/ecc.h"
 #include "stbox/tsgx/crypto/ecp_interface.h"
+#include "stbox/tsgx/crypto/seal.h"
+#include "stbox/tsgx/crypto/seal_sgx.h"
 #include "stbox/tsgx/crypto/secp256k1/ecc_secp256k1.h"
 #include "stbox/tsgx/log.h"
 #include "ypc_t/ecommon/signer_verify.h"
+
 using ecc = stbox::crypto::ecc<stbox::crypto::secp256k1>;
 using raw_ecc = stbox::crypto::raw_ecc<stbox::crypto::secp256k1>;
+using sealer = stbox::crypto::device_sealer<stbox::crypto::intel_sgx>;
+using raw_sealer = stbox::crypto::raw_device_sealer<stbox::crypto::intel_sgx>;
 
 #define SECP256K1_PRIVATE_KEY_SIZE 32
 #define INITIALIZATION_VECTOR_SIZE 12
@@ -92,4 +97,13 @@ uint32_t get_encrypted_result_and_signature(
 
 uint32_t get_encrypt_message_size_with_prefix(uint32_t data_size) {
   return ecc::get_encrypt_message_size_with_prefix(data_size);
+}
+
+uint32_t get_sealed_data_size(uint32_t data_size) {
+  return raw_sealer::get_sealed_data_size(data_size);
+}
+
+uint32_t test_seal_data(uint8_t *data, uint32_t data_size, uint8_t *sealed_data,
+                        uint32_t sealed_size) {
+  return raw_sealer::seal_data(data, data_size, sealed_data, sealed_size);
 }

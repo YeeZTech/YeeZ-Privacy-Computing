@@ -36,3 +36,12 @@ uint32_t test_ypc_sgx_module::get_encrypted_result_and_signature(
       cost_sig.size());
   return t;
 }
+
+uint32_t test_ypc_sgx_module::seal_data(const ypc::bytes &data,
+                                        ypc::bytes &sealed_data) {
+  auto len = ecall<uint32_t>(::get_sealed_data_size, data.size());
+  sealed_data = ypc::bytes(len);
+  auto t = ecall<uint32_t>(::test_seal_data, (uint8_t *)data.data(),
+                           data.size(), sealed_data.data(), sealed_data.size());
+  return t;
+}
