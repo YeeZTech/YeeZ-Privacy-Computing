@@ -7,7 +7,7 @@ include(ExternalProject)
 if(DEFINED ENV{GTEST_REPO})
 ExternalProject_Add(googletest
   GIT_REPOSITORY    $ENV{GTEST_REPO}
-  GIT_TAG           master
+  GIT_TAG           main
   SOURCE_DIR        "${CMAKE_CURRENT_BINARY_DIR}/googletest-src"
   BINARY_DIR        "${CMAKE_CURRENT_BINARY_DIR}/googletest-build"
   CONFIGURE_COMMAND ""

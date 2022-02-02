@@ -12,14 +12,13 @@
 #include <sgx_utils.h>
 
 #include "common.h"
+#include "corecommon/crypto/stdeth.h"
 #include "keymgr/common/message_type.h"
 #include "stbox/ebyte.h"
 #include "stbox/eth/eth_hash.h"
 #include "stbox/tsgx/channel/dh_session_responder.h"
-#include "stbox/tsgx/crypto/ecc.h"
 #include "stbox/tsgx/crypto/seal.h"
 #include "stbox/tsgx/crypto/seal_sgx.h"
-#include "stbox/tsgx/crypto/secp256k1/ecc_secp256k1.h"
 #include "stbox/tsgx/log.h"
 #include "ypc_t/ecommon/signer_verify.h"
 
@@ -34,9 +33,8 @@ extern "C" {
 using stx_status = stbox::stx_status;
 using scope_guard = stbox::scope_guard;
 using intel_sgx = stbox::crypto::intel_sgx;
-using secp256k1 = stbox::crypto::secp256k1;
-using ecc = stbox::crypto::ecc<secp256k1>;
-using raw_ecc = stbox::crypto::raw_ecc<secp256k1>;
+using ecc = ypc::crypto::eth_sgx_crypto;
+using raw_ecc = ecc;
 using namespace stbox;
 // using namespace stbox::crypto;
 

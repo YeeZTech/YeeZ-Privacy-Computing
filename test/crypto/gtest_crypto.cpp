@@ -107,12 +107,15 @@ TEST_F(crypto_test, sign) {
           "97dc393924f6d82795f4caf56a79b88ff4df036b04db076f2d254f6bfe0ea869")
           .as<ypc::bytes>();
 
+  std::cout << "start sign" << std::endl;
   ypc::bytes sig = m_module->sign_message(sk, cipher);
+  std::cout << "end sign" << std::endl;
 
   ypc::bytes data_hash =
       ypc::hex_bytes(
           "3e0d3a43f4f45ba7a1234759c2ffa4028a44599d4ab29bec532bd2057c0f9141")
           .as<ypc::bytes>();
+  std::cout << "start sign" << std::endl;
   ypc::bytes data_hash_sig = m_module->sign_message(sk, data_hash);
   std::cout << "data hash sig: " << data_hash_sig << std::endl;
 
@@ -123,6 +126,8 @@ TEST_F(crypto_test, sign) {
           "fbe24c62572156caa514657d4a535101d2147337f41f51fcdfcf8f43a53")
           .as<ypc::bytes>();
 
+  std::cout << "start verify" << std::endl;
   bool v = m_module->verify_message(cipher, sig, pkey);
+  std::cout << "end verify" << std::endl;
   EXPECT_EQ(v, true);
 }

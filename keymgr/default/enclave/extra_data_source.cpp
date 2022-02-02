@@ -1,13 +1,13 @@
 #include "common.h"
-#include "stbox/tsgx/crypto/secp256k1/ecc_secp256k1.h"
+#include "corecommon/crypto/stdeth.h"
 #include <common/crypto_prefix.h>
 #include <corecommon/datahub/package.h>
 #include <stbox/stx_common.h>
-#include <stbox/tsgx/crypto/ecc.h>
 #include <stbox/tsgx/ocall.h>
 #include <unordered_set>
-using ecc = stbox::crypto::ecc<stbox::crypto::secp256k1>;
-using raw_ecc = stbox::crypto::raw_ecc<stbox::crypto::secp256k1>;
+
+using ecc = ypc::crypto::eth_sgx_crypto;
+using raw_ecc = ecc;
 
 define_nt(data_skey_nt, stbox::bytes);
 define_nt(signature_nt, stbox::bytes);

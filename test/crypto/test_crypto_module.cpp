@@ -115,7 +115,7 @@ ypc::bytes test_crypto_sgx_module::sign_message(const ypc::bytes &skey,
       ecall<uint32_t>(::test_sign_message, (uint8_t *)&skey[0], 32,
                       (uint8_t *)&data[0], data.size(), (uint8_t *)&sig[0]);
   if (t != 0) {
-    std::cout << "ret: " << t << std::endl;
+    std::cout << "ret: " << stbox::status_string(t) << std::endl;
     throw std::runtime_error("invalid sign");
   }
   return sig;

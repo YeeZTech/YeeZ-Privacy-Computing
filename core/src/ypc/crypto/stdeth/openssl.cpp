@@ -3,8 +3,6 @@
 
 namespace ypc {
 namespace openssl {
-sgx::sgx() {
-}
 
 int sgx::rijndael128_cmac_msg(const uint8_t *cmac_128bit_key,
                               const uint8_t *p_src, uint32_t src_len,

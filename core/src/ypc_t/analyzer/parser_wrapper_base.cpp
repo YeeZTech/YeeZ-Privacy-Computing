@@ -2,19 +2,18 @@
 #include "common/crypto_prefix.h"
 #include "common/limits.h"
 #include "common/param_id.h"
+#include "corecommon/crypto/stdeth.h"
 #include "corecommon/package.h"
 #include "stbox/ebyte.h"
 #include "stbox/eth/util.h"
 #include "stbox/stx_common.h"
-#include "stbox/tsgx/crypto/ecc.h"
-#include "stbox/tsgx/crypto/secp256k1/ecc_secp256k1.h"
 #include "stbox/tsgx/log.h"
 #include "yaenclave_t.h"
 #include "ypc_t/ecommon/signer_verify.h"
 #include "ypc_t/ecommon/version.h"
 
-using ecc = stbox::crypto::ecc<stbox::crypto::secp256k1>;
-using raw_ecc = stbox::crypto::raw_ecc<stbox::crypto::secp256k1>;
+using ecc = ypc::crypto::eth_sgx_crypto;
+using raw_ecc = ecc;
 uint32_t get_ypc_analyzer_version() { return ypc::version(1, 0, 0).data(); }
 
 namespace ypc {

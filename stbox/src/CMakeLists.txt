@@ -1,4 +1,8 @@
-set(stbox_src stx_status.cpp stx_common.cpp exception.cpp eth/eth_hash.cpp eth/util.cpp keccak/keccak.c)
+
+add_library(stbox_keccak_u keccak/keccak.c)
+add_sgx_library(stbox_keccak_t stbox_keccak_t SRCS keccak/keccak.c)
+
+set(stbox_src stx_status.cpp stx_common.cpp exception.cpp eth/eth_hash.cpp eth/util.cpp)
 
 
 set(stbox_t_src ${stbox_src}
@@ -22,9 +26,12 @@ add_untrusted_library(stbox_common_u SHARED
   SRCS "${stbox_core_src}"
   EDL ./stbox.edl
   EDL_SEARCH_PATHS .)
+
+
 install(TARGETS stbox_common_u DESTINATION lib)
 
-target_link_libraries(stbox_common_u glog)
+target_link_libraries(stbox_common_u glog stbox_keccak_u)
+target_link_libraries(stbox_common_t stbox_keccak_t)
 
 
 add_subdirectory(tsgx)

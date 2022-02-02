@@ -1,10 +1,9 @@
 #pragma once
 #include "common/endian.h"
+#include "corecommon/crypto/stdeth.h"
 #include "sgx_trts.h"
 #include "stbox/stx_status.h"
 #include "stbox/tsgx/channel/dh_session_initiator.h"
-#include "stbox/tsgx/crypto/ecc.h"
-#include "stbox/tsgx/crypto/secp256k1/ecc_secp256k1.h"
 #include "stbox/tsgx/log.h"
 #include "stbox/tsgx/ocall.h"
 #include "ypc_t/analyzer/ntpackage_item_parser.h"
@@ -13,8 +12,8 @@
 #include "ypc_t/ecommon/package.h"
 #include <string.h>
 
-using ecc = stbox::crypto::ecc<stbox::crypto::secp256k1>;
-using raw_ecc = stbox::crypto::raw_ecc<stbox::crypto::secp256k1>;
+using ecc = ypc::crypto::eth_sgx_crypto;
+using raw_ecc = ecc;
 
 namespace ypc {
 namespace internal {

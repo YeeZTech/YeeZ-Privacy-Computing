@@ -5,7 +5,6 @@
 #include "stbox/ebyte.h"
 #include "stbox/eth/util.h"
 #include "stbox/stx_common.h"
-#include "stbox/tsgx/crypto/ecc.h"
 #include "stbox/tsgx/log.h"
 #include "yaenclave_t.h"
 #include "ypc_t/analyzer/parser_wrapper_base.h"
