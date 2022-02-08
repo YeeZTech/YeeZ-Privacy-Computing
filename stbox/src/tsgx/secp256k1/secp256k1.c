@@ -614,9 +614,9 @@ int secp256k1_ec_pubkey_combine(const secp256k1_context* ctx, secp256k1_pubkey *
 int printf_std(const char *fmt, ...) {
   va_list ap;
   char buf[BUFSIZ] = {'\0'};
-  va_start(ap, fmt);
+  /*va_start(ap, fmt);*/
   vsnprintf(buf, BUFSIZ, fmt, ap);
-  va_end(ap);
+  /*va_end(ap);*/
   ocall_print_string(buf);
   return (int)strnlen(buf, BUFSIZ - 1) + 1;
 }

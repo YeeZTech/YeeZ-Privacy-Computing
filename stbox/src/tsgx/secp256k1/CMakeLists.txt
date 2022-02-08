@@ -4,6 +4,8 @@ include_directories(${PROJECT_SOURCE_DIR}/stbox/src/tsgx/secp256k1)
 
 set(secp256k1_src ./secp256k1.c)
 
+add_library(secp256k1 SHARED ${secp256k1_src})
+
 add_sgx_library(stbox_secp256k1_t
   stbox_secp256k1_t
   SRCS "${secp256k1_src}")

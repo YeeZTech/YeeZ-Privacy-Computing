@@ -1,7 +1,7 @@
 #include "ypc/terminus/crypto_pack.h"
-#include <secp256k1.h>
-#include <secp256k1_ecdh.h>
-#include <secp256k1_recovery.h>
+#include "stbox/tsgx/secp256k1/secp256k1.h"
+#include "stbox/tsgx/secp256k1/secp256k1_ecdh.h"
+#include "stbox/tsgx/secp256k1/secp256k1_recovery.h"
 extern "C" {
 #include "vendor/keccak/keccak.h"
 }
