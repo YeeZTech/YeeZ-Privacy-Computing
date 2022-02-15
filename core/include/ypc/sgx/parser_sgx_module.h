@@ -17,17 +17,21 @@ public:
   virtual ~parser_sgx_module();
 
   uint32_t begin_parse_data_item();
-  uint32_t parse_data_item(const char *data, size_t len);
+  uint32_t parse_data_item(const uint8_t *data, size_t len);
   uint32_t end_parse_data_item();
 
-  uint32_t get_enclave_hash(ypc::bref &enclave_hash);
+  uint32_t get_enclave_hash(ypc::bytes &enclave_hash);
 
-  uint32_t get_encrypted_result_hash(ypc::bref &hash);
+  // uint32_t get_encrypted_result_hash(ypc::bref &hash);
 
-  uint32_t get_analyze_result(ypc::nt<ypc::bytes>::ypc_result_package_t &res);
+  uint32_t get_analyze_result(ypc::bytes &res);
 
-  parser_type_t get_parser_type();
 
+  uint32_t init_data_source(const ypc::bytes &info);
+  uint32_t init_model(const ypc::bytes &info);
+  uint32_t get_parser_type();
+
+  /*
   uint32_t add_block_parse_result(uint16_t block_index,
                                   const uint8_t *block_result,
                                   uint32_t res_size, const uint8_t *data_hash,
@@ -51,5 +55,6 @@ public:
   uint32_t set_extra_data(const uint8_t *extra_data, uint32_t in_size);
 
   bool need_continue();
+  */
 };
 } // namespace ypc

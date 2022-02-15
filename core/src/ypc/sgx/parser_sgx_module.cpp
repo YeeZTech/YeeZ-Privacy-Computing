@@ -15,8 +15,8 @@ uint32_t parser_sgx_module::begin_parse_data_item() {
   return retval;
 }
 
-uint32_t parser_sgx_module::parse_data_item(const char *data, size_t len) {
-  auto retval = ecall<uint32_t>(::parse_data_item, (uint8_t *)data, (len));
+uint32_t parser_sgx_module::parse_data_item(const uint8_t *data, size_t len) {
+  auto retval = ecall<uint32_t>(::parse_data_item, data, (len));
   return retval;
 }
 
@@ -25,7 +25,7 @@ uint32_t parser_sgx_module::end_parse_data_item() {
   return retval;
 }
 
-uint32_t parser_sgx_module::get_enclave_hash(ypc::bref &_enclave_hash) {
+uint32_t parser_sgx_module::get_enclave_hash(ypc::bytes &_enclave_hash) {
   uint32_t hash_size;
   uint8_t *enclave_hash;
   stbox::buffer_length_t buf_res(&hash_size, &enclave_hash,
@@ -33,12 +33,11 @@ uint32_t parser_sgx_module::get_enclave_hash(ypc::bref &_enclave_hash) {
   auto t = ecall<uint32_t>(::get_enclave_hash, stbox::xmem(buf_res),
                            stbox::xlen(buf_res));
 
-  _enclave_hash = ypc::bref(enclave_hash, hash_size);
+  _enclave_hash = ypc::bytes(enclave_hash, hash_size);
   return t;
 }
 
-uint32_t parser_sgx_module::get_analyze_result(
-    ypc::nt<ypc::bytes>::ypc_result_package_t &pkg) {
+uint32_t parser_sgx_module::get_analyze_result(ypc::bytes &result) {
   uint32_t res_size;
   uint8_t *res;
   stbox::buffer_length_t buf_res(&res_size, &res, ::get_analyze_result_size);
@@ -46,13 +45,21 @@ uint32_t parser_sgx_module::get_analyze_result(
                            stbox::xlen(buf_res));
 
   if (t == stbox::stx_status::success) {
-    pkg = ypc::make_package<
-        ypc::nt<ypc::bytes>::ypc_result_package_t>::from_bytes(res, res_size);
+    result = ypc::bytes(res, res_size);
   }
   return t;
 }
+uint32_t parser_sgx_module::init_data_source(const ypc::bytes &info) {
+  return ecall<uint32_t>(::init_data_source, info.data(), info.size());
+}
+uint32_t parser_sgx_module::init_model(const ypc::bytes &info) {
+  return ecall<uint32_t>(::init_model, info.data(), info.size());
+}
+uint32_t parser_sgx_module::get_parser_type() {
+  return ecall<uint32_t>(::get_parser_type);
+}
 
-
+/*
 uint32_t parser_sgx_module::add_block_parse_result(
     uint16_t block_index, const uint8_t *block_result, uint32_t res_size,
     const uint8_t *data_hash, uint32_t hash_size, const uint8_t *sig,
@@ -81,5 +88,5 @@ uint32_t parser_sgx_module::set_extra_data(const uint8_t *extra_data,
 bool parser_sgx_module::need_continue() {
   auto retval = ecall<uint32_t>(::need_continue);
   return retval != 0;
-}
+}*/
 } // namespace ypc

@@ -12,4 +12,4 @@ add_library(ypc_stdeth_u SHARED ${stdeth_src})
   #EDL ${PROJECT_SOURCE_DIR}/core/edl/ecc.edl
   #EDL_SEARCH_PATHS ${PROJECT_SOURCE_DIR}/stbox/src)
 
-  target_link_libraries(ypc_stdeth_u ${OPENSSL_CRYPTO_LIBRARY} secp256k1 stbox_keccak_u)
+target_link_libraries(ypc_stdeth_u ${OPENSSL_CRYPTO_LIBRARY} stbox_keccak_u secp256k1)

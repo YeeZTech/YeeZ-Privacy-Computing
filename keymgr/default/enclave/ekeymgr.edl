@@ -21,9 +21,11 @@ enclave {
                                     [in, size=vpkey_size] uint8_t * verify_key, uint32_t vpkey_size,
                                     [in, size=sig_size] uint8_t * sig, uint32_t sig_size);
 
-    public uint32_t forward_extra_data_usage_license([in, size=epkey_size] uint8_t * enclave_pkey, uint32_t epkey_size,
-                  [in, size=hash_size] uint8_t * data_hash, uint32_t hash_size,
-                  [in, size=license_size] uint8_t * usage_license, uint32_t license_size);
+    public uint32_t forward_private_key(
+                                    [in, size=cipher_size] const uint8_t * encrypted_private_key, uint32_t cipher_size,
+                                    [in, size=epkey_size] const uint8_t * epublic_key, uint32_t epkey_size,
+                                    [in, size=ehash_size] const uint8_t * ehash, uint32_t ehash_size,
+                                    [in, size=sig_size] const uint8_t * sig, uint32_t sig_size);
 
     public uint32_t set_access_control_policy([in, size=in_size] uint8_t * policy, uint32_t in_size);
 
@@ -39,10 +41,5 @@ enclave {
     uint32_t ocall_load_key_pair([in, size=path_size] const char * key_path, uint32_t path_size,
                                   [in, size=pkey_size] uint8_t * public_key, uint32_t pkey_size,
                                   [out, size=sealed_size] uint8_t * sealed_privated_key, uint32_t sealed_size);
-
-    uint32_t ocall_read_next_extra_data_item([in, size=hash_size] uint8_t *data_hash, uint32_t hash_size);
-    uint32_t ocall_get_next_extra_data_item_size();
-    uint32_t ocall_get_next_extra_data_item_data([out, size=ndi_size] uint8_t *item_data,
-                          uint32_t ndi_size);
     };
 };

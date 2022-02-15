@@ -113,7 +113,8 @@ void create_key(const std::shared_ptr<keymgr_sgx_module> &ptr,
   std::cout << "Create key pair in file " << output << std::endl;
 }
 
-void list_keys(const std::string &key_dir) {
+void list_keys(const std::string &key_dir,
+               const std::shared_ptr<keymgr_sgx_module> &ptr) {
   boost::filesystem::path key_path(key_dir);
   if (!ypc::is_dir_exists(key_dir)) {
     std::stringstream ss;
@@ -135,9 +136,49 @@ void list_keys(const std::string &key_dir) {
       std::cout << '\t' << "user id: " << key.get<ntt::user_id>() << std::endl;
       uint64_t s = key.get<ntt::timestamp>();
       char *dt = ctime((time_t *)&s);
-      std::cout << '\t' << "create at : " << dt << std::endl;
+      std::cout << '\t' << "create at: " << dt;
+
+      { // testing aviability
+        ypc::bytes encrypt_pkey = key.get<ntt::pkey>();
+        ypc::bytes b_msg("hello world");
+        ypc::bref cipher;
+        uint32_t ret =
+            ptr->encrypt_message(encrypt_pkey.data(), encrypt_pkey.size(),
+                                 b_msg.data(), b_msg.size(), cipher);
+        if (!ret) {
+          std::cout << "\t[\033[1;32m"
+                    << "Check encrypt success"
+                    << "\033[0m"
+                    << "]" << std::endl;
+        } else {
+          std::cout << "\t[\033[1;31m"
+                    << "Check encrypt failed: " << stbox::status_string(ret)
+                    << "\033[0m"
+                    << "]" << std::endl;
+        }
+        ypc::bytes sealed_skey = key.get<ntt::sealed_skey>();
+        ypc::bref raw_msg;
+        ret = ptr->decrypt_message(sealed_skey.data(), sealed_skey.size(),
+                                   cipher.data(), cipher.size(), raw_msg);
+        if (!ret) {
+          std::cout << "\t[\033[1;32m"
+                    << "Check decrypt success"
+                    << "\033[0m"
+                    << "]" << std::endl;
+        } else {
+          std::cout << "\t[\033[1;31m"
+                    << "Check decrypt failed: " << stbox::status_string(ret)
+                    << "\033[0m"
+                    << "]" << std::endl;
+        }
+      }
+
       std::cout << std::endl;
     }
+  }
+  if (counter == 0) {
+    std::cout << "Cannot find any key pairs. You may create one by yourself."
+              << std::endl;
   }
 }
 
@@ -272,6 +313,9 @@ void verify_signature(const boost::program_options::variables_map &vm,
 }
 
 int main(int argc, char *argv[]) {
+  google::InitGoogleLogging(argv[0]);
+  google::InstallFailureSignalHandler();
+
   boost::program_options::variables_map vm;
   try {
     vm = parse_command_line(argc, argv);
@@ -309,7 +353,7 @@ int main(int argc, char *argv[]) {
   }
 
   if (vm.count("list")) {
-    list_keys(key_dir);
+    list_keys(key_dir, ptr);
     return 0;
   }
 

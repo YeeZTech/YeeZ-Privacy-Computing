@@ -86,8 +86,8 @@ uint32_t secp256k1_ecdh_sgx128::ecdh_shared_key(
 
   auto ctx = init_secp256k1_context();
   bytes ec256_dh_shared_key(32);
-  auto se_ret = secp256k1_ecdh(ctx, (uint8_t *)&ec256_dh_shared_key, &lpkey,
-                               skey, ecdh_hash_function_sha256, NULL);
+  auto se_ret = secp256k1_ecdh(ctx, ec256_dh_shared_key.data(), &lpkey, skey,
+                               ecdh_hash_function_sha256, NULL);
 
   if (!se_ret) {
     LOG(ERROR) << "secp256k1_ecdh returns: " << (uint32_t)se_ret;

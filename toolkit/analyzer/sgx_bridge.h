@@ -1,6 +1,6 @@
 #pragma once
 
-#include "parsers/parser_base.h"
+#include "parsers/parser.h"
 #include <memory>
 
-extern std::shared_ptr<parser_base> parser;
+extern std::shared_ptr<parser> g_parser;

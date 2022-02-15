@@ -29,6 +29,15 @@ public:
     }
     return ret;
   }
+  virtual bytes sha3_256(const bytes &msg) {
+    bytes sig;
+    auto status = crypto_t::sha3_256(msg, sig);
+    if (status) {
+      std::cerr << "sha3_256 return " << std::hex << status << std::endl;
+      throw std::runtime_error("terminus lib sha3_256 fail");
+    }
+    return sig;
+  }
 
   virtual bytes sign_message(const bytes &msg, const bytes &private_key) {
     bytes ret;

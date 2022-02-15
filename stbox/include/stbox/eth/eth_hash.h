@@ -1,4 +1,3 @@
-
 #pragma once
 #include "stbox/ebyte.h"
 extern "C" {

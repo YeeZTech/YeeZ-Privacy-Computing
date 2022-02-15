@@ -63,10 +63,9 @@ int main(int argc, char *argv[]) {
 
   ypc::bytes enclave_hash;
   if (etype == "parser") {
-    ypc::bref _enclave_hash;
     ypc::parser_sgx_module mod(enclave_path.c_str());
-    mod.get_enclave_hash(_enclave_hash);
-    enclave_hash = ypc::bytes(_enclave_hash.data(), _enclave_hash.size());
+    mod.get_enclave_hash(enclave_hash);
+    // enclave_hash = ypc::bytes(_enclave_hash.data(), _enclave_hash.size());
   }
   // TODO we should support other types, and more info here, like version,
   // signer
@@ -82,6 +81,10 @@ int main(int argc, char *argv[]) {
       pt.put(it->first, it->second);
     }
     boost::property_tree::json_parser::write_json(output_path, pt);
+  } else {
+    for (auto it = result.begin(); it != result.end(); ++it) {
+      std::cout << it->first << ": " << it->second << std::endl;
+    }
   }
 
   return 0;

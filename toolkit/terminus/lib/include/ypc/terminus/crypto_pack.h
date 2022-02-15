@@ -9,6 +9,7 @@ public:
   virtual bytes
   gen_ecc_public_key_from_private_key(const bytes &private_key) = 0;
 
+  virtual bytes sha3_256(const bytes &msg) = 0;
   virtual bytes sign_message(const bytes &msg, const bytes &private_key) = 0;
 
   virtual bool verify_message_signature(const bytes &sig, const bytes &message,

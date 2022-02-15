@@ -29,11 +29,35 @@ class classic_job:
         self.input = input_param
 
     def run(self):
-        '''1. call data provider
-        2. call yprepare
-        3. call fid_analyzer
-        4. call terminus to decrypt'''
+        '''1. call terminus to generate key,
+        2. call data provider to seal data
+        3. call terminus to generate forward message
 
+        4. call terminus to generate request
+        5. call fid_analyzer
+        6. call terminus to decrypt'''
+
+        #0. generate key
+        data_key_file = self.name + ".data.key.json"
+        param = {"gen-key": "",
+                "no-password":"",
+                "output":data_key_file}
+        common.fid_terminus(**param)
+        data_shukey_json= {}
+        with open(data_key_file, 'r') as of:
+            data_shukey_json = json.load(of)
+
+        #1. generate key
+        key_file = self.name + ".key.json"
+        param = {"gen-key": "",
+                "no-password":"",
+                "output":key_file}
+        common.fid_terminus(**param)
+        shukey_json= {}
+        with open(key_file, 'r') as of:
+            shukey_json = json.load(of)
+
+        #2. call data provider to seal data
         sealed_data_url = self.name + ".sealed"
         sealed_output = self.name + ".sealed.output"
 
@@ -43,12 +67,11 @@ class classic_job:
                 "plugin-path":self.plugin_url,
                 "sealed-data-url":sealed_data_url,
                 "output":sealed_output,
-                "sealer-path":common.sealer_enclave}
+                "use-publickey-file":data_key_file}
         summary['data-url'] = self.data_url
         summary['plugin-path'] = self.plugin_url
         summary['sealed-data-url'] = sealed_data_url
         summary['sealed-output'] = sealed_output
-        summary['sealer-path'] = common.sealer_enclave
 
         r = common.fid_data_provider(**param)
         data_hash = self.read_data_hash(sealed_output)
@@ -56,45 +79,40 @@ class classic_job:
 
         print("done seal data with hash: {}, cmd: {}".format(data_hash, r[0]))
 
+
         #use first pkey
         key = get_first_key()
         pkey = key['public-key']
         summary['tee-pkey'] = key['public-key']
 
-        param={"sign":data_hash,
-                "sign.hex":"",
-                "sign.private-key":key["private-key"]}
-        r = common.fid_keymgr(**param)
-        rs = r[1].split(':')[1].strip()
-        summary['data-hash-signature'] = rs
+        #3. call terminusto generate forward message
+        forward_result = self.name + ".shukey.foward.json"
+        param = {"forward":"",
+                "use-privatekey-file":data_key_file,
+                "tee-pubkey":pkey,
+                "output":forward_result}
+        common.fid_terminus(**param);
+        data_forward_json = {}
+        with open(forward_result, 'r') as of:
+            data_forward_json = json.load(of)
 
-
-        sample_json = {"data":[{"data-hash":data_hash, "provider-pkey":pkey}]}
-
-        key_file = self.name + ".key.json"
-        param = {"gen-key": "",
-                "no-password":"",
-                "output":key_file}
-        common.fid_terminus(**param)
-
-        sample_json_path = self.name +".sample.json"
-        with open(sample_json_path, "w") as of:
-            json.dump(sample_json, of)
-
+        #4. call terminus to generate request
         param_output_url = self.name + "_param.json"
-        param = {"dhash":data_hash,
+        param = {"use-privatekey-file":key_file,
                 "tee-pubkey":pkey,
                 "use-param":self.input,
                 "param-format":"text",
                 "use-enclave-hash":self.read_parser_hash(),
-                "output":param_output_url,
-                "use-privatekey-file":key_file
+                "dhash":data_hash,
+                "output":param_output_url
                 }
+
         r = common.fid_terminus(**param)
         print("done termins with cmd: {}".format(r[0]))
         param_json = {}
         with open(param_output_url) as of:
             param_json = json.load(of)
+
 
         summary['analyzer-pkey-sig'] = param_json["forward-sig"]
         summary['analyzer-pkey'] = param_json['analyzer-pkey']
@@ -104,31 +122,66 @@ class classic_job:
 
 
         result_url = self.name + ".result.encrypted"
-        param = {"sealed-data-url":sealed_data_url,
-                "sealer-path":common.sealer_enclave,
-                "parser-path":self.parser_url,
-                "keymgr":common.kmgr_enclave,
-                "source-type":"json",
-                "param-path":param_output_url,
-                "result-path":result_url,
-                "check-data-hash":data_hash
+        parser_input = {"shu_info":{
+            "shu_pkey":shukey_json["public-key"],
+            "encrypted_shu_skey":param_json["encrypted-skey"],
+            "shu_forward_signature":param_json["forward-sig"],
+            "enclave_hash":param_json["program-enclave-hash"]
+            },
+            "input_data":[{"input_data_url":sealed_data_url,
+                "input_data_hash":summary["data-hash"],
+                "shu_info":{
+                    "shu_pkey":data_shukey_json["public-key"],
+                    "encrypted_shu_skey":data_forward_json["encrypted_skey"],
+                    "shu_forward_signature":data_forward_json["forward_sig"],
+                    "enclave_hash":data_forward_json["enclave_hash"]
+                },
+                "allowance":{
+                    "encrypted_sig":"",
+                    "pkey":""
+                    }
+                }],
+            "parser_path":self.parser_url,
+            "keymgr_path":common.kmgr_enclave,
+            "parser_enclave_hash":param_json["program-enclave-hash"],
+            "dian_pkey":param_json["provider-pkey"],
+            "model":{
+                "model_data":"",
+                "allowance":{
+                    "encrypted_sig":"",
+                    "pkey":"",
+                    }
+                },
+            "param":{
+                "param_data":param_json["encrypted-input"],
+                "allowance":{
+                    "encrypted_sig":"",
+                    "pkey":shukey_json["public-key"]
+                    }
+                }}
+
+        parser_input_file = self.name + "parser_input.json"
+        with open(parser_input_file, "w") as of:
+            json.dump(parser_input, of)
+
+        parser_output_file = self.name + "parser_output.json"
+
+        param = {"input":parser_input_file,
+                "output":parser_output_file
                 }
         r = common.fid_analyzer(**param);
         print("done fid_analyzer with cmd: {}".format(r[0]))
         result_json = {}
-        with open(result_url) as of:
+        with open(parser_output_file) as of:
             result_json = json.load(of)
-        summary['encrypted-result'] = result_json["encrypted-result"]
-        summary["result-signature"] = result_json["result-signature"]
-        summary["cost-signature"] = result_json["cost-signature"]
+        summary['encrypted-result'] = result_json["encrypted_result"]
+        summary["result-signature"] = result_json["result_signature"]
+        summary["cost-signature"] = result_json["cost_signature"]
 
         with open(self.name + ".summary.json", "w") as of:
             json.dump(summary, of)
 
-        encrypted_result = ''
-        with open(result_url) as f:
-            data = json.load(f)
-            encrypted_result = data["encrypted-result"]
+        encrypted_result = summary["encrypted-result"]
 
         decrypted_result = self.name + ".result"
 
