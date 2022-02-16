@@ -14,7 +14,6 @@
 #include <sgx_tseal.h>
 
 #include "corecommon/crypto/stdeth.h"
-#include "keymgr/common/message_type.h"
 #include "stbox/ebyte.h"
 #include "stbox/eth/eth_hash.h"
 #include "stbox/tsgx/channel/dh_session_responder.h"

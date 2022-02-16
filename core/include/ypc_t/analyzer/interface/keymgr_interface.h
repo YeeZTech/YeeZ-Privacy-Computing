@@ -1,6 +1,5 @@
 #pragma once
 #include "common/limits.h"
-#include "common/param_id.h"
 #include "corecommon/package.h"
 #include "stbox/ebyte.h"
 #include "stbox/stx_status.h"

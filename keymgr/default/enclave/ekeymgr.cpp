@@ -13,7 +13,6 @@
 
 #include "common.h"
 #include "corecommon/crypto/stdeth.h"
-#include "keymgr/common/message_type.h"
 #include "stbox/ebyte.h"
 #include "stbox/eth/eth_hash.h"
 #include "stbox/tsgx/channel/dh_session_responder.h"
@@ -150,68 +149,6 @@ uint32_t load_and_check_key_pair(const uint8_t *pkey, uint32_t pkey_size,
   return stbox::stx_status::success;
 }
 
-std::unordered_map<stbox::bytes, forward_message_st> message_table;
-
-uint32_t forward_message(uint32_t msg_id, uint8_t *cipher, uint32_t cipher_size,
-                         uint8_t *epublic_key, uint32_t epkey_size,
-                         uint8_t *ehash, uint32_t ehash_size,
-                         uint8_t *verify_key, uint32_t vpkey_size, uint8_t *sig,
-                         uint32_t sig_size) {
-  uint32_t se_ret = SGX_SUCCESS;
-
-  uint32_t msg_key_size = sizeof(msg_id) + ehash_size;
-  stbox::bytes str_msg_key(msg_key_size);
-  memcpy((uint8_t *)str_msg_key.data(), &msg_id, sizeof(msg_id));
-  memcpy((uint8_t *)str_msg_key.data() + sizeof(msg_id), ehash, ehash_size);
-
-  if (message_table.find(str_msg_key) != message_table.end()) {
-    LOG(WARNING) << "key already exist";
-    return se_ret;
-  }
-
-  stbox::bytes skey;
-  se_ret = load_and_check_key_pair(epublic_key, epkey_size, skey);
-  if (se_ret) {
-    LOG(ERROR) << "load_and_check_key_pair got: "
-               << stbox::status_string(se_ret);
-    return se_ret;
-  }
-
-  uint32_t decrypted_size =
-      ecc::get_decrypt_message_size_with_prefix(cipher_size);
-  stbox::bytes decrypted_msg(decrypted_size);
-  se_ret = (sgx_status_t)raw_ecc::decrypt_message_with_prefix(
-      skey.data(), skey.size(), cipher, cipher_size, decrypted_msg.data(),
-      decrypted_size, ::ypc::utc::crypto_prefix_forward);
-
-  if (se_ret) {
-    LOG(ERROR) << "decrypt_message_with_prefix forward returns " << se_ret;
-    return se_ret;
-  }
-
-  uint32_t all_size = sizeof(msg_id) + decrypted_size + epkey_size + ehash_size;
-  stbox::bytes all(all_size);
-  memcpy(all.data(), &msg_id, sizeof(msg_id));
-  memcpy(all.data() + sizeof(msg_id), decrypted_msg.data(),
-         decrypted_msg.size());
-  memcpy(all.data() + sizeof(msg_id) + decrypted_size, epublic_key, epkey_size);
-  memcpy(all.data() + sizeof(msg_id) + decrypted_size + epkey_size, ehash,
-         ehash_size);
-
-  se_ret = (sgx_status_t)raw_ecc::verify_signature(
-      all.data(), all.size(), sig, sig_size, verify_key, vpkey_size);
-  if (se_ret) {
-    LOG(ERROR) << "Invalid signature";
-    return se_ret;
-  }
-
-  message_table.insert(std::make_pair(
-      str_msg_key,
-      forward_message_st{msg_id, decrypted_msg, bytes(ehash, ehash_size)}));
-
-  return se_ret;
-}
-
 std::unordered_map<stbox::bytes, stbox::bytes>
     private_key_table; //<public_key+enclave_hash, private_key>
 
@@ -284,26 +221,6 @@ stbox::bytes handle_pkg(const uint8_t *data, size_t data_len,
 
   sgx_package_handler pkg_handler;
   stbox::bytes ret;
-  pkg_handler.add_to_handle_pkg<request_private_key_pkg_t>(
-      [context, &ret](std::shared_ptr<request_private_key_pkg_t> f) {
-        uint32_t msg_key_size =
-            sizeof(f->template get<ypc::nt<stbox::bytes>::id>()) +
-            sizeof(sgx_measurement_t);
-        auto id = f->template get<ypc::nt<stbox::bytes>::id>();
-        stbox::bytes str_msg_key(msg_key_size);
-        memcpy(&str_msg_key[0], &id, sizeof(id));
-        memcpy(&str_msg_key[sizeof(id)], &context->peer_identity().mr_enclave,
-               sizeof(sgx_measurement_t));
-
-        auto iter = message_table.find(str_msg_key);
-        if (iter != message_table.end()) {
-          ret = iter->second.m_msg;
-          return;
-        }
-        LOG(ERROR) << "Request message not exist in message table!";
-        throw std::runtime_error("Request message not exist in message table!");
-      });
-
   stbox::bytes any_enclave_hash;
   ecc::sha3_256(stbox::bytes("any enclave"), any_enclave_hash);
 

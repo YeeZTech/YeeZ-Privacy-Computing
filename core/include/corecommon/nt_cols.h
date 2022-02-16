@@ -21,8 +21,6 @@ template <typename BytesType> struct nt {
   define_nt(param_data, BytesType);
   define_nt(encrypted_sig, BytesType);
 
-  define_nt(extra_data_group_name, std::string);
-  define_nt(extra_data_hashes, std::vector<BytesType>);
   define_nt(msg, std::string);
   define_nt(succ, bool);
   define_nt(batch_data, std::vector<BytesType>);
@@ -33,13 +31,6 @@ template <typename BytesType> struct nt {
   define_nt(param, param_t);
   typedef ::ff::util::ntobject<model_data, allowance> model_t;
   define_nt(model, model_t);
-
-  typedef ::ff::net::ntpackage<0x35d22084, extra_data_group_name,
-                               extra_data_hashes>
-      extra_data_group_t;
-  define_nt(extra_data_items, std::vector<extra_data_group_t>);
-  typedef ::ff::net::ntpackage<0x82c4e8d6, extra_data_items>
-      extra_data_package_t;
 
   typedef ::ff::net::ntpackage<0x82c4e8d7, data_hash, pkey>
       sealed_data_info_pkg_t;

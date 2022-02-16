@@ -1,6 +1,5 @@
 #include "ypc/terminus/single_data_onchain_result.h"
 #include "common/crypto_prefix.h"
-#include "common/param_id.h"
 
 namespace ypc {
 namespace terminus {
@@ -25,7 +24,6 @@ single_data_onchain_result::generate_request(const bytes &param,
   ypc::bytes encrypted_skey = m_crypto->ecc_encrypt(
       private_key, tee_pub_key, ypc::utc::crypto_prefix_forward);
 
-  uint32_t msg_id = param_id::PRIVATE_KEY;
   ypc::bytes to_sign_message = private_key + tee_pub_key + enclave_hash;
 
   auto sig = m_crypto->sign_message(to_sign_message, private_key);
