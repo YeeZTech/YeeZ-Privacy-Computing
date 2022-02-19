@@ -27,14 +27,6 @@ boost::program_options::variables_map parse_command_line(int argc,
     ("input", bp::value<std::string>(), "input parameters JSON file")
     ("output", bp::value<std::string>(), "output result JSON file")
     ("gen-example-input", bp::value<std::string>(), "generate example input parameters JSON file");
-    //("sealed-data-url", bp::value<std::string>(), "Sealed Data URL")
-    //("parser-path", bp::value<std::string>(), "parser enclave path")
-    //("keymgr-path", bp::value<std::string>(), "keymgr enclave path")
-    //("source-type", bp::value<std::string>(), "input and output source type [json | db]")
-    // params read from json file
-    //("param-path", bp::value<std::string>(), "forward param path")
-    //("result-path", bp::value<std::string>(), "output result path")
-    //("check-data-hash", bp::value<std::string>(), "check sealed hash before running parser");
   // clang-format on
 
   boost::program_options::variables_map vm;
@@ -91,38 +83,6 @@ int main(int argc, char *argv[]) {
     std::cerr << "cannot open " << output_fp << std::endl;
     return 1;
   }
-
-#if 0
-  bool is_sealed_file = true;
-  try {
-    ypc::simple_sealed_file ssf(sealed_file, true);
-    std::cout << "valid sealed block file, use sequential mode" << std::endl;
-  } catch (ypc::invalid_blockfile &e) {
-    std::cerr << "invalid sealed block file, try switch to parallel mode"
-              << std::endl;
-    is_sealed_file = false;
-  } catch (const std::exception &e) {
-    std::cerr << "error while open " << sealed_file << std::endl;
-    return -1;
-  }
-
-  if (is_sealed_file) {
-    parser = std::make_shared<file_parser>(
-        psource.get(), rtarget.get(), sealer_enclave_file, parser_enclave_file,
-        keymgr_enclave_file, sealed_file);
-
-    ypc::bytes expect_data_hash;
-    if (vm.count("check-data-hash")) {
-      expect_data_hash = ypc::hex_bytes(vm["check-data-hash"].as<std::string>())
-                             .as<ypc::bytes>();
-    }
-    uint32_t ret = parser->parse(expect_data_hash);
-    if (ret) {
-      std::cerr << "got error: " << ypc::status_string(ret) << std::endl;
-      return ret;
-    }
-  }
-#endif
 
   return 0;
 }

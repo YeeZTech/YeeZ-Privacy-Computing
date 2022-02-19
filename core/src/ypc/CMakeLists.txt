@@ -3,6 +3,7 @@ add_subdirectory(crypto)
 
 add_library(ypc_core SHARED
   timer_loop.cpp
+  poption_require.cpp
   db.cpp
   configuration.cpp
   sealed_file.cpp

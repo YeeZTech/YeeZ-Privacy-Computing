@@ -13,7 +13,7 @@ template <typename EC, typename AES, typename ECDH> class aes_gcm_impl {
 
 public:
   static uint32_t get_encrypt_message_size_with_prefix(uint32_t data_size) {
-    return data_size + ecc_t::get_public_key_size() +
+    return aes_t::get_cipher_size(data_size) + ecc_t::get_public_key_size() +
            aes_t::get_mac_code_size();
   }
 
@@ -23,19 +23,20 @@ public:
                                               uint32_t data_size,
                                               uint32_t prefix, uint8_t *cipher,
                                               uint32_t cipher_size) {
-    if (data_size + ecc_t::get_public_key_size() + aes_t::get_mac_code_size() !=
+    if (aes_t::get_cipher_size(data_size) + ecc_t::get_public_key_size() +
+            aes_t::get_mac_code_size() !=
         cipher_size) {
       return stbox::stx_status::aes_invalid_cipher_size;
     }
     bytes gskey(ecc_t::get_private_key_size());
 
-    // TODO we may cache this for performance
+    // we may cache this for performance
     uint32_t ret = ecc_t::gen_private_key(gskey.size(), gskey.data());
     if (ret) {
       return ret;
     }
 
-    uint8_t *gpkey = cipher + data_size;
+    uint8_t *gpkey = cipher + aes_t::get_cipher_size(data_size);
     ret = ecc_t::generate_pkey_from_skey(gskey.data(), gskey.size(), gpkey,
                                          ecc_t::get_public_key_size());
     if (ret) {
@@ -49,11 +50,12 @@ public:
       return ret;
     }
 
-    uint8_t *p_out_mac = cipher + data_size + ecc_t::get_public_key_size();
+    uint8_t *p_out_mac = cipher + aes_t::get_cipher_size(data_size) +
+                         ecc_t::get_public_key_size();
 
-    ret = aes_t::encrypt_with_prefix(shared_key.data(), shared_key.size(), data,
-                                     data_size, prefix, cipher, data_size,
-                                     p_out_mac);
+    ret = aes_t::encrypt_with_prefix(
+        shared_key.data(), shared_key.size(), data, data_size, prefix, cipher,
+        aes_t::get_cipher_size(data_size), p_out_mac);
     return ret;
   }
 
@@ -70,7 +72,7 @@ public:
   }
 
   static uint32_t get_decrypt_message_size_with_prefix(uint32_t cipher_size) {
-    return cipher_size - ecc_t::get_public_key_size() -
+    return aes_t::get_data_size(cipher_size) - ecc_t::get_public_key_size() -
            aes_t::get_mac_code_size();
   }
 
@@ -80,7 +82,8 @@ public:
                                               uint32_t cipher_size,
                                               uint8_t *data, uint32_t data_size,
                                               uint32_t prefix) {
-    if (data_size + ecc_t::get_public_key_size() + aes_t::get_mac_code_size() !=
+    if (aes_t::get_cipher_size(data_size) + ecc_t::get_public_key_size() +
+            aes_t::get_mac_code_size() !=
         cipher_size) {
       return stbox::stx_status::aes_invalid_data_size;
     }
@@ -88,17 +91,19 @@ public:
     bytes shared_key(ecdh_t::get_ecdh_shared_key_size());
 
     uint32_t ret = ecdh_t::ecdh_shared_key(
-        private_key, private_key_size, cipher + data_size,
+        private_key, private_key_size,
+        cipher + aes_t::get_cipher_size(data_size),
         ecc_t::get_public_key_size(), shared_key.data(), shared_key.size());
     if (ret) {
       return ret;
     }
 
-    const uint8_t *p_in_mac = cipher + data_size + ecc_t::get_public_key_size();
+    const uint8_t *p_in_mac = cipher + aes_t::get_cipher_size(data_size) +
+                              ecc_t::get_public_key_size();
 
     ret = aes_t::decrypt_with_prefix(shared_key.data(), shared_key.size(),
-                                     cipher, data_size, prefix, data, data_size,
-                                     p_in_mac);
+                                     cipher, aes_t::get_cipher_size(data_size),
+                                     prefix, data, data_size, p_in_mac);
 
     return ret;
   }

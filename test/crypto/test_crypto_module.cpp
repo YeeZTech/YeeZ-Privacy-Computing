@@ -87,7 +87,7 @@ ypc::bytes test_crypto_sgx_module::encrypt(const ypc::bytes &pkey,
                            prefix, (uint8_t *)&data[0], data.size(),
                            (uint8_t *)&cipher[0], cipher.size());
   if (t != 0) {
-    std::cout << "ret: " << t << std::endl;
+    std::cout << "ret: " << stbox::status_string(t) << std::endl;
     throw std::runtime_error("invalid encrypt call");
   }
   return cipher;
@@ -103,7 +103,7 @@ ypc::bytes test_crypto_sgx_module::decrypt(const ypc::bytes &skey,
                            prefix, (uint8_t *)&cipher[0], cipher.size(),
                            (uint8_t *)&data[0], data.size());
   if (t != 0) {
-    std::cout << "ret: " << t << std::endl;
+    std::cout << "ret: " << stbox::status_string(t) << std::endl;
     throw std::runtime_error("invalid decrypt call");
   }
   return data;

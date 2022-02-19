@@ -15,6 +15,7 @@ constexpr static uint32_t unknown_datasource_parser = 0;
 constexpr static uint32_t single_sealed_datasource_parser = 1;
 constexpr static uint32_t multi_sealed_datasource_parser = 2;
 constexpr static uint32_t noinput_datasource_parser = 3;
+constexpr static uint32_t raw_datasource_parser = 4;
 
 constexpr static uint32_t no_model_parser = 0;
 constexpr static uint32_t has_model_parser = 1;

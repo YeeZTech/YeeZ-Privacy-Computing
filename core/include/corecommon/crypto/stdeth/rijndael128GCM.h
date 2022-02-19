@@ -7,12 +7,8 @@ namespace crypto {
 
 struct rijndael128GCM {
   static inline uint32_t get_mac_code_size() { return 16; }
-  static inline uint32_t get_cipher_size(uint32_t data_size) {
-    return data_size;
-  }
-  static inline uint32_t get_data_size(uint32_t cipher_size) {
-    return cipher_size;
-  }
+  static uint32_t get_cipher_size(uint32_t data_size);
+  static uint32_t get_data_size(uint32_t cipher_size);
   static inline uint32_t get_key_size() { return 16; }
 
   static uint32_t encrypt_with_prefix(const uint8_t *key, uint32_t key_size,

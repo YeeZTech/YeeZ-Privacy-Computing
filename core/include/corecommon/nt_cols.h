@@ -7,12 +7,14 @@ template <typename BytesType> struct nt {
   define_nt(reserve, uint32_t);
   define_nt(data, BytesType);
   define_nt(id, uint32_t);
+  define_nt(tag, uint32_t);
   define_nt(user_id, std::string);
   define_nt(timestamp, uint64_t);
 
   define_nt(encrypted_shu_skey, BytesType);
   define_nt(encrypted_skey, BytesType);
-  define_nt(pkey, BytesType);
+  define_nt(pkey, BytesType, "public-key");
+  define_nt(private_key, BytesType, "private-key");
   define_nt(sealed_skey, BytesType);
   define_nt(data_hash, BytesType);
   define_nt(signature, BytesType);
@@ -25,15 +27,19 @@ template <typename BytesType> struct nt {
   define_nt(succ, bool);
   define_nt(batch_data, std::vector<BytesType>);
 
-  typedef ::ff::util::ntobject<encrypted_sig, pkey> allowance_t;
+  typedef ::ff::util::ntobject<encrypted_sig, pkey, data_hash> allowance_t;
   define_nt(allowance, allowance_t);
-  typedef ::ff::util::ntobject<param_data, allowance> param_t;
+  define_nt(allowances, std::vector<allowance_t>);
+  typedef ::ff::util::ntobject<param_data, pkey, allowances> param_t;
   define_nt(param, param_t);
-  typedef ::ff::util::ntobject<model_data, allowance> model_t;
+  typedef ::ff::util::ntobject<model_data, pkey> model_t;
   define_nt(model, model_t);
 
-  typedef ::ff::net::ntpackage<0x82c4e8d7, data_hash, pkey>
-      sealed_data_info_pkg_t;
+  typedef ::ff::util::ntobject<data_hash, pkey, tag> sealed_data_info_t;
+  define_nt(sealed_data_info_vector, std::vector<sealed_data_info_t>);
+  typedef ::ff::util::ntobject<sealed_data_info_vector>
+      multi_sealed_data_info_t;
+
   typedef ::ff::net::ntpackage<0x82c4e8d8, batch_data> batch_data_pkg_t;
 
   define_nt(encrypted_param, BytesType);

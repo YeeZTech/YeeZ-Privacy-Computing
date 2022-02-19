@@ -124,6 +124,10 @@ uint32_t parser::dump_result(const ypc::bytes &res) {
 
 uint32_t parser::feed_datasource() {
   auto input_data_var = m_param.get<input_data>();
+  if (m_ptype.d.data_source_type == ypc::utc::noinput_datasource_parser) {
+    return ypc::success;
+  }
+
   if (m_ptype.d.data_source_type == ypc::utc::single_sealed_datasource_parser) {
     if (input_data_var.size() < 1) {
       LOG(ERROR) << "missing input, require one input data source";
@@ -140,6 +144,7 @@ uint32_t parser::feed_datasource() {
   }
 
   auto epkey = m_param.get<dian_pkey>();
+  std::vector<ntt::sealed_data_info_t> all_data_info;
   for (auto item : input_data_var) {
     auto url = item.get<input_data_url>();
     auto data_hash = item.get<input_data_hash>();
@@ -159,23 +164,46 @@ uint32_t parser::feed_datasource() {
       LOG(ERROR) << "forward_message got error " << ypc::status_string(ret);
       return ret;
     }
+    ntt::sealed_data_info_t data_info;
+    data_info.set<ntt::data_hash, ntt::pkey, ntt::tag>(
+        data_hash, shu.get<shu_pkey>(), item.get<ntt::tag>());
+    all_data_info.push_back(data_info.make_copy());
 
-    // TODO should not in a loop
-    auto data_info_bytes =
-        ypc::make_bytes<ypc::bytes>::for_package<ntt::sealed_data_info_pkg_t,
-                                                 ntt::data_hash, ntt::pkey>(
-            data_hash, shu.get<shu_pkey>());
+  }
 
-    ret = m_parser->init_data_source(data_info_bytes);
-    if (ret) {
-      LOG(ERROR) << "init_data_source got error " << ypc::status_string(ret);
-      return ret;
+  ypc::bytes data_info_bytes;
+  if (m_ptype.d.data_source_type == ypc::utc::single_sealed_datasource_parser) {
+    if (all_data_info.empty()) {
+      LOG(ERROR) << "cannot get input data info";
+      return ypc::parser_missing_input;
     }
+
+    typename ypc::cast_obj_to_package<ntt::sealed_data_info_t>::type single =
+        all_data_info[0];
+    data_info_bytes = ypc::make_bytes<ypc::bytes>::for_package(single);
+  }
+
+  if (m_ptype.d.data_source_type == ypc::utc::multi_sealed_datasource_parser) {
+    data_info_bytes = ypc::make_bytes<ypc::bytes>::for_package<
+        typename ypc::cast_obj_to_package<ntt::multi_sealed_data_info_t>::type,
+        ntt::sealed_data_info_vector>(all_data_info);
+  }
+  if (m_ptype.d.data_source_type == ypc::utc::raw_datasource_parser) {
+    data_info_bytes = all_data_info[0].get<ntt::data_hash>();
+  }
+  auto ret = m_parser->init_data_source(data_info_bytes);
+  if (ret) {
+    LOG(ERROR) << "init_data_source got error " << ypc::status_string(ret);
+    return ret;
   }
   return ypc::success;
 }
 
 uint32_t parser::feed_model() {
+  if (m_ptype.d.has_model == ypc::utc::no_model_parser) {
+    return ypc::success;
+  }
+
   auto model = m_param.get<ntt::model>();
   ypc::cast_obj_to_package<ntt::model_t>::type pkg = model;
 

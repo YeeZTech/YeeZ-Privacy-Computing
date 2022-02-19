@@ -76,9 +76,10 @@ class classic_job:
 
         #4. encrypt
         encrypt_file = self.name + ".classifier.encrypt.json"
-        param = {"use-publickey-file":key_file,
+        param = {"encrypt":"",
+                "use-publickey-file":key_file,
                 "output":encrypt_file,
-                "encrypt-hex":model
+                "use-param":model
                 }
         r = common.fid_terminus(**param);
         encrypted_model= ""
@@ -91,9 +92,16 @@ class classic_job:
 
         r = common.iris_data(**param)
         iris_input = r[1]
-        param = {"sha3-hex":iris_input}
+        param = {"sha3":"",
+                "use-param":iris_input}
         r = common.fid_terminus(**param)
         param_hash = r[1]
+
+        #6.0 call terminus to generate model hash
+        param = {"sha3":"",
+                "use-param":model}
+        r = common.fid_terminus(**param)
+        model_hash = r[1]
 
         #6. call terminus to generate allowance
         allowance_file = self.name + ".classify.allowance.json"
@@ -101,7 +109,10 @@ class classic_job:
                 "use-privatekey-file":key_file,
                 "param-format":"hex",
                 "output":allowance_file,
-                "use-param":param_hash
+                "use-param":param_hash.strip(),
+                "use-enclave-hash":self.read_parser_hash(),
+                "tee-pubkey":pkey,
+                "dhash":model_hash
                 }
         common.fid_terminus(**param)
         allowance_json = {}
@@ -124,17 +135,16 @@ class classic_job:
             "dian_pkey":pkey,
             "model":{
                 "model_data":encrypted_model,
-                "allowance":{
-                    "encrypted_sig":"",
-                    "pkey":shukey_json["public-key"],
-                    }
+                "public-key":shukey_json["public-key"]
                 },
             "param":{
                 "param_data":iris_input,
-                "allowance":{
+                "public-key":"",
+                "allowances":[{
                     "encrypted_sig":allowance_json["encrypted_sig"],
-                    "pkey":allowance_json["pkey"],
-                    }
+                    "public-key":allowance_json["pkey"],
+                    "data_hash":model_hash
+                    }]
                 }}
 
         parser_input_file = self.name + ".classifier.parser_input.json"

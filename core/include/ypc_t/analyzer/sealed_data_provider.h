@@ -93,7 +93,8 @@ public:
     return ret;
   }
 
-  const bytes &data_hash() const { return m_actual_data_hash; }
+  virtual const bytes &data_hash() const { return m_actual_data_hash; }
+  const bytes &private_key() const { return m_private_key; }
 
 protected:
   bytes m_actual_data_hash;

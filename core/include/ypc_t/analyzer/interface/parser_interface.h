@@ -1,6 +1,6 @@
 #pragma once
+#include "ypc_t/analyzer/internal/data_streams/noinput_data_stream.h"
 #include "ypc_t/analyzer/internal/is_multi_datasource.h"
-#include "ypc_t/analyzer/internal/noinput_data_stream.h"
 #include "ypc_t/analyzer/var/data_source_var.h"
 #include "ypc_t/analyzer/var/parser_var.h"
 

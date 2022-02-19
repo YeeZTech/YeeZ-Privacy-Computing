@@ -148,8 +148,12 @@ uint32_t load_and_check_key_pair(const uint8_t *pkey, uint32_t pkey_size,
   }
   return stbox::stx_status::success;
 }
+typedef ::ypc::nt<stbox::bytes> ntt;
+define_nt(shu_skey_nt, stbox::bytes);
+define_nt(dian_pkey_nt, stbox::bytes);
 
-std::unordered_map<stbox::bytes, stbox::bytes>
+typedef ff::util::ntobject<dian_pkey_nt, shu_skey_nt> private_key_info_t;
+std::unordered_map<stbox::bytes, private_key_info_t>
     private_key_table; //<public_key+enclave_hash, private_key>
 
 uint32_t forward_private_key(const uint8_t *encrypted_private_key,
@@ -210,7 +214,10 @@ uint32_t forward_private_key(const uint8_t *encrypted_private_key,
     return se_ret;
   }
 
-  private_key_table.insert(std::make_pair(str_msg_key, forward_skey));
+  private_key_info_t pki;
+  pki.set<shu_skey_nt, dian_pkey_nt>(forward_skey,
+                                     stbox::bytes(epublic_key, epkey_size));
+  private_key_table.insert(std::make_pair(str_msg_key, pki));
   LOG(INFO) << "forward private key succ! key+enclave:" << str_msg_key;
 
   return se_ret;
@@ -235,7 +242,8 @@ stbox::bytes handle_pkg(const uint8_t *data, size_t data_len,
 
         auto iter = private_key_table.find(str_msg_key);
         if (iter != private_key_table.end()) {
-          ret = iter->second;
+          ret = iter->second.get<shu_skey_nt>() +
+                iter->second.get<dian_pkey_nt>();
           return;
         }
         LOG(INFO) << "try to find " << str_msg_key << " failed";
@@ -243,7 +251,8 @@ stbox::bytes handle_pkg(const uint8_t *data, size_t data_len,
         str_msg_key = pkey + any_enclave_hash;
         iter = private_key_table.find(str_msg_key);
         if (iter != private_key_table.end()) {
-          ret = iter->second;
+          ret = iter->second.get<shu_skey_nt>() +
+                iter->second.get<dian_pkey_nt>();
           return;
         }
         LOG(INFO) << "try to find " << str_msg_key << " failed";

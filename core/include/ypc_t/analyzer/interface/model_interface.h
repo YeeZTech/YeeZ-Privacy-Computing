@@ -40,9 +40,9 @@ public:
         make_package<cast_obj_to_package<ntt::model_t>::type>::from_bytes(model,
                                                                           len);
 
-    stbox::bytes private_key;
+    stbox::bytes private_key, dian_pkey;
     ret = keymgr_interface_t::request_private_key_for_public_key(
-        mod.get<ntt::allowance>().get<ntt::pkey>(), private_key);
+        mod.get<ntt::pkey>(), private_key, dian_pkey);
     if (ret) {
       LOG(ERROR) << "request_private_key failed: " << stbox::status_string(ret);
       return ret;
@@ -66,6 +66,13 @@ public:
     model_var_t::m_model =
         make_package<typename cast_obj_to_package<ModelT>::type>::from_bytes(
             decrypted_model);
+    model_var_t::m_model_pkey = mod.get<ntt::pkey>();
+    ret = ecc::sha3_256(model_data, model_var_t::m_model_hash);
+    if (ret) {
+      LOG(ERROR) << "sha3_256 failed: " << stbox::status_string(ret);
+      return ret;
+    }
+
     return stbox::stx_status::success;
   }
 };

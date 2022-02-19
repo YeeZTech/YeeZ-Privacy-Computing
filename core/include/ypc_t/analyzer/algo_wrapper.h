@@ -1,36 +1,45 @@
 #pragma once
 #include "ypc_t/analyzer/helper/parser_type_traits.h"
 #include "ypc_t/analyzer/interface/algo_interface.h"
+#include "ypc_t/analyzer/interface/allowance_interface.h"
 #include "ypc_t/analyzer/interface/data_hash_interface.h"
 #include "ypc_t/analyzer/interface/data_interface.h"
 #include "ypc_t/analyzer/interface/model_interface.h"
 #include "ypc_t/analyzer/interface/parser_interface.h"
 
+#include "ypc_t/analyzer/internal/data_streams/multi_data_stream.h"
+#include "ypc_t/analyzer/internal/data_streams/noinput_data_stream.h"
+#include "ypc_t/analyzer/internal/data_streams/raw_data_stream.h"
+#include "ypc_t/analyzer/internal/data_streams/sealed_data_stream.h"
 #include "ypc_t/analyzer/internal/keymgr_session.h"
-#include "ypc_t/analyzer/internal/local_result.h"
-#include "ypc_t/analyzer/internal/multi_data_stream.h"
-#include "ypc_t/analyzer/internal/noinput_data_stream.h"
-#include "ypc_t/analyzer/internal/offchain_result.h"
-#include "ypc_t/analyzer/internal/onchain_result.h"
-#include "ypc_t/analyzer/internal/raw_data_stream.h"
-#include "ypc_t/analyzer/internal/sealed_data_stream.h"
+#include "ypc_t/analyzer/internal/results/local_result.h"
+#include "ypc_t/analyzer/internal/results/offchain_result.h"
+#include "ypc_t/analyzer/internal/results/onchain_result.h"
 
 namespace ypc {
 template <typename Crypto, typename DataSession, typename ParserT,
-          typename Result, typename ModelT = void>
+          typename Result, typename ModelT = void,
+          template <typename> class DataAllowancePolicy = ignore_data_allowance,
+          template <typename> class ModelAllowancePolicy =
+              ignore_model_allowance>
 class algo_wrapper
-    : virtual public internal::algo_interface<Crypto, ParserT, Result, ModelT>,
+    : virtual public internal::algo_interface<
+          Crypto, DataSession, ParserT, Result, ModelT, DataAllowancePolicy,
+          ModelAllowancePolicy>,
       virtual public Result,
       virtual public internal::keymgr_session,
       virtual public internal::parser_interface<DataSession, ParserT>,
       virtual public internal::data_interface<Crypto, DataSession>,
-      virtual public internal::data_hash_interface<DataSession>,
+      virtual public internal::data_hash_interface<Crypto, DataSession>,
       virtual public internal::model_interface<Crypto, ModelT> {
   typedef internal::keymgr_session keymgr_session_t;
   typedef internal::parser_interface<DataSession, ParserT> parser_interface_t;
-  typedef internal::algo_interface<Crypto, ParserT, Result, ModelT>
+  typedef internal::algo_interface<Crypto, DataSession, ParserT, Result, ModelT,
+                                   DataAllowancePolicy, ModelAllowancePolicy>
       algo_interface_t;
-  typedef internal::data_hash_interface<DataSession> data_hash_interface_t;
+  typedef internal::data_hash_interface<Crypto, DataSession>
+      data_hash_interface_t;
+  typedef internal::data_interface<Crypto, DataSession> data_interface_t;
 
 public:
   uint32_t begin_parse_data_item() {
@@ -63,7 +72,13 @@ public:
   }
 
   uint32_t end_parse_data_item() {
-    uint32_t ret = Result::generate_result();
+    uint32_t ret = data_interface_t::check_actual_data_hash();
+    if (ret) {
+      LOG(ERROR) << "check_actual_ata_hash failed: "
+                 << stbox::status_string(ret);
+      return ret;
+    }
+    ret = Result::generate_result();
     if (ret) {
       LOG(ERROR) << "generate result failed: " << stbox::status_string(ret);
       return ret;

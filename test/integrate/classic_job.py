@@ -98,7 +98,8 @@ class classic_job:
 
         #4. call terminus to generate request
         param_output_url = self.name + "_param.json"
-        param = {"use-privatekey-file":key_file,
+        param = {"request":"",
+                "use-privatekey-file":key_file,
                 "tee-pubkey":pkey,
                 "use-param":self.input,
                 "param-format":"text",
@@ -136,10 +137,8 @@ class classic_job:
                     "shu_forward_signature":data_forward_json["forward_sig"],
                     "enclave_hash":data_forward_json["enclave_hash"]
                 },
-                "allowance":{
-                    "encrypted_sig":"",
-                    "pkey":""
-                    }
+                "public-key":data_shukey_json["public-key"],
+                "tag":"0"
                 }],
             "parser_path":self.parser_url,
             "keymgr_path":common.kmgr_enclave,
@@ -147,18 +146,13 @@ class classic_job:
             "dian_pkey":param_json["provider-pkey"],
             "model":{
                 "model_data":"",
-                "allowance":{
-                    "encrypted_sig":"",
-                    "pkey":"",
-                    }
+                "public-key":""
                 },
             "param":{
                 "param_data":param_json["encrypted-input"],
-                "allowance":{
-                    "encrypted_sig":"",
-                    "pkey":shukey_json["public-key"]
-                    }
-                }}
+                "public-key":shukey_json["public-key"],
+                "allowances":""
+            }}
 
         parser_input_file = self.name + "parser_input.json"
         with open(parser_input_file, "w") as of:
@@ -185,7 +179,8 @@ class classic_job:
 
         decrypted_result = self.name + ".result"
 
-        param = {"decrypt-hex":encrypted_result,
+        param = {"decrypt":"",
+                "use-param":encrypted_result,
                 "use-privatekey-file":key_file,
                 "output":decrypted_result}
         r = common.fid_terminus(**param);

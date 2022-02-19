@@ -40,7 +40,10 @@ ATT_STATUS(sealed_file_reach_end, 0xC1)
 ATT_STATUS(aes_invalid_data_size, 0xC2)
 ATT_STATUS(aes_invalid_cipher_size, 0xC3)
 ATT_STATUS(data_source_not_set, 0xC4)
-ATT_STATUS(extra_data_invalid_license, 0xD0)
-ATT_STATUS(extra_data_file_path_not_found, 0xD1)
-ATT_STATUS(extra_data_file_reach_end, 0xD2)
+ATT_STATUS(data_hash_not_same_as_expect, 0xC5)
+ATT_STATUS(aes_rand_fail, 0xC6)
+ATT_STATUS(allowance_use_inconsistent_pkey, 0xD0)
+ATT_STATUS(model_allowance_miss, 0xD1)
+ATT_STATUS(data_allowance_miss, 0xD2)
+
 

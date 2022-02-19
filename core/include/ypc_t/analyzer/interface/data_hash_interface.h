@@ -8,24 +8,32 @@
 namespace ypc {
 namespace internal {
 
-template <typename DataSession,
+template <typename Crypto, typename DataSession,
           bool has_multi_datasource = is_multi_datasource<DataSession>::value>
 class data_hash_interface : virtual public data_hash_var,
                             virtual public data_source_var<DataSession> {
 protected:
-  stbox::bytes set_data_hash() {
-    // TODO
-    return stbox::bytes();
+  void set_data_hash() {
+    stbox::bytes joint_bytes;
+    for (uint32_t i = 0; i < data_source_var<DataSession>::m_datasource.size();
+         ++i) {
+      auto t = data_source_var<DataSession>::m_datasource[i]->data_hash();
+      joint_bytes += t;
+      LOG(INFO) << i << "-th data with data hash: " << t;
+    }
+
+    Crypto::sha3_256(joint_bytes, data_hash_var::m_data_hash);
   }
 };
 
-template <> class data_hash_interface<noinput_data_stream, false> {
+template <typename Crypto>
+class data_hash_interface<Crypto, noinput_data_stream, false> {
 protected:
   void set_data_hash() {}
 };
 
-template <typename DataSession>
-class data_hash_interface<DataSession, false>
+template <typename Crypto, typename DataSession>
+class data_hash_interface<Crypto, DataSession, false>
     : virtual public data_hash_var,
       virtual public data_source_var<DataSession> {
   typedef data_source_var<DataSession> data_source_var_t;
