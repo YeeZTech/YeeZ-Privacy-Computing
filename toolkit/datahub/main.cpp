@@ -68,7 +68,9 @@ uint32_t seal_file(const std::string &plugin, const std::string &file,
     bytes s;
     batch.push_back(item_data);
     batch_size += item_data.size();
-    if (batch_size >= simple_sealed_file::blockfile_t::BlockSizeLimit - 1024) {
+    // if (batch_size >= simple_sealed_file::blockfile_t::BlockSizeLimit - 1024)
+    // {
+    if (batch_size >= ypc::utc::max_item_size) {
       write_batch(sf, batch, public_key);
       batch.clear();
       batch_size = 0;
@@ -85,10 +87,12 @@ uint32_t seal_file(const std::string &plugin, const std::string &file,
     ++pd;
     ++counter;
   }
+  if (batch.size() != 0) {
+    write_batch(sf, batch, public_key);
+    batch.clear();
+    batch_size = 0;
+  }
 
-  write_batch(sf, batch, public_key);
-  batch.clear();
-  batch_size = 0;
   std::cout << "\nDone read data count: " << pd.count() << std::endl;
   return 0;
 }

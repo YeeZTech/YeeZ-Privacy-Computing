@@ -11,6 +11,7 @@ template <typename BytesType> struct nt {
   define_nt(user_id, std::string);
   define_nt(timestamp, uint64_t);
 
+  define_nt(enclave_hash, BytesType);
   define_nt(encrypted_shu_skey, BytesType);
   define_nt(encrypted_skey, BytesType);
   define_nt(pkey, BytesType, "public-key");
@@ -30,7 +31,11 @@ template <typename BytesType> struct nt {
   typedef ::ff::util::ntobject<encrypted_sig, pkey, data_hash> allowance_t;
   define_nt(allowance, allowance_t);
   define_nt(allowances, std::vector<allowance_t>);
-  typedef ::ff::util::ntobject<param_data, pkey, allowances> param_t;
+
+  typedef ff::util::ntobject<enclave_hash, pkey, encrypted_sig>
+      forward_target_info_t;
+  define_nt(forward, forward_target_info_t);
+  typedef ::ff::util::ntobject<param_data, pkey, allowances, forward> param_t;
   define_nt(param, param_t);
   typedef ::ff::util::ntobject<model_data, pkey> model_t;
   define_nt(model, model_t);
@@ -51,6 +56,13 @@ template <typename BytesType> struct nt {
   typedef ::ff::net::ntpackage<0xf13e1f40, encrypted_result, data_hash,
                                result_signature, cost_signature>
       onchain_result_package_t;
+  typedef ff::util::ntobject<pkey, encrypted_shu_skey, shu_forward_signature,
+                             enclave_hash>
+      shu_info_t;
+  define_nt(shu_info, shu_info_t);
+
+  typedef ff::util::ntobject<shu_info, data_hash, encrypted_result>
+      forward_result_t;
 
   typedef ::ff::net::ntpackage<0xf13e1f41, encrypted_result, data_hash,
                                result_signature, cost_signature,

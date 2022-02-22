@@ -57,7 +57,6 @@ public:
       : m_crypto(crypto), m_instance(crypto.get()->m_crypto.get()) {}
 
   request generate_request(const py::bytes &param, const py::bytes &tee_pub_key,
-                           const py::bytes &data_hash,
                            const py::bytes &enclave_hash,
                            const py::bytes &private_key) {
     auto cast = [](const py::bytes &p) -> ypc::bytes {
@@ -66,8 +65,7 @@ public:
       return sk;
     };
     auto r = m_instance.generate_request(cast(param), cast(tee_pub_key),
-                                         cast(data_hash), cast(enclave_hash),
-                                         cast(private_key));
+                                         cast(enclave_hash), cast(private_key));
     return request(r.encrypted_param, r.encrypted_skey, r.signature);
   }
 
@@ -108,8 +106,8 @@ PYBIND11_MODULE(pyterminus, m) {
       .def("generate_request",
            &single_data_onchain_result_wrapper::generate_request,
            "Generate request to process", py::arg("param"),
-           py::arg("tee_pub_key"), py::arg("data_hash"),
-           py::arg("enclave_hash"), py::arg("private_key"))
+           py::arg("tee_pub_key"), py::arg("enclave_hash"),
+           py::arg("private_key"))
       .def("decrypt_result",
            &single_data_onchain_result_wrapper::decrypt_result,
            "Decrypt result", py::arg("result"), py::arg("private_key"));

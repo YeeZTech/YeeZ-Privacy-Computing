@@ -9,7 +9,7 @@ template <typename Crypto> struct allowance {
 
   template <typename BytesType>
   static uint32_t check(const BytesType &private_key, const BytesType &msg,
-                        const BytesType allowance) {
+                        const BytesType &allowance) {
     BytesType decrypted_allowance;
     uint32_t ret = ecc::decrypt_message_with_prefix(
         private_key, allowance, decrypted_allowance,

@@ -53,6 +53,9 @@ int generate_allowance(ypc::terminus::crypto_pack *crypto,
 int generate_request(ypc::terminus::crypto_pack *crypto,
                      const boost::program_options::variables_map &vm);
 
+int gen_relay_result_proof(ypc::terminus::crypto_pack *crypto,
+                           const boost::program_options::variables_map &vm);
+
 std::tuple<boost::program_options::variables_map,
            std::function<uint32_t(ypc::terminus::crypto_pack *crypto)>>
 parse_command_line(int argc, char *argv[]);

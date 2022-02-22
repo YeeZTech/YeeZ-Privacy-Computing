@@ -24,16 +24,18 @@ uint32_t parser::parse() {
   auto shu_forward_sig =
       m_param.get<shu_info>().get<ntt::shu_forward_signature>();
 
-  auto ret = m_keymgr->forward_private_key(
-      shu_skey.data(), shu_skey.size(), epkey.data(), epkey.size(),
-      ehash.data(), ehash.size(), shu_forward_sig.data(),
-      shu_forward_sig.size());
+  uint32_t ret = 0;
+  if (shu_skey.size() > 0) {
+    ret = m_keymgr->forward_private_key(
+        shu_skey.data(), shu_skey.size(), epkey.data(), epkey.size(),
+        ehash.data(), ehash.size(), shu_forward_sig.data(),
+        shu_forward_sig.size());
 
-  if (ret) {
-    LOG(ERROR) << "forward_message got error " << ypc::status_string(ret);
-    return ret;
+    if (ret) {
+      LOG(ERROR) << "forward_message got error " << ypc::status_string(ret);
+      return ret;
+    }
   }
-
   m_ptype.value = m_parser->get_parser_type();
   ypc::bytes actual_hash;
   ret = m_parser->get_enclave_hash(actual_hash);
@@ -116,6 +118,12 @@ uint32_t parser::dump_result(const ypc::bytes &res) {
 
   } else if (m_ptype.d.result_type == ypc::utc::local_result_parser) {
     m_result_str = std::string((const char *)res.data(), res.size());
+  } else if (m_ptype.d.result_type == ypc::utc::forward_result_parser) {
+    auto pkg = ypc::make_package<typename ypc::cast_obj_to_package<
+        ntt::forward_result_t>::type>::from_bytes(res);
+
+    typename ypc::cast_package_to_obj<ntt::forward_result_t>::type p = pkg;
+    m_result_str = ypc::ntjson::to_json(p);
   } else {
     return ypc::parser_unknown_result;
   }

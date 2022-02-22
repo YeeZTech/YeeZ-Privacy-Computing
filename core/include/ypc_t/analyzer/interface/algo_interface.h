@@ -5,6 +5,7 @@
 #include "stbox/stx_status.h"
 #include "ypc_t/analyzer/interface/allowance_interface.h"
 #include "ypc_t/analyzer/interface/do_parse_interface.h"
+#include "ypc_t/analyzer/interface/forward_interface.h"
 #include "ypc_t/analyzer/interface/keymgr_interface.h"
 #include "ypc_t/analyzer/internal/is_param_encrypted.h"
 #include "ypc_t/analyzer/internal/keymgr_session.h"
@@ -38,7 +39,8 @@ class algo_interface<Crypto, DataSession, ParserT, Result, ModelT,
       virtual public encrypted_param_var,
       virtual public check_allowance_interface<Crypto, ModelT, DataSession,
                                                DataAllowancePolicy,
-                                               ModelAllowancePolicy> {
+                                               ModelAllowancePolicy>,
+      virtual public forward_interface<Crypto, Result> {
   typedef Crypto ecc;
   typedef keymgr_interface<Crypto> keymgr_interface_t;
   typedef request_key_var<true> request_key_var_t;
@@ -46,6 +48,7 @@ class algo_interface<Crypto, DataSession, ParserT, Result, ModelT,
   typedef check_allowance_interface<Crypto, ModelT, DataSession,
                                     DataAllowancePolicy, ModelAllowancePolicy>
       allowance_checker_t;
+  typedef forward_interface<Crypto, Result> forward_interface_t;
 
 protected:
   uint32_t parse_data_item_impl(const uint8_t *input_param, uint32_t len) {
@@ -79,6 +82,13 @@ protected:
     ret = allowance_checker_t::check_allowance(param);
     if (ret) {
       LOG(ERROR) << "check_allowance failed: " << stbox::status_string(ret);
+      return ret;
+    }
+
+    ret = forward_interface_t::set_forward_target_info(param);
+    if (ret) {
+      LOG(ERROR) << "set_forward_target_info failed: "
+                 << stbox::status_string(ret);
       return ret;
     }
 

@@ -7,6 +7,7 @@ parse_command_line(int argc, char *argv[]) {
   bp::options_description all("YeeZ Terminus");
   bp::options_description general("General Options");
   bp::options_description key("ECC Key operations");
+  bp::options_description relay("Relay result to another enclave");
   bp::options_description request("Generate Request");
   bp::options_description forward("Generate Shu forward");
   bp::options_description allowance("Generate allowance");
@@ -18,11 +19,12 @@ parse_command_line(int argc, char *argv[]) {
   general.add_options()
     ("gen-key", "generate a ECC key pair to encrypt/decrypt request")
     ("request", "generate request")
-    ("forward", "forward private to enclave")
+    ("forward", "forward private key to enclave")
     ("allowance", "generate allowance for param")
     ("encrypt", "to encrypt message ")
     ("decrypt", "to decrypt message ")
     ("sha3", "to SHA3-256 message ")
+    ("relay", "generate relay info")
     ("help", "help message");
 
   key.add_options()
@@ -75,7 +77,16 @@ parse_command_line(int argc, char *argv[]) {
     ("use-privatekey-file", bp::value<std::string>(), "local private key file")
     ("use-privatekey-hex", bp::value<std::string>(), "local private key")
     ("use-enclave-hash", bp::value<std::string>()->required(), "enclave hash")
-    ("dhash", bp::value<std::string>()->required(), "data hash, or model hash")
+    ("output", bp::value<std::string>(), "output result to file with JSON format");
+  relay.add_options()
+    ("use-param", bp::value<std::string>()->required(), "data to sha")
+    ("param-format", bp::value<std::string>()->default_value("hex"), "param format, [ hex | text ]")
+    ("relay-tee-pubkey", bp::value<std::string>()->required(), "TEE public key, or Dian public key")
+    ("relay-enclave-hash", bp::value<std::string>()->required(), "enclave hash")
+    ("target-tee-pubkey", bp::value<std::string>()->required(), "TEE public key, or Dian public key")
+    ("target-enclave-hash", bp::value<std::string>()->required(), "enclave hash")
+    ("use-privatekey-file", bp::value<std::string>(), "local private key file")
+    ("use-privatekey-hex", bp::value<std::string>(), "local private key")
     ("output", bp::value<std::string>(), "output result to file with JSON format");
 
   // clang-format on
@@ -84,6 +95,7 @@ parse_command_line(int argc, char *argv[]) {
       .add(key)
       .add(forward)
       .add(allowance)
+      .add(relay)
       .add(encrypt)
       .add(decrypt)
       .add(sha3)
@@ -109,6 +121,7 @@ parse_command_line(int argc, char *argv[]) {
   nds.push_back({"encrypt", encrypt, encrypt_message});
   nds.push_back({"allowance", allowance, generate_allowance});
   nds.push_back({"sha3", sha3, sha3_message});
+  nds.push_back({"relay", relay, gen_relay_result_proof});
 
   for (auto it : nds) {
     if (vm.count(std::get<0>(it))) {

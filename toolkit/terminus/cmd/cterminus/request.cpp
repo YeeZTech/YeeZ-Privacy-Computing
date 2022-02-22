@@ -2,20 +2,11 @@
 
 int generate_request(ypc::terminus::crypto_pack *crypto,
                      const boost::program_options::variables_map &vm) {
-  if (!vm.count("dhash")) {
-    std::cout << "No data hash is provided!" << std::endl;
-    return -1;
-  }
-
-  ypc::bytes dhash =
-      ypc::hex_bytes(vm["dhash"].as<std::string>()).as<ypc::bytes>();
-
   ypc::bytes tee_pubkey = get_param_tee_pubkey(vm);
 
   ypc::bytes private_key = get_param_privatekey(vm);
 
   std::unordered_map<std::string, ypc::bytes> result;
-  result["data-hash"] = dhash;
   result["provider-pkey"] = tee_pubkey;
 
   ypc::bytes param = get_param_use_param(vm);
@@ -32,7 +23,7 @@ int generate_request(ypc::terminus::crypto_pack *crypto,
   result["program-enclave-hash"] =
       ypc::bytes(enclave_hash.data(), enclave_hash.size());
 
-  auto request = std_interaction.generate_request(param, tee_pubkey, dhash,
+  auto request = std_interaction.generate_request(param, tee_pubkey,
                                                   enclave_hash, private_key);
   if (request.encrypted_param.size() == 0) {
     std::cerr << "failed to encrypt param" << std::endl;

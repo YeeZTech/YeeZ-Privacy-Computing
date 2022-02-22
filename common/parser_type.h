@@ -6,10 +6,11 @@ namespace utc {
 
 constexpr static uint32_t parser_type_length = sizeof(uint32_t);
 
-constexpr static uint32_t unknown_result_parser = 1;
+constexpr static uint32_t unknown_result_parser = 0;
 constexpr static uint32_t onchain_result_parser = 1;
 constexpr static uint32_t offchain_result_parser = 2;
 constexpr static uint32_t local_result_parser = 0x3;
+constexpr static uint32_t forward_result_parser = 0x4;
 
 constexpr static uint32_t unknown_datasource_parser = 0;
 constexpr static uint32_t single_sealed_datasource_parser = 1;

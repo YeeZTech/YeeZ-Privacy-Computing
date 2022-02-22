@@ -9,7 +9,6 @@ single_data_onchain_result::single_data_onchain_result(crypto_pack *crypto)
 single_data_onchain_result::request
 single_data_onchain_result::generate_request(const bytes &param,
                                              const bytes &tee_pub_key,
-                                             const bytes &data_hash,
                                              const bytes &enclave_hash,
                                              const bytes &private_key) {
 

@@ -41,5 +41,7 @@ protected:
 } // namespace internal
 template <typename... ARGS>
 using filter = internal::filter_impl<ntobject<ARGS...>>;
+
+template <typename T> using filter_t = internal::filter_impl<T>;
 } // namespace processor
 } // namespace hpda

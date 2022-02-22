@@ -46,9 +46,22 @@ public:
 
 template <typename DataSession, typename ParserT>
 class parser_interface<DataSession, ParserT, true>
-    : virtual public data_source_var<DataSession> {
-  uint32_t create_parser(){// TODO
-                           /*m_parser.reset(new ParserT(m_datasource)); */
+    : virtual public data_source_var<DataSession>,
+      virtual public parser_var<ParserT> {
+  typedef data_source_var<DataSession> data_source_var_t;
+  typedef parser_var<ParserT> parser_var_t;
+
+public:
+  uint32_t create_parser() {
+    if (data_source_var_t::m_datasource.empty()) {
+      return stbox::stx_status::data_source_not_set;
+    }
+    parser_var_t::m_engine.reset(new ::hpda::engine());
+    for (auto ds : data_source_var_t::m_datasource) {
+      ds->set_engine(parser_var_t::m_engine.get());
+    }
+
+    parser_var_t::m_parser.reset(new ParserT(data_source_var_t::m_datasource));
     return stbox::stx_status::success;
   };
 };

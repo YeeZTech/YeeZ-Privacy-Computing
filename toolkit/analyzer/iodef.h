@@ -17,7 +17,7 @@ typedef ::ff::util::ntobject<shu_pkey, ntt::encrypted_shu_skey,
 
 define_nt(shu_info, shu_info_t);
 typedef ::ff::util::ntobject<input_data_url, input_data_hash, shu_info,
-                             ntt::pkey, ntt::tag>
+                             ntt::tag>
     data_item_t;
 define_nt(input_data, std::vector<data_item_t>);
 define_nt(parser_path, std::string);

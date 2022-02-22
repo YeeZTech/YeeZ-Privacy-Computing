@@ -1,4 +1,5 @@
 #pragma once
+#include "corecommon/package.h"
 #include "csv.h"
 #include "csv_read_assign_helper.h"
 #include <boost/property_tree/json_parser.hpp>
