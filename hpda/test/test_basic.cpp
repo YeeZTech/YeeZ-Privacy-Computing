@@ -9,16 +9,21 @@ typedef hpda::ntobject<hash, value> data_item_t;
 
 TEST(input_output, empty) {
   hpda::extractor::raw_data<hash, value> rd;
+  hpda::engine engine;
+  rd.set_engine(&engine);
 
   hpda::output::memory_output<hash, value> mo(&rd);
 
-  mo.run();
+  engine.run();
   auto s = mo.values().size();
   EXPECT_EQ(s, 0);
 }
 
 TEST(input_output, basic) {
   hpda::extractor::raw_data<hash, value> rd;
+  hpda::engine engine;
+  rd.set_engine(&engine);
+
   for (int i = 0; i < 1000; i++) {
     data_item_t d;
     d.set<hash, value>(std::to_string(i), i);
@@ -27,7 +32,7 @@ TEST(input_output, basic) {
 
   hpda::output::memory_output<hash, value> mo(&rd);
 
-  mo.run();
+  engine.run();
 
   auto vs = mo.values();
   EXPECT_EQ(vs.size(), 1000);

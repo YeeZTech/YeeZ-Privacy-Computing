@@ -1,4 +1,6 @@
 #pragma once
+#include "common/parser_type.h"
+#include "corecommon/nt_cols.h"
 #include "sgx_eid.h"
 #include "sgx_error.h"
 #include "ypc/byte.h"
@@ -7,6 +9,8 @@
 #include <ypc/ref.h>
 
 using stx_status = stbox::stx_status;
+using parser_type_t = ypc::utc::parser_type_t;
+namespace ypc {
 class parser_sgx_module : public stbox::sgx_module {
 public:
   parser_sgx_module(const char *mod_path);
@@ -17,10 +21,12 @@ public:
   uint32_t end_parse_data_item();
 
   uint32_t get_enclave_hash(ypc::bref &enclave_hash);
-  uint32_t get_encrypted_result_and_signature(ypc::bref &encrypted_res,
-                                              ypc::bref &result_sig);
 
-  uint32_t get_data_hash(ypc::bref &data_hash);
+  uint32_t get_encrypted_result_hash(ypc::bref &hash);
+
+  uint32_t get_analyze_result(ypc::nt<ypc::bytes>::ypc_result_package_t &res);
+
+  parser_type_t get_parser_type();
 
   uint32_t add_block_parse_result(uint16_t block_index,
                                   const uint8_t *block_result,
@@ -42,5 +48,8 @@ public:
     return merge_parse_result(encrypted_param.data(), encrypted_param.size());
   }
 
+  uint32_t set_extra_data(const uint8_t *extra_data, uint32_t in_size);
+
   bool need_continue();
 };
+} // namespace ypc

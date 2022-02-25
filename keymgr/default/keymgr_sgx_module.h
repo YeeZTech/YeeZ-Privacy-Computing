@@ -7,6 +7,7 @@
 #include "stbox/tsgx/channel/dh_cdef.h"
 #include "stbox/usgx/sgx_module.h"
 #include "ypc/ref.h"
+#include <ypc/byte.h>
 
 using stx_status = stbox::stx_status;
 using bref = ypc::bref;
@@ -35,18 +36,6 @@ public:
                            uint32_t sealed_size, const uint8_t *cipher,
                            uint32_t cipher_size, bref &data);
 
-  uint32_t backup_private_key(const uint8_t *sealed_private_key,
-                              uint32_t sealed_size, const uint8_t *pub_key,
-                              uint32_t pkey_size, bref &backup_private_key);
-
-  uint32_t restore_private_key(const uint8_t *backup_private_key,
-                               uint32_t bp_size, const uint8_t *priv_key,
-                               uint32_t skey_size, bref &sealed_private_key);
-
-  uint32_t forward_private_key(const uint8_t *sealed_private_key,
-                               uint32_t sealed_size, const uint8_t *pub_key,
-                               uint32_t pkey_size, bref &forward_private_key);
-
   uint32_t session_request(sgx_dh_msg1_t *dh_msg1, uint32_t *session_id);
 
   uint32_t exchange_report(sgx_dh_msg2_t *dh_msg2, sgx_dh_msg3_t *dh_msg3,
@@ -63,4 +52,15 @@ public:
                            uint32_t ehash_size, const uint8_t *verify_key,
                            uint32_t vpkey_size, const uint8_t *sig,
                            uint32_t sig_size);
+
+  uint32_t
+  forward_extra_data_usage_license(const ypc::bytes &enclave_pkey,
+                                   const ypc::bytes &data_hash,
+                                   const ypc::bytes &data_usage_license);
+
+  uint32_t set_access_control_policy(const ypc::bytes &policy);
+
+  uint32_t create_report_for_pkey(const sgx_target_info_t *p_qe3_target,
+                                  const stbox::bytes &pkey,
+                                  sgx_report_t *p_report);
 };

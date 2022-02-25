@@ -10,8 +10,7 @@ dh_session::~dh_session() {}
 stx_status dh_session::send_request_recv_response(const char *inp_buff,
                                                   size_t inp_buff_len,
                                                   size_t max_out_buff_size,
-                                                  char **out_buff,
-                                                  size_t *out_buff_len) {
+                                                  bytes &out_buff) {
   if (!m_send_request_ocall_set || !m_verify_peer_enclave_trust_set) {
     return stx_status::invalid_parameter_error;
   }
@@ -22,7 +21,6 @@ stx_status dh_session::send_request_recv_response(const char *inp_buff,
   uint32_t retstatus;
   secure_message_t *req_message = nullptr;
   secure_message_t *resp_message = nullptr;
-  uint8_t *decrypted_data = nullptr;
   uint32_t decrypted_data_length;
   uint32_t plain_text_offset;
   uint8_t l_tag[TAG_SIZE];
@@ -40,12 +38,6 @@ stx_status dh_session::send_request_recv_response(const char *inp_buff,
       free(resp_message);
     }
     resp_message = nullptr;
-  });
-  scope_guard _decrypt([&decrypted_data]() {
-    if (decrypted_data) {
-      free(decrypted_data);
-    }
-    decrypted_data = nullptr;
   });
 
   // TODO: we may need to check the status, or state here
@@ -91,13 +83,6 @@ stx_status dh_session::send_request_recv_response(const char *inp_buff,
     return static_cast<stx_status>(status);
   }
 
-  // Allocate memory for the response payload to be copied
-  *out_buff = (char *)malloc(max_out_buff_size);
-  if (!*out_buff) {
-    return stx_status::malloc_error;
-  }
-  memset(*out_buff, 0, max_out_buff_size);
-
   // Allocate memory for the response message
   resp_message =
       (secure_message_t *)malloc(sizeof(secure_message_t) + max_out_buff_size);
@@ -127,19 +112,15 @@ stx_status dh_session::send_request_recv_response(const char *inp_buff,
 
   decrypted_data_length = resp_message->message_aes_gcm_data.payload_size;
   plain_text_offset = decrypted_data_length;
-  decrypted_data = (uint8_t *)malloc(decrypted_data_length);
+  out_buff = bytes(decrypted_data_length);
 
-  if (!decrypted_data) {
-    return stx_status::malloc_error;
-  }
   memset(&l_tag, 0, TAG_SIZE);
 
-  memset(decrypted_data, 0, decrypted_data_length);
 
   // Decrypt the response message payload
   status = sgx_rijndael128GCM_decrypt(
       &m_state.active.AEK, resp_message->message_aes_gcm_data.payload,
-      decrypted_data_length, decrypted_data,
+      out_buff.size(), out_buff.data(),
       reinterpret_cast<uint8_t *>(
           &(resp_message->message_aes_gcm_data.reserved)),
       sizeof(resp_message->message_aes_gcm_data.reserved),
@@ -159,14 +140,6 @@ stx_status dh_session::send_request_recv_response(const char *inp_buff,
 
   // Update the value of the session nonce in the source enclave
   m_state.active.counter = m_state.active.counter + 1;
-
-  //  TODO
-  // memcpy(out_buff_len, &decrypted_data_length,
-  // sizeof(decrypted_data_length));
-  // FIX
-  *out_buff_len = decrypted_data_length;
-  memcpy(*out_buff, decrypted_data, decrypted_data_length);
-
   return stx_status::success;
 }
 

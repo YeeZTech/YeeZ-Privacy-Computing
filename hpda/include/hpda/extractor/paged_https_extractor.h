@@ -25,7 +25,7 @@ public:
                              const end_index_picker_t &end_index_picker);
 
   virtual ~paged_https_extractor_impl();
-  virtual bool next_output();
+  virtual bool process();
 
   virtual std::string output_value();
 

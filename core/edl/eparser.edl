@@ -1,11 +1,10 @@
-/* Enclave.edl - Top EDL file. */
 
 enclave {
   include "sgx_eid.h"
   include "stbox/tsgx/channel/dh_cdef.h"
   from "sgx_tstdc.edl" import *;
   from "yaenclave.edl" import *;
-  from "ecc.edl" import *;
+  from "stbox.edl" import *;
 
   trusted {
     public uint32_t begin_parse_data_item();
@@ -15,12 +14,8 @@ enclave {
     public uint32_t get_enclave_hash_size();
     public uint32_t get_enclave_hash([out, size=hash_size] uint8_t * hash, uint32_t hash_size);
 
-    public uint32_t get_encrypted_result_size();
-    public uint32_t get_encrypted_result_and_signature([out, size=res_size] uint8_t * encrypted_res, uint32_t res_size,
-                                                       [out, size=sig_size] uint8_t * result_sig, uint32_t sig_size);
-
-    public uint32_t get_data_hash_size();
-    public uint32_t get_data_hash([out, size=hash_size] uint8_t * hash, uint32_t hash_size);
+    public uint32_t get_analyze_result_size();
+    public uint32_t get_analyze_result([out, size=res_size] uint8_t * analyze_result, uint32_t res_size);
 
     public uint32_t add_block_parse_result(uint16_t block_index,
     [in, size=res_size] uint8_t * block_result, uint32_t res_size, [in, size=hash_size] uint8_t *data_hash,
@@ -28,10 +23,15 @@ enclave {
                                           uint32_t sig_size);
     public uint32_t merge_parse_result([in, size=len] uint8_t * encrypted_param, uint32_t len);
     public uint32_t need_continue();
+
+    public uint32_t set_extra_data([in, size=in_size] uint8_t * extra_data, uint32_t in_size);
   };
 
 
   untrusted {
     /* define OCALLs here. */
+    uint32_t ocall_http_request([in, size=service_size] const char * service, uint32_t service_size,
+                                [in, size=param_size] const char * param, uint32_t param_size,
+                                [out, size=resp_size] char * resp, uint32_t resp_size);
   };
 };

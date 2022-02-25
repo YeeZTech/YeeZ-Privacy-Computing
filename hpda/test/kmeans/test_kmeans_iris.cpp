@@ -48,6 +48,7 @@ iris_data_t operator+(const iris_data_t &p1, const iris_data_t &p2) {
 
 iris_data_t operator/(const iris_data_t &p1, size_t v) {
   iris_data_t d;
+  LOG(INFO) << "operator /" << v;
   d.set<sepal_len>(p1.get<sepal_len>() / v);
   d.set<sepal_wid>(p1.get<sepal_wid>() / v);
   d.set<petal_len>(p1.get<petal_len>() / v);
@@ -92,10 +93,14 @@ TEST(kmeans_iris, basic) {
         return tree.get<int>("end");
       });
 
+  hpda::engine engine;
+  phe.set_engine(&engine);
+
   hpda::processor::json_to_data_batch<iris_data, species> trans(
       &phe,
       [](const boost::property_tree::ptree &ptree)
           -> const boost::property_tree::ptree & {
+        LOG(INFO) << "t";
         return ptree.get_child("data");
       },
       km_convert_to_iris);
@@ -110,8 +115,10 @@ TEST(kmeans_iris, basic) {
 
   hpda::output::memory_output<iris_data, species, iid> mo(
       km.data_with_cluster_stream());
-  mo.run();
+  LOG(INFO) << "engine.run() start";
+  engine.run();
 
+  LOG(INFO) << "engine.run() end";
   for (auto it : mo.values()) {
     std::cout << it.get<species>() << ", " << it.get<iid>() << std::endl;
   }

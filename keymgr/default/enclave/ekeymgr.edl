@@ -9,22 +9,6 @@ enclave {
     trusted {
     /* define ECALLs here. */
 
-    public uint32_t get_backup_private_key_size(uint32_t sealed_size);
-    public uint32_t backup_private_key([in, size=sealed_size] uint8_t * sealed_private_key, uint32_t sealed_size,
-                                       [in, size=pkey_size] uint8_t * pub_key, uint32_t pkey_size,
-                                       [out, size=bp_size] uint8_t * backup_private_key, uint32_t bp_size);
-
-    public uint32_t get_restore_private_key_size(uint32_t bp_size);
-    public uint32_t restore_private_key([in, size=bp_size] uint8_t * backup_private_key, uint32_t bp_size,
-                                        [in, size=skey_size] uint8_t * priv_key, uint32_t skey_size,
-                                        [out, size=sealed_size] uint8_t * sealed_private_key, uint32_t sealed_size);
-
-
-    public uint32_t get_forward_private_key_size(uint32_t sealed_size);
-    public uint32_t forward_private_key([in, size=sealed_size] uint8_t * sealed_private_key, uint32_t sealed_size,
-                                       [in, size=pkey_size] uint8_t * pub_key, uint32_t pkey_size,
-                                       [out, size=fwd_size] uint8_t * fwd_private_key, uint32_t fwd_size);
-
     public uint32_t msession_request([out] sgx_dh_msg1_t *dh_msg1, [out] uint32_t *session_id);
     public uint32_t mexchange_report([in] sgx_dh_msg2_t *dh_msg2, [out] sgx_dh_msg3_t *dh_msg3, uint32_t session_id);
     public uint32_t mgenerate_response([in, size = req_message_size] secure_message_t* req_message, size_t req_message_size, size_t max_payload_size, [out, size=resp_message_size] secure_message_t* resp_message, size_t resp_message_size, uint32_t session_id);
@@ -37,12 +21,28 @@ enclave {
                                     [in, size=vpkey_size] uint8_t * verify_key, uint32_t vpkey_size,
                                     [in, size=sig_size] uint8_t * sig, uint32_t sig_size);
 
+    public uint32_t forward_extra_data_usage_license([in, size=epkey_size] uint8_t * enclave_pkey, uint32_t epkey_size,
+                  [in, size=hash_size] uint8_t * data_hash, uint32_t hash_size,
+                  [in, size=license_size] uint8_t * usage_license, uint32_t license_size);
+
+    public uint32_t set_access_control_policy([in, size=in_size] uint8_t * policy, uint32_t in_size);
+
+    public uint32_t create_report_for_pkey([in]const sgx_target_info_t* p_qe3_target,
+                                           [in, size=pkey_size] const uint8_t * pkey,
+                                           uint32_t pkey_size,
+                                           [out]sgx_report_t* p_report);
+
     };
 
     untrusted {
         /* define OCALLs here. */
-        uint32_t ocall_load_key_pair([in, size=path_size] const char * key_path, uint32_t path_size,
-                                     [in, size=pkey_size] uint8_t * public_key, uint32_t pkey_size,
-                                     [out, size=sealed_size] uint8_t * sealed_privated_key, uint32_t sealed_size);
+    uint32_t ocall_load_key_pair([in, size=path_size] const char * key_path, uint32_t path_size,
+                                  [in, size=pkey_size] uint8_t * public_key, uint32_t pkey_size,
+                                  [out, size=sealed_size] uint8_t * sealed_privated_key, uint32_t sealed_size);
+
+    uint32_t ocall_read_next_extra_data_item([in, size=hash_size] uint8_t *data_hash, uint32_t hash_size);
+    uint32_t ocall_get_next_extra_data_item_size();
+    uint32_t ocall_get_next_extra_data_item_data([out, size=ndi_size] uint8_t *item_data,
+                          uint32_t ndi_size);
     };
 };

@@ -9,9 +9,7 @@ result_to_db::result_to_db(const std::string &url, const std::string &usrname,
   m_db = std::make_unique<request_db>(url, usrname, passwd, dbname);
 }
 
-void result_to_db::write_to_target(const ypc::bref &encrypted_result,
-                                   const ypc::bref &result_signature,
-                                   const ypc::bref &data_hash) {
+void result_to_db::write_to_target(const result_pkg_t &res) {
   auto *ptr = m_db->db_engine_ptr();
   auto info = request_data_table::select<::encrypted_skey, ::encrypted_input,
                                          ::provider_pkey, ::enclave_hash,
@@ -28,13 +26,12 @@ void result_to_db::write_to_target(const ypc::bref &encrypted_result,
         info[0].get<::analyzer_pkey>(), info[0].get<::forward_sig>());
   }
 
-  auto to_hex = [](const ypc::bref &a) -> ypc::hex_bytes {
-    return ypc::bytes(a.data(), a.size()).as<ypc::hex_bytes>();
-  };
+#define to_hex(name) res.get<ypc::nt<ypc::bytes>::name>().as<ypc::hex_bytes>()
   item.set<::request_hash, ::status, ::encrypted_result, ::result_signature,
-           ::data_hash>(m_request_hash.as<ypc::hex_bytes>(), 1,
-                        to_hex(encrypted_result), to_hex(result_signature),
-                        to_hex(data_hash));
+           ::cost_signature, ::data_hash>(
+      m_request_hash.as<ypc::hex_bytes>(), 1, to_hex(encrypted_result),
+      to_hex(result_signature), to_hex(cost_signature), to_hex(data_hash));
+#undef to_hex
 
   request_data_table::row_collection_type rs;
   rs.push_back(item);
@@ -43,16 +40,18 @@ void result_to_db::write_to_target(const ypc::bref &encrypted_result,
 
 void result_to_db::read_from_target(ypc::bytes &encrypted_result,
                                     ypc::bytes &result_signature,
+                                    ypc::bytes &cost_signature,
                                     ypc::bytes &data_hash) {
   auto *ptr = m_db->db_engine_ptr();
   auto info = request_data_table::select<::encrypted_result, ::result_signature,
-                                         ::data_hash>(ptr)
+                                         ::cost_signature, ::data_hash>(ptr)
                   .where(request_hash::eq(m_request_hash.as<ypc::hex_bytes>()))
                   .eval();
   if (!info.empty()) {
     assert(info.size() == 1);
     encrypted_result = info[0].get<::encrypted_result>().as<ypc::bytes>();
     result_signature = info[0].get<::result_signature>().as<ypc::bytes>();
+    cost_signature = info[0].get<::cost_signature>().as<ypc::bytes>();
     data_hash = info[0].get<::data_hash>().as<ypc::bytes>();
   }
 }

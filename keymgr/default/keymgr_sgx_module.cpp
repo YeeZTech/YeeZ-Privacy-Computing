@@ -89,52 +89,6 @@ uint32_t keymgr_sgx_module::decrypt_message(const uint8_t *sealed_private_key,
   return t;
 }
 
-uint32_t keymgr_sgx_module::backup_private_key(
-    const uint8_t *sealed_private_key, uint32_t sealed_size,
-    const uint8_t *pub_key, uint32_t pkey_size, bref &_backup_private_key) {
-  uint32_t skey_size = 32;
-  uint8_t *backup_private_key;
-  uint32_t bp_size;
-  stbox::buffer_length_t buf_bak(&bp_size, &backup_private_key,
-                                 ::get_backup_private_key_size, sealed_size);
-  auto t = ecall<uint32_t>(::backup_private_key, (uint8_t *)sealed_private_key,
-                           sealed_size, (uint8_t *)pub_key, pkey_size,
-                           stbox::xmem(buf_bak), stbox::xlen(buf_bak));
-
-  _backup_private_key = bref(backup_private_key, bp_size);
-  return t;
-}
-
-uint32_t keymgr_sgx_module::restore_private_key(
-    const uint8_t *backup_private_key, uint32_t bp_size,
-    const uint8_t *priv_key, uint32_t skey_size, bref &_sealed_private_key) {
-
-  uint32_t sealed_size;
-  uint8_t *sealed_private_key;
-  stbox::buffer_length_t buf_res(&sealed_size, &sealed_private_key,
-                                 ::get_restore_private_key_size, bp_size);
-  auto t = ecall<uint32_t>(::restore_private_key, (uint8_t *)backup_private_key,
-                           bp_size, (uint8_t *)priv_key, skey_size,
-                           stbox::xmem(buf_res), stbox::xlen(buf_res));
-  _sealed_private_key = bref(sealed_private_key, sealed_size);
-  return t;
-}
-
-uint32_t keymgr_sgx_module::forward_private_key(
-    const uint8_t *sealed_private_key, uint32_t sealed_size,
-    const uint8_t *pub_key, uint32_t pkey_size, bref &_fwd_private_key) {
-  uint8_t *backup_private_key;
-  uint32_t bp_size;
-  stbox::buffer_length_t buf_bak(&bp_size, &backup_private_key,
-                                 ::get_forward_private_key_size, sealed_size);
-  auto t = ecall<uint32_t>(::forward_private_key, (uint8_t *)sealed_private_key,
-                           sealed_size, (uint8_t *)pub_key, pkey_size,
-                           stbox::xmem(buf_bak), stbox::xlen(buf_bak));
-
-  _fwd_private_key = bref(backup_private_key, bp_size);
-  return t;
-}
-
 uint32_t keymgr_sgx_module::session_request(sgx_dh_msg1_t *dh_msg1,
                                             uint32_t *session_id) {
   return ecall<uint32_t>(::msession_request, dh_msg1, session_id);
@@ -169,3 +123,26 @@ uint32_t keymgr_sgx_module::forward_message(
                          vpkey_size, (uint8_t *)sig, sig_size);
 }
 
+uint32_t keymgr_sgx_module::forward_extra_data_usage_license(
+    const ypc::bytes &enclave_pkey, const ypc::bytes &data_hash,
+    const ypc::bytes &data_usage_license) {
+  return ecall<uint32_t>(
+      ::forward_extra_data_usage_license, (uint8_t *)enclave_pkey.data(),
+      enclave_pkey.size(), (uint8_t *)data_hash.data(), data_hash.size(),
+      (uint8_t *)data_usage_license.data(), data_usage_license.size());
+}
+
+uint32_t
+keymgr_sgx_module::set_access_control_policy(const ypc::bytes &policy) {
+  return ecall<uint32_t>(::set_access_control_policy, (uint8_t *)policy.data(),
+                         policy.size());
+}
+
+uint32_t
+keymgr_sgx_module::create_report_for_pkey(const sgx_target_info_t *p_qe3_target,
+                                          const stbox::bytes &pkey,
+                                          sgx_report_t *p_report) {
+
+  return ecall<uint32_t>(::create_report_for_pkey, p_qe3_target, pkey.data(),
+                         pkey.size(), p_report);
+}

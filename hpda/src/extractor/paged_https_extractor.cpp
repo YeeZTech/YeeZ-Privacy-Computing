@@ -25,10 +25,11 @@ paged_https_extractor_impl::~paged_https_extractor_impl() {
   curl_global_cleanup();
 }
 
-bool paged_https_extractor_impl::next_output() {
+bool paged_https_extractor_impl::process() {
   m_response.clear();
   try {
     if (m_reach_end) {
+      // return false;
       return false;
     }
 
@@ -47,12 +48,13 @@ bool paged_https_extractor_impl::next_output() {
       m_reach_end = false;
     }
     m_index = end_index;
+    return true;
   } catch (std::exception &e) {
     return false;
   }
-  if (m_response.empty())
-    return false;
-  return true;
+  // if (m_response.empty())
+  // return;
+  // return;
 }
 
 std::string paged_https_extractor_impl::output_value() { return m_response; }

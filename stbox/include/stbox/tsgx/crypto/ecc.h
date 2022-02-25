@@ -1,66 +1,66 @@
 #pragma once
-#include <cstdint>
-#include <memory>
+#include "stbox/ebyte.h"
+#include "stbox/tsgx/crypto/raw_ecc.h"
 
 namespace stbox {
 namespace crypto {
 
-// In this namespace, the pkey is big endian by default.
+template <typename Curve> struct ecc {
+  typedef raw_ecc<Curve> raw_t;
+  static uint32_t get_private_key_size() {
+    return raw_t::get_private_key_size();
+  }
+  static uint32_t get_public_key_size() { return raw_t::get_public_key_size(); }
+  static uint32_t gen_private_key(bytes &skey) {
+    skey = bytes(get_private_key_size());
+    return raw_t::gen_private_key(skey.size(), skey.data());
+  }
 
-uint32_t get_secp256k1_private_key_size();
-uint32_t get_secp256k1_public_key_size();
+  static uint32_t generate_pkey_from_skey(const bytes &skey, bytes &pkey) {
+    pkey = bytes(get_public_key_size());
+    return raw_t::generate_pkey_from_skey(skey.data(), skey.size(), pkey.data(),
+                                          pkey.size());
+  }
+  static uint32_t get_signature_size() { return raw_t::get_signature_size(); }
 
-uint32_t gen_secp256k1_skey(uint32_t skey_size, uint8_t *skey);
+  static uint32_t sign_message(const bytes &skey, const bytes &data,
+                               bytes &sig) {
+    sig = bytes(get_signature_size());
+    return raw_t::sign_message(skey.data(), skey.size(), data.data(),
+                               data.size(), sig.data(), sig.size());
+  }
 
+  static uint32_t verify_signature(const bytes &data, const bytes &sig,
+                                   const bytes &public_key) {
+    return raw_t::verify_signature(data.data(), data.size(), sig.data(),
+                                   sig.size(), public_key.data(),
+                                   public_key.size());
+  }
 
-uint32_t generate_secp256k1_pkey_from_skey(const uint8_t *skey, uint8_t *pkey,
-                                           uint32_t pkey_size);
+  static uint32_t get_encrypt_message_size_with_prefix(uint32_t data_size) {
+    return raw_t::get_encrypt_message_size_with_prefix(data_size);
+  }
+  static uint32_t encrypt_message_with_prefix(const bytes &public_key,
+                                              const bytes &data,
+                                              uint32_t prefix, bytes &cipher) {
+    cipher = bytes(get_encrypt_message_size_with_prefix(data.size()));
 
+    return raw_t::encrypt_message_with_prefix(
+        public_key.data(), public_key.size(), data.data(), data.size(), prefix,
+        cipher.data(), cipher.size());
+  }
 
-// this is eth sig compatiable
-uint32_t get_secp256k1_signature_size();
-uint32_t sign_message(const uint8_t *skey, uint32_t skey_size,
-                      const uint8_t *data, uint32_t data_size, uint8_t *sig,
-                      uint32_t sig_size);
-uint32_t verify_signature(const uint8_t *data, uint32_t data_size,
-                          const uint8_t *sig, uint32_t sig_size,
-                          const uint8_t *public_key, uint32_t pkey_size);
-
-uint32_t get_encrypt_message_size_with_prefix(uint32_t data_size);
-uint32_t encrypt_message_with_prefix(const uint8_t *public_key,
-                                     uint32_t pkey_size, const uint8_t *data,
-                                     uint32_t data_size, uint32_t prefix,
-                                     uint8_t *cipher, uint32_t cipher_size);
-
-uint32_t get_decrypt_message_size_with_prefix(uint32_t data_size);
-uint32_t decrypt_message_with_prefix(const uint8_t *private_key,
-                                     uint32_t private_key_size,
-                                     const uint8_t *cipher,
-                                     uint32_t cipher_size, uint8_t *data,
-                                     uint32_t data_size, uint32_t prefix);
-
-uint32_t get_secp256k1_sealed_private_key_size();
-uint32_t seal_secp256k1_private_key(const uint8_t *skey,
-                                    uint8_t *sealed_private_key,
-                                    uint32_t sealed_size);
-
-uint32_t unseal_secp256k1_private_key(const uint8_t *sealed_private_key,
-                                      uint32_t sealed_size, uint8_t *skey);
-
-// We put the following functions into internal in order to remind users that
-// the should not directly use them.
-namespace internal {
-uint32_t get_rijndael128GCM_encrypt_size(uint32_t data_size);
-
-uint32_t get_rijndael128GCM_decrypt_size(uint32_t cipher_size);
-
-//@pkey is little endian
-uint32_t gen_sgx_ec_key_128bit(const uint8_t *pkey, uint32_t pkey_size,
-                               const uint8_t *skey, uint32_t skey_size,
-                               uint8_t *derived_key);
-} // namespace internal
-
-class ecc_context;
-extern std::shared_ptr<ecc_context> context;
+  static uint32_t get_decrypt_message_size_with_prefix(uint32_t data_size) {
+    return raw_t::get_decrypt_message_size_with_prefix(data_size);
+  }
+  static uint32_t decrypt_message_with_prefix(const bytes &private_key,
+                                              const bytes &cipher, bytes &data,
+                                              uint32_t prefix) {
+    data = bytes(get_decrypt_message_size_with_prefix(cipher.size()));
+    return raw_t::decrypt_message_with_prefix(
+        private_key.data(), private_key.size(), cipher.data(), cipher.size(),
+        data.data(), data.size(), prefix);
+  }
+};
 } // namespace crypto
 } // namespace stbox

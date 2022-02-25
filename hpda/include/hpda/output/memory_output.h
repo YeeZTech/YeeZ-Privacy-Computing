@@ -16,10 +16,13 @@ public:
 
   typedef output_base<InputObjType> base;
 
-  virtual void run() {
-    while (output_base<InputObjType>::next_input()) {
-      m_data.push_back(output_base<InputObjType>::input_value());
+  virtual bool process() {
+    if (!base::has_input_value()) {
+      return false;
     }
+    m_data.push_back(output_base<InputObjType>::input_value());
+    base::consume_input_value();
+    return true;
   }
 
   std::vector<InputObjType> &values() { return m_data; }

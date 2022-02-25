@@ -1,8 +1,8 @@
 #pragma once
 #include <hpda/algorithm/internal/kmeans_loyd.h>
-#include <hpda/common/processor_with_input.h>
 #include <hpda/extractor/extractor_base.h>
 #include <hpda/extractor/raw_data.h>
+#include <hpda/output/output_base.h>
 
 namespace hpda {
 
@@ -52,13 +52,13 @@ template <typename InputObjType, typename PointFlag, typename DistanceType,
           typename ClassifiedID,
           typename InitialPointPicker = initial_point_picker_even_k<PointFlag>>
 class loyd_kmeans_impl
-    : public ::hpda::internal::processor_with_input<InputObjType> {
+    : public ::hpda::output::internal::output_base<InputObjType> {
 public:
   loyd_kmeans_impl(
       ::hpda::internal::processor_with_output<InputObjType> *upper_stream,
       int k, DistanceType delta,
       int max_points = std::numeric_limits<int>::max())
-      : ::hpda::internal::processor_with_input<InputObjType>(upper_stream),
+      : ::hpda::output::internal::output_base<InputObjType>(upper_stream),
         m_calculate_flag(false), m_k(k), m_delta(delta),
         m_max_points(max_points) {}
 
@@ -76,6 +76,12 @@ public:
   typedef ntobject<ClassifiedID, mean_point, average_distance>
       means_stream_output_type;
 
+  typedef ::hpda::extractor::internal::raw_data_impl<means_stream_output_type>
+      means_stream_t;
+  typedef ::hpda::extractor::internal::raw_data_impl<
+      typename ::ff::util::append_type<InputObjType, ClassifiedID>::type>
+      data_with_cluster_stream_t;
+
   template <typename PointContainerType> struct point_traits {
   public:
     static point_type point(const typename PointContainerType::iterator &p) {
@@ -83,21 +89,18 @@ public:
     }
   };
 
-  void calculate() {
-    if (m_calculate_flag) {
-      return;
-    }
-
-    m_calculate_flag = true;
-
-    std::vector<InputObjType> all_points;
-    int point_count = 0;
-    while (base::next_input() && point_count < m_max_points) {
-      all_points.push_back(base::input_value());
-      point_count++;
-    }
-    if (all_points.size() < m_k) {
-      return;
+  std::vector<InputObjType> m_all_points;
+  virtual bool process() {
+    if (base::has_input_value()) {
+      m_all_points.push_back(base::input_value().make_copy());
+      base::consume_input_value();
+      if (m_all_points.size() < m_max_points) {
+        return false;
+      }
+    } else {
+      if (m_all_points.size() == 0) {
+        return false;
+      }
     }
 
     using loyd_impl_type =
@@ -105,9 +108,9 @@ public:
                   DistanceType, point_traits<std::vector<InputObjType>>,
                   std::vector<point_type>>;
 
-    auto initial_points = InitialPointPicker::points(all_points, m_k);
+    auto initial_points = InitialPointPicker::points(m_all_points, m_k);
 
-    loyd_impl_type lit(all_points.begin(), all_points.end(), initial_points,
+    loyd_impl_type lit(m_all_points.begin(), m_all_points.end(), initial_points,
                        m_k, m_delta);
     lit.run();
 
@@ -122,7 +125,7 @@ public:
           output_obj_type ot =
               ::ff::util::append_type<InputObjType, ClassifiedID>::value(*it,
                                                                          i);
-          m_cluster_stream->add_data(std::move(ot));
+          m_cluster_stream->add_data(ot);
         }
       }
     }
@@ -137,51 +140,10 @@ public:
         m_means_stream->add_data(std::move(ot));
       }
     }
+    m_all_points.clear();
     m_calculate_flag = true;
+    return true;
   }
-  class data_with_cluster_stream_t
-      : public ::hpda::extractor::internal::raw_data_impl<
-            typename ::ff::util::append_type<InputObjType,
-                                             ClassifiedID>::type> {
-  public:
-    data_with_cluster_stream_t(self_type *self)
-        : ::hpda::extractor::internal::raw_data_impl<
-              typename ::ff::util::append_type<InputObjType,
-                                               ClassifiedID>::type>(),
-          m_self(self){};
-
-    typedef ::hpda::extractor::internal::raw_data_impl<
-        typename ::ff::util::append_type<InputObjType, ClassifiedID>::type>
-        cluster_stream_base_type;
-
-    virtual bool next_output() {
-      m_self->calculate();
-      return cluster_stream_base_type::next_output();
-    }
-
-  protected:
-    self_type *m_self;
-  };
-
-  class means_stream_t : public ::hpda::extractor::internal::raw_data_impl<
-                             means_stream_output_type> {
-  public:
-    means_stream_t(self_type *self)
-        : ::hpda::extractor::internal::raw_data_impl<
-              means_stream_output_type>(),
-          m_self(self){};
-
-    typedef ::hpda::extractor::internal::raw_data_impl<means_stream_output_type>
-        means_stream_base_type;
-
-    virtual bool next_output() {
-      m_self->calculate();
-      return means_stream_base_type::next_output();
-    }
-
-  protected:
-    self_type *m_self;
-  };
 
   data_with_cluster_stream_t *data_with_cluster_stream() {
     if (!m_cluster_stream) {
@@ -190,7 +152,9 @@ public:
             "you should call data_with_cluster_stream() in "
             "kmeans before dump the output");
       }
-      m_cluster_stream.reset(new data_with_cluster_stream_t(this));
+      m_cluster_stream.reset(new data_with_cluster_stream_t());
+      m_cluster_stream->set_engine(functor::get_engine());
+      m_cluster_stream->add_predecessor(this);
     }
     return m_cluster_stream.get();
   };
@@ -201,12 +165,15 @@ public:
         throw std::runtime_error(
             "you should call means_stream() in kmeans before dump the output");
       }
-      m_means_stream.reset(new means_stream_t(this));
+      m_means_stream.reset(new means_stream_t());
+      m_means_stream->set_engine(functor::get_engine());
+      m_means_stream->add_predecessor(this);
     }
     return m_means_stream.get();
   }
 
 protected:
+
   std::unique_ptr<data_with_cluster_stream_t> m_cluster_stream;
   std::unique_ptr<means_stream_t> m_means_stream;
   bool m_calculate_flag;

@@ -1,8 +1,7 @@
 add_subdirectory(sgx)
 
-add_library(ypc_core SHARED
+add_library(ypc_core EXCLUDE_FROM_ALL SHARED
   timer_loop.cpp
-  sha.cpp
   db.cpp
   configuration.cpp
   sealed_file.cpp
@@ -12,6 +11,7 @@ add_library(ypc_core SHARED
   exceptions.cpp
   status.cpp
   ${PROJECT_SOURCE_DIR}/vendor/fflib/src/net/common/archive.cpp)
+install(TARGETS ypc_core DESTINATION lib COMPONENT ypc_core_so OPTIONAL)
 
-target_link_libraries(ypc_core ypc_common_u stbox_common_u mysqlcppconn cryptopp boost_program_options boost_filesystem boost_system glog dl)
+target_link_libraries(ypc_core ypc_common_u stbox_common_u mysqlcppconn boost_program_options boost_filesystem boost_system glog dl)
 

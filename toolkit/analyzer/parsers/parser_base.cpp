@@ -1,5 +1,7 @@
 #include "parsers/parser_base.h"
 #include "common/param_id.h"
+#include "corecommon/nt_cols.h"
+#include "corecommon/package.h"
 #include "ypc/sealed_file.h"
 #include <glog/logging.h>
 
@@ -14,10 +16,11 @@ parser_base::parser_base(param_source *psource, result_target *rtarget,
 
 parser_base::~parser_base() {}
 
-uint32_t parser_base::parse() {
+uint32_t parser_base::parse(const ypc::bytes &expect_data_hash) {
   m_sealer =
       std::make_shared<ypc::datahub_sgx_module>(m_sealer_enclave_path.c_str());
-  m_parser = std::make_shared<parser_sgx_module>(m_parser_enclave_path.c_str());
+  m_parser =
+      std::make_shared<ypc::parser_sgx_module>(m_parser_enclave_path.c_str());
   m_keymgr = std::make_shared<keymgr_sgx_module>(m_keymgr_enclave_path.c_str());
   LOG(INFO) << "initializing datahub/parser/keymgr module done";
 
@@ -33,30 +36,83 @@ uint32_t parser_base::parse() {
                                        eskey.size(), epkey.data(), epkey.size(),
                                        ehash.data(), ehash.size(), vpkey.data(),
                                        vpkey.size(), sig.data(), sig.size());
+
   if (ret) {
+    LOG(ERROR) << "forward_message got error " << ypc::status_string(ret);
     return ret;
   }
+
+  ret = forward_extra_data_usage_license(epkey);
+
+  if (ret) {
+    LOG(ERROR) << "forward_extra_data_usage_license got error "
+               << ypc::status_string(ret);
+    return ret;
+  }
+
   LOG(INFO) << "forward private key done";
   ret = do_parse();
 
   if (ret) {
+    LOG(ERROR) << "do_parse got error " << ypc::status_string(ret);
     return ret;
   }
   LOG(INFO) << "parse done";
 
-  ypc::bref encrypted_res, result_sig, data_hash;
-  ret = m_parser->get_encrypted_result_and_signature(encrypted_res, result_sig);
+  result_pkg_t result_pkg;
+  ret = m_parser->get_analyze_result(result_pkg);
   if (ret) {
-    return ret;
-  }
-  ret = m_parser->get_data_hash(data_hash);
-  if (ret) {
+    LOG(ERROR) << "get_analyze_result got error " << ypc::status_string(ret);
     return ret;
   }
 
-  m_rtarget->write_to_target(encrypted_res, result_sig, data_hash);
+  using ntt = ypc::nt<ypc::bytes>;
+  if (expect_data_hash.size() != 0 &&
+      expect_data_hash != result_pkg.get<ntt::data_hash>()) {
+    LOG(ERROR)
+        << "parser returned wrong data hash, expect " << expect_data_hash
+        << ", got " << result_pkg.get<ntt::data_hash>()
+        << ". This could be caused by 1) using wrong data, 2) using "
+           "wrong expect data hash, 3) encountering error when reading file";
+    return ypc::parser_return_wrong_data_hash;
+  } else if (expect_data_hash.size() == 0) {
+    LOG(INFO) << "no expect_data_hash, ignore check it";
+  } else {
+    LOG(INFO) << "check expect_data_hash done";
+  }
+
+  m_rtarget->write_to_target(result_pkg);
   LOG(INFO) << "write result target done";
   return ypc::success;
+}
+
+uint32_t
+parser_base::forward_extra_data_usage_license(const ypc::bytes &enclave_pkey) {
+  typedef ypc::nt<ypc::bytes> ntt;
+
+  std::vector<ntt::extra_data_group_t> data_items;
+  LOG(INFO) << "extra data source group size: " << m_extra_data_source.size();
+  for (auto edg : m_extra_data_source) {
+    ntt::extra_data_group_t group;
+    group.set<ntt::extra_data_group_name>(
+        edg.get<ypc::extra_data_group_name>());
+    std::vector<ypc::bytes> hashes;
+    LOG(INFO) << "extra data item size in group "
+              << edg.get<ypc::extra_data_group_name>() << ", "
+              << edg.get<ypc::extra_data_set>().size();
+    for (auto ed_item : edg.get<ypc::extra_data_set>()) {
+      ypc::bytes data_hash = ed_item.get<ypc::data_hash>();
+      ypc::bytes data_use_license = ed_item.get<ypc::data_use_license>();
+      m_keymgr->forward_extra_data_usage_license(enclave_pkey, data_hash,
+                                                 data_use_license);
+      hashes.push_back(data_hash);
+    }
+    group.set<ntt::extra_data_hashes>(hashes);
+    data_items.push_back(group);
+  }
+  ypc::bytes extra = ypc::make_bytes<ypc::bytes>::for_package<
+      ntt::extra_data_package_t, ntt::extra_data_items>(data_items);
+  return m_parser->set_extra_data(extra.data(), extra.size());
 }
 
 bool parser_base::merge(
@@ -65,7 +121,7 @@ bool parser_base::merge(
     m_sealer = std::make_shared<ypc::datahub_sgx_module>(
         m_sealer_enclave_path.c_str());
     m_parser =
-        std::make_shared<parser_sgx_module>(m_parser_enclave_path.c_str());
+        std::make_shared<ypc::parser_sgx_module>(m_parser_enclave_path.c_str());
 
     m_keymgr =
         std::make_shared<keymgr_sgx_module>(m_keymgr_enclave_path.c_str());
@@ -95,7 +151,9 @@ bool parser_base::merge(
     ypc::bytes encrypted_result;
     ypc::bytes sig;
     ypc::bytes hash;
-    block_results[i]->read_from_target(encrypted_result, sig, hash);
+    ypc::bytes cost_sig;
+    block_results[i]->read_from_target(encrypted_result, sig, cost_sig, hash);
+    // TODO seems we missed the batched cost here
     m_parser->add_block_parse_result(i, encrypted_result, hash, sig);
   }
   LOG(INFO) << "add_block_parse_result done";
@@ -118,18 +176,15 @@ bool parser_base::merge(
     return ret;
   }
 
-  ypc::bref encrypted_res, result_sig, data_hash;
-  ret = m_parser->get_encrypted_result_and_signature(encrypted_res, result_sig);
+  result_pkg_t result_pkg;
+  ret = m_parser->get_analyze_result(result_pkg);
   if (ret) {
     return ret;
   }
-  ret = m_parser->get_data_hash(data_hash);
-  if (ret) {
-    return ret;
-  }
-  LOG(INFO) << "get_encrypted_result done";
 
-  m_rtarget->write_to_target(encrypted_res, result_sig, data_hash);
+  // TODO, check data hash
+
+  m_rtarget->write_to_target(result_pkg);
   LOG(INFO) << "write result target done";
   return m_parser->need_continue();
 }

@@ -1,9 +1,11 @@
+#include "check_data.h"
+#include "extra_data_source.h"
+#include "extra_data_source_reader.h"
 #include "parser.h"
 #include "sgx_bridge.h"
 #include "ypc/configuration.h"
 #include "ypc/ntobject_file.h"
 #include "ypc/sealed_file.h"
-#include "ypc/sha.h"
 #include <boost/program_options.hpp>
 #include <exception>
 #include <fstream>
@@ -35,13 +37,15 @@ boost::program_options::variables_map parse_command_line(int argc,
     ("sealer-path", bp::value<std::string>(), "sealer enclave path")
     ("parser-path", bp::value<std::string>(), "parser enclave path")
     ("keymgr-path", bp::value<std::string>(), "keymgr enclave path")
-    ("source-type", bp::value<std::string>(), "input and output source type")
+    ("source-type", bp::value<std::string>(), "input and output source type [json | db]")
     // params read from database
     ("db-conf", bp::value<std::string>(), "database configuration file")
     ("request-hash", bp::value<std::string>(), "request hash")
     // params read from json file
     ("param-path", bp::value<std::string>(), "forward param path")
-    ("result-path", bp::value<std::string>(), "output result path");
+    ("result-path", bp::value<std::string>(), "output result path")
+    ("extra-data-source", bp::value<std::string>(), "JSON file path which include extra data source information")
+    ("check-data-hash", bp::value<std::string>(), "check sealed hash before running parser");
   // clang-format on
 
   boost::program_options::variables_map vm;
@@ -56,6 +60,10 @@ boost::program_options::variables_map parse_command_line(int argc,
 }
 
 int main(int argc, char *argv[]) {
+
+  google::InitGoogleLogging(argv[0]);
+  google::InstallFailureSignalHandler();
+
   boost::program_options::variables_map vm;
   try {
     vm = parse_command_line(argc, argv);
@@ -90,6 +98,18 @@ int main(int argc, char *argv[]) {
   std::string keymgr_enclave_file = vm["keymgr-path"].as<std::string>();
   std::string source_type = vm["source-type"].as<std::string>();
 
+  if (vm.count("check-data-hash")) {
+    ypc::bytes data_hash =
+        ypc::hex_bytes(vm["check-data-hash"].as<std::string>())
+            .as<ypc::bytes>();
+    auto t = check_sealed_data(sealer_enclave_file, sealed_file, data_hash);
+    if (t != ypc::success) {
+      std::cerr << "Invalid sealed data, exit now." << std::endl;
+      return t;
+    }
+    std::cout << "Done checking data hash, start parser now!" << std::endl;
+  }
+
   std::shared_ptr<param_source> psource;
   std::shared_ptr<result_target> rtarget;
 
@@ -119,20 +139,50 @@ int main(int argc, char *argv[]) {
     ypc::simple_sealed_file ssf(sealed_file, true);
     std::cout << "valid sealed block file, use sequential mode" << std::endl;
   } catch (ypc::invalid_blockfile &e) {
-    std::cout << "invalid sealed block file, try switch to parallel mode"
+    std::cerr << "invalid sealed block file, try switch to parallel mode"
               << std::endl;
     is_sealed_file = false;
+  } catch (const std::exception &e) {
+    std::cerr << "error while open " << sealed_file << std::endl;
+    return -1;
   }
 
   if (is_sealed_file) {
     parser = std::make_shared<file_parser>(
         psource.get(), rtarget.get(), sealer_enclave_file, parser_enclave_file,
         keymgr_enclave_file, sealed_file);
-    uint32_t ret = parser->parse();
+
+    if (vm.count("extra-data-source")) {
+      extra_data_source_t eds;
+      try {
+        eds = ypc::read_extra_data_source_from_file(
+            vm["extra-data-source"].as<std::string>());
+      } catch (const std::exception &e) {
+        std::cerr << "cannot read extra-data-source file path: "
+                  << vm["extra-data-source"].as<std::string>();
+        return -1;
+      }
+      parser->set_extra_data_source(eds);
+      g_data_source_reader.reset(new extra_data_source_reader(eds));
+    }
+
+    ypc::bytes expect_data_hash;
+    if (vm.count("check-data-hash")) {
+      expect_data_hash = ypc::hex_bytes(vm["check-data-hash"].as<std::string>())
+                             .as<ypc::bytes>();
+    }
+    uint32_t ret = parser->parse(expect_data_hash);
     if (ret) {
-      std::cout << "got error: " << ypc::status_string(ret) << std::endl;
+      std::cerr << "got error: " << ypc::status_string(ret) << std::endl;
+      return ret;
     }
   } else {
+    if (vm.count("extra-data-source")) {
+      // TODO we may support this later.
+      std::cerr << "do not support parallel mode with extra data source"
+                << std::endl;
+      return -1;
+    }
     if (source_type != "json") {
       std::cout << "parallel parser now only supports file type!" << std::endl;
       return -1;
@@ -190,7 +240,7 @@ void parallel_parse(std::shared_ptr<param_source> psource,
         parser = std::make_shared<file_parser>(
             tmp_source.get(), crtarget.get(), sealer_enclave_file,
             parser_enclave_file, keymgr_enclave_file, sf);
-        parser->parse();
+        parser->parse(ypc::bytes());
         continue_flag = false;
         break;
       } else {
@@ -228,9 +278,9 @@ void parallel_parse(std::shared_ptr<param_source> psource,
       continue_flag = (val == 0x1312);
 
       // make the result as new param
-      ypc::bytes encrypted_result, result_sig, data_hash;
+      ypc::bytes encrypted_result, result_sig, data_hash, cost_sig;
       round_result_target->read_from_target(encrypted_result, result_sig,
-                                            data_hash);
+                                            cost_sig, data_hash);
       tmp_source->input() = encrypted_result;
     }
   }

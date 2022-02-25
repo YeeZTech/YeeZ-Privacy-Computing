@@ -1,5 +1,4 @@
 #pragma once
-
 #include "parser_base.h"
 #include "ypc/sealed_file.h"
 

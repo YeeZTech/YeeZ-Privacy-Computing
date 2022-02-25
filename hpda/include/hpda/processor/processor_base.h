@@ -18,7 +18,7 @@ public:
 
   typedef ::hpda::internal::processor_with_input<InputObjType> base;
 
-  inline bool next_input() { return base::next_input(); }
+  // inline bool next_input() { return base::next_input(); }
 
   inline InputObjType input_value() const { return base::input_value(); }
 };

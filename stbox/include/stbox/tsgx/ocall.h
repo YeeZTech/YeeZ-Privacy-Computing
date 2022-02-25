@@ -1,4 +1,5 @@
 #pragma once
+#include <functional>
 #include <sgx_eid.h>
 #include <sgx_error.h>
 #include <stbox/exception.h>

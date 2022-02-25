@@ -1,3 +1,4 @@
+#include "stbox/eth/eth_hash.h"
 #include "ypc/byte.h"
 #include <boost/program_options.hpp>
 #include <boost/property_tree/json_parser.hpp>
@@ -7,6 +8,7 @@
 #include <fstream>
 #include <iostream>
 #include <keymgr/default/keymgr_sgx_module.h>
+#include <sstream>
 
 #define ENCLAVE_KEYMGR_PATH "../lib/keymgr.signed.so"
 #define VARCHAR_MAX_LENGTH 255
@@ -150,11 +152,42 @@ void read_params_from_stdin(std::string &name, std::string &desc,
   }
 }
 
-std::string prefix_hex(const std::string &hex_str) { return "0x" + hex_str; }
+std::string add_prefix_hex_if_not_exist(const std::string &hex_str) {
+  if (hex_str.substr(0, 2) == "0x") {
+    return hex_str;
+  }
+  return "0x" + hex_str;
+}
+
+boost::property_tree::ptree generate_description(const std::string &name,
+                                                 const std::string &desc,
+                                                 uint64_t item_num) {
+  boost::property_tree::ptree pt;
+  // format
+  std::string tmp("yeez.tech#" + name + "#csv");
+  ypc::bytes b(tmp);
+  auto b_hash = stbox::eth::keccak256_hash(b);
+  std::stringstream ss;
+  ss << b_hash;
+  std::string format(tmp + '#' + ss.str().substr(0, 8));
+  pt.add("format", format);
+  // field
+  pt.add("field", "");
+  // tag
+  boost::property_tree::ptree child;
+  boost::property_tree::ptree empty;
+  child.push_back(std::make_pair("", empty));
+  pt.add_child("tag", child);
+  // item_num
+  pt.add("item_num", item_num);
+  // detail
+  pt.add("detail", desc);
+  return pt;
+}
 
 void write_params_to_json(const std::string &filename, const std::string &hash,
-                          const std::string &name, const std::string &desc,
-                          const std::string &sample,
+                          uint64_t item_num, const std::string &name,
+                          const std::string &desc, const std::string &sample,
                           const std::string &sample_hex,
                           const std::string &env_info, uint64_t &price,
                           const std::string &program_proxy,
@@ -164,7 +197,9 @@ void write_params_to_json(const std::string &filename, const std::string &hash,
     boost::property_tree::ptree pt;
     pt.put("data_hash", hash);
     pt.put("name", name);
-    pt.put("desc", desc);
+    boost::property_tree::ptree child =
+        generate_description(name, desc, item_num);
+    pt.add_child("desc", child);
     pt.put("sample", sample);
     pt.put("sample_hex", sample_hex);
     pt.put("env_info", env_info);
@@ -264,8 +299,11 @@ int main(int argc, char *argv[]) {
       (const char *)sample_hex_bytes.data(),
       sample_hex_bytes.size()); // ypc::to_hex(ypc::string_to_byte(sample));
 
-  write_params_to_json(output, prefix_hex(info.get<data_id>()), name, desc,
-                       sample, prefix_hex(sample_hex), env_info, price,
-                       program_proxy, prefix_hex(pkey), prefix_hex(pkey_sig));
+  write_params_to_json(
+      output, add_prefix_hex_if_not_exist(info.get<::data_id>()),
+      info.get<::item_num>(), name, desc, sample,
+      add_prefix_hex_if_not_exist(sample_hex), env_info, price,
+      add_prefix_hex_if_not_exist(program_proxy),
+      add_prefix_hex_if_not_exist(pkey), add_prefix_hex_if_not_exist(pkey_sig));
   return 0;
 }

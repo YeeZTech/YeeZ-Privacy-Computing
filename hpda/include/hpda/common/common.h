@@ -12,6 +12,10 @@
 #include <glog/logging.h>
 #endif
 
+#ifdef YPC_SGX
+#include "stbox/tsgx/log.h"
+#endif
+
 namespace hpda {
 template <typename... ARGS> using ntobject = ::ff::util::ntobject<ARGS...>;
 

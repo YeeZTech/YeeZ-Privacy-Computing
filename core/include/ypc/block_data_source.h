@@ -20,7 +20,7 @@ public:
     }
   }
 
-  virtual bool next_output() {
+  virtual bool process() {
     if (m_data_reach_end) {
       return false;
     }
@@ -33,8 +33,8 @@ public:
 
   virtual OutputObjType output_value() {
     user_item_t ret;
-    ff::net::marshaler m(m_ret.data(), m_ret.len(),
-                         ff::net::marshaler::deseralizer);
+    ff::net::marshaler m((char *)m_ret.data(), m_ret.size(),
+                         ff::net::marshaler::deserializer);
     ret.arch(m);
     return ret;
   }
