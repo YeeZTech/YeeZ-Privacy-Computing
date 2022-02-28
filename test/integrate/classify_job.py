@@ -107,7 +107,6 @@ class classic_job:
         allowance_file = self.name + ".classify.allowance.json"
         param ={"allowance":"",
                 "use-privatekey-file":key_file,
-                "param-format":"hex",
                 "output":allowance_file,
                 "use-param":param_hash.strip(),
                 "use-enclave-hash":self.read_parser_hash(),
@@ -141,7 +140,7 @@ class classic_job:
                 "param_data":iris_input,
                 "public-key":"",
                 "allowances":[{
-                    "encrypted_sig":allowance_json["encrypted_sig"],
+                    "encrypted_sig":allowance_json["signature"],
                     "public-key":allowance_json["pkey"],
                     "data_hash":model_hash
                     }]

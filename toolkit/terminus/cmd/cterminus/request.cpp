@@ -2,41 +2,23 @@
 
 int generate_request(ypc::terminus::crypto_pack *crypto,
                      const boost::program_options::variables_map &vm) {
-  ypc::bytes tee_pubkey = get_param_tee_pubkey(vm);
-
-  ypc::bytes private_key = get_param_privatekey(vm);
+  ypc::bytes pubkey = get_param_publickey(vm);
 
   std::unordered_map<std::string, ypc::bytes> result;
-  result["provider-pkey"] = tee_pubkey;
 
   ypc::bytes param = get_param_use_param(vm);
 
   ypc::terminus::single_data_onchain_result std_interaction(crypto);
 
-  auto pubkey = crypto->gen_ecc_public_key_from_private_key(private_key);
-
   result["analyzer-pkey"] = pubkey;
 
-  ypc::bytes enclave_hash =
-      ypc::hex_bytes(vm["use-enclave-hash"].as<std::string>()).as<ypc::bytes>();
-
-  result["program-enclave-hash"] =
-      ypc::bytes(enclave_hash.data(), enclave_hash.size());
-
-  auto request = std_interaction.generate_request(param, tee_pubkey,
-                                                  enclave_hash, private_key);
-  if (request.encrypted_param.size() == 0) {
+  auto request = std_interaction.generate_request(param, pubkey);
+  if (request.size() == 0) {
     std::cerr << "failed to encrypt param" << std::endl;
     return -1;
   }
-  if (request.signature.size() == 0) {
-    std::cerr << "failed to generate signature" << std::endl;
-    return -1;
-  }
 
-  result["encrypted-input"] = request.encrypted_param;
-  result["forward-sig"] = request.signature;
-  result["encrypted-skey"] = request.encrypted_skey;
+  result["encrypted-input"] = request;
 
   if (vm.count("output")) {
     std::string output_path =

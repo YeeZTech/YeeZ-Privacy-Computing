@@ -203,14 +203,16 @@ uint32_t forward_private_key(const uint8_t *encrypted_private_key,
     return se_ret;
   }
 
-  stbox::bytes all = forward_skey + stbox::bytes(epublic_key, epkey_size) +
-                     stbox::bytes(ehash, ehash_size);
+  stbox::bytes all =
+      stbox::bytes(epublic_key, epkey_size) + stbox::bytes(ehash, ehash_size);
 
   se_ret = (sgx_status_t)raw_ecc::verify_signature(
       all.data(), all.size(), sig, sig_size, forward_pub_key.data(),
       forward_pub_key.size());
   if (se_ret) {
-    LOG(ERROR) << "Invalid signature";
+    LOG(ERROR) << "Invalid signature, data: " << all
+               << ", sig: " << stbox::bytes(sig, sig_size)
+               << ", public key: " << forward_pub_key;
     return se_ret;
   }
 

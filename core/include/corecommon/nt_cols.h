@@ -28,7 +28,7 @@ template <typename BytesType> struct nt {
   define_nt(succ, bool);
   define_nt(batch_data, std::vector<BytesType>);
 
-  typedef ::ff::util::ntobject<encrypted_sig, pkey, data_hash> allowance_t;
+  typedef ::ff::util::ntobject<signature, pkey, data_hash> allowance_t;
   define_nt(allowance, allowance_t);
   define_nt(allowances, std::vector<allowance_t>);
 

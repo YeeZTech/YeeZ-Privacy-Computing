@@ -1,4 +1,5 @@
 #include "cmd_line.h"
+#include "ypc/terminus/enclave_interaction.h"
 
 int forward_private_key(ypc::terminus::crypto_pack *crypto,
                         const boost::program_options::variables_map &vm) {
@@ -10,14 +11,13 @@ int forward_private_key(ypc::terminus::crypto_pack *crypto,
                        .as<ypc::bytes>();
   }
 
-  ypc::bytes encrypted_skey = crypto->ecc_encrypt(
-      private_key, tee_pubkey, ypc::utc::crypto_prefix_forward);
-  ypc::bytes to_sign_msg = private_key + tee_pubkey + enclave_hash;
-  ypc::bytes sig = crypto->sign_message(to_sign_msg, private_key);
+  auto ei = ypc::terminus::enclave_interaction(crypto);
+
+  auto fi = ei.forward_private_key(private_key, tee_pubkey, enclave_hash);
 
   std::unordered_map<std::string, ypc::bytes> result;
-  result["encrypted_skey"] = encrypted_skey;
-  result["forward_sig"] = sig;
+  result["encrypted_skey"] = fi.encrypted_skey;
+  result["forward_sig"] = fi.signature;
   result["enclave_hash"] = enclave_hash;
 
   if (vm.count("output")) {
@@ -30,9 +30,9 @@ int forward_private_key(ypc::terminus::crypto_pack *crypto,
     }
     boost::property_tree::json_parser::write_json(output_path, pt);
   } else {
-    std::cout << "encrypted skey: " << encrypted_skey << std::endl;
-    std::cout << "forward sig: " << sig << std::endl;
-    std::cout << "enclave hash: " << enclave_hash << std::endl;
+    for (auto it = result.begin(); it != result.end(); it++) {
+      std::cout << it->first << ": " << it->second << std::endl;
+    }
   }
   return 0;
 }

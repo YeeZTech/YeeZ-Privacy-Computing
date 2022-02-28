@@ -126,7 +126,7 @@ public:
           return ret;
         }
 
-        stbox::bytes allow = allowance_i.get<ntt::encrypted_sig>();
+        stbox::bytes allow = allowance_i.get<ntt::signature>();
 
         stbox::bytes to_check_data =
             param_hash + enclave_hash_var::m_enclave_hash + dian_pkey +

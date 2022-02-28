@@ -96,15 +96,25 @@ class classic_job:
         with open(forward_result, 'r') as of:
             data_forward_json = json.load(of)
 
-        #4. call terminus to generate request
-        param_output_url = self.name + "_param.json"
-        param = {"request":"",
+        enclave_hash = self.read_parser_hash();
+        #4.0. call terminusto generate forward message
+        param_key_forward_result = self.name + ".request.shukey.foward.json"
+        param = {"forward":"",
                 "use-privatekey-file":key_file,
                 "tee-pubkey":pkey,
+                "use-enclave-hash":enclave_hash,
+                "output":param_key_forward_result}
+        common.fid_terminus(**param);
+        rq_forward_json = {}
+        with open(param_key_forward_result, 'r') as of:
+            rq_forward_json = json.load(of)
+
+        #4.1. call terminus to generate request
+        param_output_url = self.name + "_param.json"
+        param = {"request":"",
                 "use-param":self.input,
                 "param-format":"text",
-                "use-enclave-hash":self.read_parser_hash(),
-                "dhash":data_hash,
+                "use-publickey-file":key_file,
                 "output":param_output_url
                 }
 
@@ -115,19 +125,15 @@ class classic_job:
             param_json = json.load(of)
 
 
-        summary['analyzer-pkey-sig'] = param_json["forward-sig"]
-        summary['analyzer-pkey'] = param_json['analyzer-pkey']
-        summary['analyzer-skey'] = param_json["encrypted-skey"]
         summary['analyzer-input'] = param_json["encrypted-input"]
-        summary['program-enclave-hash'] = param_json["program-enclave-hash"]
 
 
         result_url = self.name + ".result.encrypted"
         parser_input = {"shu_info":{
             "shu_pkey":shukey_json["public-key"],
-            "encrypted_shu_skey":param_json["encrypted-skey"],
-            "shu_forward_signature":param_json["forward-sig"],
-            "enclave_hash":param_json["program-enclave-hash"]
+            "encrypted_shu_skey":rq_forward_json["encrypted_skey"],
+            "shu_forward_signature":rq_forward_json["forward_sig"],
+            "enclave_hash":enclave_hash
             },
             "input_data":[{"input_data_url":sealed_data_url,
                 "input_data_hash":summary["data-hash"],
@@ -142,8 +148,8 @@ class classic_job:
                 }],
             "parser_path":self.parser_url,
             "keymgr_path":common.kmgr_enclave,
-            "parser_enclave_hash":param_json["program-enclave-hash"],
-            "dian_pkey":param_json["provider-pkey"],
+            "parser_enclave_hash":enclave_hash,
+            "dian_pkey":pkey,
             "model":{
                 "model_data":"",
                 "public-key":""

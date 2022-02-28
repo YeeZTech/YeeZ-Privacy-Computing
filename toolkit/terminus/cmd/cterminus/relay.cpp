@@ -26,8 +26,7 @@ int gen_relay_result_proof(ypc::terminus::crypto_pack *crypto,
   LOG(INFO) << "to sign message: " << to_sign_msg;
   ypc::bytes sig = crypto->sign_message(to_sign_msg, private_key);
   ypc::bytes pkey = crypto->gen_ecc_public_key_from_private_key(private_key);
-  ypc::bytes allowance =
-      crypto->ecc_encrypt(sig, pkey, ypc::utc::crypto_prefix_arbitrary);
+  ypc::bytes allowance = sig;
 
   ntt::forward_target_info_t f;
   f.set<ntt::enclave_hash>(target_enclave_hash);

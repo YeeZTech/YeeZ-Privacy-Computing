@@ -1,4 +1,5 @@
 #include "cmd_line.h"
+#include "ypc/terminus/enclave_interaction.h"
 
 int generate_allowance(ypc::terminus::crypto_pack *crypto,
                        const boost::program_options::variables_map &vm) {
@@ -13,14 +14,14 @@ int generate_allowance(ypc::terminus::crypto_pack *crypto,
   ypc::bytes dhash =
       ypc::hex_bytes(vm["dhash"].as<std::string>()).as<ypc::bytes>();
 
-  ypc::bytes to_sig_data = hash + enclave_hash + dian_pkey + dhash;
-  ypc::bytes sig = crypto->sign_message(to_sig_data, private_key);
-  ypc::bytes pkey = crypto->gen_ecc_public_key_from_private_key(private_key);
+  auto ei = ypc::terminus::enclave_interaction(crypto);
   ypc::bytes allowance =
-      crypto->ecc_encrypt(sig, pkey, ypc::utc::crypto_prefix_arbitrary);
+      ei.generate_allowance(private_key, hash, enclave_hash, dian_pkey, dhash);
+
+  ypc::bytes pkey = crypto->gen_ecc_public_key_from_private_key(private_key);
 
   std::unordered_map<std::string, ypc::bytes> result;
-  result["encrypted_sig"] = allowance;
+  result["signature"] = allowance;
   result["pkey"] = pkey;
 
   if (vm.count("output")) {
@@ -33,7 +34,7 @@ int generate_allowance(ypc::terminus::crypto_pack *crypto,
     }
     boost::property_tree::json_parser::write_json(output_path, pt);
   } else {
-    std::cout << "encrypted sig: " << allowance << std::endl;
+    std::cout << "allowance_sig: " << allowance << std::endl;
     std::cout << "pkey: " << pkey << std::endl;
   }
   return 0;

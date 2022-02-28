@@ -6,18 +6,18 @@ parse_command_line(int argc, char *argv[]) {
   namespace bp = boost::program_options;
   bp::options_description all("YeeZ Terminus");
   bp::options_description general("General Options");
-  bp::options_description key("ECC Key operations");
+  bp::options_description key("ECC Key related operations");
   bp::options_description relay("Relay result to another enclave");
   bp::options_description request("Generate Request");
-  bp::options_description forward("Generate Shu forward");
+  bp::options_description forward("Generate Shu private key forward");
   bp::options_description allowance("Generate allowance");
   bp::options_description encrypt("Encrypt message");
-  bp::options_description decrypt("Encrypt message");
+  bp::options_description decrypt("Decrypt message");
   bp::options_description sha3("Sha3 message");
 
   // clang-format off
   general.add_options()
-    ("gen-key", "generate a ECC key pair to encrypt/decrypt request")
+    ("gen-key", "generate an ECC key pair to encrypt/decrypt request")
     ("request", "generate request")
     ("forward", "forward private key to enclave")
     ("allowance", "generate allowance for param")
@@ -34,34 +34,33 @@ parse_command_line(int argc, char *argv[]) {
 
   forward.add_options()
     ("tee-pubkey", bp::value<std::string>()->required(), "TEE public key, or Dian public key")
-    ("use-privatekey-file", bp::value<std::string>(), "local private key file")
-    ("use-privatekey-hex", bp::value<std::string>(), "local private key")
-    ("use-enclave-hash", bp::value<std::string>(), "target enclave hash")
+    ("use-privatekey-file", bp::value<std::string>(), "local (Shu) private key file")
+    ("use-privatekey-hex", bp::value<std::string>(), "local (Shu) private key hex")
+    ("use-enclave-hash", bp::value<std::string>(), "target enclave hash. It means 'any enclave' if absence.")
     ("output", bp::value<std::string>(), "output result to file with JSON format");
 
 
   allowance.add_options()
     ("tee-pubkey", bp::value<std::string>()->required(), "TEE public key, or Dian public key")
     ("use-param", bp::value<std::string>()->required(), "param hash")
-    ("param-format", bp::value<std::string>()->default_value("hex"), "param format, [ hex | text ]")
-    ("use-privatekey-file", bp::value<std::string>(), "local private key file")
-    ("use-privatekey-hex", bp::value<std::string>(), "local private key")
+    ("use-privatekey-file", bp::value<std::string>(), "local (Shu) private key file")
+    ("use-privatekey-hex", bp::value<std::string>(), "local (Shu) private key hex")
     ("dhash", bp::value<std::string>()->required(), "data hash, or model hash")
     ("use-enclave-hash", bp::value<std::string>()->required(), "enclave hash")
     ("output", bp::value<std::string>(), "output result to file with JSON format");
 
 
   encrypt.add_options()
-    ("use-publickey-file", bp::value<std::string>(), "local public key file")
-    ("use-publickey-hex", bp::value<std::string>(), "local public key")
-    ("use-param", bp::value<std::string>()->required(), "param hash")
+    ("use-publickey-file", bp::value<std::string>(), "local (Shu) public key file")
+    ("use-publickey-hex", bp::value<std::string>(), "local (Shu) public key hex")
+    ("use-param", bp::value<std::string>()->required(), "message to encrypt")
     ("param-format", bp::value<std::string>()->default_value("hex"), "param format, [ hex | text ]")
     ("output", bp::value<std::string>(), "output result to file with JSON format");
 
   decrypt.add_options()
-    ("use-privatekey-file", bp::value<std::string>(), "local private key file")
-    ("use-privatekey-hex", bp::value<std::string>(), "local private key")
-    ("use-param", bp::value<std::string>()->required(), "param hash")
+    ("use-privatekey-file", bp::value<std::string>(), "local (Shu) private key file")
+    ("use-privatekey-hex", bp::value<std::string>(), "local (Shu) private key hex")
+    ("use-param", bp::value<std::string>()->required(), "message to decrypt")
     ("param-format", bp::value<std::string>()->default_value("hex"), "param format, [ hex | text ]")
     ("output", bp::value<std::string>()->multitoken(), "output result to file with JSON format");
 
@@ -73,20 +72,19 @@ parse_command_line(int argc, char *argv[]) {
   request.add_options()
     ("use-param", bp::value<std::string>()->required(), "data to sha")
     ("param-format", bp::value<std::string>()->default_value("hex"), "param format, [ hex | text ]")
-    ("tee-pubkey", bp::value<std::string>()->required(), "TEE public key, or Dian public key")
-    ("use-privatekey-file", bp::value<std::string>(), "local private key file")
-    ("use-privatekey-hex", bp::value<std::string>(), "local private key")
-    ("use-enclave-hash", bp::value<std::string>()->required(), "enclave hash")
+    ("use-publickey-file", bp::value<std::string>(), "local (Shu) public key file")
+    ("use-publicey-hex", bp::value<std::string>(), "local (Shu) public key hex")
     ("output", bp::value<std::string>(), "output result to file with JSON format");
+
   relay.add_options()
     ("use-param", bp::value<std::string>()->required(), "data to sha")
     ("param-format", bp::value<std::string>()->default_value("hex"), "param format, [ hex | text ]")
     ("relay-tee-pubkey", bp::value<std::string>()->required(), "TEE public key, or Dian public key")
-    ("relay-enclave-hash", bp::value<std::string>()->required(), "enclave hash")
+    ("relay-enclave-hash", bp::value<std::string>()->required(), "relay enclave hash")
     ("target-tee-pubkey", bp::value<std::string>()->required(), "TEE public key, or Dian public key")
-    ("target-enclave-hash", bp::value<std::string>()->required(), "enclave hash")
-    ("use-privatekey-file", bp::value<std::string>(), "local private key file")
-    ("use-privatekey-hex", bp::value<std::string>(), "local private key")
+    ("target-enclave-hash", bp::value<std::string>()->required(), "target enclave hash")
+    ("use-privatekey-file", bp::value<std::string>(), "local (Shu) private key file")
+    ("use-privatekey-hex", bp::value<std::string>(), "local (Shu) private key hex")
     ("output", bp::value<std::string>(), "output result to file with JSON format");
 
   // clang-format on

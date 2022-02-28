@@ -53,8 +53,7 @@ public:
       return ret;
     }
 
-    stbox::bytes to_sign_msg =
-        shu_skey + m_target_dian_pkey + m_target_enclave_hash;
+    stbox::bytes to_sign_msg = m_target_dian_pkey + m_target_enclave_hash;
 
     stbox::bytes sig;
     ret = ecc::sign_message(shu_skey, to_sign_msg, sig);
