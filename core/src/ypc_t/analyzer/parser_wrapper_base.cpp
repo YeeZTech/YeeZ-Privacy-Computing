@@ -7,11 +7,14 @@
 #include "stbox/eth/util.h"
 #include "stbox/stx_common.h"
 #include "stbox/tsgx/crypto/ecc.h"
+#include "stbox/tsgx/crypto/secp256k1/ecc_secp256k1.h"
 #include "stbox/tsgx/log.h"
 #include "yaenclave_t.h"
 #include "ypc_t/ecommon/signer_verify.h"
 #include "ypc_t/ecommon/version.h"
 
+using ecc = stbox::crypto::ecc<stbox::crypto::secp256k1>;
+using raw_ecc = stbox::crypto::raw_ecc<stbox::crypto::secp256k1>;
 uint32_t get_ypc_analyzer_version() { return ypc::version(1, 0, 0).data(); }
 
 namespace ypc {
@@ -92,10 +95,8 @@ uint32_t parser_wrapper_base::request_private_key() {
   }
   LOG(INFO) << "request private key done";
 
-  uint32_t pkey_size = stbox::crypto::get_secp256k1_public_key_size();
-  m_pkey4v = stbox::bytes(pkey_size);
-  status = (stbox::stx_status)stbox::crypto::generate_secp256k1_pkey_from_skey(
-      (const uint8_t *)&m_private_key[0], (uint8_t *)&m_pkey4v[0], pkey_size);
+  status =
+      (stbox::stx_status)ecc::generate_pkey_from_skey(m_private_key, m_pkey4v);
   if (status) {
     LOG(ERROR) << "error for generate_secp256k1_pkey_from_skey: " << status;
     return status;
@@ -112,15 +113,11 @@ uint32_t parser_wrapper_base::decrypt_param(const uint8_t *encrypted_param,
   }
   LOG(INFO) << "start decrypt param";
   m_encrypted_param = bytes((const char *)encrypted_param, len);
-  uint32_t data_len = stbox::crypto::get_decrypt_message_size_with_prefix(len);
-  m_param = bytes(data_len);
+  auto ret = ecc::decrypt_message_with_prefix(
+      m_private_key, m_encrypted_param, m_param, utc::crypto_prefix_arbitrary);
 
-  auto ret = stbox::crypto::decrypt_message_with_prefix(
-      (const uint8_t *)m_private_key.data(), m_private_key.size(),
-      encrypted_param, len, (uint8_t *)&m_param[0], data_len,
-      utc::crypto_prefix_arbitrary);
   if (ret) {
-    LOG(ERROR) << "error for stbox::crypto::decrypt_message: " << ret;
+    LOG(ERROR) << "error for ecc::decrypt_message: " << ret;
     return ret;
   }
   LOG(INFO) << "end decrypt param";
@@ -163,15 +160,10 @@ uint32_t parser_wrapper_base::end_parse_data_item() {
   auto t1 = m_datahub_session->close_session();
   auto t2 = m_keymgr_session->close_session();
 
-  uint32_t cipher_size =
-      stbox::crypto::get_encrypt_message_size_with_prefix(m_result_str.size());
-  m_encrypted_result_str = bytes(cipher_size);
+  auto status = ecc::encrypt_message_with_prefix(m_pkey4v, m_result_str,
+                                                 utc::crypto_prefix_arbitrary,
+                                                 m_encrypted_result_str);
 
-  auto status = stbox::crypto::encrypt_message_with_prefix(
-      (const uint8_t *)&m_pkey4v[0], m_pkey4v.size(),
-      (const uint8_t *)m_result_str.data(), m_result_str.size(),
-      utc::crypto_prefix_arbitrary, (uint8_t *)&m_encrypted_result_str[0],
-      cipher_size);
   if (status != stbox::stx_status::success) {
     LOG(ERROR) << "error for encrypt_message: " << stbox::status_string(status);
     return status;
@@ -227,14 +219,9 @@ uint32_t parser_wrapper_base::merge_parse_result(const uint8_t *encrypted_param,
 
   auto decrypt_block_result = [&](const stbox::bytes &_encrypted_param,
                                   stbox::bytes &_param) -> uint32_t {
-    uint32_t data_len = stbox::crypto::get_decrypt_message_size_with_prefix(
-        _encrypted_param.size());
-    _param = stbox::bytes(data_len);
-
-    auto ret = stbox::crypto::decrypt_message_with_prefix(
-        (const uint8_t *)m_private_key.data(), m_private_key.size(),
-        (uint8_t *)&_encrypted_param[0], _encrypted_param.size(),
-        (uint8_t *)&_param[0], data_len, utc::crypto_prefix_arbitrary);
+    auto ret =
+        ecc::decrypt_message_with_prefix(m_private_key, m_encrypted_param,
+                                         m_param, utc::crypto_prefix_arbitrary);
 
     if (ret != stbox::stx_status::success) {
       LOG(ERROR) << "error for decrypt_message: " << stbox::status_string(ret);
@@ -243,12 +230,9 @@ uint32_t parser_wrapper_base::merge_parse_result(const uint8_t *encrypted_param,
     return stbox::stx_status::success;
   };
 
-  uint32_t pkey_size = stbox::crypto::get_secp256k1_public_key_size();
-  uint8_t *pkey = new uint8_t[pkey_size];
-  scope_guard _l([&]() { delete[] pkey; });
+  stbox::bytes pkey;
 
-  stbox::crypto::generate_secp256k1_pkey_from_skey(
-      (uint8_t *)m_private_key.data(), pkey, pkey_size);
+  ecc::generate_pkey_from_skey(m_private_key, pkey);
 
   std::vector<stbox::bytes> results;
   for (uint16_t i = 0; i < m_block_results.size(); ++i) {

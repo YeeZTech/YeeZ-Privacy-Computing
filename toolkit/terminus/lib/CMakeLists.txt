@@ -1,2 +1,4 @@
 add_subdirectory(src)
-add_subdirectory(test)
+if(SGX_MODE STREQUAL "Debug")
+  add_subdirectory(test)
+endif()

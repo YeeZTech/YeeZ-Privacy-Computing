@@ -4,6 +4,7 @@
 #include "stbox/stx_status.h"
 #include "stbox/tsgx/channel/dh_session_initiator.h"
 #include "stbox/tsgx/crypto/ecc.h"
+#include "stbox/tsgx/crypto/secp256k1/ecc_secp256k1.h"
 #include "stbox/tsgx/log.h"
 #include "stbox/tsgx/ocall.h"
 #include "ypc_t/analyzer/ntpackage_item_parser.h"
@@ -11,6 +12,9 @@
 #include "ypc_t/analyzer/sealed_raw_data.h"
 #include "ypc_t/ecommon/package.h"
 #include <string.h>
+
+using ecc = stbox::crypto::ecc<stbox::crypto::secp256k1>;
+using raw_ecc = stbox::crypto::raw_ecc<stbox::crypto::secp256k1>;
 
 namespace ypc {
 namespace internal {
@@ -59,20 +63,17 @@ public:
     if (r1 != static_cast<uint32_t>(stbox::stx_status::success)) {
       return r1;
     }
-    uint32_t sig_size = stbox::crypto::get_secp256k1_signature_size();
+    // uint32_t sig_size = ecc::get_signature_size();
     stbox::bytes cost_gas_str(sizeof(m_cost_gas));
     memcpy((uint8_t *)&cost_gas_str[0], (uint8_t *)&m_cost_gas,
            sizeof(m_cost_gas));
     ypc::utc::endian_swap(cost_gas_str);
-    m_result_signature_str = stbox::bytes(sig_size);
-    m_cost_signature_str = stbox::bytes(sig_size);
 
     auto cost_msg = m_encrypted_param + m_data_source->data_hash() +
                     m_enclave_hash + cost_gas_str;
-    auto status = stbox::crypto::sign_message(
-        (uint8_t *)m_private_key.data(), m_private_key.size(),
-        (uint8_t *)&cost_msg[0], cost_msg.size(),
-        (uint8_t *)&m_cost_signature_str[0], sig_size);
+    auto status =
+        ecc::sign_message(m_private_key, cost_msg, m_cost_signature_str);
+
     if (status != stbox::stx_status::success) {
       LOG(ERROR) << "error for sign cost: " << status;
       return status;
@@ -80,11 +81,7 @@ public:
 
     auto msg = m_encrypted_param + m_data_source->data_hash() + m_enclave_hash +
                cost_gas_str + m_encrypted_result_str;
-
-    status = stbox::crypto::sign_message(
-        (uint8_t *)m_private_key.data(), m_private_key.size(),
-        (uint8_t *)&msg[0], msg.size(), (uint8_t *)&m_result_signature_str[0],
-        sig_size);
+    status = ecc::sign_message(m_private_key, msg, m_result_signature_str);
     return static_cast<uint32_t>(status);
   }
 

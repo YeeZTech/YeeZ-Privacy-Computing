@@ -15,6 +15,6 @@ add_trusted_library(ypc_analyzer_t
   SRCS ${src}
   EDL ${PROJECT_SOURCE_DIR}/core/edl/yaenclave.edl
   EDL_SEARCH_PATHS ${PROJECT_SOURCE_DIR}/core/edl)
-install(TARGETS ypc_analyzer_t DESTINATION lib)
+install(TARGETS ypc_analyzer_t DESTINATION lib COMPONENT ypc_core_so OPTIONAL)
 
 target_link_libraries(ypc_analyzer_t stbox_channel_t stbox_crypto_t)

@@ -1,10 +1,13 @@
 #include "common.h"
+#include "stbox/tsgx/crypto/secp256k1/ecc_secp256k1.h"
 #include <common/crypto_prefix.h>
 #include <corecommon/datahub/package.h>
 #include <stbox/stx_common.h>
 #include <stbox/tsgx/crypto/ecc.h>
 #include <stbox/tsgx/ocall.h>
 #include <unordered_set>
+using ecc = stbox::crypto::ecc<stbox::crypto::secp256k1>;
+using raw_ecc = stbox::crypto::raw_ecc<stbox::crypto::secp256k1>;
 
 define_nt(data_skey_nt, stbox::bytes);
 define_nt(signature_nt, stbox::bytes);
@@ -49,12 +52,9 @@ uint32_t forward_extra_data_usage_license(
     return se_ret;
   }
 
-  uint32_t decrypted_size =
-      ::stbox::crypto::get_decrypt_message_size_with_prefix(eskey.size());
-  stbox::bytes data_skey(decrypted_size);
-  se_ret = (sgx_status_t)::stbox::crypto::decrypt_message_with_prefix(
-      skey.data(), skey.size(), eskey.data(), eskey.size(), data_skey.data(),
-      data_skey.size(), ::ypc::utc::crypto_prefix_host_data_private_key);
+  stbox::bytes data_skey;
+  se_ret = (sgx_status_t)ecc::decrypt_message_with_prefix(
+      skey, eskey, data_skey, ::ypc::utc::crypto_prefix_host_data_private_key);
 
   if (se_ret) {
     LOG(ERROR) << "decrypt_message_with_prefix forward returns " << se_ret;
@@ -90,12 +90,11 @@ stbox::bytes handle_data_usage_license_pkg(
     stbox::bytes data_skey = edul.get<data_skey_nt>();
     stbox::bytes signature = edul.get<signature_nt>();
 
-    stbox::bytes expect_pkey(stbox::crypto::get_secp256k1_public_key_size());
-    stbox::crypto::generate_secp256k1_pkey_from_skey(
-        data_skey.data(), expect_pkey.data(), expect_pkey.size());
-    auto se_ret = (sgx_status_t)verify_signature(
-        data.data(), data.size(), signature.data(), signature.size(),
-        expect_pkey.data(), expect_pkey.size());
+    stbox::bytes expect_pkey;
+    ecc::generate_pkey_from_skey(data_skey, expect_pkey);
+
+    auto se_ret =
+        (sgx_status_t)ecc::verify_signature(data, signature, expect_pkey);
     if (se_ret) {
       LOG(ERROR) << "invalid data usage license for extra data: " << data_hash;
       return ypc::make_bytes<stbox::bytes>::for_package<
@@ -140,12 +139,10 @@ stbox::bytes handle_extra_data_pkg(stbox::dh_session *context,
     stbox::ocall_cast<uint32_t>(ocall_get_next_extra_data_item_data)(
         edata.data(), edata.size());
 
-    uint32_t decrypted_size =
-        ::stbox::crypto::get_decrypt_message_size_with_prefix(edata.size());
-    stbox::bytes data(decrypted_size);
-    r = (sgx_status_t)::stbox::crypto::decrypt_message_with_prefix(
-        data_skey.data(), data_skey.size(), edata.data(), edata.size(),
-        data.data(), data.size(), ::ypc::utc::crypto_prefix_host_data);
+    stbox::bytes data;
+
+    r = (sgx_status_t)ecc::decrypt_message_with_prefix(
+        data_skey, edata, data, ::ypc::utc::crypto_prefix_host_data);
 
     if (r != stbox::stx_status::success) {
       LOG(ERROR) << "decrypt data : " << data_hash << " got error " << r;
