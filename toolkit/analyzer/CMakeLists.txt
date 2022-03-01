@@ -13,7 +13,7 @@ add_executable(fid_analyzer main.cpp
   db/db.cpp
   check_data.cpp
   )
-install(TARGETS fid_analyzer DESTINATION bin)
+install(TARGETS fid_analyzer DESTINATION bin COMPONENT analyzer OPTIONAL)
 
 include_directories(${PROJECT_SOURCE_DIR}/toolkit/analyzer/)
 target_link_libraries(fid_analyzer

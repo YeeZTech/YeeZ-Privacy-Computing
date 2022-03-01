@@ -10,4 +10,4 @@ add_sgx_library(stbox_secp256k1_t
   stbox_secp256k1_t
   SRCS "${secp256k1_src}")
 
-install(TARGETS stbox_secp256k1_t DESTINATION lib)
+install(TARGETS stbox_secp256k1_t DESTINATION lib COMPONENT stbox_common_u_so OPTIONAL)

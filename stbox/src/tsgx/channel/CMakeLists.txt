@@ -9,7 +9,7 @@ add_sgx_library(stbox_channel_t
   stbox_channel
   SRCS "${t_channel_src}"
 )
-install(TARGETS stbox_channel_t DESTINATION lib)
+install(TARGETS stbox_channel_t DESTINATION lib COMPONENT stbox_common_u_so OPTIONAL)
 
 target_link_libraries(stbox_channel_t stbox_common_t)
 

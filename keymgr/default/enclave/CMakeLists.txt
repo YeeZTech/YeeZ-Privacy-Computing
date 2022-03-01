@@ -17,4 +17,4 @@ target_link_libraries(keymgr stbox_common_t stbox_secp256k1_t stbox_channel_t st
 
 enclave_sign(keymgr KEY ekeymgr_private.pem
   CONFIG ekeymgr.config.xml)
-install(FILES ${PROJECT_SOURCE_DIR}/lib/keymgr.signed.so DESTINATION lib)
+install(FILES ${PROJECT_SOURCE_DIR}/lib/keymgr.signed.so DESTINATION lib COMPONENT keymgr OPTIONAL)

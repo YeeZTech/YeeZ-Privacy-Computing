@@ -11,6 +11,6 @@ set(crypto_src
 
 add_sgx_library(stbox_crypto_t stbox_crypto_t
   SRCS "${crypto_src}")
-install(TARGETS stbox_crypto_t DESTINATION lib)
+install(TARGETS stbox_crypto_t DESTINATION lib COMPONENT stbox_common_u_so OPTONAL)
 
 target_link_libraries(stbox_crypto_t stbox_common_t stbox_secp256k1_t)

@@ -10,5 +10,5 @@ set(src crypto_pack.cpp
   )
 
 add_library(ypc_terminus SHARED ${src})
-
+install(TARGETS ypc_terminus DESTINATION lib COMPONENT yterminus-runtime OPTIONAL)
 target_link_libraries(ypc_terminus ${OPENSSL_CRYPTO_LIBRARY} secp256k1)
