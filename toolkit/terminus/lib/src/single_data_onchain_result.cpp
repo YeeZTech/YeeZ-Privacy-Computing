@@ -27,7 +27,7 @@ single_data_onchain_result::generate_request(const bytes &param,
 
   uint32_t msg_id = param_id::PRIVATE_KEY;
   ypc::bytes to_sign_message = ypc::bytes((uint8_t *)&msg_id, sizeof(msg_id)) +
-                               encrypted_skey + tee_pub_key + enclave_hash;
+                               private_key + tee_pub_key + enclave_hash;
 
   auto sig = m_crypto->sign_message(to_sign_message, private_key);
 

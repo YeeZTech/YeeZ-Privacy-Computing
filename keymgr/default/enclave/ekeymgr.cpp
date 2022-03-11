@@ -187,12 +187,12 @@ uint32_t forward_message(uint32_t msg_id, uint8_t *cipher, uint32_t cipher_size,
     return se_ret;
   }
 
-  uint32_t all_size = sizeof(msg_id) + cipher_size + epkey_size + ehash_size;
+  uint32_t all_size = sizeof(msg_id) + decrypted_size + epkey_size + ehash_size;
   stbox::bytes all(all_size);
   memcpy(all.data(), &msg_id, sizeof(msg_id));
-  memcpy(all.data() + sizeof(msg_id), cipher, cipher_size);
-  memcpy(all.data() + sizeof(msg_id) + cipher_size, epublic_key, epkey_size);
-  memcpy(all.data() + sizeof(msg_id) + cipher_size + epkey_size, ehash,
+  memcpy(all.data() + sizeof(msg_id), decrypted_msg.data(), decrypted_size);
+  memcpy(all.data() + sizeof(msg_id) + decrypted_size, epublic_key, epkey_size);
+  memcpy(all.data() + sizeof(msg_id) + decrypted_size + epkey_size, ehash,
          ehash_size);
 
   se_ret = (sgx_status_t)raw_ecc::verify_signature(
