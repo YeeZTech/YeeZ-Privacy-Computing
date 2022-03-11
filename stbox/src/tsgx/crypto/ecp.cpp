@@ -64,6 +64,8 @@ sgx_status_t derive_key(const sgx_ec256_dh_shared_t *shared_key,
     return SGX_ERROR_INVALID_PARAMETER;
   }
 
+  LOG(INFO) << "ecdh key: " << stbox::bytes((const char *)shared_key, 32);
+
   se_ret = sgx_rijndael128_cmac_msg(
       (sgx_cmac_128bit_key_t *)cmac_key, (uint8_t *)shared_key,
       sizeof(sgx_ec256_dh_shared_t), (sgx_cmac_128bit_tag_t *)&key_derive_key);
@@ -73,6 +75,9 @@ sgx_status_t derive_key(const sgx_ec256_dh_shared_t *shared_key,
     INTERNAL_SGX_ERROR_CODE_CONVERTOR(se_ret);
     return se_ret;
   }
+  LOG(INFO) << "cmac key: " << stbox::bytes((const char *)cmac_key, 16);
+  LOG(INFO) << "first derive key: "
+            << stbox::bytes((const char *)key_derive_key, 16);
 
   // TODO: note this is quite common, we may optimize this into 1 computation
   /* derivation_buffer = counter(0x01) || label || 0x00 ||

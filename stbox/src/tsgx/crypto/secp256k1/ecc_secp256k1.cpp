@@ -265,6 +265,9 @@ uint32_t raw_ecc<secp256k1>::decrypt_message_with_prefix(
   uint32_t *p_prefix = (uint32_t *)(mac_text + AAD_MAC_PREFIX_POS);
   *p_prefix = prefix;
 
+  LOG(INFO) << "pkey :" << stbox::bytes(cipher + data_size, pkey_size)
+            << ", skey: " << stbox::bytes(skey, skey_size)
+            << "derived key: " << stbox::bytes((const char *)derived_key, 16);
   se_ret = sgx_rijndael128GCM_decrypt(
       (const sgx_aes_gcm_128bit_key_t *)derived_key, cipher, data_size, data,
       p_iv_text, INITIALIZATION_VECTOR_SIZE, mac_text, AAD_MAC_TEXT_LEN,
