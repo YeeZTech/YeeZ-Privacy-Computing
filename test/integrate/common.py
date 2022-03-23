@@ -14,22 +14,24 @@ lib_dir = os.path.join(sdk_dir, "./lib")
 sealer_enclave = os.path.join(lib_dir, "edatahub.signed.so")
 kmgr_enclave = os.path.join(lib_dir, "keymgr.signed.so")
 
+
 def execute_cmd(cmd):
     print("execute_cmd: {}".format(cmd))
-    p = subprocess.Popen(cmd, shell=True, stdout = subprocess.PIPE)
+    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
     p.wait()
     if p.returncode != 0:
         raise RuntimeError('Failed to execute cmd {}'.format(cmd))
+    return p.stdout.read().decode('utf-8', errors='ignore')
 
-    return p.stdout.read().decode('utf-8')
 
 def fid_keymgr_create(user_id):
     cmd = os.path.join(bin_dir, "./keymgr_tool")
-    param = {"create":"", "user-id":user_id}
+    param = {"create": "", "user-id": user_id}
     for k, v in param.items():
         cmd = cmd + " --{} {}".format(k, v)
-    output = execute_cmd(cmd);
+    output = execute_cmd(cmd)
     return [cmd, output]
+
 
 def fid_keymgr_list():
     cmd = os.path.join(bin_dir, "./keymgr_tool")
@@ -51,6 +53,7 @@ def fid_keymgr_list():
 
     return keys
 
+
 def get_keymgr_private_key(keyid):
     cmd = os.path.join(bin_dir, "./keymgr_tool")
     output = execute_cmd("{} --list".format(cmd))
@@ -68,36 +71,38 @@ def fid_keymgr(**kwargs):
     cmd = os.path.join(bin_dir, "./keymgr_tool")
     for k, v in kwargs.items():
         cmd = cmd + " --{} {}".format(k, v)
-    output = execute_cmd(cmd);
+    output = execute_cmd(cmd)
     return [cmd, output]
+
 
 def fid_data_provider(**kwargs):
     cmd = os.path.join(bin_dir, "./data_provider")
     for k, v in kwargs.items():
         cmd = cmd + " --{} {}".format(k, v)
-    output = execute_cmd(cmd);
+    output = execute_cmd(cmd)
     return [cmd, output]
+
 
 def fid_dump(**kwargs):
     cmd = os.path.join(bin_dir, "./ydump")
     for k, v in kwargs.items():
         cmd = cmd + " --{} {}".format(k, v)
-    output = execute_cmd(cmd);
+    output = execute_cmd(cmd)
     return [cmd, output]
+
 
 def fid_terminus(**kwargs):
     cmd = os.path.join(bin_dir, "./yterminus")
     for k, v in kwargs.items():
         cmd = cmd + " --{} {}".format(k, v)
-    output = execute_cmd(cmd);
+    output = execute_cmd(cmd)
     return [cmd, output]
+
 
 def fid_analyzer(**kwargs):
     cmd = os.path.join(bin_dir, "./fid_analyzer")
     cmd = "GLOG_logtostderr=1 " + cmd
     for k, v in kwargs.items():
         cmd = cmd + " --{} {}".format(k, v)
-    output = execute_cmd(cmd);
+    output = execute_cmd(cmd)
     return [cmd, output]
-
-

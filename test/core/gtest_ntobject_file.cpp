@@ -18,8 +18,7 @@ TEST(test_ntobject_file, simple) {
   std::vector<sfm_item_t> items;
   items.push_back(item);
   data.set<sfm_items>(items);
-  data.set<sfm_hash>("dxdx");
-
+  data.set<sfm_hash>("你好");
 
   ff::net::marshaler m(ff::net::marshaler::length_retriver);
   data.arch(m);
@@ -31,6 +30,6 @@ TEST(test_ntobject_file, simple) {
   rfile.read_from();
 
   EXPECT_EQ(rfile.data().get<sfm_items>().size(), data.get<sfm_items>().size());
-  EXPECT_EQ(rfile.data().get<sfm_hash>(), "dxdx");
+  EXPECT_EQ(rfile.data().get<sfm_hash>(), "你好");
   EXPECT_EQ(rfile.data().get<sfm_items>()[0].get<sfm_index>(), 123);
 }

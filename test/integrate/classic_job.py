@@ -1,8 +1,10 @@
 #!/usr/bin/python3
 import common
+import commonjs
 import os
 import sys
 import json
+
 
 def get_first_key():
     keys = common.fid_keymgr_list()
@@ -16,8 +18,9 @@ def get_first_key():
     for k, v in keys.items():
         pkey = v
         private_key = common.get_keymgr_private_key(k)
-        break;
-    return {'public-key':pkey, "private-key":private_key}
+        break
+    return {'public-key': pkey, "private-key": private_key}
+
 
 class classic_job:
 
@@ -39,11 +42,11 @@ class classic_job:
 
         summary = {}
 
-        param = {"data-url":self.data_url,
-                "plugin-path":self.plugin_url,
-                "sealed-data-url":sealed_data_url,
-                "output":sealed_output,
-                "sealer-path":common.sealer_enclave}
+        param = {"data-url": self.data_url,
+                 "plugin-path": self.plugin_url,
+                 "sealed-data-url": sealed_data_url,
+                 "output": sealed_output,
+                 "sealer-path": common.sealer_enclave}
         summary['data-url'] = self.data_url
         summary['plugin-path'] = self.plugin_url
         summary['sealed-data-url'] = sealed_data_url
@@ -56,41 +59,41 @@ class classic_job:
 
         print("done seal data with hash: {}, cmd: {}".format(data_hash, r[0]))
 
-        #use first pkey
+        # use first pkey
         key = get_first_key()
         pkey = key['public-key']
         summary['tee-pkey'] = key['public-key']
 
-        param={"sign":data_hash,
-                "sign.hex":"",
-                "sign.private-key":key["private-key"]}
+        param = {"sign": data_hash,
+                 "sign.hex": "",
+                 "sign.private-key": key["private-key"]}
         r = common.fid_keymgr(**param)
         rs = r[1].split(':')[1].strip()
         summary['data-hash-signature'] = rs
 
-
-        sample_json = {"data":[{"data-hash":data_hash, "provider-pkey":pkey}]}
+        sample_json = {
+            "data": [{"data-hash": data_hash, "provider-pkey": pkey}]}
 
         key_file = self.name + ".key.json"
         param = {"gen-key": "",
-                "no-password":"",
-                "output":key_file}
+                 "no-password": "",
+                 "output": key_file}
         common.fid_terminus(**param)
 
-        sample_json_path = self.name +".sample.json"
+        sample_json_path = self.name + ".sample.json"
         with open(sample_json_path, "w") as of:
             json.dump(sample_json, of)
 
         param_output_url = self.name + "_param.json"
-        param = {"dhash":data_hash,
-                "tee-pubkey":pkey,
-                "use-param":self.input,
-                "param-format":"text",
-                "use-enclave-hash":self.read_parser_hash(),
-                "output":param_output_url,
-                "use-privatekey-file":key_file
-                }
-        r = common.fid_terminus(**param)
+        param = {"dhash": data_hash,
+                 "tee-pubkey": pkey,
+                 "use-param": self.input,
+                 "param-format": "text",
+                 "use-enclave-hash": self.read_parser_hash(),
+                 "output": param_output_url,
+                 "use-privatekey-file": key_file
+                 }
+        r = commonjs.fid_terminus(**param)
         print("done termins with cmd: {}".format(r[0]))
         param_json = {}
         with open(param_output_url) as of:
@@ -102,18 +105,17 @@ class classic_job:
         summary['analyzer-input'] = param_json["encrypted-input"]
         summary['program-enclave-hash'] = param_json["program-enclave-hash"]
 
-
         result_url = self.name + ".result.encrypted"
-        param = {"sealed-data-url":sealed_data_url,
-                "sealer-path":common.sealer_enclave,
-                "parser-path":self.parser_url,
-                "keymgr":common.kmgr_enclave,
-                "source-type":"json",
-                "param-path":param_output_url,
-                "result-path":result_url,
-                "check-data-hash":data_hash
-                }
-        r = common.fid_analyzer(**param);
+        param = {"sealed-data-url": sealed_data_url,
+                 "sealer-path": common.sealer_enclave,
+                 "parser-path": self.parser_url,
+                 "keymgr": common.kmgr_enclave,
+                 "source-type": "json",
+                 "param-path": param_output_url,
+                 "result-path": result_url,
+                 "check-data-hash": data_hash
+                 }
+        r = common.fid_analyzer(**param)
         print("done fid_analyzer with cmd: {}".format(r[0]))
         result_json = {}
         with open(result_url) as of:
@@ -132,14 +134,13 @@ class classic_job:
 
         decrypted_result = self.name + ".result"
 
-        param = {"decrypt-hex":encrypted_result,
-                "use-privatekey-file":key_file,
-                "output":decrypted_result}
-        r = common.fid_terminus(**param);
+        param = {"decrypt-hex": encrypted_result,
+                 "use-privatekey-file": key_file,
+                 "output": decrypted_result}
+        r = common.fid_terminus(**param)
 
         with open(decrypted_result) as f:
-            self.result = f.readlines();
-
+            self.result = f.readlines()
 
     @staticmethod
     def read_data_hash(fp):
@@ -153,12 +154,13 @@ class classic_job:
         pass
 
     def read_parser_hash(self):
-        param = {"enclave":self.parser_url,
-                "output": "info.json"}
+        param = {"enclave": self.parser_url,
+                 "output": "info.json"}
         r = common.fid_dump(**param)
         with open("info.json") as f:
             data = json.load(f)
             return data["enclave-hash"]
+
 
 if __name__ == "__main__":
     name = "iris"
