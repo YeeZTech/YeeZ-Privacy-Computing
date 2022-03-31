@@ -5,6 +5,7 @@
 #include "stbox/stx_status.h"
 #include "stbox/tsgx/channel/dh_session_initiator.h"
 #include "stbox/tsgx/ocall.h"
+#include "ypc_t/analyzer/analyzer_context.h"
 #include "ypc_t/analyzer/var/enclave_hash_var.h"
 #include "ypc_t/analyzer/var/keymgr_var.h"
 #include "ypc_t/analyzer/var/request_key_var.h"
@@ -16,10 +17,11 @@ namespace internal {
 template <typename Crypto>
 class keymgr_interface : virtual public enclave_hash_var,
                          virtual public keymgr_var,
-                         virtual public request_key_var<true> {
+                         virtual public request_key_var<true>,
+                         virtual public analyzer_context {
   typedef Crypto ecc;
 
-protected:
+public:
   uint32_t request_private_key_for_public_key(const stbox::bytes &pubkey,
                                               stbox::bytes &private_key,
                                               stbox::bytes &dian_pkey) {

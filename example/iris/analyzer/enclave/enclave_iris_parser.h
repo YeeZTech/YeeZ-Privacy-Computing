@@ -57,11 +57,10 @@ define_nt(iid, int);
 typedef ff::util::ntobject<sepal_len, sepal_wid, petal_len, petal_wid, species>
     extra_nt_t;
 class transform_format
-    : public hpda::processor::internal::processor_base<extra_nt_t,
-                                                       user_item_t> {
+    : public hpda::processor::processor_base_t<extra_nt_t, user_item_t> {
 public:
-  transform_format(::hpda::internal::processor_with_output<extra_nt_t> *t)
-      : hpda::processor::internal::processor_base<extra_nt_t, user_item_t>(t) {}
+  transform_format(::hpda::processor_with_output_t<extra_nt_t> *t)
+      : hpda::processor::processor_base_t<extra_nt_t, user_item_t>(t) {}
 
   virtual bool process() {
     if (!has_input_value()) {

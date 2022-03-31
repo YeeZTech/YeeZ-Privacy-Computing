@@ -2,6 +2,7 @@
 set(src
   analyzer_version.cpp
   internal/keymgr_session.cpp
+  var/enclave_hash_var.cpp
   ../ecommon/package.cpp
   ../ecommon/signer_verify.cpp
   ${FF_SRC_PATH}/net/common/archive.cpp

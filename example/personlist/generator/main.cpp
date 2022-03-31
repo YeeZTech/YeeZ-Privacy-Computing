@@ -89,7 +89,7 @@ void check_file(const std::string &path) {
 }
 
 int main(int argc, char *argv[]) {
-  write_to_file("person_list", 1024 * 8);
+  write_to_file("person_list", 1024);
   check_file("person_list");
   return 0;
 }
