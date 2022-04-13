@@ -351,7 +351,7 @@ Fidelius 初始化步骤如下：
 
 
     经过上述步骤，数据提供方已经将自身数据成功注册到区块链中并开始监听数据使用方的分析请求，一旦监听到数据使用方的分析需求，监听进程便自动下载其分析程序并开始执行。
-    
+
     下面介绍数据使用方如何根据数据提供方的数据信息发起数据分析请求。
 
 
@@ -408,15 +408,15 @@ Fidelius 初始化步骤如下：
       "data": [
           {
            "data-hash" : $data_id,
-           "provider-pkey" : $CONSUMER_PKEY
+           "provider-pkey" : $PROVIDER_PKEY
           }
       ]
     }
     ```
 
     - `$data_id` 是数据哈希。
+    - `$PROVIDER_PKEY` 是数据提供方的公钥。
 
-    - `$CONSUMER_PKEY` 是数据使用方的公钥。
 
 
 
@@ -424,11 +424,11 @@ Fidelius 初始化步骤如下：
 
     ```shell
     $ cd YeeZ-Privacy-Computing/bin
-    $ ./yprepare --dhash=$data_id --use-pubkey=$PROVIDER_PKEY --use-param xxx --param-format text --use-enclave ../lib/iris_parser.signed.so --output params.json
+    $ ./yprepare --dhash=$data_id --use-pubkey=$CONSUMER_PKEY --use-param xxx --param-format text --use-enclave ../lib/iris_parser.signed.so --output params.json
     ```
 
     - `$data_id` 是数据提供方 `iris data` 的数据哈希值，其值由数据提供方在步骤 7 生成。
-    - `$PROVIDER_PKEY` 是数据提供方的公钥。
+    - `$CONSUMER_PKEY` 是数据使用方的公钥。
     - 其他参数无需修改。
 
 
