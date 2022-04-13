@@ -11,7 +11,8 @@ add_trusted_library(stbox_common_t
   SRCS "${stbox_t_src}"
   EDL ./stbox.edl
   EDL_SEARCH_PATHS .)
-install(TARGETS stbox_common_t DESTINATION lib COMPONENT stbox_common_u_so OPTIONAL)
+# trusted library is staticly linked, do not need to install
+#install(TARGETS stbox_common_t DESTINATION lib COMPONENT c_stbox_common OPTIONAL)
 
 set(stbox_core_src ${stbox_src} usgx/error_message.cpp
   usgx/sgx_module.cpp
@@ -22,9 +23,8 @@ add_untrusted_library(stbox_common_u SHARED
   SRCS "${stbox_core_src}"
   EDL ./stbox.edl
   EDL_SEARCH_PATHS .)
-install(TARGETS stbox_common_u DESTINATION lib COMPONENT stbox_common_u_so OPTIONAL)
-
 target_link_libraries(stbox_common_u glog)
+install(TARGETS stbox_common_u DESTINATION lib COMPONENT c_stbox_common OPTIONAL)
 
 
 add_subdirectory(tsgx)

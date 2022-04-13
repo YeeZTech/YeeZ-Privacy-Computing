@@ -1,4 +1,5 @@
 
+include_directories(${PROJECT_SOURCE_DIR}/toolkit/analyzer/)
 add_executable(fid_analyzer main.cpp
   sgx_bridge.cpp
   extra_data_source.cpp
@@ -13,9 +14,7 @@ add_executable(fid_analyzer main.cpp
   db/db.cpp
   check_data.cpp
   )
-install(TARGETS fid_analyzer DESTINATION bin COMPONENT analyzer OPTIONAL)
 
-include_directories(${PROJECT_SOURCE_DIR}/toolkit/analyzer/)
 target_link_libraries(fid_analyzer
   stbox_common_u
   ypc_core
@@ -26,3 +25,4 @@ target_link_libraries(fid_analyzer
   glog
   ${ypc_dep_libs})
 
+install(TARGETS fid_analyzer DESTINATION bin COMPONENT c_analyzer OPTIONAL)

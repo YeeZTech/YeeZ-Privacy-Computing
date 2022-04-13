@@ -13,4 +13,4 @@ target_link_libraries(edatahub stbox_crypto_t stbox_common_t stbox_channel_t )
 
 enclave_sign(edatahub KEY enclave_private.pem
   CONFIG datahub_enclave.config.xml)
-install(FILES ${PROJECT_SOURCE_DIR}/lib/edatahub.signed.so DESTINATION lib COMPONENT datahub OPTIONAL)
+install(FILES ${PROJECT_SOURCE_DIR}/lib/edatahub.signed.so DESTINATION lib COMPONENT c_datahub OPTIONAL)
