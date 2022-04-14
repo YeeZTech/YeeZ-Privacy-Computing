@@ -15,7 +15,7 @@
 boost::program_options::variables_map parse_command_line(int argc,
                                                          char *argv[]) {
   namespace bp = boost::program_options;
-  bp::options_description all("YeeZ Privacy Request Generator");
+  bp::options_description all("YeeZ Privacy Enclave Hash Dumper");
 
   // clang-format off
   all.add_options()
