@@ -271,6 +271,27 @@ void verify_signature(const boost::program_options::variables_map &vm,
   std::cout << "Signature verify success. Valid signature." << std::endl;
 }
 
+std::string find_keymgr_enclave_path(const std::string &current_path) {
+  // 1. check if keymgr.signed.so in project lib dir
+  std::string project_lib_path =
+      ypc::join_path(ypc::dirname(current_path), "../lib/keymgr.signed.so");
+  if (ypc::is_file_exists(project_lib_path)) {
+    return project_lib_path;
+  }
+  // 2. check if exists in /usr/local/lib
+  std::string usr_local_lib_path =
+      ypc::join_path("/usr/local/lib", "./keymgr.signed.so");
+  if (ypc::is_file_exists(usr_local_lib_path)) {
+    return usr_local_lib_path;
+  }
+  // 3. check if exists in /usr/lib
+  std::string usr_lib_path = ypc::join_path("/usr/lib", "./keymgr.signed.so");
+  if (ypc::is_file_exists(usr_lib_path)) {
+    return usr_lib_path;
+  }
+  throw std::runtime_error("cannot find keymgr.signed.so file!");
+}
+
 int main(int argc, char *argv[]) {
   boost::program_options::variables_map vm;
   try {
@@ -289,8 +310,9 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
-  std::string kmgr_enclave_path = ypc::join_path(
-      ypc::dirname(ypc::complete_path(argv[0])), "../lib/keymgr.signed.so");
+  std::string kmgr_enclave_path =
+      find_keymgr_enclave_path(ypc::complete_path(argv[0]));
+  std::cout << "keymgr enclave path: " << kmgr_enclave_path << std::endl;
   std::shared_ptr<keymgr_sgx_module> ptr;
   try {
     ptr = std::make_shared<keymgr_sgx_module>(kmgr_enclave_path.c_str());

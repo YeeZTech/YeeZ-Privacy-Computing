@@ -28,7 +28,7 @@ void parallel_parse(std::shared_ptr<param_source> psource,
 boost::program_options::variables_map parse_command_line(int argc,
                                                          char *argv[]) {
   namespace bp = boost::program_options;
-  bp::options_description all("Yeez Privacy Data Hub options");
+  bp::options_description all("YeeZ Privacy Analyzer options");
 
   // clang-format off
   all.add_options()
