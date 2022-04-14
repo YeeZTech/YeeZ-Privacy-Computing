@@ -13,6 +13,7 @@ user_item_t ecall_parse_item_data(const uint8_t *data, size_t len) {
                              species>
       utt;
 
+  // iris reader plugin should be generated in plugin toolkit
   utt rt = ntpackage_item_parser<uint8_t, utt>::parser(data, len);
 
   user_item_t ret;
