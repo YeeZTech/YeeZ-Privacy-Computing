@@ -10,7 +10,7 @@
 
 ![](Fidelius-Infr.png)
 
-相比传统的数据合作模式，Fidelius 引å¥了区块链网络。由于区å链本身具有去中心化网络、公开可验证等特性，Fidelius 将其作为可信的传输通道和数据计算验证平台。
+相比传统的数据合作模式，Fidelius 引入了区块链网络。由于区块链本身具有去中心化网络、公开可验证等特性，Fidelius 将其作为可信的传输通道和数据计算验证平台。
 
 **注意：** 这是一个社区版本。尽管它与我们的企业版共享相似的组件，但它有不同的特性。了解企业版更多信息，请联系`contact@yeez.tech`。
 
@@ -26,7 +26,7 @@
 
 - 按照 [linux-sgx](https://github.com/intel/linux-sgx) 项目中 [README.md](https://github.com/intel/linux-sgx/blob/master/README.md) 文档进行编译并安装`Intel(R) SGX`驱动`SDK`和`PSW`。
 
-- 安装依赖工具（protobuf, glog, boost, cppconn等）：
+- 安装依赖工具（protobuf，glog，boost，cppconn等）：
 ```
 $ sudo apt install build-essential ocaml ocamlbuild automake autoconf libtool wget python libssl-dev git cmake perl
 $ sudo apt install libssl-dev libcurl4-openssl-dev protobuf-compiler libprotobuf-dev debhelper cmake reprepro unzip
@@ -46,6 +46,6 @@ $ make -j8
 请参考 Fidelius 安装[文档](INSTALL_ZH.md)。
 
 ## 授权
-`YeeZ-Privacy-Computing`库(即`toolkit`目录下的所有代码) 根据 [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0) 获得许可，同时也包括我们存储库中的 `COPYING.APACHE`文件。
+`YeeZ-Privacy-Computing`库(即`toolkit`目录下的所有代码) 根据 [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0) 获得许可，同时也包括我们存储库中的`COPYING.APACHE`文件。
 
 `YeeZ-Privacy-Computing`二进制文件(即`toolkit`目录下的所有代码) 根据 [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.en.html) 获得授权，同时也包括我们存储库中的`COPYING`文件。

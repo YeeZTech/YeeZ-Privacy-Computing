@@ -45,46 +45,46 @@ $ sudo apt install secp256k1 fflib ypc-common ypc-core ykeymgr stbox-common-u yd
 
 ## Run Fidelius
 ### Example (Iris data as data source, run K-Means algorithm)
-- 1.Prepare sealed data for analyzing.
+- 1. Prepare sealed data for analyzing.
 ```
 $ data_provider --data-url /path/to/ypc/bin/iris.data --plugin-path /usr/local/lib/libiris_reader.so --sealed-data-url iris.sealed --output iris.sealed.output --sealer-path /usr/local/lib/edatahub.signed.so
 ```
 **NOTE**: `--data-url` should be the correct path to iris data.
 
-- 2.Generate a Secp256k1 key pair for data provider, the key is generated in `$HOME/.yeez.key/`.
+- 2. Generate a Secp256k1 key pair for data provider, the key is generated in `$HOME/.yeez.key/`.
 ```
 $ keymgr_tool --create
 ```
 
-- 3.Sign the hash of iris data using the Secp256k1 private key.
+- 3. Sign the hash of iris data using the Secp256k1 private key.
 ```
 $ keymgr_tool --sign $DATA_HASH --sign.hex --sign.private-key $SEALED_PRIVATE_KEY
 ```
 **NOTE**: `$DATA_HASH` is the value of `data_id` in file `iris.sealed.output` generated in step 1, and $SEALED_PRIVATE_KEY is the value of `private_key` in Secp256k1 key file generated in step 2.
 
-- 4.Generate a Secp256k1 key pair for data consumer, note that data consumer can generate such key pair without SGX dependency.
+- 4. Generate a Secp256k1 key pair for data consumer, note that data consumer can generate such key pair without SGX dependency.
 ```
 $ yterminus --gen-key  --no-password  --output iris.key.json
 ```
 
-- 5.Fetch the enclave hash of K-Means algorithm.
+- 5. Fetch the enclave hash of K-Means algorithm.
 ```
 $ ydump --enclave /usr/local/lib/iris_parser.signed.so --output info.json
 ```
 
-- 6.Encrpty analysis parameters.
+- 6. Encrpty analysis parameters.
 ```
 $ yterminus --dhash $DATA_HASH --tee-pubkey $PROVIDER_PUBLIC_KEY --use-param 123 --param-format text --use-enclave-hash $ENCLAVE_HASH --output iris_param.json --use-privatekey-file iris.key.json
 ```
 **NOTE**: `$DATA_HASH` is the value of `data_id` in file `iris.sealed.output` generated in step 1, `$PROVIDER_PUBLIC_KEY` is the value of `public_key` in Secp256k1 key file in step 2, and `$ENCLAVE_HASH` is the value of `enclave-hash` in file `info.json` in step 5.
 
-- 7.Run K-Means algorithm using iris data.
+- 7. Run K-Means algorithm using iris data.
 ```
 $ GLOG_logtostderr=1 fid_analyzer --sealed-data-url iris.sealed --sealer-path /usr/local/lib/edatahub.signed.so --parser-path /usr/local/lib/iris_parser.signed.so --keymgr /usr/local/lib/keymgr.signed.so --source-type json --param-path iris_param.json --result-path iris.result.encrypted --check-data-hash $DATA_HASH
 ```
 **NOTE**: `$DATA_HASH` is the value of `data_id` in file `iris.sealed.output` generated in step 1.
 
-- 8.Decrypt analysis result.
+- 8. Decrypt analysis result.
 ```
 $ yterminus --decrypt-hex $ENCRYPTED_RESULT --use-privatekey-file iris.key.json --output result.output
 ```
