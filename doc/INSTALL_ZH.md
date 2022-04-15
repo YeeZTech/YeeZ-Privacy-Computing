@@ -48,7 +48,7 @@ $ sudo apt install secp256k1 fflib ypc-common ypc-core ykeymgr stbox-common-u yd
 
 运行 Fidelius
 ------------------------
-### 示例 (使用 iris 数据集作为数据源，运行 K-Means 算法)
+### 示例（使用 iris 数据集作为数据源，运行 K-Means 算法）
 - 1. 准备 iris 数据集的封存数据
 ```
 $ data_provider --data-url /path/to/ypc/bin/iris.data --plugin-path /usr/local/lib/libiris_reader.so --sealed-data-url iris.sealed --output iris.sealed.output --sealer-path /usr/local/lib/edatahub.signed.so
