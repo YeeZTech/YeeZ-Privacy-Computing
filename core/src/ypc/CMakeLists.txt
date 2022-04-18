@@ -12,6 +12,7 @@ add_library(ypc_core SHARED
   privacy_data_reader.cpp
   exceptions.cpp
   status.cpp
+  version.cpp
   ${PROJECT_SOURCE_DIR}/vendor/fflib/src/net/common/archive.cpp)
 install(TARGETS ypc_core DESTINATION lib)
 

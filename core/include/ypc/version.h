@@ -111,4 +111,6 @@ protected:
 
   _version_data m_data;
 }; // end class version
+
+std::string get_ypc_version();
 } // namespace ypc

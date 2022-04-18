@@ -1,4 +1,5 @@
 #include "parsers/parser.h"
+#include "common/access_policy.h"
 #include "corecommon/nt_cols.h"
 #include "corecommon/package.h"
 #include "ypc/ntjson.h"
@@ -10,12 +11,21 @@ parser::parser(const input_param_t &param) : m_param(param) {}
 
 parser::~parser() {}
 
+ypc::bytes construct_access_control_policy() {
+  using ntt = ypc::nt<ypc::bytes>;
+  ntt::access_list_package_t alp;
+  alp.set<ntt::access_list_type>(ypc::utc::access_policy_blacklist);
+  alp.set<ntt::access_list>(std::vector<ntt::access_item_t>());
+  return ypc::make_bytes<ypc::bytes>::for_package(alp);
+}
+
 uint32_t parser::parse() {
   auto parser_enclave_path = m_param.get<parser_path>();
   auto keymgr_enclave_path = m_param.get<keymgr_path>();
   m_parser =
       std::make_shared<ypc::parser_sgx_module>(parser_enclave_path.c_str());
   m_keymgr = std::make_shared<keymgr_sgx_module>(keymgr_enclave_path.c_str());
+  m_keymgr->set_access_control_policy(construct_access_control_policy());
   LOG(INFO) << "initializing parser/keymgr module done";
 
   auto epkey = m_param.get<dian_pkey>();

@@ -220,7 +220,7 @@ uint32_t forward_private_key(const uint8_t *encrypted_private_key,
   pki.set<shu_skey_nt, dian_pkey_nt>(forward_skey,
                                      stbox::bytes(epublic_key, epkey_size));
   private_key_table.insert(std::make_pair(str_msg_key, pki));
-  LOG(INFO) << "forward private key succ! key+enclave:" << str_msg_key;
+  LOG(INFO) << "forward private key succ!";
 
   return se_ret;
 }
@@ -248,7 +248,7 @@ stbox::bytes handle_pkg(const uint8_t *data, size_t data_len,
                 iter->second.get<dian_pkey_nt>();
           return;
         }
-        LOG(INFO) << "try to find " << str_msg_key << " failed";
+        LOG(INFO) << "try to find private key failed!";
 
         str_msg_key = pkey + any_enclave_hash;
         iter = private_key_table.find(str_msg_key);

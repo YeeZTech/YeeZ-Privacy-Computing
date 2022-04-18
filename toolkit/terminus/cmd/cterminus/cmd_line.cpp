@@ -70,18 +70,18 @@ parse_command_line(int argc, char *argv[]) {
     ("output", bp::value<std::string>(), "output result to file with JSON format");
 
   request.add_options()
-    ("use-param", bp::value<std::string>()->required(), "data to sha")
+    ("use-param", bp::value<std::string>()->required(), "param data")
     ("param-format", bp::value<std::string>()->default_value("hex"), "param format, [ hex | text ]")
     ("use-publickey-file", bp::value<std::string>(), "local (Shu) public key file")
     ("use-publicey-hex", bp::value<std::string>(), "local (Shu) public key hex")
     ("output", bp::value<std::string>(), "output result to file with JSON format");
 
   relay.add_options()
-    ("use-param", bp::value<std::string>()->required(), "data to sha")
+    ("use-param", bp::value<std::string>()->required(), "param data")
     ("param-format", bp::value<std::string>()->default_value("hex"), "param format, [ hex | text ]")
-    ("relay-tee-pubkey", bp::value<std::string>()->required(), "TEE public key, or Dian public key")
+    ("relay-tee-pubkey", bp::value<std::string>()->required(), "relay TEE public key, or Dian public key")
     ("relay-enclave-hash", bp::value<std::string>()->required(), "relay enclave hash")
-    ("target-tee-pubkey", bp::value<std::string>()->required(), "TEE public key, or Dian public key")
+    ("target-tee-pubkey", bp::value<std::string>()->required(), "target TEE public key, or Dian public key")
     ("target-enclave-hash", bp::value<std::string>()->required(), "target enclave hash")
     ("use-privatekey-file", bp::value<std::string>(), "local (Shu) private key file")
     ("use-privatekey-hex", bp::value<std::string>(), "local (Shu) private key hex")
