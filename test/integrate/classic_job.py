@@ -106,7 +106,7 @@ class classic_job:
                 "tee-pubkey":pkey,
                 "use-enclave-hash":enclave_hash,
                 "output":param_key_forward_result}
-        common.fid_terminus(**param);
+        commonjs.fid_terminus(**param);
         rq_forward_json = {}
         with open(param_key_forward_result, 'r') as of:
             rq_forward_json = json.load(of)
@@ -120,7 +120,7 @@ class classic_job:
                 "output":param_output_url
                 }
 
-        r = common.fid_terminus(**param)
+        r = commonjs.fid_terminus(**param)
         print("done termins with cmd: {}".format(r[0]))
         param_json = {}
         with open(param_output_url) as of:
