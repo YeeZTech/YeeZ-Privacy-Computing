@@ -1,12 +1,15 @@
+#include "common/crypto_prefix.h"
 #include "common/limits.h"
-#include "header.h"
+#include "corecommon/crypto/stdeth.h"
+#include "corecommon/nt_cols.h"
 #include "stbox/eth/eth_hash.h"
 #include "ypc/ntobject_file.h"
 #include "ypc/privacy_data_reader.h"
 #include "ypc/sealed_file.h"
-#include "ypc/sgx/datahub_sgx_module.h"
 #include <boost/program_options.hpp>
 #include <boost/progress.hpp>
+#include <boost/property_tree/json_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
 #include <exception>
 #include <fstream>
 #include <iostream>
@@ -14,133 +17,84 @@
 
 using stx_status = stbox::stx_status;
 using namespace ypc;
-void seal_file_for_parallel(const std::string &plugin, const std::string &file,
-                            const std::string &sealed_file_path,
-                            const std::string &sealer_path,
-                            stbox::bytes &data_hash) {
-  // Read origin file
-  // use sgx to seal file
-  privacy_data_reader reader(plugin, file);
-  datahub_sgx_module sm(sealer_path.c_str());
-  // simple_sealed_file sf(sealed_file_path, false);
-  // std::string k(file);
-  // k = k + std::string(sealer_path);
 
-  int concurrency = std::thread::hardware_concurrency();
-
-  sfm_t data;
-  data.set<sfm_num>(concurrency);
-
-  std::cout << concurrency << " cores, split into " << concurrency << " files."
-            << std::endl;
-
-  // magic string here!
-  stbox::bytes std_hash = stbox::eth::keccak256_hash(stbox::bytes("Fidelius"));
-
-  uint64_t item_number = reader.get_item_number();
-  if (item_number == 0) {
-    std::cout << "no data to read. " << std::endl;
-    exit(-1);
+typedef ypc::crypto::eth_sgx_crypto crypto_t;
+typedef ypc::nt<ypc::bytes> ntt;
+void write_batch(simple_sealed_file &sf, std::vector<ypc::bytes> &batch,
+                 const stbox::bytes &public_key) {
+  ntt::batch_data_pkg_t pkg;
+  ypc::bytes s;
+  ypc::bytes batch_str =
+      ypc::make_bytes<ypc::bytes>::for_package<ntt::batch_data_pkg_t,
+                                               ntt::batch_data>(batch);
+  uint32_t status = crypto_t::encrypt_message_with_prefix(
+      public_key, batch_str, ypc::utc::crypto_prefix_arbitrary, s);
+  if (status) {
+    std::stringstream ss;
+    ss << "encrypt "
+       << " data fail: " << stbox::status_string(status);
+    LOG(ERROR) << ss.str();
+    std::cerr << ss.str();
+    exit(1);
   }
-
-  auto check_item_data_size = [](const bytes &_data) {
-    if (_data.size() > ypc::utc::max_item_size) {
-      std::cout << "only support item size that smaller than "
-                << ypc::utc::max_item_size << " bytes!" << std::endl;
-      exit(-1);
-    }
-  };
-
-  size_t items_per_file = item_number / concurrency;
-  std::cout << item_number << " items in total, " << items_per_file
-            << " items per file." << std::endl;
-
-  simple_sealed_file *cur_sf = nullptr; //(sealed_file_path, false);
-  stbox::bytes k = std_hash;
-  std::cout << "Reading " << item_number << " items ..." << std::endl;
-  boost::progress_display pd(item_number);
-
-  std::vector<sfm_item_t> items;
-  for (size_t i = 0; i < item_number; ++i) {
-    if (i % items_per_file == 0 &&
-        ((i / items_per_file) + 1) * items_per_file <= item_number) {
-      if (cur_sf) {
-        delete cur_sf;
-      }
-      std::string file_path =
-          sealed_file_path + "." + std::to_string(i / items_per_file);
-      std::cout << "file " << i / items_per_file << " path: " << file_path
-                << std::endl;
-      cur_sf = new simple_sealed_file(file_path, false);
-      k = std_hash;
-      if (i != 0) {
-        items.back().set<sfm_hash>(k);
-      }
-      sfm_item_t item;
-      item.set<sfm_path>(file_path);
-      item.set<sfm_index>(i / items_per_file);
-      items.push_back(item);
-    }
-
-    bytes item_data = reader.read_item_data();
-    check_item_data_size(item_data);
-    bytes s = sm.seal_data(item_data);
-    cur_sf->write_item(s);
-    k = k + item_data;
-    k = stbox::eth::keccak256_hash(k);
-    ++pd;
-  }
-  items.back().set<sfm_hash>(k);
-
-  k = std_hash;
-  for (int i = 0; i < items.size(); i++) {
-    k = k + items[i].get<sfm_hash>();
-  }
-  k = stbox::eth::keccak256_hash(k);
-  data.set<sfm_hash>(k);
-  data.set<sfm_items>(items);
-  data.set<sfm_num>(concurrency);
-
-  ypc::ntobject_file<sfm_t> fs(sealed_file_path);
-  fs.data() = data;
-  fs.write_to();
-  std::cout << "\nDone read data" << std::endl;
+  sf.write_item(s);
 }
-
-void seal_file(const std::string &plugin, const std::string &file,
-               const std::string &sealed_file_path,
-               const std::string &sealer_path, stbox::bytes &data_hash) {
+uint32_t seal_file(const std::string &plugin, const std::string &file,
+                   const std::string &sealed_file_path,
+                   const stbox::bytes &public_key, stbox::bytes &data_hash) {
   // Read origin file use sgx to seal file
   privacy_data_reader reader(plugin, file);
-  datahub_sgx_module sm(sealer_path.c_str());
   simple_sealed_file sf(sealed_file_path, false);
-  std::string k(file);
-  k = k + std::string(sealer_path);
+  // std::string k(file);
+  // k = k + std::string(sealer_path);
 
   // magic string here!
   data_hash = stbox::eth::keccak256_hash(bytes("Fidelius"));
 
   bytes item_data = reader.read_item_data();
   if (item_data.size() > ypc::utc::max_item_size) {
-    std::cout << "only support item size that smaller than "
+    std::cerr << "only support item size that smaller than "
               << ypc::utc::max_item_size << " bytes!" << std::endl;
-    exit(-1);
+    return 1;
   }
   uint64_t item_number = reader.get_item_number();
 
   std::cout << "Reading " << item_number << " items ..." << std::endl;
   boost::progress_display pd(item_number);
   uint counter = 0;
+  std::vector<ypc::bytes> batch;
+  size_t batch_size = 0;
   while (!item_data.empty() && counter < item_number) {
-    bytes s = sm.seal_data(item_data);
-    sf.write_item(s);
+    bytes s;
+    batch.push_back(item_data);
+    batch_size += item_data.size();
+    // if (batch_size >= simple_sealed_file::blockfile_t::BlockSizeLimit - 1024)
+    // {
+    if (batch_size >= ypc::utc::max_item_size) {
+      write_batch(sf, batch, public_key);
+      batch.clear();
+      batch_size = 0;
+    }
+
     stbox::bytes k = data_hash + item_data;
     data_hash = stbox::eth::keccak256_hash(k);
     item_data = reader.read_item_data();
+    if (item_data.size() > ypc::utc::max_item_size) {
+      std::cerr << "only support item size that smaller than "
+                << ypc::utc::max_item_size << " bytes!" << std::endl;
+      return 1;
+    }
     ++pd;
     ++counter;
   }
+  if (batch.size() != 0) {
+    write_batch(sf, batch, public_key);
+    batch.clear();
+    batch_size = 0;
+  }
+
   std::cout << "\nDone read data count: " << pd.count() << std::endl;
+  return 0;
 }
 
 boost::program_options::variables_map parse_command_line(int argc,
@@ -149,44 +103,23 @@ boost::program_options::variables_map parse_command_line(int argc,
   bp::options_description all("YeeZ Privacy Data Hub options");
   bp::options_description general("General Options");
   bp::options_description seal_data_opts("Seal Data Options");
-  bp::options_description common("Common Options");
-  bp::options_description hosting_data("Hosting Data Options");
-  bp::options_description checking_data("Check sealed data hash");
 
   // clang-format off
   seal_data_opts.add_options()
     ("data-url", bp::value<std::string>(), "Data URL")
-    ("plugin-path", bp::value<std::string>(), "shared library for read data")
-    ("enable-parallel", "enable partationing sealed file into N blocks, where N is the number for CPU cores");
-
-  common.add_options()
-    ("sealed-data-url", bp::value<std::string>(), "Sealed Data URL")
-    ("output", bp::value<std::string>(), "output file path")
-    ("sealer-path", bp::value<std::string>(), "sealer path");
+    ("plugin-path", bp::value<std::string>(), "shared library for reading data")
+    ("use-publickey-file", bp::value<std::string>(), "public key file")
+    ("use-publickey-hex", bp::value<std::string>(), "public key")
+    ("sealed-data-url", bp::value<std::string>(), "Sealed data URL")
+    ("output", bp::value<std::string>(), "output meta file path");
 
   general.add_options()
     ("help", "help message");
-  hosting_data.add_options()
-    ("gen-host-data", "Generate hosting data")
-    ("gen-request-license", "Generate license to use the data")
-    ("credential-path", bp::value<std::string>(), "The data credential file path")
-    ("license-path", bp::value<std::string>(), "The data-usage license file path ")
-    ("encrypted-param", bp::value<std::string>(), "Encrypted param for the request")
-    ("enclave-hash", bp::value<std::string>(), "Algorithm enclave hash which shall use the data")
-    ("pkey4v", bp::value<std::string>(), "Public key used to verify request result")
-    ("tee-pkey", bp::value<std::string>(), "Public key generated by thee TEE which shall use the data");
-
-  checking_data.add_options()
-    ("check-sealed-data", "Flag to check sealed data hash")
-    ("data-hash", "Expected data hash");
 
   // clang-format on
 
-  all.add(general)
-      .add(seal_data_opts)
-      .add(common)
-      .add(hosting_data)
-      .add(checking_data);
+  all.add(general).add(seal_data_opts);
+
   boost::program_options::variables_map vm;
   boost::program_options::store(
       boost::program_options::parse_command_line(argc, argv, all), vm);
@@ -203,53 +136,48 @@ int main(int argc, char *argv[]) {
   try {
     vm = parse_command_line(argc, argv);
   } catch (const std::exception &e) {
-    std::cout << e.what() << std::endl;
-    std::cout << "invalid cmd line parameters!" << std::endl;
-    return -1;
-  }
-  if (vm.count("gen-host-data") || vm.count("gen-request-license")) {
-    return hosting_data_main(vm);
-  }
-
-  if (vm.count("check-sealed-data")) {
-    return check_sealed_data(vm);
-  }
-
-  if (vm.count("credential-path") || vm.count("license-path")) {
-    std::cout << "you missed 'gen-host-data' or 'gen-request-license'"
-              << std::endl;
-    return -1;
-  }
-  if (vm.count("encrypted-param") || vm.count("enclave-hash") ||
-      vm.count("pkey4v") || vm.count("tee-key")) {
-    std::cout << "you missed 'gen-request-license' " << std::endl;
+    std::cerr << e.what() << std::endl;
+    std::cerr << "invalid cmd line parameters!" << std::endl;
     return -1;
   }
   if (!vm.count("data-url")) {
-    std::cout << "data not specified!" << std::endl;
+    std::cerr << "data not specified!" << std::endl;
     return -1;
     }
   if (!vm.count("sealed-data-url")) {
-    std::cout << "sealed data url not specified" << std::endl;
-    return -1;
-  }
-  if (!vm.count("sealer-path")) {
-    std::cout << "sealer not specified" << std::endl;
+    std::cerr << "sealed data url not specified" << std::endl;
     return -1;
   }
   if (!vm.count("output")) {
-    std::cout << "output not specified" << std::endl;
+    std::cerr << "output not specified" << std::endl;
     return -1;
   }
   if (!vm.count("plugin-path")) {
-    std::cout << "library not specified" << std::endl;
+    std::cerr << "library not specified" << std::endl;
+    return -1;
+  }
+  if (!vm.count("use-publickey-hex") && !vm.count("use-publickey-file")) {
+    std::cerr << "missing public key, use 'use-publickey-file' or "
+                 "'use-publickey-hex'"
+              << std::endl;
+    return -1;
+  }
+
+  ypc::bytes public_key;
+  if (vm.count("use-publickey-hex")) {
+    public_key = ypc::hex_bytes(vm["use-publickey-hex"].as<std::string>())
+                     .as<ypc::bytes>();
+  } else if (vm.count("use-publickey-file")) {
+    boost::property_tree::ptree pt;
+    boost::property_tree::json_parser::read_json(
+        vm["use-publickey-file"].as<std::string>(), pt);
+    public_key = pt.get<ypc::bytes>("public-key");
   }
 
   std::string plugin = vm["plugin-path"].as<std::string>();
-  std::string iris_file = vm["data-url"].as<std::string>();
-  std::string sealed_iris_file = vm["sealed-data-url"].as<std::string>();
-  std::string enclave_file = vm["sealer-path"].as<std::string>();
+  std::string data_file = vm["data-url"].as<std::string>();
   std::string output = vm["output"].as<std::string>();
+  std::string sealed_data_file = vm["sealed-data-url"].as<std::string>();
 
   stbox::bytes data_hash;
   std::ofstream ofs;
@@ -260,11 +188,10 @@ int main(int argc, char *argv[]) {
   }
   ofs.close();
 
-  if (vm.count("enable-parallel")) {
-    seal_file_for_parallel(plugin, iris_file, sealed_iris_file, enclave_file,
-                           data_hash);
-  } else {
-    seal_file(plugin, iris_file, sealed_iris_file, enclave_file, data_hash);
+  auto status =
+      seal_file(plugin, data_file, sealed_data_file, public_key, data_hash);
+  if (status) {
+    return -1;
   }
 
   ofs.open(output);
@@ -273,15 +200,15 @@ int main(int argc, char *argv[]) {
     return -1;
   }
   ofs << "data_url"
-      << " = " << iris_file << "\n";
+      << " = " << data_file << "\n";
   ofs << "sealed_data_url"
-      << " = " << sealed_iris_file << "\n";
-  ofs << "sealer_enclave"
-      << " = " << enclave_file << "\n";
+      << " = " << sealed_data_file << "\n";
+  ofs << "public_key"
+      << " = " << public_key << "\n";
   ofs << "data_id"
       << " = " << data_hash << "\n";
 
-  privacy_data_reader reader(plugin, iris_file);
+  privacy_data_reader reader(plugin, data_file);
   ofs << "item_num"
       << " = " << reader.get_item_number() << "\n";
 
@@ -301,11 +228,3 @@ int main(int argc, char *argv[]) {
   std::cout << "done sealing" << std::endl;
   return 0;
 }
-
-extern "C" {
-uint32_t next_sealed_item_data(uint8_t **data, uint32_t *len);
-void free_sealed_item_data(uint8_t *data);
-}
-
-uint32_t next_sealed_item_data(uint8_t **data, uint32_t *len) { return 0; }
-void free_sealed_item_data(uint8_t *data) {}

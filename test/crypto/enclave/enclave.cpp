@@ -13,18 +13,15 @@
 #include <sgx_trts.h>
 #include <sgx_tseal.h>
 
-#include "keymgr/common/message_type.h"
+#include "corecommon/crypto/stdeth.h"
 #include "stbox/ebyte.h"
 #include "stbox/eth/eth_hash.h"
 #include "stbox/tsgx/channel/dh_session_responder.h"
-#include "stbox/tsgx/crypto/ecc.h"
-#include "stbox/tsgx/crypto/ecp_interface.h"
-#include "stbox/tsgx/crypto/secp256k1/ecc_secp256k1.h"
 #include "stbox/tsgx/log.h"
 #include "ypc_t/ecommon/signer_verify.h"
 
-using ecc = stbox::crypto::ecc<stbox::crypto::secp256k1>;
-using raw_ecc = stbox::crypto::raw_ecc<stbox::crypto::secp256k1>;
+using ecc = ypc::crypto::eth_sgx_crypto;
+using raw_ecc = ecc;
 #define SECP256K1_PRIVATE_KEY_SIZE 32
 #define INITIALIZATION_VECTOR_SIZE 12
 #define SGX_AES_GCM_128BIT_TAG_T_SIZE sizeof(sgx_aes_gcm_128bit_tag_t)
@@ -33,17 +30,6 @@ extern "C" {
 #include "stbox/../../src/tsgx/secp256k1/hash.h"
 #include "stbox/keccak/keccak.h"
 }
-namespace stbox {
-namespace crypto {
-namespace internal {
-// We declare this for testing
-//@pkey is little endian
-uint32_t gen_sgx_ec_key_128bit(const uint8_t *pkey, uint32_t pkey_size,
-                               const uint8_t *skey, uint32_t skey_size,
-                               uint8_t *derived_key);
-} // namespace internal
-} // namespace crypto
-} // namespace stbox
 
 using stx_status = stbox::stx_status;
 using scope_guard = stbox::scope_guard;
@@ -76,8 +62,7 @@ uint32_t test_ecdh(uint8_t *skey, uint8_t *pkey, uint8_t *shared_key) {
   print_hex(pkey, 64);
 #endif
   // ypc::change_endian(pkey, 64); // convert to little
-  return ::stbox::crypto::internal::gen_sgx_ec_key_128bit(pkey, 64, skey, 32,
-                                                          shared_key);
+  return ecc::ecdh_t::ecdh_shared_key(skey, 32, pkey, 64, shared_key, 16);
 
 #if 0
   printf("test_ecdh::shared_key: ");

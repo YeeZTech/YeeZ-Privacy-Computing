@@ -1,0 +1,6 @@
+add_subdirectory(enclave)
+add_executable(iris_gen_model main.cpp)
+target_link_libraries(iris_gen_model ypc_core pthread)
+
+add_executable(iris_gen_classify_input input.cpp)
+target_link_libraries(iris_gen_classify_input ypc_core boost_program_options boost_system pthread)

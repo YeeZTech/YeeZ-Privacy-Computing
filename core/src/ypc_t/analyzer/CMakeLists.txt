@@ -1,12 +1,12 @@
-set(src parser_wrapper_base.cpp
-  extra_data_usage.cpp
-  extra_data_source.cpp
+set(src
+  analyzer_version.cpp
+  internal/keymgr_session.cpp
+  var/enclave_hash_var.cpp
   ../ecommon/package.cpp
   ../ecommon/signer_verify.cpp
   ${FF_SRC_PATH}/net/common/archive.cpp
   ${PROJECT_SOURCE_DIR}/hpda/src/engine/engine.cpp
   ${PROJECT_SOURCE_DIR}/hpda/src/engine/functor.cpp
-  #${FF_SRC_PATH}/net/middleware/package.cpp
   )
 
 add_trusted_library(ypc_analyzer_t

@@ -17,6 +17,7 @@ enum {
   ctrl_type,
   response_data_item,
   request_private_key_item,
+  request_skey_from_pkey_item,
   request_extra_data_usage_license_item,
   ack_extra_data_usage_license_item,
   request_extra_data_item,
@@ -30,6 +31,9 @@ typedef sgx_package<response_data_item, ypc::nt<stbox::bytes>::data>
 typedef sgx_package<ctrl_type, ypc::nt<stbox::bytes>::reserve> ctrl_pkg_t;
 typedef sgx_package<request_private_key_item, ypc::nt<stbox::bytes>::id>
     request_private_key_pkg_t;
+typedef sgx_package<request_skey_from_pkey_item, ypc::nt<stbox::bytes>::pkey>
+    request_skey_from_pkey_pkg_t;
+
 typedef sgx_package<request_extra_data_usage_license_item,
                     ypc::nt<stbox::bytes>::encrypted_param,
                     ypc::nt<stbox::bytes>::pkey4v,

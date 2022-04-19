@@ -1,13 +1,12 @@
 #include "common/crypto_prefix.h"
+#include "corecommon/crypto/stdeth.h"
 #include "ecc_t.h"
-#include "stbox/tsgx/crypto/ecc.h"
 #include "stbox/tsgx/crypto/seal.h"
 #include "stbox/tsgx/crypto/seal_sgx.h"
-#include "stbox/tsgx/crypto/secp256k1/ecc_secp256k1.h"
 #include "stbox/tsgx/log.h"
 
-using ecc = stbox::crypto::ecc<stbox::crypto::secp256k1>;
-using raw_ecc = stbox::crypto::raw_ecc<stbox::crypto::secp256k1>;
+using ecc = ypc::crypto::eth_sgx_crypto;
+using raw_ecc = ecc;
 using sealer = stbox::crypto::raw_device_sealer<stbox::crypto::intel_sgx>;
 
 uint64_t stbox_ecc_version() { return 1; }

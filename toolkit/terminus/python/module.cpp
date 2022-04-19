@@ -1,4 +1,5 @@
 #include "ypc/terminus/crypto_pack.h"
+#include "ypc/terminus/enclave_interaction.h"
 #include "ypc/terminus/interaction.h"
 #include "ypc/terminus/single_data_onchain_result.h"
 
@@ -7,6 +8,11 @@ namespace py = pybind11;
 
 enum crypto_pack_type { intel_sgx_and_eth, chinese_sm };
 
+auto cast = [](const py::bytes &p) -> ypc::bytes {
+  std::string b = std::string(p);
+  ypc::bytes sk(b.c_str(), b.size());
+  return sk;
+};
 class crypto_pack_wrapper {
 public:
   crypto_pack_wrapper(crypto_pack_type cpt) : m_type(cpt) {
@@ -36,48 +42,59 @@ protected:
   crypto_pack_type m_type;
 };
 
-class single_data_onchain_result_wrapper {
+class enclave_interaction_wrapper {
 public:
-  typedef struct _request {
-    inline _request(const ypc::bytes &_encrypted_param,
-                    const ypc::bytes &_encrypted_skey,
+  typedef struct _forward {
+    inline _forward(const ypc::bytes &_encrypted_skey,
                     const ypc::bytes &_signature)
-        : encrypted_param((const char *)_encrypted_param.data(),
-                          _encrypted_param.size()),
-          encrypted_skey((const char *)_encrypted_skey.data(),
+        : encrypted_skey((const char *)_encrypted_skey.data(),
                          _encrypted_skey.size()),
           signature((const char *)_signature.data(), _signature.size()) {}
-    py::bytes encrypted_param;
     py::bytes encrypted_skey;
     py::bytes signature;
-  } request;
+  } forward_info;
 
+  enclave_interaction_wrapper(std::shared_ptr<crypto_pack_wrapper> crypto)
+      : m_crypto(crypto), m_instance(crypto.get()->m_crypto.get()) {}
+
+  py::bytes generate_allowance(const py::bytes &private_key,
+                               const py::bytes &param_hash,
+                               const py::bytes &target_enclave_hash,
+                               const py::bytes &dian_pkey,
+                               const py::bytes &dhash) {
+    auto r = m_instance.generate_allowance(cast(private_key), cast(param_hash),
+                                           cast(target_enclave_hash),
+                                           cast(dian_pkey), cast(dhash));
+    return py::bytes((const char *)r.data(), r.size());
+  }
+
+  forward_info forward_private_key(const py::bytes &private_key,
+                                   const py::bytes &dian_pkey,
+                                   const py::bytes &enclave_hash){
+    auto r = m_instance.forward_private_key(cast(private_key), cast(dian_pkey),
+                                            cast(enclave_hash));
+    return forward_info(r.encrypted_skey, r.signature);
+  }
+
+protected:
+  std::shared_ptr<crypto_pack_wrapper> m_crypto;
+  ypc::terminus::enclave_interaction m_instance;
+};
+
+class single_data_onchain_result_wrapper {
+public:
   single_data_onchain_result_wrapper(
       std::shared_ptr<crypto_pack_wrapper> crypto)
       : m_crypto(crypto), m_instance(crypto.get()->m_crypto.get()) {}
 
-  request generate_request(const py::bytes &param, const py::bytes &tee_pub_key,
-                           const py::bytes &data_hash,
-                           const py::bytes &enclave_hash,
-                           const py::bytes &private_key) {
-    auto cast = [](const py::bytes &p) -> ypc::bytes {
-      std::string b = std::string(p);
-      ypc::bytes sk(b.c_str(), b.size());
-      return sk;
-    };
-    auto r = m_instance.generate_request(cast(param), cast(tee_pub_key),
-                                         cast(data_hash), cast(enclave_hash),
-                                         cast(private_key));
-    return request(r.encrypted_param, r.encrypted_skey, r.signature);
+  py::bytes generate_request(const py::bytes &param,
+                             const py::bytes &public_key) {
+    auto r = m_instance.generate_request(cast(param), cast(public_key));
+    return py::bytes((const char *)r.data(), r.size());
   }
 
   py::bytes decrypt_result(const py::bytes &result,
                            const py::bytes &private_key) {
-    auto cast = [](const py::bytes &p) -> ypc::bytes {
-      std::string b = std::string(p);
-      ypc::bytes sk(b.c_str(), b.size());
-      return sk;
-    };
     auto r = m_instance.decrypt_result(cast(result), cast(private_key));
     return py::bytes((const char *)r.data(), r.size());
   }
@@ -108,12 +125,24 @@ PYBIND11_MODULE(pyterminus, m) {
       .def("generate_request",
            &single_data_onchain_result_wrapper::generate_request,
            "Generate request to process", py::arg("param"),
-           py::arg("tee_pub_key"), py::arg("data_hash"),
-           py::arg("enclave_hash"), py::arg("private_key"))
+           py::arg("public_key"))
       .def("decrypt_result",
            &single_data_onchain_result_wrapper::decrypt_result,
            "Decrypt result", py::arg("result"), py::arg("private_key"));
 
-  py::class_<single_data_onchain_result_wrapper::request>(
-      sdor, "SingleDataOnchainResult_Requst");
+  py::class_<enclave_interaction_wrapper,
+             std::shared_ptr<enclave_interaction_wrapper>>
+      edor(m, "EnclaveInteraction");
+  edor.def(py::init<std::shared_ptr<crypto_pack_wrapper>>())
+      .def("generate_allowance",
+           &enclave_interaction_wrapper::generate_allowance,
+           "Generate allowance", py::arg("private_key"), py::arg("param_hash"),
+           py::arg("target_enclave_hash"), py::arg("dian_pkey"),
+           py::arg("dhash"))
+      .def("forward_private_key",
+           &enclave_interaction_wrapper::forward_private_key,
+           "Forward private (Shu) key", py::arg("private_key"),
+           py::arg("dian_pkey"), py::arg("target_enclave_hash"));
+  py::class_<enclave_interaction_wrapper::forward_info>(
+      edor, "EnclaveInteractionForwardInfo");
 }

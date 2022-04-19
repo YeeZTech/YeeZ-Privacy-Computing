@@ -112,25 +112,23 @@ uint32_t keymgr_sgx_module::end_session(uint32_t session_id) {
   return ecall<uint32_t>(::mend_session, session_id);
 }
 
-uint32_t keymgr_sgx_module::forward_message(
-    uint32_t msg_id, const uint8_t *cipher, uint32_t cipher_size,
+uint32_t keymgr_sgx_module::forward_private_key(
+    const uint8_t *encrypted_private_key, uint32_t cipher_size,
     const uint8_t *epublic_key, uint32_t epkey_size, const uint8_t *ehash,
-    uint32_t ehash_size, const uint8_t *verify_key, uint32_t vpkey_size,
-    const uint8_t *sig, uint32_t sig_size) {
-  return ecall<uint32_t>(::forward_message, msg_id, (uint8_t *)cipher,
-                         cipher_size, (uint8_t *)epublic_key, epkey_size,
-                         (uint8_t *)ehash, ehash_size, (uint8_t *)verify_key,
-                         vpkey_size, (uint8_t *)sig, sig_size);
+    uint32_t ehash_size, const uint8_t *sig, uint32_t sig_size) {
+  return ecall<uint32_t>(::forward_private_key, encrypted_private_key,
+                         cipher_size, epublic_key, epkey_size, ehash,
+                         ehash_size, sig, sig_size);
 }
 
-uint32_t keymgr_sgx_module::forward_extra_data_usage_license(
-    const ypc::bytes &enclave_pkey, const ypc::bytes &data_hash,
-    const ypc::bytes &data_usage_license) {
-  return ecall<uint32_t>(
-      ::forward_extra_data_usage_license, (uint8_t *)enclave_pkey.data(),
-      enclave_pkey.size(), (uint8_t *)data_hash.data(), data_hash.size(),
-      (uint8_t *)data_usage_license.data(), data_usage_license.size());
-}
+// uint32_t keymgr_sgx_module::forward_extra_data_usage_license(
+// const ypc::bytes &enclave_pkey, const ypc::bytes &data_hash,
+// const ypc::bytes &data_usage_license) {
+// return ecall<uint32_t>(
+//::forward_extra_data_usage_license, (uint8_t *)enclave_pkey.data(),
+// enclave_pkey.size(), (uint8_t *)data_hash.data(), data_hash.size(),
+//(uint8_t *)data_usage_license.data(), data_usage_license.size());
+//}
 
 uint32_t
 keymgr_sgx_module::set_access_control_policy(const ypc::bytes &policy) {

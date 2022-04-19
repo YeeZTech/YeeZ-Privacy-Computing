@@ -14,4 +14,9 @@ public:
 };
 
 } // namespace internal
+template <typename... ARGS>
+using processor_with_output =
+    internal::processor_with_output<ntobject<ARGS...>>;
+template <typename T>
+using processor_with_output_t = internal::processor_with_output<T>;
 } // namespace hpda

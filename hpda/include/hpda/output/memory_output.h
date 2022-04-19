@@ -20,7 +20,7 @@ public:
     if (!base::has_input_value()) {
       return false;
     }
-    m_data.push_back(output_base<InputObjType>::input_value());
+    m_data.push_back(output_base<InputObjType>::input_value().make_copy());
     base::consume_input_value();
     return true;
   }
@@ -35,5 +35,6 @@ protected:
 
 template <typename... ARGS>
 using memory_output = internal::memory_output_impl<ntobject<ARGS...>>;
+template <typename T> using memory_output_t = internal::memory_output_impl<T>;
 } // namespace output
 } // namespace hpda

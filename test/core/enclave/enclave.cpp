@@ -15,20 +15,17 @@
 #include <sgx_trts.h>
 #include <sgx_tseal.h>
 
-#include "keymgr/common/message_type.h"
+#include "corecommon/crypto/stdeth.h"
 #include "stbox/ebyte.h"
 #include "stbox/eth/eth_hash.h"
 #include "stbox/tsgx/channel/dh_session_responder.h"
-#include "stbox/tsgx/crypto/ecc.h"
-#include "stbox/tsgx/crypto/ecp_interface.h"
 #include "stbox/tsgx/crypto/seal.h"
 #include "stbox/tsgx/crypto/seal_sgx.h"
-#include "stbox/tsgx/crypto/secp256k1/ecc_secp256k1.h"
 #include "stbox/tsgx/log.h"
 #include "ypc_t/ecommon/signer_verify.h"
 
-using ecc = stbox::crypto::ecc<stbox::crypto::secp256k1>;
-using raw_ecc = stbox::crypto::raw_ecc<stbox::crypto::secp256k1>;
+using ecc = ypc::crypto::eth_sgx_crypto;
+using raw_ecc = ecc;
 using sealer = stbox::crypto::device_sealer<stbox::crypto::intel_sgx>;
 using raw_sealer = stbox::crypto::raw_device_sealer<stbox::crypto::intel_sgx>;
 

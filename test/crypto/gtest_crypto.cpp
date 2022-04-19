@@ -74,19 +74,20 @@ TEST_F(crypto_test, enrypt_decrypt) {
 TEST_F(crypto_test, decrypt_data) {
 
   ypc::hex_bytes skey_hex(
-      "539e856e0cefe5e48b47b24018ab3d640ae77982bfe0e255fec843bb6180a6fe");
+      "3908a1b53ef489f2e8379298256112c4146475e86ace325c0a4be72b1d7a5043");
   ypc::bytes skey = skey_hex.as<ypc::bytes>();
 
   ypc::bytes cipher =
-      ypc::hex_bytes("1d6bb778c4683dbc7af7afa5e7747cbfd67c27fd9ccb5c7df45d11bb8"
-                     "aefcb56c9252ef741629637f8865739454ba6013632dd5292800f278d"
-                     "d1f069060fdd3a44c75c9930a813a3da995807b0c4747ed70a49")
+      ypc::hex_bytes("90c9f0b8224400f80437ee42928cf4f4d9d45f2207f27d9848d6e806"
+                     "0612b5a12d71ca96c777ecbfc3b3701f228e33c0b93e3628de18e2ad0"
+                     "3e2ada74b3abd477694bd6fa1580f575fc1c73cd1b5f6ec8170a24b27"
+                     "3be459e3e69b9c48da325133b773310ba0cf")
           .as<ypc::bytes>();
 
-  ypc::bytes data("xxx");
+  ypc::bytes data("hello world");
 
   ypc::bytes dd =
-      m_module->decrypt(skey, cipher, ypc::utc::crypto_prefix_arbitrary);
+      m_module->decrypt(skey, cipher, ypc::utc::crypto_prefix_forward);
   EXPECT_TRUE(dd == data);
 }
 
@@ -107,12 +108,15 @@ TEST_F(crypto_test, sign) {
           "97dc393924f6d82795f4caf56a79b88ff4df036b04db076f2d254f6bfe0ea869")
           .as<ypc::bytes>();
 
+  std::cout << "start sign" << std::endl;
   ypc::bytes sig = m_module->sign_message(sk, cipher);
+  std::cout << "end sign" << std::endl;
 
   ypc::bytes data_hash =
       ypc::hex_bytes(
           "3e0d3a43f4f45ba7a1234759c2ffa4028a44599d4ab29bec532bd2057c0f9141")
           .as<ypc::bytes>();
+  std::cout << "start sign" << std::endl;
   ypc::bytes data_hash_sig = m_module->sign_message(sk, data_hash);
   std::cout << "data hash sig: " << data_hash_sig << std::endl;
 
@@ -123,6 +127,8 @@ TEST_F(crypto_test, sign) {
           "fbe24c62572156caa514657d4a535101d2147337f41f51fcdfcf8f43a53")
           .as<ypc::bytes>();
 
+  std::cout << "start verify" << std::endl;
   bool v = m_module->verify_message(cipher, sig, pkey);
+  std::cout << "end verify" << std::endl;
   EXPECT_EQ(v, true);
 }

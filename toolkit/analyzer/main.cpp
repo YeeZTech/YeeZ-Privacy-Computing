@@ -1,7 +1,5 @@
-#include "check_data.h"
-#include "extra_data_source.h"
-#include "extra_data_source_reader.h"
-#include "parser.h"
+#include "iodef.h"
+//#include "parser.h"
 #include "sgx_bridge.h"
 #include "ypc/configuration.h"
 #include "ypc/ntobject_file.h"
@@ -18,13 +16,6 @@
 using stx_status = stbox::stx_status;
 using namespace ypc;
 
-void parallel_parse(std::shared_ptr<param_source> psource,
-                    const std::string &result_output_file,
-                    const std::string &sealer_enclave_file,
-                    const std::string &parser_enclave_file,
-                    const std::string &keymgr_enclave_file,
-                    const std::string &sealed_file);
-
 boost::program_options::variables_map parse_command_line(int argc,
                                                          char *argv[]) {
   namespace bp = boost::program_options;
@@ -33,19 +24,9 @@ boost::program_options::variables_map parse_command_line(int argc,
   // clang-format off
   all.add_options()
     ("help", "help message")
-    ("sealed-data-url", bp::value<std::string>(), "Sealed Data URL")
-    ("sealer-path", bp::value<std::string>(), "sealer enclave path")
-    ("parser-path", bp::value<std::string>(), "parser enclave path")
-    ("keymgr-path", bp::value<std::string>(), "keymgr enclave path")
-    ("source-type", bp::value<std::string>(), "input and output source type [json | db]")
-    // params read from database
-    ("db-conf", bp::value<std::string>(), "database configuration file")
-    ("request-hash", bp::value<std::string>(), "request hash")
-    // params read from json file
-    ("param-path", bp::value<std::string>(), "forward param path")
-    ("result-path", bp::value<std::string>(), "output result path")
-    ("extra-data-source", bp::value<std::string>(), "JSON file path which include extra data source information")
-    ("check-data-hash", bp::value<std::string>(), "check sealed hash before running parser");
+    ("input", bp::value<std::string>(), "input parameters JSON file")
+    ("output", bp::value<std::string>(), "output result JSON file")
+    ("gen-example-input", bp::value<std::string>(), "generate example input parameters JSON file");
   // clang-format on
 
   boost::program_options::variables_map vm;
@@ -56,232 +37,54 @@ boost::program_options::variables_map parse_command_line(int argc,
     std::cout << all << std::endl;
     exit(-1);
   }
+  if (vm.count("gen-example-input")) {
+    input_param_t example;
+    ypc::ntjson::to_json_file(example,
+                              vm["gen-example-input"].as<std::string>());
+    exit(-1);
+  }
   return vm;
 }
 
 int main(int argc, char *argv[]) {
 
-  google::InitGoogleLogging(argv[0]);
-  google::InstallFailureSignalHandler();
+  // google::InitGoogleLogging(argv[0]);
+  // google::InstallFailureSignalHandler();
 
   boost::program_options::variables_map vm;
   try {
     vm = parse_command_line(argc, argv);
   } catch (...) {
-    std::cout << "invalid cmd line parameters!" << std::endl;
+    std::cerr << "invalid cmd line parameters!" << std::endl;
     return -1;
   }
-  if (!vm.count("parser-path")) {
-    std::cout << "parser not specified!" << std::endl;
-    return -1;
-  }
-  if (!vm.count("keymgr-path")) {
-    std::cout << "keymgr not specified!" << std::endl;
-    return -1;
-  }
-  if (!vm.count("sealed-data-url")) {
-    std::cout << "sealed data url not specified" << std::endl;
-    return -1;
-  }
-  if (!vm.count("sealer-path")) {
-    std::cout << "sealer not specified" << std::endl;
-    return -1;
-  }
-  if (!vm.count("source-type")) {
-    std::cout << "source type not specified" << std::endl;
+  if (!vm.count("input")) {
+    std::cerr << "input not specified" << std::endl;
     return -1;
   }
 
-  std::string sealed_file = vm["sealed-data-url"].as<std::string>();
-  std::string sealer_enclave_file = vm["sealer-path"].as<std::string>();
-  std::string parser_enclave_file = vm["parser-path"].as<std::string>();
-  std::string keymgr_enclave_file = vm["keymgr-path"].as<std::string>();
-  std::string source_type = vm["source-type"].as<std::string>();
-
-  if (vm.count("check-data-hash")) {
-    ypc::bytes data_hash =
-        ypc::hex_bytes(vm["check-data-hash"].as<std::string>())
-            .as<ypc::bytes>();
-    auto t = check_sealed_data(sealer_enclave_file, sealed_file, data_hash);
-    if (t != ypc::success) {
-      std::cerr << "Invalid sealed data, exit now." << std::endl;
-      return t;
-    }
-    std::cout << "Done checking data hash, start parser now!" << std::endl;
-  }
-
-  std::shared_ptr<param_source> psource;
-  std::shared_ptr<result_target> rtarget;
-
-  if (source_type == "json") {
-    psource =
-        std::make_shared<param_from_json>(vm["param-path"].as<std::string>());
-    rtarget =
-        std::make_shared<result_to_json>(vm["result-path"].as<std::string>());
-  } else if (source_type == "db") {
-    auto info = ypc::configuration::instance().read_db_config_file(
-        vm["db-conf"].as<std::string>());
-    psource = std::make_shared<param_from_db>(
-        info.get<db_url>(), info.get<db_usr>(), info.get<db_pass>(),
-        info.get<db_dbname>(),
-        ypc::hex_bytes(vm["request-hash"].as<std::string>()).as<ypc::bytes>());
-    rtarget = std::make_shared<result_to_db>(
-        info.get<db_url>(), info.get<db_usr>(), info.get<db_pass>(),
-        info.get<db_dbname>(),
-        ypc::hex_bytes(vm["request-hash"].as<std::string>()).as<ypc::bytes>());
-  } else {
-    std::cout << "not supported source type" << std::endl;
+  if (!vm.count("output")) {
+    std::cerr << "output not specified" << std::endl;
     return -1;
   }
 
-  bool is_sealed_file = true;
+  input_param_t input_param =
+      ypc::ntjson::from_json_file<input_param_t>(vm["input"].as<std::string>());
+
+  g_parser = std::make_shared<parser>(input_param);
+  std::cout << "start to parse" << std::endl;
+  g_parser->parse();
+
+  std::string output_fp = vm["output"].as<std::string>();
   try {
-    ypc::simple_sealed_file ssf(sealed_file, true);
-    std::cout << "valid sealed block file, use sequential mode" << std::endl;
-  } catch (ypc::invalid_blockfile &e) {
-    std::cerr << "invalid sealed block file, try switch to parallel mode"
-              << std::endl;
-    is_sealed_file = false;
+    std::ofstream os(output_fp, std::ios::out | std::ios::binary);
+    const std::string &res = g_parser->get_result_str();
+    os.write(res.data(), res.size());
   } catch (const std::exception &e) {
-    std::cerr << "error while open " << sealed_file << std::endl;
-    return -1;
-  }
-
-  if (is_sealed_file) {
-    parser = std::make_shared<file_parser>(
-        psource.get(), rtarget.get(), sealer_enclave_file, parser_enclave_file,
-        keymgr_enclave_file, sealed_file);
-
-    if (vm.count("extra-data-source")) {
-      extra_data_source_t eds;
-      try {
-        eds = ypc::read_extra_data_source_from_file(
-            vm["extra-data-source"].as<std::string>());
-      } catch (const std::exception &e) {
-        std::cerr << "cannot read extra-data-source file path: "
-                  << vm["extra-data-source"].as<std::string>();
-        return -1;
-      }
-      parser->set_extra_data_source(eds);
-      g_data_source_reader.reset(new extra_data_source_reader(eds));
-    }
-
-    ypc::bytes expect_data_hash;
-    if (vm.count("check-data-hash")) {
-      expect_data_hash = ypc::hex_bytes(vm["check-data-hash"].as<std::string>())
-                             .as<ypc::bytes>();
-    }
-    uint32_t ret = parser->parse(expect_data_hash);
-    if (ret) {
-      std::cerr << "got error: " << ypc::status_string(ret) << std::endl;
-      return ret;
-    }
-  } else {
-    if (vm.count("extra-data-source")) {
-      // TODO we may support this later.
-      std::cerr << "do not support parallel mode with extra data source"
-                << std::endl;
-      return -1;
-    }
-    if (source_type != "json") {
-      std::cout << "parallel parser now only supports file type!" << std::endl;
-      return -1;
-    }
-    std::string result_output_file = vm["result-path"].as<std::string>();
-    parallel_parse(psource, result_output_file, sealer_enclave_file,
-                   parser_enclave_file, keymgr_enclave_file, sealed_file);
+    std::cerr << "cannot open " << output_fp << std::endl;
+    return 1;
   }
 
   return 0;
 }
 
-void parallel_parse(std::shared_ptr<param_source> psource,
-                    const std::string &result_output_file,
-                    const std::string &sealer_enclave_file,
-                    const std::string &parser_enclave_file,
-                    const std::string &keymgr_enclave_file,
-                    const std::string &sealed_file) {
-
-  ypc::ntobject_file<sfm_t> nf(sealed_file);
-  nf.read_from();
-
-  const std::vector<sfm_item_t> &items = nf.data().get<sfm_items>();
-
-  std::vector<pid_t> pids;
-  pid_t pid;
-  signal(SIGCHLD, SIG_IGN);
-  bool continue_flag = true;
-  std::shared_ptr<result_target> round_result_target =
-      std::make_shared<result_to_json>(result_output_file);
-
-  std::shared_ptr<param_source> tmp_source =
-      std::make_shared<param_from_memory>(*psource);
-
-  int round = 0;
-  while (continue_flag) {
-    pids.clear();
-    round++;
-    LOG(INFO) << " round " << round;
-
-    std::vector<std::shared_ptr<result_target>> tmp_results;
-    for (auto item : items) {
-      std::string sf = item.get<sfm_path>();
-      uint16_t index = item.get<sfm_index>();
-      std::shared_ptr<result_target> crtarget =
-          std::make_shared<result_to_json>(result_output_file +
-                                           std::to_string(index));
-      tmp_results.push_back(crtarget);
-
-      pid = fork();
-      if (pid < 0) {
-        std::cout << "fork error for " << index << std::endl;
-        exit(-1);
-      } else if (pid == 0) {
-        parser = std::make_shared<file_parser>(
-            tmp_source.get(), crtarget.get(), sealer_enclave_file,
-            parser_enclave_file, keymgr_enclave_file, sf);
-        parser->parse(ypc::bytes());
-        continue_flag = false;
-        break;
-      } else {
-        pids.push_back(pid);
-      }
-    }
-    if (pid == 0) {
-      std::cout << "Child process done" << std::endl;
-      return;
-    }
-
-    std::cout << "Done forking, waiting ... " << std::endl;
-    int status = 0;
-    wait(&status);
-
-    std::cout << "Wait all block results, done!" << std::endl;
-    pid = fork();
-    if (pid < 0) {
-      std::cout << "fork error for merge" << std::endl;
-      exit(-1);
-    } else if (pid == 0) {
-      parser = std::make_shared<file_parser>(
-          tmp_source.get(), round_result_target.get(), sealer_enclave_file,
-          parser_enclave_file, keymgr_enclave_file,
-          ""); // last param is no use for merge
-      continue_flag = parser->merge(tmp_results);
-      if (continue_flag) {
-        exit(0x1312);
-      } else {
-        exit(0);
-      }
-    } else {
-      wait(&status);
-      auto val = WEXITSTATUS(status);
-      continue_flag = (val == 0x1312);
-
-      // make the result as new param
-      ypc::bytes encrypted_result, result_sig, data_hash, cost_sig;
-      round_result_target->read_from_target(encrypted_result, result_sig,
-                                            cost_sig, data_hash);
-      tmp_source->input() = encrypted_result;
-    }
-  }
-}

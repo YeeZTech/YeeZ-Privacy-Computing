@@ -63,4 +63,55 @@ template <typename PackageType> struct make_package {
     return ret;
   }
 };
+
+template <typename NT, uint32_t PackageID = 0> struct cast_obj_to_package {};
+template <uint32_t PackageID, typename... ARGS>
+struct cast_obj_to_package<::ff::util::ntobject<ARGS...>, PackageID> {
+  typedef ::ff::net::ntpackage<PackageID, ARGS...> type;
+};
+
+template <uint32_t PackageID, typename... ARGS>
+struct cast_obj_to_package<::ff::net::ntpackage<PackageID, ARGS...>,
+                           PackageID> {
+  typedef ::ff::net::ntpackage<PackageID, ARGS...> type;
+};
+
+template <typename PT> struct cast_package_to_obj {};
+template <uint32_t PackageID, typename... ARGS>
+struct cast_package_to_obj<::ff::net::ntpackage<PackageID, ARGS...>> {
+  typedef ::ff::util::ntobject<ARGS...> type;
+};
+template <typename... ARGS>
+struct cast_package_to_obj<::ff::util::ntobject<ARGS...>> {
+  typedef ::ff::util::ntobject<ARGS...> type;
+};
+
 } // namespace ypc
+
+namespace ff {
+namespace net {
+template <typename... ARGS> struct archive_helper<ff::util::ntobject<ARGS...>> {
+public:
+  typedef ff::util::ntobject<ARGS...> data_t;
+  static uint32_t serialize(char *buf, const data_t &d, size_t len) {
+    typename ypc::cast_obj_to_package<data_t>::type ret = d;
+    marshaler m(buf, len, marshaler::serializer);
+    m.archive(ret);
+    return m.get_length();
+  }
+  static uint32_t deserialize(const char *buf, data_t &d, size_t len) {
+    typename ypc::cast_obj_to_package<data_t>::type ret;
+    marshaler m(buf, len, marshaler::deserializer);
+    m.archive(ret);
+    d = ret;
+    return m.get_length();
+  }
+  static uint32_t length(const data_t &d) {
+    typename ypc::cast_obj_to_package<data_t>::type ret = d;
+    marshaler m(marshaler::length_retriver);
+    m.archive(ret);
+    return m.get_length();
+  }
+};
+} // namespace net
+} // namespace ff

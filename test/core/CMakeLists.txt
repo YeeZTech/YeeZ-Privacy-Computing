@@ -13,6 +13,7 @@ add_executable(gtest_core
   gtest_blockfile.cpp
   gtest_sealed_file.cpp
   gtest_ntobject_file.cpp
+  gtest_ntjson.cpp
   )
 
 add_test(NAME test-core
@@ -30,3 +31,6 @@ target_link_libraries(gen_sign_for_ypc test_ypc_lib ypc_core)
 
 add_dependencies(gen_sign_for_ypc test_ypc_enclave-sign)
 target_link_libraries(gtest_core gtest ypc_core stbox_common_u test_ypc_lib)
+
+add_executable(gen_input_param gen_input_param.cpp)
+target_link_libraries(gen_input_param ypc_core)

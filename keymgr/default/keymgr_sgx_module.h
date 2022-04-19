@@ -46,17 +46,16 @@ public:
                              size_t resp_message_size, uint32_t session_id);
   uint32_t end_session(uint32_t session_id);
 
-  uint32_t forward_message(uint32_t msg_id, const uint8_t *cipher,
-                           uint32_t cipher_size, const uint8_t *epublic_key,
-                           uint32_t epkey_size, const uint8_t *ehash,
-                           uint32_t ehash_size, const uint8_t *verify_key,
-                           uint32_t vpkey_size, const uint8_t *sig,
-                           uint32_t sig_size);
+  uint32_t forward_private_key(const uint8_t *encrypted_private_key,
+                               uint32_t cipher_size, const uint8_t *epublic_key,
+                               uint32_t epkey_size, const uint8_t *ehash,
+                               uint32_t ehash_size, const uint8_t *sig,
+                               uint32_t sig_size);
 
-  uint32_t
-  forward_extra_data_usage_license(const ypc::bytes &enclave_pkey,
-                                   const ypc::bytes &data_hash,
-                                   const ypc::bytes &data_usage_license);
+  // uint32_t
+  // forward_extra_data_usage_license(const ypc::bytes &enclave_pkey,
+  // const ypc::bytes &data_hash,
+  // const ypc::bytes &data_usage_license);
 
   uint32_t set_access_control_policy(const ypc::bytes &policy);
 

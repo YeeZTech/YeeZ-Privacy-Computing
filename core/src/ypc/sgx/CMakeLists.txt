@@ -1,12 +1,5 @@
 add_subdirectory(usgx)
 
-add_untrusted_library(ypc_datahub_module SHARED
-  SRCS "datahub_sgx_module.cpp"
-  EDL ${PROJECT_SOURCE_DIR}/toolkit/datahub/enclave/datahub_enclave.edl
-  EDL_SEARCH_PATHS ${PROJECT_SOURCE_DIR}/core/edl/:${PROJECT_SOURCE_DIR}/stbox/src/)
-target_link_libraries(ypc_datahub_module stbox_common_u)
-install(TARGETS ypc_datahub_module DESTINATION lib COMPONENT c_ypc_core OPTIONAL)
-
 add_untrusted_library(ypc_parser_module SHARED
   SRCS "parser_sgx_module.cpp"
   EDL ${PROJECT_SOURCE_DIR}/core/edl/eparser.edl
