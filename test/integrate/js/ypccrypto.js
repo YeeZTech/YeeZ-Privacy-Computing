@@ -30,11 +30,6 @@ const YPCCrypto = function () {
 	const algorithm = 'aes-128-gcm'
 	const aad = Buffer.from('tech.yeez.key.manager')
 
-	const iv_array = new Uint8Array([
-		89, 101, 101, 90, 70, 105, 100, 101, 108, 105, 117, 115
-	])
-	const iv = Buffer.from(iv_array)
-
 	//let cmac_key = new Uint8Array(16)
 	//cmac_key.set('yeez.tech.stbox')
 	let cmac_key = Buffer.from('7965657a2e746563682e7374626f7800', 'hex')
@@ -86,6 +81,7 @@ const YPCCrypto = function () {
 
 	this._encryptMessage = function (pkey, skey, msg, prefix) {
 		const enc_key = this.generateAESKeyFrom(pkey, skey)
+		let iv = randomBytes(12)
 		let cipher = crypto.createCipheriv(algorithm, enc_key, iv)
 		const tad = new Uint8Array(64)
 		tad.set(aad)
@@ -102,12 +98,14 @@ const YPCCrypto = function () {
 			msg.length +
 			64 + // public key size
 			// sig_size + // sinature_size
-			16 // gcm tag size
+			16 + // gcm tag size
+		  12 //iv size
 
 		cipher = new Uint8Array(length)
 		cipher.set(encrypted)
-		cipher.set(this.generatePublicKeyFromPrivateKey(skey), encrypted.length)
-		cipher.set(tag, msg.length + 64)
+		cipher.set(iv, encrypted.length)
+		cipher.set(this.generatePublicKeyFromPrivateKey(skey), encrypted.length + 12)
+		cipher.set(tag, msg.length + 64 + 12)
 		return Buffer.from(cipher)
 	}
 
@@ -118,7 +116,7 @@ const YPCCrypto = function () {
 	}
 	this.generateEncryptedInput = function (local_pkey, input) {
 		const ots = this.generatePrivateKey()
-		return this._encryptMessage(local_pkey, ots, Buffer.from(input), 0x2)
+		return this._encryptMessage(local_pkey, ots, input.buffer, 0x2)
 	}
 	// 调用
 	this._decryptMessageWithPrefix = function (skey, msg, prefix) {
@@ -155,16 +153,11 @@ const YPCCrypto = function () {
 
 	const eth_hash_prefix = Buffer.from('\x19Ethereum Signed Message:\n32')
 
-	this.generateSignature = function (skey, cipher, epkey, ehash) {
-		const data = new Uint8Array(4 + cipher.length + epkey.length + ehash.length)
+	this.generateSignature = function (skey, epkey, ehash) {
+		const data = new Uint8Array(epkey.length + ehash.length)
 
-		data[0] = 0x1
-		data[1] = 0
-		data[2] = 0
-		data[3] = 0
-		data.set(cipher, 4)
-		data.set(epkey, 4 + cipher.length)
-		data.set(ehash, 4 + cipher.length + epkey.length)
+		data.set(epkey, 0)
+		data.set(ehash, epkey.length)
 		const raw_hash = keccak256(Buffer.from(data))
 		let msg = new Uint8Array(eth_hash_prefix.length + raw_hash.length)
 		msg.set(eth_hash_prefix)
