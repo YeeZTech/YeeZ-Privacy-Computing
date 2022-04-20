@@ -13,12 +13,13 @@
 #include <ff/util/ntobject.h>
 
 namespace ypc {
-template <typename Crypto> class sealed_data_provider : public data_source {
+template <typename Crypto>
+class sealed_data_provider : public data_source_with_dhash {
   typedef Crypto crypto;
 public:
   sealed_data_provider(const stbox::bytes &data_hash,
                        const stbox::bytes &private_key)
-      : data_source(data_hash), m_private_key(private_key) {
+      : data_source_with_dhash(data_hash), m_private_key(private_key) {
     // magic string here, Do Not Change!
     m_actual_data_hash = stbox::eth::keccak256_hash(stbox::bytes("Fidelius"));
     m_data_reach_end = false;

@@ -29,8 +29,8 @@ define_nt(DJR_LXDH, std::string, "DJRLXDH");
 define_nt(GXSJ, std::string, "GXSJ");
 define_nt(SJZT, std::string, "SJZT");
 
-typedef ff::net::ntpackage<
-    1, RYXXBZ, XM, CYM, XBDM, FWXXBZ, XP, DWMC, ZJHM, GJDM, MZDM, JGSSXDM,
+typedef ff::util::ntobject<
+    RYXXBZ, XM, CYM, XBDM, FWXXBZ, XP, DWMC, ZJHM, GJDM, MZDM, JGSSXDM,
     HKXZFLYDM, HLXDM, HJDZ_XZQHDM, SJJZD_XZQHDM, SJJZD_QHNXXDZ, XLDM, TSSFDM,
     CSQR, LXDH, HYZKDM, DJR_XM, DJR_GMSFZHM, DJR_LXDH, GXSJ, SJZT>
     row_t;

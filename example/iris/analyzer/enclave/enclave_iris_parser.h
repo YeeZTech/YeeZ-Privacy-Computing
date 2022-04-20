@@ -3,12 +3,12 @@
 #include "ypc_t/analyzer/data_source.h"
 #ifdef YPC_SGX
 #include "stbox/tsgx/log.h"
-#include "ypc_t/analyzer/to_type.h"
 #else
 #include <glog/logging.h>
 #endif
 #include "user_type.h"
 
+#include "corecommon/to_type.h"
 #include <hpda/extractor/raw_data.h>
 #include <hpda/output/memory_output.h>
 #include <hpda/processor/processor_base.h>
@@ -83,10 +83,11 @@ protected:
 
 class enclave_iris_parser {
 public:
-  enclave_iris_parser(ypc::data_source *source) : m_source(source){};
+  enclave_iris_parser(ypc::data_source<stbox::bytes> *source)
+      : m_source(source){};
 
   inline stbox::bytes do_parse(const stbox::bytes &param) {
-    ypc::to_type<extra_nt_t> converter(m_source);
+    ypc::to_type<stbox::bytes, extra_nt_t> converter(m_source);
     transform_format trans(&converter);
 
     hpda::algorithm::kmeans::kmeans_processor<
@@ -112,15 +113,16 @@ public:
   }
 
 protected:
-  ypc::data_source *m_source;
+  ypc::data_source<stbox::bytes> *m_source;
 };
 
 class enclave_iris_means_parser {
 public:
-  enclave_iris_means_parser(ypc::data_source *source) : m_source(source){};
+  enclave_iris_means_parser(ypc::data_source<stbox::bytes> *source)
+      : m_source(source){};
 
   inline stbox::bytes do_parse(const stbox::bytes &param) {
-    ypc::to_type<extra_nt_t> converter(m_source);
+    ypc::to_type<stbox::bytes, extra_nt_t> converter(m_source);
     transform_format trans(&converter);
 
     typedef hpda::algorithm::kmeans::kmeans_processor<
@@ -153,5 +155,5 @@ public:
   }
 
 protected:
-  ypc::data_source *m_source;
+  ypc::data_source<stbox::bytes> *m_source;
 };

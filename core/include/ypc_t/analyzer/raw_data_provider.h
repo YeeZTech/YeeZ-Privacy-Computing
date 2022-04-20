@@ -13,9 +13,10 @@
 #include <ff/util/ntobject.h>
 
 namespace ypc {
-class raw_data_provider : public data_source {
+class raw_data_provider : public data_source_with_dhash {
 public:
-  inline raw_data_provider(const ::stbox::bytes &hash) : data_source(hash) {
+  inline raw_data_provider(const ::stbox::bytes &hash)
+      : data_source_with_dhash(hash) {
     m_actual_data_hash = stbox::eth::keccak256_hash(stbox::bytes("Fidelius"));
     m_data_reach_end = false;
   }

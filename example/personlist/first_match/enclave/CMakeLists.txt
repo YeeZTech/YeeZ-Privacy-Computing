@@ -1,4 +1,4 @@
-set(T_SRCS eparser.cpp sgx_plugin.cpp)
+set(T_SRCS eparser.cpp)
 
 add_enclave_library(person_first_match SRCS ${T_SRCS}
   EDL ${PROJECT_SOURCE_DIR}/core/edl/eparser.edl

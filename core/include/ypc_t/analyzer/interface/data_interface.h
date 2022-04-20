@@ -121,11 +121,11 @@ public:
         }
         m_ds_use_pkey.push_back(sdi.get<ntt::pkey>() +
                                 sdi.get<ntt::data_hash>());
-        m_datasource.push_back(
-            std::shared_ptr<data_source>(new sealed_data_provider<Crypto>(
-                sdi.get<ntt::data_hash>(), private_key)));
+        m_datasource.push_back(std::shared_ptr<data_source_with_dhash>(
+            new sealed_data_provider<Crypto>(sdi.get<ntt::data_hash>(),
+                                             private_key)));
       } else {
-        m_datasource.push_back(std::shared_ptr<data_source>(
+        m_datasource.push_back(std::shared_ptr<data_source_with_dhash>(
             new raw_data_provider(sdi.get<ntt::data_hash>())));
       }
     }

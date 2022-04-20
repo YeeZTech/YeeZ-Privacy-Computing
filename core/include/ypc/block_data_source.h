@@ -1,4 +1,6 @@
 #pragma once
+#include "corecommon/data_source.h"
+#include "corecommon/nt_cols.h"
 #include "glog/logging.h"
 #include "ypc/sealed_file.h"
 #include <ff/net/middleware/ntpackage.h>
@@ -6,12 +8,12 @@
 #include <hpda/extractor/raw_data.h>
 
 namespace ypc {
+typedef ::ff::util::ntobject<nt<bytes>::data> data_source_output_t;
 
-template <typename OutputObjType, typename FT>
-class block_data_source
-    : public ::hpda::extractor::internal::extractor_base<OutputObjType> {
+template <typename FT>
+class block_data_source : public data_source<ypc::bytes> {
 public:
-  typedef OutputObjType user_item_t;
+  typedef data_source<ypc::bytes>::data_source_output_t user_item_t;
   block_data_source(FT *fh) : m_file(fh) { m_data_reach_end = false; }
 
   virtual ~block_data_source() {
@@ -31,18 +33,16 @@ public:
     return !m_data_reach_end;
   }
 
-  virtual OutputObjType output_value() {
+  virtual data_source_output_t output_value() {
     user_item_t ret;
-    ff::net::marshaler m((char *)m_ret.data(), m_ret.size(),
-                         ff::net::marshaler::deserializer);
-    ret.arch(m);
+    ret.set<nt<bytes>::data>(ypc::bytes(m_ret.data(), m_ret.size()));
     return ret;
   }
 
 protected:
   FT *m_file;
-  bool m_data_reach_end;
   memref m_ret;
+  bool m_data_reach_end;
 };
 
 } // namespace ypc

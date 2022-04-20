@@ -1,4 +1,6 @@
 #include "../common.h"
+#include "corecommon/package.h"
+#include "ypc/byte.h"
 #include <iostream>
 
 // typedef ff::sql::table<ff::sql::mysql<ff::sql::cppconn>, person_list_meta,
@@ -56,14 +58,9 @@ void write_to_file(const std::string &path, int num) {
 
   for (int i = 0; i < num; i++) {
     row_t t = create(std::to_string(id + i));
-    ff::net::marshaler lr(ff::net::marshaler::length_retriver);
-    t.arch(lr);
-    size_t len = lr.get_length();
-    char *buf = new char[len];
-    ff::net::marshaler m(buf, len, ff::net::marshaler::serializer);
-    t.arch(m);
-    f.append_item(buf, len);
-    delete[] buf;
+    typename ypc::cast_obj_to_package<row_t>::type pt = t;
+    auto buf = ypc::make_bytes<ypc::bytes>::for_package(pt);
+    f.append_item(buf.data(), buf.size());
   }
   f.close();
 }
@@ -76,13 +73,11 @@ void check_file(const std::string &path) {
   uint64_t id = 421003198607262336;
   int i = 0;
   while (f.next_item(r)) {
+    typedef typename ypc::cast_obj_to_package<row_t>::type pkg_t;
+    auto pkg =
+        ypc::make_package<pkg_t>::from_bytes(ypc::bytes(r.data(), r.size()));
 
-    ff::net::marshaler m((char *)r.data(), r.size(),
-                         ff::net::marshaler::deserializer);
-    row_t t;
-    t.arch(m);
     // std::cout << t.get<ZJHM>() << std::endl;
-    r.dealloc();
     i++;
   }
   std::cout << "checked " << i << " items" << std::endl;

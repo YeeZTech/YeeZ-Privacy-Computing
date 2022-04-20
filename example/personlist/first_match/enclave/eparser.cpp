@@ -1,13 +1,11 @@
-#include "eparser_t.h"
+#include "corecommon/crypto/stdeth.h"
 #include "first_match_parser.h"
-#include "sgx_plugin.h"
-#include "sgx_utils.h"
-#include "stbox/tsgx/log.h"
+#include "ypc_t/analyzer/algo_wrapper.h"
 #include "ypc_t/analyzer/macro.h"
-#include <stdarg.h>
-#include <stdio.h> /* vsnprintf */
-#include <string.h>
 
-ypc::parser_wrapper<user_item_t, first_match_parser> pw;
+ypc::algo_wrapper<ypc::crypto::eth_sgx_crypto, ypc::sealed_data_stream,
+                  first_match_parser,
+                  ypc::onchain_result<ypc::crypto::eth_sgx_crypto>>
+    pw;
 
-YPC_PARSER_IMPL(pw, ypc::ecall_parse_item_data);
+YPC_PARSER_IMPL(pw);

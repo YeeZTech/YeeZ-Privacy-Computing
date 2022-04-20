@@ -1,4 +1,4 @@
-set(T_SRCS eparser.cpp sgx_plugin.cpp)
+set(T_SRCS eparser.cpp)
 
 add_enclave_library(iris_parser SRCS ${T_SRCS}
   EDL ${PROJECT_SOURCE_DIR}/core/edl/eparser.edl
