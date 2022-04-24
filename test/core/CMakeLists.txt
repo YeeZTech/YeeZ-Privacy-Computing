@@ -27,7 +27,7 @@ add_untrusted_library(test_ypc_lib SHARED
   EDL ./enclave/enclave.edl
   EDL_SEARCH_PATHS ${edl_path})
 add_executable(gen_sign_for_ypc gen_sign_for_ypc.cpp)
-target_link_libraries(gen_sign_for_ypc test_ypc_lib ypc_core)
+target_link_libraries(gen_sign_for_ypc test_ypc_lib ypc_core stbox_common_u)
 
 add_dependencies(gen_sign_for_ypc test_ypc_enclave-sign)
 target_link_libraries(gtest_core gtest ypc_core stbox_common_u test_ypc_lib)
