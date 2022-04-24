@@ -64,10 +64,11 @@ const YPCNtObject = function () {
 					offset += 8
 					break
 				case 'string':
-					buffer.writeUint64(v.length, offset)
+				  byteLen = Buffer.byteLength(v, 'utf8')
+					buffer.writeUint64(byteLen, offset)
 					offset += 8
 					buffer.writeString(v, offset)
-					offset += v.length
+					offset += byteLen
 					break
 				case 'bytes':
 					buffer.writeUint64(v.length, offset)
@@ -121,7 +122,8 @@ const YPCNtObject = function () {
 					l = 8
 					break
 				case 'string':
-					l = 8 + d['value'].length
+				  byteLen = Buffer.byteLength(d['value'], 'utf8')
+					l = 8 + byteLen
 					break
 				case 'bytes':
 					l = 8 + d['value'].length
