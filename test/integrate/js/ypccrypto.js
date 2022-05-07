@@ -69,12 +69,9 @@ const YPCCrypto = function () {
 			pkey = Uint8Array.from([...prefix, ...pkey])
 		}
 		const shared_key = gen_ecdh_key_from(skey, pkey)
-		console.log('ecdh key: ', shared_key.toString('hex'))
 		// The following algorithm is from ypc/stbox/src/tsgx/crypto/ecp.cpp
 		const options = { returnAsBuffer: true }
 		const key_derive_key = aesCmac(cmac_key, shared_key, options)
-		console.log('cmac_key: ', cmac_key.toString('hex'))
-		console.log('first derive key: ', key_derive_key.toString('hex'))
 		const derived_key = aesCmac(key_derive_key, derivation_buffer, options)
 		return derived_key
 	}
@@ -127,11 +124,8 @@ const YPCCrypto = function () {
 		const tag = msg.slice(msg.length - 16)
 
 		const enc_key = this.generateAESKeyFrom(pkey, skey)
-		console.log('shared key: ', enc_key.toString('hex'))
 		const decipher = crypto.createDecipheriv(algorithm, enc_key, liv)
 		decipher.setAuthTag(tag)
-		console.log('tag: ', tag.toString('hex'))
-		console.log('iv: ', liv.toString('hex'))
 		const tad = new Uint8Array(64)
 		tad.set(aad)
 		tad[24] = prefix

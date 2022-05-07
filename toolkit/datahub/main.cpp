@@ -20,7 +20,7 @@ using namespace ypc;
 
 typedef ypc::crypto::eth_sgx_crypto crypto_t;
 typedef ypc::nt<ypc::bytes> ntt;
-void write_batch(simple_sealed_file &sf, std::vector<ypc::bytes> &batch,
+void write_batch(simple_sealed_file &sf, const std::vector<ypc::bytes> &batch,
                  const stbox::bytes &public_key) {
   ntt::batch_data_pkg_t pkg;
   ypc::bytes s;
@@ -65,11 +65,8 @@ uint32_t seal_file(const std::string &plugin, const std::string &file,
   std::vector<ypc::bytes> batch;
   size_t batch_size = 0;
   while (!item_data.empty() && counter < item_number) {
-    bytes s;
     batch.push_back(item_data);
     batch_size += item_data.size();
-    // if (batch_size >= simple_sealed_file::blockfile_t::BlockSizeLimit - 1024)
-    // {
     if (batch_size >= ypc::utc::max_item_size) {
       write_batch(sf, batch, public_key);
       batch.clear();
@@ -93,6 +90,7 @@ uint32_t seal_file(const std::string &plugin, const std::string &file,
     batch_size = 0;
   }
 
+  std::cout << "data hash: " << data_hash << std::endl;
   std::cout << "\nDone read data count: " << pd.count() << std::endl;
   return 0;
 }
