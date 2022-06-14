@@ -1,4 +1,4 @@
-#include "ypc/ntobject_file.h"
+#include "ypc/core/ntobject_file.h"
 #include <gtest/gtest.h>
 
 define_nt(sfm_path, std::string);

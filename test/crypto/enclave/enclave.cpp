@@ -1,24 +1,23 @@
 #include "enclave_t.h" /* print_string */
+#include "ypc/core_t/ecommon/signer_verify.h"
+#include "ypc/corecommon/crypto/stdeth.h"
+#include "ypc/stbox/ebyte.h"
+#include "ypc/stbox/eth/eth_hash.h"
+#include "ypc/stbox/scope_guard.h"
+#include "ypc/stbox/stx_common.h"
+#include "ypc/stbox/tsgx/channel/dh_session_responder.h"
+#include "ypc/stbox/tsgx/log.h"
+
+#include <sgx_ecp_types.h>
+#include <sgx_tcrypto.h>
+#include <sgx_trts.h>
+#include <sgx_tseal.h>
+
 #include <stdarg.h>
 #include <stdio.h> /* vsnprintf */
 #include <stdlib.h>
 #include <string.h>
 #include <unordered_map>
-
-#include "sgx_ecp_types.h"
-#include "sgx_tcrypto.h"
-#include "stbox/scope_guard.h"
-#include "stbox/stx_common.h"
-#include <sgx_tcrypto.h>
-#include <sgx_trts.h>
-#include <sgx_tseal.h>
-
-#include "corecommon/crypto/stdeth.h"
-#include "stbox/ebyte.h"
-#include "stbox/eth/eth_hash.h"
-#include "stbox/tsgx/channel/dh_session_responder.h"
-#include "stbox/tsgx/log.h"
-#include "ypc_t/ecommon/signer_verify.h"
 
 using ecc = ypc::crypto::eth_sgx_crypto;
 using raw_ecc = ecc;
@@ -27,8 +26,8 @@ using raw_ecc = ecc;
 #define SGX_AES_GCM_128BIT_TAG_T_SIZE sizeof(sgx_aes_gcm_128bit_tag_t)
 
 extern "C" {
-#include "stbox/../../src/tsgx/secp256k1/hash.h"
-#include "stbox/keccak/keccak.h"
+#include "ypc/stbox/keccak/keccak.h"
+#include "ypc/stbox/src/tsgx/secp256k1/hash.h"
 }
 
 using stx_status = stbox::stx_status;

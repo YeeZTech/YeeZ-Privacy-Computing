@@ -1,6 +1,6 @@
 #include "gtest_common.h"
-#include "stbox/eth/eth_hash.h"
-#include "ypc/sealed_file.h"
+#include "ypc/core/sealed_file.h"
+#include "ypc/stbox/eth/eth_hash.h"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <random>

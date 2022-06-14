@@ -85,5 +85,5 @@ add_subdirectory(example)
 add_subdirectory(toolkit)
 
 if(SGX_MODE STREQUAL "Debug")
-  #add_subdirectory(test)
+  add_subdirectory(test)
 endif()

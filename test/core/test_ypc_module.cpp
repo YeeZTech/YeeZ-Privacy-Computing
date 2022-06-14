@@ -1,16 +1,16 @@
-#include "./test_ypc_module.h"
-#include "common/crypto_prefix.h"
+#include "test_ypc_module.h"
 #include "enclave_u.h"
-#include "sgx_dh.h"
-#include "sgx_eid.h"
-#include "sgx_error.h"
-#include "stbox/eth/util.h"
-#include "stbox/stx_status.h"
-#include "stbox/tsgx/channel/dh_cdef.h"
-#include "stbox/usgx/sgx_module.h"
-#include "ypc/byte.h"
-#include "ypc/ref.h"
+#include "ypc/common/crypto_prefix.h"
+#include "ypc/core/byte.h"
+#include "ypc/core/ref.h"
+#include "ypc/stbox/eth/util.h"
+#include "ypc/stbox/stx_status.h"
+#include "ypc/stbox/tsgx/channel/dh_cdef.h"
+#include "ypc/stbox/usgx/sgx_module.h"
 #include <iostream>
+#include <sgx_dh.h>
+#include <sgx_eid.h>
+#include <sgx_error.h>
 
 test_ypc_sgx_module::test_ypc_sgx_module(const char *mod_path)
     : stbox::sgx_module(mod_path) {}

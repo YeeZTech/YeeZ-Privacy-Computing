@@ -1,4 +1,4 @@
-#include "ypc/byte.h"
+#include "ypc/core/byte.h"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <random>

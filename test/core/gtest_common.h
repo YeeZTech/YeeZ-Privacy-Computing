@@ -1,8 +1,8 @@
 #pragma once
 
-#include "stbox/eth/eth_hash.h"
-#include "ypc/byte.h"
-#include "ypc/memref.h"
+#include "ypc/core/byte.h"
+#include "ypc/core/memref.h"
+#include "ypc/stbox/eth/eth_hash.h"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <random>

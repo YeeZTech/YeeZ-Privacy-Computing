@@ -19,7 +19,7 @@ add_executable(gtest_core
 add_test(NAME test-core
   COMMAND gtest_core)
 
-set(edl_path ${PROJECT_SOURCE_DIR}/core/edl/:${PROJECT_SOURCE_DIR}/stbox/src)
+set(edl_path ${PROJECT_SOURCE_DIR}/ypc/core/edl/:${PROJECT_SOURCE_DIR}/ypc/stbox/src)
 
 
 add_untrusted_library(test_ypc_lib SHARED

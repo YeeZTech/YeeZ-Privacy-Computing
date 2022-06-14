@@ -1,7 +1,7 @@
-#include "ff/sql/mysql.hpp"
-#include "ff/sql/table.h"
 #include "toolkit/plugins/mysql/mysql_reader.h"
-#include "ypc_t/analyzer/ntpackage_item_parser.h"
+#include "ypc/core_t/analyzer/ntpackage_item_parser.h"
+#include <ff/sql/mysql.hpp>
+#include <ff/sql/table.h>
 #include <iostream>
 
 define_nt(v1, int);

@@ -1,5 +1,5 @@
-#include "ypc/command_executor.h"
-#include "ypc/filesystem.h"
+#include "ypc/core/command_executor.h"
+#include "ypc/core/filesystem.h"
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include <gtest/gtest.h>

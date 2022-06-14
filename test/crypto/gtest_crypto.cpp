@@ -1,4 +1,4 @@
-#include "./test_crypto_module.h"
+#include "test_crypto_module.h"
 #include <gtest/gtest.h>
 #include <iostream>
 
