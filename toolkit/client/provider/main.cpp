@@ -1,5 +1,6 @@
-#include "stbox/eth/eth_hash.h"
-#include "ypc/byte.h"
+#include "ypc/core/byte.h"
+#include "ypc/keymgr/default/keymgr_sgx_module.h"
+#include "ypc/stbox/eth/eth_hash.h"
 #include <boost/program_options.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -7,7 +8,6 @@
 #include <ff/util/ntobject.h>
 #include <fstream>
 #include <iostream>
-#include <keymgr/default/keymgr_sgx_module.h>
 #include <sstream>
 
 #define ENCLAVE_KEYMGR_PATH "../lib/keymgr.signed.so"

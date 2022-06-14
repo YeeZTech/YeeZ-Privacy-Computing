@@ -1,14 +1,14 @@
-#include "stbox/ebyte.h"
-#include "stbox/stx_common.h"
-#include "ypc_t/analyzer/data_source.h"
+#include "ypc/core_t/analyzer/data_source.h"
+#include "ypc/stbox/ebyte.h"
+#include "ypc/stbox/stx_common.h"
 #ifdef YPC_SGX
-#include "stbox/tsgx/log.h"
+#include "ypc/stbox/tsgx/log.h"
 #else
 #include <glog/logging.h>
 #endif
 #include "user_type.h"
 
-#include "corecommon/to_type.h"
+#include "ypc/corecommon/to_type.h"
 #include <hpda/extractor/raw_data.h>
 #include <hpda/output/memory_output.h>
 #include <hpda/processor/processor_base.h>

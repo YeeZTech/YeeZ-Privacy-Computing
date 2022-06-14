@@ -1,5 +1,5 @@
 #pragma once
-#include "corecommon/package.h"
+#include "ypc/corecommon/package.h"
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <ff/net/middleware/ntpackage.h>

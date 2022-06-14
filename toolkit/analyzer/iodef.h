@@ -1,8 +1,8 @@
 #pragma once
-#include "corecommon/nt_cols.h"
-#include "corecommon/package.h"
-#include "ypc/byte.h"
-#include "ypc/ntjson.h"
+#include "ypc/core/byte.h"
+#include "ypc/core/ntjson.h"
+#include "ypc/corecommon/nt_cols.h"
+#include "ypc/corecommon/package.h"
 
 using ntt = ypc::nt<ypc::bytes>;
 

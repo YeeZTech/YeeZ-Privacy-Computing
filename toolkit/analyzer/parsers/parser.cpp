@@ -1,10 +1,10 @@
 #include "parsers/parser.h"
-#include "common/access_policy.h"
-#include "corecommon/nt_cols.h"
-#include "corecommon/package.h"
-#include "ypc/ntjson.h"
-#include "ypc/sealed_file.h"
-#include "ypc/status.h"
+#include "ypc/common/access_policy.h"
+#include "ypc/core/ntjson.h"
+#include "ypc/core/sealed_file.h"
+#include "ypc/core/status.h"
+#include "ypc/corecommon/nt_cols.h"
+#include "ypc/corecommon/package.h"
 #include <glog/logging.h>
 
 parser::parser(const input_param_t &param) : m_param(param) {}

@@ -1,9 +1,9 @@
 #pragma once
-#include "common/parser_type.h"
 #include "iodef.h"
-#include "keymgr/default/keymgr_sgx_module.h"
-#include "ypc/sealed_file.h"
-#include "ypc/sgx/parser_sgx_module.h"
+#include "ypc/common/parser_type.h"
+#include "ypc/core/sealed_file.h"
+#include "ypc/core/sgx/parser_sgx_module.h"
+#include "ypc/keymgr/default/keymgr_sgx_module.h"
 #include <memory>
 #include <unordered_map>
 

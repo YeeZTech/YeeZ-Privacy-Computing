@@ -1,6 +1,6 @@
 #pragma once
-#include "ypc/byte.h"
-#include "ypc/db.h"
+#include "ypc/core/byte.h"
+#include "ypc/core/db.h"
 #include <ff/sql.h>
 #include <memory>
 

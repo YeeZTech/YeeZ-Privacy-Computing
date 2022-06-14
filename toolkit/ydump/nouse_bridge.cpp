@@ -1,7 +1,7 @@
-#include "sgx_dh.h"
-#include "sgx_urts.h"
-#include "stbox/tsgx/channel/dh_cdef.h"
-#include "ypc/sgx/parser_sgx_module.h"
+#include "ypc/core/sgx/parser_sgx_module.h"
+#include "ypc/stbox/tsgx/channel/dh_cdef.h"
+#include <sgx_dh.h>
+#include <sgx_urts.h>
 
 using stx_status = stbox::stx_status;
 

@@ -1,5 +1,5 @@
-#include "common/crypto_prefix.h"
-#include "ypc/byte.h"
+#include "ypc/common/crypto_prefix.h"
+#include "ypc/core/byte.h"
 #include "ypc/terminus/crypto_pack.h"
 #include <gtest/gtest.h>
 

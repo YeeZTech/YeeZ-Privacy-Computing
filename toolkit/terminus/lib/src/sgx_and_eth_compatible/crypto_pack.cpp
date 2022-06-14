@@ -1,6 +1,6 @@
 #include "ypc/terminus/crypto_pack.h"
-#include "corecommon/crypto/crypto_pack.h"
-#include "corecommon/crypto/stdeth.h"
+#include "ypc/corecommon/crypto/crypto_pack.h"
+#include "ypc/corecommon/crypto/stdeth.h"
 
 namespace ypc {
 namespace terminus {

@@ -1,9 +1,9 @@
-#include "stbox/stx_common.h"
+#include "ypc/stbox/stx_common.h"
 #ifdef YPC_SGX
-#include "stbox/ebyte.h"
-#include "stbox/tsgx/log.h"
-#include "ypc_t/analyzer/data_source.h"
-#include "ypc_t/analyzer/to_type.h"
+#include "ypc/core_t/analyzer/data_source.h"
+#include "ypc/core_t/analyzer/to_type.h"
+#include "ypc/stbox/ebyte.h"
+#include "ypc/stbox/tsgx/log.h"
 #else
 #include <glog/logging.h>
 #endif

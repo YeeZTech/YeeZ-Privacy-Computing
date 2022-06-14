@@ -1,6 +1,6 @@
-#include "corecommon/package.h"
 #include "model.h"
-#include "ypc/byte.h"
+#include "ypc/core/byte.h"
+#include "ypc/corecommon/package.h"
 #include <boost/program_options.hpp>
 #include <iostream>
 

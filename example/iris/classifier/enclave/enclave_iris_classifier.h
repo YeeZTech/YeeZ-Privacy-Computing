@@ -1,7 +1,7 @@
 #include "../model.h"
 #ifdef YPC_SGX
-#include "stbox/tsgx/log.h"
-#include "ypc_t/analyzer/to_type.h"
+#include "ypc/core_t/analyzer/to_type.h"
+#include "ypc/stbox/tsgx/log.h"
 #else
 #include <glog/logging.h>
 #endif

@@ -1,5 +1,5 @@
 #include "ypc/terminus/enclave_interaction.h"
-#include "common/crypto_prefix.h"
+#include "ypc/common/crypto_prefix.h"
 
 namespace ypc {
 namespace terminus {

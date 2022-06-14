@@ -1,17 +1,17 @@
-#include "ypc/filesystem.h"
+#include "ypc/core/byte.h"
+#include "ypc/core/filesystem.h"
+#include "ypc/core/sgx/parser_sgx_module.h"
+#include "ypc/core/version.h"
+#include "ypc/keymgr/common/util.h"
+#include "ypc/keymgr/default/keymgr_sgx_module.h"
+#include "ypc/stbox/ebyte.h"
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <fstream>
 #include <iostream>
-#include <keymgr/common/util.h>
-#include <keymgr/default/keymgr_sgx_module.h>
-#include <stbox/ebyte.h>
 #include <unordered_map>
-#include <ypc/byte.h>
-#include <ypc/version.h>
-#include <ypc/sgx/parser_sgx_module.h>
 
 boost::program_options::variables_map parse_command_line(int argc,
                                                          char *argv[]) {

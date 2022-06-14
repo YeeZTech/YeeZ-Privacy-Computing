@@ -1,5 +1,5 @@
 #pragma once
-#include "ypc/byte.h"
+#include "ypc/core/byte.h"
 
 namespace ypc {
 namespace terminus {

@@ -1,5 +1,5 @@
 add_subdirectory(sgx)
-#add_subdirectory(crypto)
+add_subdirectory(crypto)
 
 add_library(ypc_core SHARED
   timer_loop.cpp

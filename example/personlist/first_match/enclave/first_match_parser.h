@@ -1,17 +1,17 @@
-#include "corecommon/package.h"
-#include "stbox/ebyte.h"
-#include "stbox/stx_common.h"
+#include "ypc/corecommon/package.h"
+#include "ypc/stbox/ebyte.h"
+#include "ypc/stbox/stx_common.h"
 #ifdef EXAMPLE_FM_NORMAL
-#include "glog/logging.h"
+#include <glog/logging.h>
 typedef ypc::bytes bytes;
 #else
-#include "stbox/tsgx/log.h"
-#include "ypc_t/analyzer/data_source.h"
+#include "ypc/core_t/analyzer/data_source.h"
+#include "ypc/stbox/tsgx/log.h"
 typedef stbox::bytes bytes;
 #endif
-#include "corecommon/data_source.h"
-#include "corecommon/to_type.h"
 #include "user_type.h"
+#include "ypc/corecommon/data_source.h"
+#include "ypc/corecommon/to_type.h"
 #include <hpda/extractor/raw_data.h>
 #include <hpda/output/memory_output.h>
 #include <hpda/processor/query/filter.h>

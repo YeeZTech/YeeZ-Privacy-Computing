@@ -1,6 +1,6 @@
 #include "../common.h"
-#include "corecommon/package.h"
-#include "ypc/byte.h"
+#include "ypc/core/byte.h"
+#include "ypc/corecommon/package.h"
 #include <iostream>
 
 // typedef ff::sql::table<ff::sql::mysql<ff::sql::cppconn>, person_list_meta,

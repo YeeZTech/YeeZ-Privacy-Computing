@@ -1,5 +1,5 @@
 #include "cmd_line.h"
-#include "corecommon/nt_cols.h"
+#include "ypc/corecommon/nt_cols.h"
 
 using ntt = ypc::nt<ypc::bytes>;
 

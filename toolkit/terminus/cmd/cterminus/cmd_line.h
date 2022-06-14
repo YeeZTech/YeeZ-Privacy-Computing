@@ -1,8 +1,10 @@
 
-#include "common/crypto_prefix.h"
-#include "corecommon/nt_cols.h"
-#include "ypc/filesystem.h"
-#include "ypc/ntjson.h"
+#include "ypc/common/crypto_prefix.h"
+#include "ypc/core/byte.h"
+#include "ypc/core/filesystem.h"
+#include "ypc/core/ntjson.h"
+#include "ypc/core/poption_require.h"
+#include "ypc/corecommon/nt_cols.h"
 #include "ypc/terminus/crypto_pack.h"
 #include "ypc/terminus/interaction.h"
 #include "ypc/terminus/single_data_onchain_result.h"
@@ -16,8 +18,6 @@
 #include <termios.h>
 #include <unistd.h>
 #include <unordered_map>
-#include <ypc/byte.h>
-#include <ypc/poption_require.h>
 
 typedef ypc::nt<ypc::bytes> ntt;
 typedef ff::util::ntobject<ntt::pkey, ntt::private_key> ypc_key_t;
