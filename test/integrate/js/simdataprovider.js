@@ -1,4 +1,6 @@
 const { program } = require('commander');
+const fs = require('fs');
+const nReadlines = require('n-readlines');
 const DataProvider = require('./dataprovider.js')();
 
 program
@@ -16,10 +18,6 @@ if (!options.dataUrl) {
   console.log('option --data-url not specified!');
   return;
 }
-if (!options.config) {
-  console.log('option --config not specified!');
-  return;
-}
 if (!options.usePublickeyFile) {
   console.log('option --use-publickey-file not specified!');
   return;
@@ -33,4 +31,15 @@ if (!options.output) {
   return;
 }
 
-DataProvider.sealFile(options.dataUrl, options.config, options.usePublickeyFile, options.sealedDataUrl, options.output);
+const data_lines = new nReadlines(options.dataUrl);
+// TODO dian public key should specify
+DataProvider.init('name', '', data_lines);
+const key_file = JSON.parse(fs.readFileSync(options.usePublickeyFile))
+let all = DataProvider.sealFile(key_file);
+
+fd = fs.openSync(options.sealedDataUrl, 'w');
+let buf = all[0].buffer;
+fs.writeSync(fd, buf, 0, buf.length, 0);
+fs.closeSync(fd);
+
+fs.writeFileSync(options.output, all[1]);
