@@ -107,6 +107,13 @@ TEST(test_sm2_ecc, sign) {
 
   EXPECT_EQ(ret, 0);
 
+  
+  for (int i = 0; i < 64; i++) {
+    printf("%02x", sig + i);
+  }
+  std::cout << std::endl;
+  
+
    ypc::bytes false_sig =
       ypc::hex_bytes(
           "bcebe54da5082467e5946b9c7bce8ca64bb3025574a0e0ed4eaeec5a7099d81b9ae496e0d4d8ef1b03d2ce5abc5a64806fad321c44a3f987e899491c6782d786")
