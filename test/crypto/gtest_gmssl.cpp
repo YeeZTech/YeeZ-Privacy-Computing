@@ -1,8 +1,8 @@
-#include "corecommon/crypto/gmssl/sm2_ecc.h"
-#include "corecommon/crypto/gmssl/sm3_hash.h"
-#include "corecommon/crypto/gmssl/sm4_aes.h"
-#include "stbox/stx_status.h"
-#include "ypc/byte.h"
+#include "ypc/corecommon/crypto/gmssl/sm2_ecc.h"
+#include "ypc/corecommon/crypto/gmssl/sm3_hash.h"
+#include "ypc/corecommon/crypto/gmssl/sm4_aes.h"
+#include "ypc/stbox/stx_status.h"
+#include "ypc/core/byte.h"
 #include <gmssl/sm2.h>
 #include <gmssl/sm4.h>
 #include <gtest/gtest.h>
