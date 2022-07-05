@@ -92,7 +92,7 @@ TEST(test_sm2_ecc, sign) {
   ypc::hex_bytes skey_hex(
       "4f16ab84f1d146f036332f30cc00d76c6b598c01887d88d935e728d221f4506e");
   ypc::bytes skey = skey_hex.as<ypc::bytes>();
-  std::string data = "hello";
+  std::string data = "9394e418f4f88ea284c20daabcab2bc7f3a6ca61592756d4f74b745d4c015c9a735d1dc81c4c9dc3ef710e181a67f49281b4bd2515a4a6f127c5508620a36c8f6e453ee97b624e450d74f958df570810daf6b68954540dd1385d4d9dd2512f80";
   uint8_t hash[32];
   uint32_t ret = ypc::crypto::sm3_hash::msg_hash((const uint8_t *)&data[0],
                                                  data.size(), hash, 32);
