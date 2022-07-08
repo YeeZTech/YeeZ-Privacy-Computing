@@ -12,7 +12,7 @@ add_enclave_library(keymgr
   EDL ekeymgr.edl
   EDL_SEARCH_PATHS "${edl_path}")
 
-target_link_libraries(keymgr stbox_common_t stbox_secp256k1_t stbox_channel_t stbox_crypto_t sgx_ecc_t ypc_stdeth_t)
+target_link_libraries(keymgr stbox_common_t stbox_secp256k1_t stbox_channel_t stbox_crypto_t sgx_ecc_t ypc_stdeth_t ypc_gmssl_t gmssl dl)
 
 enclave_sign(keymgr KEY ekeymgr_private.pem
   CONFIG ekeymgr.config.xml)

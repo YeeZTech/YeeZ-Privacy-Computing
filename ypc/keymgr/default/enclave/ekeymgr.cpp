@@ -3,6 +3,7 @@
 #include "ypc/common/crypto_prefix.h"
 #include "ypc/core_t/ecommon/signer_verify.h"
 #include "ypc/corecommon/crypto/stdeth.h"
+#include "ypc/corecommon/crypto/gmssl.h"
 #include "ypc/stbox/ebyte.h"
 #include "ypc/stbox/eth/eth_hash.h"
 #include "ypc/stbox/scope_guard.h"
@@ -32,7 +33,7 @@ extern "C" {
 using stx_status = stbox::stx_status;
 using scope_guard = stbox::scope_guard;
 using intel_sgx = stbox::crypto::intel_sgx;
-using ecc = ypc::crypto::eth_sgx_crypto;
+using ecc = ypc::crypto::gmssl_sgx_crypto;
 using raw_ecc = ecc;
 using namespace stbox;
 // using namespace stbox::crypto;
