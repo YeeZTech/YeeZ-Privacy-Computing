@@ -1,11 +1,10 @@
-
 find_package(OpenSSL REQUIRED)
 include_directories(${OPENSSL_INCLUDE_DIR})
 link_directories(${OPENSSL_LIB})
 
 set(gmssl_src sm2_ecc.cpp sm3_hash.cpp sm4_aes.cpp)
 
-include_directories(${PROJECT_SOURCE_DIR}/ypc/stbox/include/tsgx)
+include_directories(${PROJECT_SOURCE_DIR}/ypc/stbox/include/ypc/stbox/tsgx)
 add_library(ypc_gmssl_u SHARED ${gmssl_src})
 #add_trusted_library(ypc_stdeth_t
   #ypc_stdeth_t

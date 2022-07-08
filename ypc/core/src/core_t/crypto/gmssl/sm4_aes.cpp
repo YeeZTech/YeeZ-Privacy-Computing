@@ -3,9 +3,9 @@
 #include "ypc/corecommon/crypto/gmssl/sm3_hash.h"
 #include "ypc/stbox/stx_status.h"
 #include "ypc/core/byte.h"
-#include <glog/logging.h>
+//#include <glog/logging.h>
 #include <gmssl/sm4.h>
-#include <openssl/rand.h>
+//#include <openssl/rand.h>
 extern "C" {
 #include "ypc/stbox/keccak/keccak.h"
 }

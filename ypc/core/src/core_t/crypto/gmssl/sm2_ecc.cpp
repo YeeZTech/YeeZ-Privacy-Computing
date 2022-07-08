@@ -1,7 +1,7 @@
 #include "ypc/corecommon/crypto/gmssl/sm2_ecc.h"
 #include "ypc/corecommon/crypto/gmssl/sm3_hash.h"
-#include <openssl/rand.h>
-#include <glog/logging.h>
+//#include <openssl/rand.h>
+//#include <glog/logging.h>
 #include <gmssl/sm2.h>
 #include "ypc/common/byte.h"
 #include "ypc/stbox/stx_status.h"

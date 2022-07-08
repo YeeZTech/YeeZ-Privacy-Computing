@@ -1,6 +1,6 @@
 add_definitions(-DUSE_NUM_NONE -DUSE_FIELD_5X52 -DHAVE___INT128 -DUSE_FIELD_INV_BUILTIN -DUSE_SCALAR_4X64 -DUSE_SCALAR_INV_BUILTIN -DUSE_LOW_HEAP)
 
-include_directories(${PROJECT_SOURCE_DIR}/stbox/include/stbox/tsgx)
+include_directories(${PROJECT_SOURCE_DIR}/ypc/stbox/include/ypc/stbox/tsgx)
 
 add_library(
 	gmssl
