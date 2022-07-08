@@ -2,13 +2,11 @@
 #include "ypc/common/byte.h"
 #include "ypc/corecommon/crypto/gmssl/sm3_hash.h"
 #include "ypc/stbox/stx_status.h"
-#include "ypc/core/byte.h"
-//#include <glog/logging.h>
+#include "ypc/stbox/tsgx/log.h"
 #include <gmssl/sm4.h>
-//#include <openssl/rand.h>
-extern "C" {
-#include "ypc/stbox/keccak/keccak.h"
-}
+#include <sgx_tcrypto.h>
+#include <sgx_trts.h>
+
 #define AAD_MAC_TEXT_LEN 64
 #define AAD_MAC_PREFIX_POS 24
 static char aad_mac_text[AAD_MAC_TEXT_LEN] = "tech.yeez.key.manager";
@@ -36,7 +34,7 @@ uint32_t sm4_aes::encrypt_with_prefix(const uint8_t *key, uint32_t key_size,
   uint32_t *p_prefix = (uint32_t *)(mac_text + AAD_MAC_PREFIX_POS);
   *p_prefix = prefix;
   uint8_t *p_iv_text = cipher + data_size;
-  auto rc = RAND_bytes(p_iv_text, INITIALIZATION_VECTOR_SIZE);
+  auto rc = sgx_read_rand(p_iv_text, INITIALIZATION_VECTOR_SIZE);
   if (rc != 1) {
     LOG(ERROR) << "RAND_bytes key failed";
     return stbox::stx_status::aes_rand_fail;
