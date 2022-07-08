@@ -51,11 +51,8 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <limits.h>
-#include <time.h>
 #include <ctype.h>
-#include <gmssl/oid.h>
 #include <gmssl/asn1.h>
-#include <gmssl/error.h>
 #include <gmssl/endian.h>
 
 
@@ -89,7 +86,6 @@ static char *asn1_tag_index[] = {
 const char *asn1_tag_name(int tag)
 {
 	if (tag < 0 || tag > 0xff) {
-		error_print();
 		return NULL;
 	}
 
@@ -131,7 +127,6 @@ const char *asn1_tag_name(int tag)
 	case ASN1_TAG_EXPLICIT: return "EXPLICIT";
 	}
 
-	error_print();
 	return NULL;
 }
 
@@ -167,7 +162,7 @@ int asn1_ia5_string_check(const char *a, size_t alen)
 /////////////////////////////////////////////////////////////////////////////////////////////
 // DER encoding
 /////////////////////////////////////////////////////////////////////////////////////////////
-// 这组函数不对输入进行检查			
+// 这组函数不对输入进行检查
 // 还是检查报错比较方便，这样调用的函数更容易实现
 // asn.1编解码不考虑效率的问题
 
@@ -258,15 +253,12 @@ int asn1_length_from_der(size_t *plen, const uint8_t **pin, size_t *pinlen)
 	} else {
 		uint8_t buf[4] = {0};
 		int nbytes = *in++ & 0x7f;
-		//error_print_msg("nbytes = %d\n", nbytes);
 
 		if (nbytes < 1 || nbytes > 4) {
-			error_print();
 			return -1;
 		}
 		inlen--;
 		if (inlen < nbytes) {
-			error_print();
 			return -1;
 		}
 		memcpy(buf + sizeof(buf) - nbytes, in, nbytes);
@@ -280,8 +272,6 @@ int asn1_length_from_der(size_t *plen, const uint8_t **pin, size_t *pinlen)
 	*pinlen = inlen;
 
 	if (inlen < len) {
-		error_print_msg("inlen = %zu\n", *pinlen);
-		error_print_msg("length = %zu, left = %zu\n", len, inlen);
 		return -2; // 特殊错误值用于 test_asn1_length() 的测试
 	}
 	return 1;
@@ -290,7 +280,6 @@ int asn1_length_from_der(size_t *plen, const uint8_t **pin, size_t *pinlen)
 int asn1_data_from_der(const uint8_t **data, size_t datalen, const uint8_t **in, size_t *inlen)
 {
 	if (*inlen < datalen) {
-		error_print();
 		return -1;
 	}
 	*data = *in;
@@ -302,7 +291,6 @@ int asn1_data_from_der(const uint8_t **data, size_t datalen, const uint8_t **in,
 int asn1_header_to_der(int tag, size_t len, uint8_t **out, size_t *outlen)
 {
 	if ((out && !(*out)) || !outlen) {
-		error_print();
 		return -1;
 	}
 	asn1_tag_to_der(tag, out, outlen);
@@ -317,7 +305,6 @@ int asn1_type_to_der(int tag, const uint8_t *d, size_t dlen, uint8_t **out, size
 {
 	if (!d) {
 		if (dlen) {
-			error_print();
 			return -1;
 		}
 		return 0;
@@ -325,7 +312,6 @@ int asn1_type_to_der(int tag, const uint8_t *d, size_t dlen, uint8_t **out, size
 	if (asn1_tag_to_der(tag, out, outlen) != 1
 		|| asn1_length_to_der(dlen, out, outlen) != 1
 		|| asn1_data_to_der(d, dlen, out, outlen) != 1) {
-		error_print();
 		return -1;
 	}
 	return 1;
@@ -335,7 +321,7 @@ int asn1_type_from_der(int tag, const uint8_t **d, size_t *dlen, const uint8_t *
 {
 	int ret;
 	if ((ret = asn1_tag_from_der(tag, in, inlen)) != 1) {
-		if (ret < 0) error_print();
+		if (ret < 0) {}
 		else {
 			*d = NULL;
 			*dlen = 0;
@@ -344,7 +330,6 @@ int asn1_type_from_der(int tag, const uint8_t **d, size_t *dlen, const uint8_t *
 	}
 	if (asn1_length_from_der(dlen, in, inlen) != 1
 		|| asn1_data_from_der(d, *dlen, in, inlen) != 1) {
-		error_print();
 		return -1;
 	}
 	return 1;
@@ -369,7 +354,6 @@ int asn1_any_type_from_der(int *tag, const uint8_t **data, size_t *datalen, cons
 		return ret;
 	}
 	if (asn1_length_from_der(datalen, in, inlen) != 1) {
-		error_print();
 		return -1;
 	}
 	*data = *in;
@@ -393,7 +377,6 @@ int asn1_any_from_der(const uint8_t **tlv, size_t *tlvlen, const uint8_t **in, s
 	*tlv = *in;
 	*tlvlen = *inlen;
 	if ((ret = asn1_any_type_from_der(&tag, &data, &datalen, in, inlen)) != 1) {
-		error_print();
 		return ret;
 	}
 	*tlvlen -= *inlen;
@@ -449,7 +432,6 @@ int asn1_boolean_to_der_ex(int tag, int val, uint8_t **out, size_t *outlen)
 int asn1_integer_to_der_ex(int tag, const uint8_t *a, size_t alen, uint8_t **out, size_t *outlen)
 {
 	if (!a || alen <= 0 || alen > INT_MAX || (out && !(*out)) || !outlen) {
-		error_print();
 		return -1;
 	}
 
@@ -516,7 +498,6 @@ int asn1_bit_string_to_der_ex(int tag, const uint8_t *bits, size_t nbits, uint8_
 		|| asn1_length_to_der(nbytes + 1, out, outlen) != 1
 		|| asn1_data_to_der(&unused, 1, out, outlen) != 1
 		|| asn1_data_to_der(bits, nbytes, out, outlen) != 1) {
-		error_print();
 		return -1;
 	}
 	return 1;
@@ -652,12 +633,10 @@ int asn1_object_identifier_from_octets(uint32_t *nodes, size_t *nodes_cnt, const
 	size_t len = inlen;
 
 	if (!nodes || !nodes_cnt || !in || inlen <= 0) {
-		error_print();
 		return -1;
 	}
 
 	if (inlen < 1) {
-		error_print();
 		return -1;
 	}
 
@@ -673,11 +652,9 @@ int asn1_object_identifier_from_octets(uint32_t *nodes, size_t *nodes_cnt, const
 	while (inlen) {
 		uint32_t val;
 		if (count > 32) {
-			error_print();
 			return -1;
 		}
 		if (asn1_oid_node_from_base128(&val, &in, &inlen) < 0) {
-			error_print();
 			return -1;
 		}
 		if (nodes) {
@@ -745,9 +722,8 @@ int asn1_oid_info_from_der_ex(const ASN1_OID_INFO **info, uint32_t *nodes, size_
 	size_t i;
 
 	if ((ret = asn1_object_identifier_from_der(nodes, nodes_cnt, in, inlen)) != 1) {
-		if (ret < 0) error_print();
+		if (ret < 0) {}
 		if (ret == 0) {
-			error_print();
 		}
 		return ret;
 	}
@@ -770,10 +746,8 @@ int asn1_oid_info_from_der(const ASN1_OID_INFO **info, const ASN1_OID_INFO *info
 	size_t nodes_cnt;
 
 	if ((ret = asn1_oid_info_from_der_ex(info, nodes, &nodes_cnt, infos, count, in, inlen)) < 0) {
-		error_print();
 		return -1;
 	} else if (ret > 1) {
-		error_print();
 		return -1;
 	}
 	return ret;
@@ -807,60 +781,6 @@ int asn1_ia5_string_to_der_ex(int tag, const char *d, size_t dlen, uint8_t **out
 {
 	return asn1_type_to_der(tag, (const uint8_t *)d, dlen, out, outlen);
 }
-
-int asn1_utc_time_to_der_ex(int tag, time_t a, uint8_t **out, size_t *outlen)
-{
-	struct tm tm_val;
-	char buf[ASN1_UTC_TIME_LEN + 1];
-
-	if ((out && !(*out)) || !outlen) {
-		return -1;
-	}
-
-	gmtime_r(&a, &tm_val);
-	strftime(buf, sizeof(buf), "%y%m%d%H%M%SZ", &tm_val);
-
-	if (out)
-		*(*out)++ = tag;
-	(*outlen)++;
-	asn1_length_to_der(sizeof(buf)-1, out, outlen);
-	if (out) {
-		memcpy(*out, buf, sizeof(buf)-1);
-		(*out) += sizeof(buf)-1;
-	}
-	*outlen += sizeof(buf)-1;
-
-	return 1;
-}
-
-
-int asn1_generalized_time_to_der_ex(int tag, time_t a, uint8_t **out, size_t *outlen)
-{
-	struct tm tm_val;
-	char buf[ASN1_GENERALIZED_TIME_LEN + 1];
-
-	if ((out && !(*out)) || !outlen) {
-		error_print();
-		return -1;
-	}
-
-	gmtime_r(&a, &tm_val);
-	strftime(buf, sizeof(buf), "%Y%m%d%H%M%SZ", &tm_val);
-	//printf("%s %d: generalized time : %s\n", __FILE__, __LINE__, buf);
-
-	if (out)
-		*(*out)++ = tag;
-	(*outlen)++;
-	asn1_length_to_der(ASN1_GENERALIZED_TIME_LEN, out, outlen);
-	if (out) {
-		memcpy(*out, buf, ASN1_GENERALIZED_TIME_LEN);
-		(*out) += ASN1_GENERALIZED_TIME_LEN;
-	}
-	*outlen += ASN1_GENERALIZED_TIME_LEN;
-
-	return 1;
-}
-
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 // DER decoding
@@ -924,7 +844,6 @@ int asn1_integer_from_der_ex(int tag, const uint8_t **a, size_t *alen, const uin
 	size_t len;
 
 	if (!a || !alen || !pin || !(*pin) || !pinlen) {
-		error_print();
 		return -1;
 	}
 
@@ -933,13 +852,11 @@ int asn1_integer_from_der_ex(int tag, const uint8_t **a, size_t *alen, const uin
 	}
 	if (asn1_length_from_der(&len, &in, &inlen) != 1
 		|| len <= 0) {
-		error_print();
 		return -1;
 	}
 
 	// 判断 ASN1_INTEGER 是否为负数，我们不支持负整数，返回特性不支持错误
 	if (*in & 0x80) {
-		error_print();
 		return -255;
 	}
 
@@ -949,7 +866,6 @@ int asn1_integer_from_der_ex(int tag, const uint8_t **a, size_t *alen, const uin
 		len--;
 	}
 	if (*in == 0 && len > 1) {
-		error_print();
 		return -1;
 	}
 	*a = in;
@@ -967,16 +883,14 @@ int asn1_int_from_der_ex(int tag, int *a, const uint8_t **in, size_t *inlen)
 	unsigned int val = 0;
 
 	if (!a || !in || !(*in) || !inlen) {
-		error_print();
 		return -1;
 	}
 	if ((ret = asn1_integer_from_der_ex(tag, &p, &len, in, inlen)) != 1) {
-		if (ret < 0) error_print();
+		if (ret < 0) {}
 		else *a = -1;
 		return ret;
 	}
 	if (len > 8) {
-		error_print();
 		return -1;
 	}
 
@@ -994,7 +908,7 @@ int asn1_bit_string_from_der_ex(int tag, const uint8_t **bits, size_t *nbits, co
 	int unused_bits;
 
 	if ((ret = asn1_tag_from_der(tag, in, inlen)) != 1) {
-		if (ret < 0) error_print();
+		if (ret < 0) {}
 		else {
 			*bits = NULL;
 			*nbits = 0;
@@ -1003,11 +917,9 @@ int asn1_bit_string_from_der_ex(int tag, const uint8_t **bits, size_t *nbits, co
 	}
 	if (asn1_length_from_der(&len, in, inlen) != 1
 		|| asn1_data_from_der(bits, len, in, inlen) != 1) {
-		error_print();
 		return -1;
 	}
 	if (len < 2) {
-		error_print();
 		return -1;
 	}
 
@@ -1015,11 +927,9 @@ int asn1_bit_string_from_der_ex(int tag, const uint8_t **bits, size_t *nbits, co
 	unused_bits = **bits;
 
 	if (len < 1) {
-		error_print();
 		return -1;
 	}
 	if (unused_bits > 8 || (len == 1 && unused_bits > 0)) {
-		error_print();
 		return -1;
 	}
 
@@ -1035,11 +945,10 @@ int asn1_bit_octets_from_der_ex(int tag, const uint8_t **octs, size_t *nocts, co
 	size_t nbits;
 
 	if ((ret = asn1_bit_string_from_der_ex(tag, octs, &nbits, in, inlen)) != 1) {
-		if (ret < 0) error_print();
+		if (ret < 0) {}
 		return ret;
 	}
 	if (nbits % 8) {
-		error_print();
 		return -1;
 	}
 	*nocts = nbits >> 3;
@@ -1054,11 +963,10 @@ int asn1_bits_from_der_ex(int tag, int *bits, const uint8_t **in, size_t *inlen)
 	uint8_t c;
 
 	if ((ret = asn1_bit_string_from_der_ex(tag, &p, &nbits, in, inlen)) != 1) {
-		if (ret < 0) error_print();
+		if (ret < 0) {}
 		return ret;
 	}
 	if (nbits > 31) {
-		error_print();
 		return -1;
 	}
 
@@ -1098,13 +1006,12 @@ int asn1_object_identifier_from_der_ex(int tag, uint32_t *nodes, size_t *nodes_c
 	const uint8_t *p;
 
 	if ((ret = asn1_tag_from_der(tag, in, inlen)) != 1) {
-		if (ret < 0) error_print();
+		if (ret < 0) {}
 		return ret;
 	}
 	if (asn1_length_from_der(&len, in, inlen) != 1
 		|| asn1_data_from_der(&p, len, in, inlen) != 1
 		|| asn1_object_identifier_from_octets(nodes, nodes_cnt, p, len) != 1) {
-		error_print();
 		return -1;
 	}
 	return 1;
@@ -1165,106 +1072,16 @@ time_t converted;
 converted = mktime(&when);
 */
 
-int asn1_utc_time_from_der_ex(int tag, time_t *t, const uint8_t **pin, size_t *pinlen)
-{
-	const uint8_t *in = *pin;
-	size_t inlen = *pinlen;
-	struct tm tm_val;
-	char buf[sizeof("YYYYMMDDHHMMSSZ")] = {0};
-	size_t len;
-	int year;
-
-
-	if (!t || !pin || !(*pin) || !pinlen) {
-		return -1;
-	}
-	if (inlen-- <= 0 || *in++ != tag) {
-		return 0;
-	}
-	if (asn1_length_from_der(&len, &in, &inlen) != 1
-		|| (len != sizeof("YYMMDDHHMMSSZ")-1 && len != sizeof("YYMMDDHHMMSS+HHMM")-1)) {
-		return -1;
-	}
-	memcpy(buf + 2, in, len);
-
-	if (!isdigit(buf[2]) && !isdigit(buf[3])) {
-		return -1;
-	}
-	year = (buf[2] - '0') * 10 + (buf[3] - '0');
-	if (year >= 50) {
-		buf[0] = '1';
-		buf[1] = '9';
-	} else {
-		buf[0] = '2';
-		buf[1] = '0';
-	}
-	if (len == sizeof("YYMMDDHHMMSSZ")-1) {
-		//  这里应该自己写一个函数来解析
-		if (!strptime(buf, "%Y%m%d%H%M%SZ", &tm_val)) { // 注意：这个函数在Windows上没有！！		
-			return -1;
-		}
-	} else {
-		return -1;
-	}
-	*t = timegm(&tm_val); // FIXME: Windows !				
-
-	*pin = in + len;
-	*pinlen = inlen - len;
-	return 1;
-}
-
-int asn1_generalized_time_from_der_ex(int tag, time_t *t, const uint8_t **pin, size_t *pinlen)
-{
-	int ret;
-	const uint8_t *in = *pin;
-	size_t inlen = *pinlen;
-	struct tm tm_val;
-	char buf[sizeof("YYYYMMDDHHMMSS+HHMM")] = {0};
-	size_t len;
-
-	if ((ret = asn1_tag_from_der(tag, &in, &inlen)) != 1) {
-		if (ret < 0) error_print();
-		return ret;
-	}
-	if (asn1_length_from_der(&len, &in, &inlen) != 1) {
-		error_print();
-		return -1;
-	}
-	if (len != sizeof("YYYYMMDDHHMMSSZ")-1 && len != sizeof("YYYYMMDDHHMMSS+HHMM")-1) {
-		error_print();
-		return -1;
-	}
-	memcpy(buf, in, len);
-
-	if (len == sizeof("YYYYMMDDHHMMSSZ")-1) {
-		if (!strptime(buf, "%Y%m%d%H%M%SZ", &tm_val)) {
-			error_print();
-			return -1;
-		}
-	} else {
-		// TODO: 处理这种情况		
-		error_print();
-		return -2;
-	}
-	*t = timegm(&tm_val);
-	*pin = in + len;
-	*pinlen = inlen - len;
-	return 1;
-}
-
-
 int asn1_check(int expr)
 {
 	if (expr)
 		return 1;
-	error_print();
 	return -1;
 }
 
 int asn1_length_is_zero(size_t len)
 {
 	if (len) {
-		error_print();
 		return -1;
 	}
 	return 1;
@@ -1273,8 +1090,6 @@ int asn1_length_is_zero(size_t len)
 int asn1_length_le(size_t len1, size_t len2)
 {
 	if (len1 > len2) {
-		error_print();
-		format_print(stderr, 0, 0, "%s: %zu <= %zu failed\n", __FUNCTION__, len1, len2);
 		return -1;
 	}
 	return 1;
@@ -1296,17 +1111,14 @@ int asn1_sequence_of_int_to_der(const int *nums, size_t nums_cnt, uint8_t **out,
 	size_t i;
 	for (i = 0; i < nums_cnt; i++) {
 		if (asn1_int_to_der(nums[i], NULL, &len) != 1) {
-			error_print();
 			return -1;
 		}
 	}
 	if (asn1_sequence_header_to_der(len, out, outlen) != 1) {
-		error_print();
 		return -1;
 	}
 	for (i = 0; i < nums_cnt; i++) {
 		if (asn1_int_to_der(nums[i], out, outlen) != 1) {
-			error_print();
 			return -1;
 		}
 	}
@@ -1320,14 +1132,13 @@ int asn1_sequence_of_int_from_der(int *nums, size_t *nums_cnt, const uint8_t **i
 	size_t dlen;
 
 	if ((ret = asn1_sequence_from_der(&d, &dlen, in, inlen)) != 1) {
-		if (ret < 0) error_print();
+		if (ret < 0) {}
 		return ret;
 	}
 	*nums_cnt = 0;
 	while (dlen) {
 		int num;
 		if (asn1_int_from_der(&num, &d, &dlen) != 1) {
-			error_print();
 			return -1;
 		}
 		if (nums) {
@@ -1338,75 +1149,13 @@ int asn1_sequence_of_int_from_der(int *nums, size_t *nums_cnt, const uint8_t **i
 	return 1;
 }
 
-int asn1_sequence_of_int_print(FILE *fp, int fmt, int ind, const char *label, const uint8_t *d, size_t dlen)
-{
-	int val;
-	format_print(fp, fmt, ind, "%s: ", label);
-	while (dlen) {
-		if (asn1_int_from_der(&val, &d, &dlen) != 1) {
-			error_print();
-			return -1;
-		}
-		fprintf(fp, "%d%s", val, dlen ? "," : "");
-	}
-	fprintf(fp, "\n");
-	return 1;
-}
-
-
-int asn1_object_identifier_print(FILE *fp, int format, int indent, const char *label, const char *name,
-	const uint32_t *nodes, size_t nodes_cnt)
-{
-	size_t i;
-	format_print(fp, format, indent, "%s: %s", label, name);
-	if (nodes) {
-		fprintf(fp, " (");
-		for (i = 0; i < nodes_cnt - 1; i++) {
-			fprintf(fp, "%d.", (int)nodes[i]);
-		}
-		fprintf(fp, "%d)", nodes[i]);
-	}
-	fprintf(fp, "\n");
-	return 1;
-}
-
-int asn1_string_print(FILE *fp, int fmt, int ind, const char *label, int tag, const uint8_t *d, size_t dlen)
-{
-	format_print(fp, fmt, ind, "%s: ", label);
-	while (dlen--) {
-		fprintf(fp, "%c", *d++);
-	}
-	fprintf(fp, "\n");
-	return 1;
-}
-
-int asn1_bits_print(FILE *fp, int fmt, int ind, const char *label, const char **names, size_t names_cnt, int bits)
-{
-	size_t i;
-	format_print(fp, fmt, ind, "%s: ", label);
-
-	for (i = 0; i < names_cnt; i++) {
-		if (bits & 0x01)
-			fprintf(fp, "%s%s", names[i], bits >> 1 ? "," : "");
-		bits >>= 1;
-	}
-	fprintf(fp, "\n");
-	if (bits) {
-		error_print();
-		return -1;
-	}
-	return 1;
-}
-
 int asn1_types_get_count(const uint8_t *d, size_t dlen, int tag, size_t *cnt)
 {
-	error_print();
 	return -1;
 }
 
 int asn1_types_get_item_by_index(const uint8_t *d, size_t *dlen, int tag,
 	int index, const uint8_t **item_d, size_t *item_dlen)
 {
-	error_print();
 	return -1;
 }

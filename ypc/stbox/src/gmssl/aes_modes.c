@@ -52,7 +52,6 @@
 #include <stdlib.h>
 #include <gmssl/aes.h>
 #include <gmssl/gcm.h>
-#include <gmssl/error.h>
 #include <gmssl/mem.h>
 
 
@@ -111,11 +110,9 @@ int aes_cbc_padding_decrypt(const AES_KEY *key, const uint8_t iv[16],
 	int padding;
 
 	if (inlen == 0) {
-		error_print();
 		return 0;
 	}
 	if (inlen%16 != 0 || inlen < 16) {
-		error_print();
 		return -1;
 	}
 	if (inlen > 16) {
@@ -125,7 +122,6 @@ int aes_cbc_padding_decrypt(const AES_KEY *key, const uint8_t iv[16],
 	aes_cbc_decrypt(key, iv, in + inlen - 16, 1, block);
 	padding = block[15];
 	if (padding < 1 || padding > 16) {
-		error_print();
 		return -1;
 	}
 	len -= padding;
@@ -223,7 +219,6 @@ int aes_gcm_decrypt(const AES_KEY *key, const uint8_t *iv, size_t ivlen,
 	aes_encrypt(key, Y, T);
 	gmssl_memxor(T, T, H, taglen);
 	if (memcmp(T, tag, taglen) != 0) {
-		error_print();
 		return -1;
 	}
 

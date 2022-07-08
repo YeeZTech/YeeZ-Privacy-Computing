@@ -49,7 +49,6 @@
 #include <gmssl/sm4.h>
 #include <gmssl/mem.h>
 #include <gmssl/gcm.h>
-#include <gmssl/error.h>
 
 void sm4_cbc_encrypt(const SM4_KEY *key, const uint8_t iv[16],
 	const uint8_t *in, size_t nblocks, uint8_t *out)
@@ -106,11 +105,9 @@ int sm4_cbc_padding_decrypt(const SM4_KEY *key, const uint8_t iv[16],
 	int padding;
 
 	if (inlen == 0) {
-		error_puts("warning: input lenght = 0");
 		return 0;
 	}
 	if (inlen%16 != 0 || inlen < 16) {
-		error_puts("invalid cbc ciphertext length");
 		return -1;
 	}
 	if (inlen > 16) {
@@ -119,12 +116,9 @@ int sm4_cbc_padding_decrypt(const SM4_KEY *key, const uint8_t iv[16],
 	}
 	sm4_cbc_decrypt(key, iv, in + inlen - 16, 1, block);
 
-	format_bytes(stderr, 0, 0, "last_decrypted_block", block, 16);
-
 
 	padding = block[15];
 	if (padding < 1 || padding > 16) {
-		error_print();
 		return -1;
 	}
 	len -= padding;
@@ -222,7 +216,6 @@ int sm4_gcm_decrypt(const SM4_KEY *key, const uint8_t *iv, size_t ivlen,
 	sm4_encrypt(key, Y, T);
 	gmssl_memxor(T, T, H, taglen);
 	if (memcmp(T, tag, taglen) != 0) {
-		error_print();
 		return -1;
 	}
 
@@ -257,7 +250,6 @@ int sm4_cbc_encrypt_update(SM4_CBC_CTX *ctx,
 	size_t len;
 
 	if (ctx->block_nbytes >= SM4_BLOCK_SIZE) {
-		error_print();
 		return -1;
 	}
 	*outlen = 0;
@@ -299,11 +291,9 @@ int sm4_cbc_encrypt_finish(SM4_CBC_CTX *ctx, uint8_t *out, size_t *outlen)
 	size_t i;
 
 	if (ctx->block_nbytes >= SM4_BLOCK_SIZE) {
-		error_print();
 		return -1;
 	}
 	if (sm4_cbc_padding_encrypt(&ctx->sm4_key, ctx->iv, ctx->block, ctx->block_nbytes, out, outlen) != 1) {
-		error_print();
 		return -1;
 	}
 	return 1;
@@ -325,7 +315,6 @@ int sm4_cbc_decrypt_update(SM4_CBC_CTX *ctx,
 	size_t left, len, nblocks;
 
 	if (ctx->block_nbytes > SM4_BLOCK_SIZE) {
-		error_print();
 		return -1;
 	}
 
@@ -363,11 +352,9 @@ int sm4_cbc_decrypt_update(SM4_CBC_CTX *ctx,
 int sm4_cbc_decrypt_finish(SM4_CBC_CTX *ctx, uint8_t *out, size_t *outlen)
 {
 	if (ctx->block_nbytes != SM4_BLOCK_SIZE) {
-		error_print();
 		return -1;
 	}
 	if (sm4_cbc_padding_decrypt(&ctx->sm4_key, ctx->iv, ctx->block, SM4_BLOCK_SIZE, out, outlen) != 1) {
-		error_print();
 		return -1;
 	}
 	return 1;
@@ -391,7 +378,6 @@ int sm4_ctr_encrypt_update(SM4_CTR_CTX *ctx,
 	size_t len;
 
 	if (ctx->block_nbytes >= SM4_BLOCK_SIZE) {
-		error_print();
 		return -1;
 	}
 	*outlen = 0;
@@ -429,7 +415,6 @@ int sm4_ctr_encrypt_finish(SM4_CTR_CTX *ctx, uint8_t *out, size_t *outlen)
 {
 	size_t left;
 	if (ctx->block_nbytes >= SM4_BLOCK_SIZE) {
-		error_print();
 		return -1;
 	}
 	sm4_ctr_encrypt(&ctx->sm4_key, ctx->ctr, ctx->block, ctx->block_nbytes, out);

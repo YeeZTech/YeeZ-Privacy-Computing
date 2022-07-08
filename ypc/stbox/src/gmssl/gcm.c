@@ -51,8 +51,6 @@
 #include <stdlib.h>
 #include <gmssl/gf128.h>
 #include <gmssl/gcm.h>
-#include <gmssl/oid.h>
-#include <gmssl/error.h>
 #include <gmssl/aes.h>
 #include <gmssl/endian.h>
 
@@ -128,7 +126,6 @@ int gcm_encrypt(const BLOCK_CIPHER_KEY *key, const uint8_t *iv, size_t ivlen,
 		aes_gcm_encrypt(&(key->u.aes_key), iv, ivlen, aad, aadlen,  in, inlen, out, taglen, tag);
 		return 1;
 	}
-	error_print();
 	return -1;
 }
 
@@ -141,6 +138,5 @@ int gcm_decrypt(const BLOCK_CIPHER_KEY *key, const uint8_t *iv, size_t ivlen,
 	} else if (key->cipher == BLOCK_CIPHER_aes128()) {
 		aes_gcm_decrypt(&(key->u.aes_key), iv, ivlen, aad, aadlen,  in, inlen, tag, taglen, out);
 	}
-	error_print();
 	return -1;
 }

@@ -51,14 +51,9 @@
 #include <string.h>
 #include <assert.h>
 #include <gmssl/sm2.h>
+#include <gmssl/sm3.h>
 #include <gmssl/asn1.h>
-#include <gmssl/rand.h>
-#include <gmssl/error.h>
 #include <gmssl/endian.h>
-
-
-#define sm2_print_bn(label,a) sm2_bn_print(stderr,0,0,label,a) // 这个不应该放在这里，应该放在测试文件中
-
 
 
 const SM2_BN SM2_P = {
@@ -109,7 +104,6 @@ int sm2_bn_check(const SM2_BN a)
 	int i;
 	for (i = 0; i < 8; i++) {
 		if (a[i] > 0xffffffff) {
-			fprintf(stderr, "%s %d: error\n", __FILE__, __LINE__);
 			err++;
 		}
 	}
@@ -145,26 +139,11 @@ void sm2_bn_to_bytes(const SM2_BN a, uint8_t out[32])
 	int i;
 	uint8_t *p = out;
 
-	/*
-	fprintf(stderr, "sm2_bn_to_bytes:\n");
-	for (i = 0; i < 8; i++) {
-		fprintf(stderr, "%016lx ", a[i]);
-	}
-	fprintf(stderr, "\n");
-	*/
-
 	for (i = 7; i >= 0; i--) {
 		uint32_t ai = (uint32_t)a[i];
 		PUTU32(out, ai);
 		out += sizeof(uint32_t);
 	}
-
-	/*
-	for (i = 0; i < 32; i++) {
-		fprintf(stderr, "%02X ", p[i]);
-	}
-	*/
-
 }
 
 void sm2_bn_from_bytes(SM2_BN r, const uint8_t in[32])
@@ -203,17 +182,6 @@ static int hex2bin(const char *in, size_t inlen, uint8_t *out)
 	return 1;
 }
 
-void sm2_bn_to_hex(const SM2_BN a, char hex[64])
-{
-	int i;
-	for (i = 7; i >= 0; i--) {
-		int len;
-		len = sprintf(hex, "%08x", (uint32_t)a[i]);
-		assert(len == 8);
-		hex += 8;
-	}
-}
-
 int sm2_bn_from_hex(SM2_BN r, const char hex[64])
 {
 	uint8_t buf[32];
@@ -227,31 +195,14 @@ int sm2_bn_from_asn1_integer(SM2_BN r, const uint8_t *d, size_t dlen)
 {
 	uint8_t buf[32] = {0};
 	if (!d || dlen == 0) {
-		error_print();
 		return -1;
 	}
 	if (dlen > sizeof(buf)) {
-		error_print();
 		return -1;
 	}
 	memcmp(buf + sizeof(buf) - dlen, d, dlen);
 	sm2_bn_from_bytes(r, buf);
 	return 1;
-}
-
-int sm2_bn_print(FILE *fp, int fmt, int ind, const char *label, const SM2_BN a)
-{
-	int ret = 0, i;
-	format_print(fp, fmt, ind, "%s: ", label);
-
-	for (i = 7; i >= 0; i--) {
-		if (a[i] >= ((uint64_t)1 << 32)) {
-			printf("bn_print check failed\n");
-		}
-		ret += fprintf(fp, "%08x", (uint32_t)a[i]);
-	}
-	ret += fprintf(fp, "\n");
-	return ret;
 }
 
 void sm2_bn_to_bits(const SM2_BN a, char bits[256])
@@ -285,7 +236,6 @@ int sm2_bn_equ_hex(const SM2_BN a, const char *hex)
 	int i;
 
 	for (i = 7; i >= 0; i--) {
-		sprintf(p, "%08x", (uint32_t)a[i]);
 		p += 8;
 	}
 	return (strcmp(buf, hex) == 0);
@@ -332,12 +282,17 @@ void sm2_bn_sub(SM2_BN ret, const SM2_BN a, const SM2_BN b)
 	sm2_bn_copy(ret, r);
 }
 
-// FIXME: get random from outside		
+void rand_bytes(uint8_t *buf, size_t len) {
+	uint8_t tmp[32];
+  sm3_digest(tmp, 32, buf);
+}
+
+// FIXME: get random from outside
 void sm2_bn_rand_range(SM2_BN r, const SM2_BN range)
 {
 	uint8_t buf[32];
 	do {
-		(void)rand_bytes(buf, sizeof(buf));
+    rand_bytes(buf, sizeof(buf));
 		sm2_bn_from_bytes(r, buf);
 	} while (sm2_bn_cmp(r, range) >= 0);
 }
@@ -649,9 +604,6 @@ void sm2_fn_mul(SM2_BN r, const SM2_BN a, const SM2_BN b)
 		zl[i] = s[i];
 		zh[i] = s[7 + i];
 	}
-	//printf("zl = "); for (i = 8; i >= 0; i--) printf("%08x", (uint32_t)zl[i]); printf("\n");
-	//printf("zh = "); for (i = 8; i >= 0; i--) printf("%08x", (uint32_t)zh[i]); printf("\n");
-
 	/* q = zh * mu // (2^32)^9 */
 	for (i = 0; i < 9; i++) {
 		s[i] = 0;
@@ -668,8 +620,6 @@ void sm2_fn_mul(SM2_BN r, const SM2_BN a, const SM2_BN b)
 	for (i = 0; i < 8; i++) {
 		q[i] = s[9 + i];
 	}
-	//printf("q  = "); for (i = 7; i >= 0; i--) printf("%08x", (uint32_t)q[i]); printf("\n");
-
 
 	/* q = q * n mod (2^32)^9 */
 	for (i = 0; i < 8; i++) {
@@ -687,7 +637,6 @@ void sm2_fn_mul(SM2_BN r, const SM2_BN a, const SM2_BN b)
 	for (i = 0; i < 9; i++) {
 		q[i] = s[i];
 	}
-	//printf("qn = "); for (i = 8; i >= 0; i--) printf("%08x", (uint32_t)q[i]); printf("\n");
 
 	/* r = zl - q (mod (2^32)^9) */
 
@@ -697,15 +646,7 @@ void sm2_fn_mul(SM2_BN r, const SM2_BN a, const SM2_BN b)
 		uint64_t c[9] = {0,0,0,0,0,0,0,0,0x100000000};
 		sm2_bn288_sub(q, c, q);
 		sm2_bn288_add(zl, q, zl);
-		printf("******\n");
-		printf("******\n");
-		printf("******\n");
-		printf("******\n");
-		printf("******\n");
-
 	}
-
-	//printf("r  = "); for (i = 8; i >= 0; i--) printf("%08x", (uint32_t)zl[i]); printf("\n");
 
 	for (i = 0; i < 8; i++) {
 		r[i] = zl[i];
@@ -715,7 +656,6 @@ void sm2_fn_mul(SM2_BN r, const SM2_BN a, const SM2_BN b)
 	/* while r >= p do: r = r - n */
 	while (sm2_bn_cmp(r, SM2_N) >= 0) {
 		sm2_bn_sub(r, r, SM2_N);
-		//printf("r = r -n  = "); for (i = 8; i >= 0; i--) printf("%08x", (uint32_t)zl[i]); printf("\n");
 	}
 }
 
@@ -796,23 +736,6 @@ void sm2_jacobian_point_get_xy(const SM2_JACOBIAN_POINT *P, SM2_BN x, SM2_BN y)
 	}
 }
 
-int sm2_jacobian_pointpoint_print(FILE *fp, int fmt, int ind, const char *label, const SM2_JACOBIAN_POINT *P)
-{
-	int len = 0;
-	SM2_BN x;
-	SM2_BN y;
-
-	format_print(fp, fmt, ind, "%s\n", label);
-	ind += 4;
-
-	sm2_jacobian_point_get_xy(P, x, y);
-
-	sm2_bn_print(fp, fmt, ind, "x", x);
-	sm2_bn_print(fp, fmt, ind, "y", y);
-
-	return 1;
-}
-
 int sm2_jacobian_point_is_on_curve(const SM2_JACOBIAN_POINT *P)
 {
 	SM2_BN t0;
@@ -843,7 +766,6 @@ int sm2_jacobian_point_is_on_curve(const SM2_JACOBIAN_POINT *P)
 	}
 
 	if (sm2_bn_cmp(t0, t1) != 0) {
-		error_print();
 		return -1;
 	}
 	return 1;
@@ -867,9 +789,6 @@ void sm2_jacobian_point_dbl(SM2_JACOBIAN_POINT *R, const SM2_JACOBIAN_POINT *P)
 	SM2_BN X3;
 	SM2_BN Y3;
 	SM2_BN Z3;
-				//printf("X1 = "); print_bn(X1);
-				//printf("Y1 = "); print_bn(Y1);
-				//printf("Z1 = "); print_bn(Z1);
 
 	if (sm2_jacobian_point_is_at_infinity(P)) {
 		sm2_jacobian_point_copy(R, P);
@@ -897,10 +816,6 @@ void sm2_jacobian_point_dbl(SM2_JACOBIAN_POINT *R, const SM2_JACOBIAN_POINT *P)
 	sm2_bn_copy(R->X, X3);
 	sm2_bn_copy(R->Y, Y3);
 	sm2_bn_copy(R->Z, Z3);
-
-				//printf("X3 = "); print_bn(R->X);
-				//printf("Y3 = "); print_bn(R->Y);
-				//printf("Z3 = "); print_bn(R->Z);
 
 }
 
@@ -1087,10 +1002,9 @@ int sm2_point_from_x(SM2_POINT *P, const uint8_t x[32], int y)
 	// z = y^2 mod p
 	sm2_fp_sqr(_z, _y);
 	if (sm2_bn_cmp(_z, _g)) {
-		error_print();
 		return -1;
 	}
-	
+
 	if ((y == 0x02 && sm2_bn_is_odd(_y)) || (y == 0x03) && !sm2_bn_is_odd(_y)) {
 		sm2_fp_neg(_y, _y);
 	}
@@ -1104,7 +1018,6 @@ int sm2_point_from_x(SM2_POINT *P, const uint8_t x[32], int y)
 	sm2_bn_clean(_z);
 
 	if (!sm2_point_is_on_curve(P)) {
-		error_print();
 		return -1;
 	}
 	return 1;
@@ -1161,15 +1074,6 @@ int sm2_point_mul_sum(SM2_POINT *R, const uint8_t k[32], const SM2_POINT *P, con
 	return 1;
 }
 
-int sm2_point_print(FILE *fp, int fmt, int ind, const char *label, const SM2_POINT *P)
-{
-	format_print(fp, fmt, ind, "%s\n", label);
-	ind += 4;
-	format_bytes(fp, fmt, ind, "x", P->x, 32);
-	format_bytes(fp, fmt, ind, "y", P->y, 32);
-	return 1;
-}
-
 void sm2_point_to_compressed_octets(const SM2_POINT *P, uint8_t out[33])
 {
 	*out++ = (P->y[31] & 0x01) ? 0x03 : 0x02;
@@ -1186,16 +1090,13 @@ int sm2_point_from_octets(SM2_POINT *P, const uint8_t *in, size_t inlen)
 {
 	if ((*in == 0x02 || *in == 0x03) && inlen == 33) {
 		if (sm2_point_from_x(P, in + 1, *in) != 1) {
-			error_print();
 			return -1;
 		}
 	} else if (*in == 0x04 && inlen == 65) {
 		if (sm2_point_from_xy(P, in + 1, in + 33) != 1) {
-			error_print();
 			return -1;
 		}
 	} else {
-		error_print();
 		return -1;
 	}
 	return 1;
@@ -1209,7 +1110,6 @@ int sm2_point_to_der(const SM2_POINT *P, uint8_t **out, size_t *outlen)
 	}
 	sm2_point_to_uncompressed_octets(P, octets);
 	if (asn1_octet_string_to_der(octets, sizeof(octets), out, outlen) != 1) {
-		error_print();
 		return -1;
 	}
 	return 1;
@@ -1222,15 +1122,12 @@ int sm2_point_from_der(SM2_POINT *P, const uint8_t **in, size_t *inlen)
 	size_t dlen;
 
 	if ((ret = asn1_octet_string_from_der(&d, &dlen, in, inlen)) != 1) {
-		if (ret < 0) error_print();
 		return ret;
 	}
 	if (dlen != 65) {
-		error_print();
 		return -1;
 	}
 	if (sm2_point_from_octets(P, d, dlen) != 1) {
-		error_print();
 		return -1;
 	}
 	return 1;

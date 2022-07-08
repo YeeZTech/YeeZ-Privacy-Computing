@@ -174,8 +174,6 @@ int asn1_bits_from_der_ex(int tag, int *bits, const uint8_t **in, size_t *inlen)
 #define asn1_bits_from_der(bits,in,inlen) asn1_bits_from_der_ex(ASN1_TAG_BIT_STRING,bits,in,inlen)
 #define asn1_implicit_bits_to_der(i,bits,out,outlen) asn1_bits_to_der_ex(ASN1_TAG_IMPLICIT(i),bits,out,outlen)
 #define asn1_implicit_bits_from_der(i,bits,in,inlen) asn1_bits_from_der_ex(ASN1_TAG_IMPLICIT(i),bits,in,inlen)
-// names[i]对应第i个比特
-int asn1_bits_print(FILE *fp, int fmt, int ind, const char *label, const char **names, size_t names_cnt, int bits);
 
 #define asn1_octet_string_to_der_ex(tag,d,dlen,out,outlen) asn1_type_to_der(tag,d,dlen,out,outlen)
 #define asn1_octet_string_from_der_ex(tag,d,dlen,in,inlen) asn1_type_from_der(tag,d,dlen,in,inlen)
@@ -199,8 +197,6 @@ int asn1_object_identifier_from_der_ex(int tag, uint32_t *nodes, size_t *nodes_c
 #define asn1_object_identifier_from_der(nodes,nodes_cnt,in,inlen) asn1_object_identifier_from_der_ex(ASN1_TAG_OBJECT_IDENTIFIER,nodes,nodes_cnt,in,inlen)
 #define asn1_implicit_object_identifier_to_der(i,nodes,nodes_cnt,out,outlen) asn1_object_identifier_to_der_ex(ASN1_TAG_IMPLICIT(i),nodes,nodes_cnt,out,outlen)
 #define asn1_implicit_object_identifier_from_der(i,nodes,nodes_cnt,in,inlen) asn1_object_identifier_from_der_ex(ASN1_TAG_IMPLICIT(i),nodes,nodes_cnt,in,inlen)
-int asn1_object_identifier_print(FILE *fp, int fmt, int ind, const char *label, const char *name,
-	const uint32_t *nodes, size_t nodes_cnt);
 
 #define asn1_enumerated_to_der_ex(tag,val,out,outlen) asn1_int_to_der_ex(tag,val,out,outlen)
 #define asn1_enumerated_from_der_ex(tag,val,in,inlen) asn1_int_from_der_ex(tag,val,in,inlen)
@@ -232,8 +228,6 @@ int asn1_ia5_string_from_der_ex(int tag, const char **d, size_t *dlen, const uin
 #define asn1_ia5_string_from_der(d,dlen,in,inlen) asn1_ia5_string_from_der_ex(ASN1_TAG_IA5String,d,dlen,in,inlen)
 #define asn1_implicit_ia5_string_to_der(i,d,dlen,out,outlen) asn1_ia5_string_to_der_ex(ASN1_TAG_IMPLICIT(i),d,dlen,out,outlen)
 #define asn1_implicit_ia5_string_from_der(i,d,dlen,in,inlen) asn1_ia5_string_from_der_ex(ASN1_TAG_IMPLICIT(i),d,dlen,in,inlen)
-
-int asn1_string_print(FILE *fp, int fmt, int ind, const char *label, int tag, const uint8_t *d, size_t dlen);
 
 #define ASN1_UTC_TIME_LEN		(sizeof("YYMMDDHHMMSSZ")-1)
 #define ASN1_GENERALIZED_TIME_LEN	(sizeof("YYYYMMDDHHMMSSZ")-1)
@@ -288,7 +282,6 @@ int asn1_types_get_item_by_index(const uint8_t *d, size_t *dlen, int tag,
 
 int asn1_sequence_of_int_to_der(const int *nums, size_t nums_cnt, uint8_t **out, size_t *outlen);
 int asn1_sequence_of_int_from_der(int *nums, size_t *nums_cnt, const uint8_t **in, size_t *inlen);
-int asn1_sequence_of_int_print(FILE *fp, int fmt, int ind, const char *label, const uint8_t *d, size_t dlen);
 
 
 typedef struct {

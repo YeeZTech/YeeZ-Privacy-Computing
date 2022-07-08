@@ -84,35 +84,6 @@ int gf128_equ_hex(gf128_t a, const char *s)
 	return memcmp(bin1, bin2, sizeof(bin1)) == 0;
 }
 
-// FIXME: 这个函数不支持struct				
-void gf128_print_bits(gf128_t a)
-{
-	int i;
-	for (i = 0; i < 64; i++) {
-		printf("%d", (int)(a.hi % 2));
-		a.hi >>= 1;
-	}
-	for (i = 0; i < 64; i++) {
-		printf("%d", (int)(a.lo % 2));
-		a.lo >>= 1;
-	}
-	printf("\n");
-}
-
-int gf128_print(FILE *fp, int fmt, int ind, const char *label, gf128_t a)
-{
-	uint8_t be[16];
-	int i;
-
-	printf("%s", label);
-	gf128_to_bytes(a, be);
-	for (i = 0; i < 16; i++) {
-		printf("%02X", be[i]);
-	}
-	printf("\n");
-	return 1;
-}
-
 gf128_t gf128_from_bytes(const uint8_t p[16])
 {
 	gf128_t r;

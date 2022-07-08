@@ -51,7 +51,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-#include <gmssl/error.h>
 
 int OPENSSL_hexchar2int(unsigned char c)
 {
@@ -143,18 +142,15 @@ int hex2bin(const char *in, size_t inlen, uint8_t *out)
 {
 	int c;
 	if (inlen % 2) {
-		error_print_msg("hex %s len = %zu\n", in, inlen);
 		return -1;
 	}
 
 	while (inlen) {
 		if ((c = hexchar2int(*in++)) < 0) {
-			error_print_msg("%d", 5);
 			return -1;
 		}
 		*out = (uint8_t)c << 4;
 		if ((c = hexchar2int(*in++)) < 0) {
-			error_print();
 			return -1;
 		}
 		*out |= (uint8_t)c;
