@@ -2,7 +2,7 @@
 add_library(stbox_keccak_u keccak/keccak.c)
 add_sgx_library(stbox_keccak_t stbox_keccak_t SRCS keccak/keccak.c)
 
-set(stbox_src stx_status.cpp stx_common.cpp exception.cpp eth/eth_hash.cpp eth/util.cpp)
+set(stbox_src stx_status.cpp stx_common.cpp exception.cpp)
 
 
 set(stbox_t_src ${stbox_src}

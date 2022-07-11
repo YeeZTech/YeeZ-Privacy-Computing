@@ -6,18 +6,21 @@
 #include "ypc/core_t/ecommon/package.h"
 #include "ypc/corecommon/package.h"
 #include "ypc/stbox/ebyte.h"
-#include "ypc/stbox/eth/eth_hash.h"
 #include "ypc/stbox/stx_common.h"
 #include "ypc/stbox/tsgx/channel/dh_session_initiator.h"
 #include "ypc/stbox/tsgx/log.h"
 #include <ff/util/ntobject.h>
 
+#include "ypc/corecommon/crypto/stdeth.h"
+
 namespace ypc {
 class raw_data_provider : public data_source_with_dhash {
 public:
+  typedef ::ypc::crypto::eth_sgx_crypto crypto;
+
   inline raw_data_provider(const ::stbox::bytes &hash)
       : data_source_with_dhash(hash) {
-    m_actual_data_hash = stbox::eth::keccak256_hash(stbox::bytes("Fidelius"));
+    crypto::hash_256(stbox::bytes("Fidelius"), m_actual_data_hash);
     m_data_reach_end = false;
   }
 
@@ -61,7 +64,7 @@ public:
 
         for (auto b : m_items) {
           stbox::bytes k = m_actual_data_hash + b;
-          m_actual_data_hash = stbox::eth::keccak256_hash(k);
+          crypto::hash_256(k, m_actual_data_hash);
         }
 
         m_item_index = 0;

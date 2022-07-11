@@ -4,7 +4,6 @@
 #include "ypc/core_t/ecommon/package.h"
 #include "ypc/corecommon/data_source.h"
 #include "ypc/stbox/ebyte.h"
-#include "ypc/stbox/eth/eth_hash.h"
 #include "ypc/stbox/stx_common.h"
 #include "ypc/stbox/tsgx/channel/dh_session_initiator.h"
 #include <ff/util/ntobject.h>

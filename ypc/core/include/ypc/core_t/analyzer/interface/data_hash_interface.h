@@ -22,7 +22,7 @@ protected:
       LOG(INFO) << i << "-th data with data hash: " << t;
     }
 
-    Crypto::sha3_256(joint_bytes, data_hash_var::m_data_hash);
+    Crypto::hash_256(joint_bytes, data_hash_var::m_data_hash);
   }
 };
 

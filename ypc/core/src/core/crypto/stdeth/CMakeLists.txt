@@ -3,7 +3,7 @@ find_package(OpenSSL REQUIRED)
 include_directories(${OPENSSL_INCLUDE_DIR})
 link_directories(${OPENSSL_LIB})
 
-set(stdeth_src eth_hash.cpp rijndael128GCM.cpp secp256k1.cpp secp256k1_ecdh_sgx128.cpp openssl.cpp)
+set(stdeth_src ../../../corecommon/crypto/eth_hash.cpp rijndael128GCM.cpp secp256k1.cpp secp256k1_ecdh_sgx128.cpp openssl.cpp)
 
 add_library(ypc_stdeth_u SHARED ${stdeth_src})
 #add_trusted_library(ypc_stdeth_t

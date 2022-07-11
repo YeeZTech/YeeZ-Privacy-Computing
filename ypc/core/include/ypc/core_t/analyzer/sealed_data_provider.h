@@ -6,7 +6,6 @@
 #include "ypc/core_t/ecommon/package.h"
 #include "ypc/corecommon/package.h"
 #include "ypc/stbox/ebyte.h"
-#include "ypc/stbox/eth/eth_hash.h"
 #include "ypc/stbox/stx_common.h"
 #include "ypc/stbox/tsgx/channel/dh_session_initiator.h"
 #include "ypc/stbox/tsgx/log.h"
@@ -21,7 +20,7 @@ public:
                        const stbox::bytes &private_key)
       : data_source_with_dhash(data_hash), m_private_key(private_key) {
     // magic string here, Do Not Change!
-    m_actual_data_hash = stbox::eth::keccak256_hash(stbox::bytes("Fidelius"));
+    crypto::hash_256(stbox::bytes("Fidelius"), m_actual_data_hash);
     m_data_reach_end = false;
   }
 
@@ -73,8 +72,7 @@ public:
 
         for (auto b : m_items) {
           stbox::bytes k = m_actual_data_hash + b;
-          crypto::sha3_256(
-              k, m_actual_data_hash); // stbox::eth::keccak256_hash(k);
+          crypto::hash_256(k, m_actual_data_hash);
         }
 
         m_item_index = 0;

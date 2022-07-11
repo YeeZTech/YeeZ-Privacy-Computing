@@ -105,9 +105,9 @@ public:
   uint32_t check_allowance(const ntt::param_t &param) {
     auto param_data = param.get<ntt::param_data>();
     stbox::bytes param_hash;
-    auto ret = Crypto::sha3_256(param_data, param_hash);
+    auto ret = Crypto::hash_256(param_data, param_hash);
     if (ret) {
-      LOG(ERROR) << "sha3_256 failed: " << stbox::status_string(ret);
+      LOG(ERROR) << "hash_256 failed: " << stbox::status_string(ret);
       return ret;
     }
 

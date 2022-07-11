@@ -26,6 +26,9 @@ add_untrusted_library(test_ypc_lib SHARED
   SRCS "test_ypc_module.cpp"
   EDL ./enclave/enclave.edl
   EDL_SEARCH_PATHS ${edl_path})
+
+target_link_libraries(test_ypc_lib ypc_stdeth_u stbox_common_u)
+
 add_executable(gen_sign_for_ypc gen_sign_for_ypc.cpp)
 target_link_libraries(gen_sign_for_ypc test_ypc_lib ypc_core stbox_common_u)
 

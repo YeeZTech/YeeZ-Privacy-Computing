@@ -16,37 +16,38 @@ class offchain_result : virtual public request_key_var<true>,
                         virtual public result_var,
                         virtual public encrypted_param_var,
                         virtual public data_hash_var {
-  typedef Crypto ecc;
+  typedef Crypto crypto;
   typedef request_key_var<true> request_key_var_t;
 
 public:
   uint32_t generate_result() {
-    auto status = ecc::encrypt_message_with_prefix(
+    auto status = crypto::encrypt_message_with_prefix(
         request_key_var_t::m_pkey4v, result_var::m_result,
         utc::crypto_prefix_arbitrary, m_encrypted_result_str);
 
     stbox::bytes skey;
 
-    ecc::gen_private_key(skey);
+    crypto::gen_private_key(skey);
     stbox::bytes pkey;
-    ecc::generate_pkey_from_skey(skey, pkey);
+    crypto::generate_pkey_from_skey(skey, pkey);
 
     auto rs = m_encrypted_result_str;
 
-    status = ecc::encrypt_message_with_prefix(
+    status = crypto::encrypt_message_with_prefix(
         pkey, rs, utc::crypto_prefix_arbitrary, m_encrypted_result_str);
 
     if (status != stbox::stx_status::success) {
       LOG(ERROR) << "error for encrypt_message: " << status;
       return status;
     }
-    // TODO this is BAD,  we should use ecc::hash instead
-    auto hash_m = stbox::eth::keccak256_hash(m_encrypted_result_str);
+
+    stbox::bytes hash_m;
+    crypto::hash_256(m_encrypted_result_str, hash_m);
 
     stbox::bytes pkey_a;
-    status = ecc::generate_pkey_from_skey(m_private_key, pkey_a);
+    status = crypto::generate_pkey_from_skey(m_private_key, pkey_a);
 
-    status = ecc::encrypt_message_with_prefix(
+    status = crypto::encrypt_message_with_prefix(
         pkey_a, skey, utc::crypto_prefix_arbitrary, m_encrypted_c);
 
     if (status != stbox::stx_status::success) {
@@ -61,7 +62,8 @@ public:
 
     auto cost_msg =
         m_encrypted_param + m_data_hash + m_enclave_hash + cost_gas_str;
-    status = ecc::sign_message(m_private_key, cost_msg, m_cost_signature_str);
+    status =
+        crypto::sign_message(m_private_key, cost_msg, m_cost_signature_str);
     if (status != stbox::stx_status::success) {
       LOG(ERROR) << "error for sign cost: " << status;
       return status;
@@ -69,7 +71,7 @@ public:
 
     auto msg = m_encrypted_c + hash_m + m_encrypted_param + m_data_hash +
                cost_gas_str + m_enclave_hash;
-    status = ecc::sign_message(m_private_key, msg, m_result_signature_str);
+    status = crypto::sign_message(m_private_key, msg, m_result_signature_str);
 
     return static_cast<uint32_t>(status);
   }

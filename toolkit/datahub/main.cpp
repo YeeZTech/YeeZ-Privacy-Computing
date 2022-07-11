@@ -5,7 +5,7 @@
 #include "ypc/core/sealed_file.h"
 #include "ypc/corecommon/crypto/stdeth.h"
 #include "ypc/corecommon/nt_cols.h"
-#include "ypc/stbox/eth/eth_hash.h"
+#include "ypc/corecommon/crypto/stdeth.h"
 #include <boost/program_options.hpp>
 #include <boost/progress.hpp>
 #include <boost/property_tree/json_parser.hpp>
@@ -21,7 +21,7 @@ using namespace ypc;
 typedef ypc::crypto::eth_sgx_crypto crypto_t;
 typedef ypc::nt<ypc::bytes> ntt;
 void write_batch(simple_sealed_file &sf, const std::vector<ypc::bytes> &batch,
-                 const stbox::bytes &public_key) {
+                 const ypc::bytes &public_key) {
   ntt::batch_data_pkg_t pkg;
   ypc::bytes s;
   ypc::bytes batch_str =
@@ -41,7 +41,7 @@ void write_batch(simple_sealed_file &sf, const std::vector<ypc::bytes> &batch,
 }
 uint32_t seal_file(const std::string &plugin, const std::string &file,
                    const std::string &sealed_file_path,
-                   const stbox::bytes &public_key, stbox::bytes &data_hash) {
+                   const ypc::bytes &public_key, ypc::bytes &data_hash) {
   // Read origin file use sgx to seal file
   privacy_data_reader reader(plugin, file);
   simple_sealed_file sf(sealed_file_path, false);
@@ -49,7 +49,7 @@ uint32_t seal_file(const std::string &plugin, const std::string &file,
   // k = k + std::string(sealer_path);
 
   // magic string here!
-  data_hash = stbox::eth::keccak256_hash(bytes("Fidelius"));
+  ypc::crypto::eth_sgx_crypto::hash_256(bytes("Fidelius"), data_hash);
 
   bytes item_data = reader.read_item_data();
   if (item_data.size() > ypc::utc::max_item_size) {
@@ -73,8 +73,9 @@ uint32_t seal_file(const std::string &plugin, const std::string &file,
       batch_size = 0;
     }
 
-    stbox::bytes k = data_hash + item_data;
-    data_hash = stbox::eth::keccak256_hash(k);
+    ypc::bytes k = data_hash + item_data;
+    ypc::crypto::eth_sgx_crypto::hash_256(k, data_hash);
+
     item_data = reader.read_item_data();
     if (item_data.size() > ypc::utc::max_item_size) {
       std::cerr << "only support item size that smaller than "
@@ -177,7 +178,7 @@ int main(int argc, char *argv[]) {
   std::string output = vm["output"].as<std::string>();
   std::string sealed_data_file = vm["sealed-data-url"].as<std::string>();
 
-  stbox::bytes data_hash;
+  ypc::bytes data_hash;
   std::ofstream ofs;
   ofs.open(output);
   if (!ofs.is_open()) {

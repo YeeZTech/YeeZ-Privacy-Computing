@@ -4,7 +4,6 @@
 #include "ypc/core_t/ecommon/signer_verify.h"
 #include "ypc/corecommon/crypto/stdeth.h"
 #include "ypc/stbox/ebyte.h"
-#include "ypc/stbox/eth/eth_hash.h"
 #include "ypc/stbox/scope_guard.h"
 #include "ypc/stbox/stx_common.h"
 #include "ypc/stbox/tsgx/channel/dh_session_responder.h"

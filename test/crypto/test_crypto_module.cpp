@@ -3,7 +3,6 @@
 #include "ypc/common/crypto_prefix.h"
 #include "ypc/core/byte.h"
 #include "ypc/core/ref.h"
-#include "ypc/stbox/eth/util.h"
 #include "ypc/stbox/stx_status.h"
 #include "ypc/stbox/tsgx/channel/dh_cdef.h"
 #include "ypc/stbox/usgx/sgx_module.h"

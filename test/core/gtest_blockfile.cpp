@@ -1,6 +1,5 @@
 #include "gtest_common.h"
 #include "ypc/core/blockfile.h"
-#include "ypc/stbox/eth/eth_hash.h"
 #include <functional>
 #include <gtest/gtest.h>
 #include <random>

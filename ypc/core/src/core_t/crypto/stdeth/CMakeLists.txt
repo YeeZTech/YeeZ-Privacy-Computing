@@ -1,5 +1,5 @@
 
-set(stdeth_src eth_hash.cpp rijndael128GCM.cpp secp256k1.cpp secp256k1_ecdh_sgx128.cpp)
+set(stdeth_src ../../../corecommon/crypto/eth_hash.cpp rijndael128GCM.cpp secp256k1.cpp secp256k1_ecdh_sgx128.cpp)
 
 add_trusted_library(ypc_stdeth_t
   ypc_stdeth_t

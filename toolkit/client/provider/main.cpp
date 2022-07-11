@@ -1,6 +1,6 @@
 #include "ypc/core/byte.h"
+#include "ypc/corecommon/crypto/stdeth.h"
 #include "ypc/keymgr/default/keymgr_sgx_module.h"
-#include "ypc/stbox/eth/eth_hash.h"
 #include <boost/program_options.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -166,7 +166,10 @@ boost::property_tree::ptree generate_description(const std::string &name,
   // format
   std::string tmp("yeez.tech#" + name + "#csv");
   ypc::bytes b(tmp);
-  auto b_hash = stbox::eth::keccak256_hash(b);
+  ypc::bytes b_hash;
+  ypc::crypto::eth_sgx_crypto::hash_256(b, b_hash);
+
+  // auto b_hash = stbox::eth::keccak256_hash(b);
   std::stringstream ss;
   ss << b_hash;
   std::string format(tmp + '#' + ss.str().substr(0, 8));

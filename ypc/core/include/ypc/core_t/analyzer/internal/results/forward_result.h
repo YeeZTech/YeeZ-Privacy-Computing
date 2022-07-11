@@ -82,9 +82,9 @@ public:
     // 4. generate hash
 
     stbox::bytes data_hash;
-    ret = ecc::sha3_256(stbox::bytes("Fidelius"), data_hash);
+    ret = ecc::hash_256(stbox::bytes("Fidelius"), data_hash);
     auto data_hash2 = data_hash + result_var::m_result;
-    ret = ecc::sha3_256(data_hash2, data_hash);
+    ret = ecc::hash_256(data_hash2, data_hash);
 
     ///
     ntt::forward_result_t result;

@@ -4,7 +4,6 @@
 #include "ypc/core_t/ecommon/signer_verify.h"
 #include "ypc/corecommon/crypto/stdeth.h"
 #include "ypc/stbox/ebyte.h"
-#include "ypc/stbox/eth/eth_hash.h"
 #include "ypc/stbox/scope_guard.h"
 #include "ypc/stbox/stx_common.h"
 #include "ypc/stbox/tsgx/channel/dh_session_responder.h"
@@ -232,7 +231,7 @@ stbox::bytes handle_pkg(const uint8_t *data, size_t data_len,
   sgx_package_handler pkg_handler;
   stbox::bytes ret;
   stbox::bytes any_enclave_hash;
-  ecc::sha3_256(stbox::bytes("any enclave"), any_enclave_hash);
+  ecc::hash_256(stbox::bytes("any enclave"), any_enclave_hash);
 
   pkg_handler.add_to_handle_pkg<request_skey_from_pkey_pkg_t>(
       [context, &ret,
@@ -313,7 +312,8 @@ uint32_t create_report_for_pkey(const sgx_target_info_t *p_qe3_target,
 
   sgx_report_data_t report_data = {0};
   // TODO we may add more info here, like version
-  stbox::bytes hash = stbox::eth::keccak256_hash(stbox::bytes(pkey, pkey_size));
+  stbox::bytes hash(32);
+  auto r = ecc::hash_256(pkey, pkey_size, hash.data());
   memcpy(report_data.d, hash.data(), hash.size());
 
   sgx_status_t sgx_error =
