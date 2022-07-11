@@ -21,19 +21,15 @@ class offchain_result : virtual public request_key_var<true>,
 
 public:
   uint32_t generate_result() {
-    auto status = crypto::encrypt_message_with_prefix(
-        request_key_var_t::m_pkey4v, result_var::m_result,
-        utc::crypto_prefix_arbitrary, m_encrypted_result_str);
-
     stbox::bytes skey;
 
     crypto::gen_private_key(skey);
     stbox::bytes pkey;
     crypto::generate_pkey_from_skey(skey, pkey);
 
-    auto rs = m_encrypted_result_str;
+    auto rs = result_var::m_result;
 
-    status = crypto::encrypt_message_with_prefix(
+    auto status = crypto::encrypt_message_with_prefix(
         pkey, rs, utc::crypto_prefix_arbitrary, m_encrypted_result_str);
 
     if (status != stbox::stx_status::success) {
