@@ -283,8 +283,16 @@ void sm2_bn_sub(SM2_BN ret, const SM2_BN a, const SM2_BN b)
 }
 
 void rand_bytes(uint8_t *buf, size_t len) {
-	uint8_t tmp[32];
-  sm3_digest(tmp, 32, buf);
+#ifdef YPC_SGX
+#include <sgx_trts.h>
+  auto ret = sgx_read_rand(buf, len);
+#else
+  time_t t;
+  srand((unsigned) time(&t));
+  for (int i = 0; i < len; i++) {
+    *(buf + i) = rand() % 0xff;
+  }
+#endif
 }
 
 // FIXME: get random from outside

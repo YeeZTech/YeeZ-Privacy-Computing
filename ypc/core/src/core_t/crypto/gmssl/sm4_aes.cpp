@@ -34,10 +34,10 @@ uint32_t sm4_aes::encrypt_with_prefix(const uint8_t *key, uint32_t key_size,
   uint32_t *p_prefix = (uint32_t *)(mac_text + AAD_MAC_PREFIX_POS);
   *p_prefix = prefix;
   uint8_t *p_iv_text = cipher + data_size;
-  auto rc = sgx_read_rand(p_iv_text, INITIALIZATION_VECTOR_SIZE);
-  if (rc != 1) {
-    LOG(ERROR) << "RAND_bytes key failed";
-    return stbox::stx_status::aes_rand_fail;
+  auto se_ret = sgx_read_rand(p_iv_text, INITIALIZATION_VECTOR_SIZE);
+  if (se_ret) {
+    LOG(ERROR) << "call sgx_read_rand failed";
+    return se_ret;
   }
 
   SM4_KEY sm4_key;
