@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import common
-import commonjs
+#import commonjs
 import os
 import sys
 import json
@@ -83,7 +83,7 @@ class classic_job:
                 "output": sealed_output,
                 "use-publickey-file": data_key_file
             }
-            r = commonjs.fid_data_provider(**param)
+            r = common.fid_data_provider(**param)
         else:
             param = {
                 "data-url": self.data_url,
@@ -127,7 +127,7 @@ class classic_job:
             "use-enclave-hash": enclave_hash,
             "output": param_key_forward_result
         }
-        commonjs.fid_terminus(**param)
+        common.fid_terminus(**param)
         rq_forward_json = {}
         with open(param_key_forward_result, 'r') as of:
             rq_forward_json = json.load(of)
@@ -142,7 +142,7 @@ class classic_job:
             "output": param_output_url
         }
 
-        r = commonjs.fid_terminus(**param)
+        r = common.fid_terminus(**param)
         print("done termins with cmd: {}".format(r[0]))
         param_json = {}
         with open(param_output_url) as of:
