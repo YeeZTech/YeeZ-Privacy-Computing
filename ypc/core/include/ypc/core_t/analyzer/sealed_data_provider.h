@@ -73,8 +73,8 @@ public:
 
         for (auto b : m_items) {
           stbox::bytes k = m_actual_data_hash + b;
-          crypto::sha3_256(
-              k, m_actual_data_hash); // stbox::eth::keccak256_hash(k);
+          m_actual_data_hash = stbox::eth::keccak256_hash(k);
+          // crypto::sha3_256(k, m_actual_data_hash);
         }
 
         m_item_index = 0;

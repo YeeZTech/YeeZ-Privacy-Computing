@@ -285,13 +285,17 @@ void sm2_bn_sub(SM2_BN ret, const SM2_BN a, const SM2_BN b)
 void rand_bytes(uint8_t *buf, size_t len) {
 #ifdef YPC_SGX
 #include <sgx_trts.h>
-  auto ret = sgx_read_rand(buf, len);
+  sgx_read_rand(buf, len);
 #else
-  time_t t;
-  srand((unsigned) time(&t));
-  for (int i = 0; i < len; i++) {
-    *(buf + i) = rand() % 0xff;
+  FILE *fp;
+  if (!(fp = fopen("/dev/urandom", "rb"))) {
+    return;
   }
+  if (fread(buf, 1, len, fp) != len) {
+    fclose(fp);
+    return;
+  }
+  fclose(fp);
 #endif
 }
 

@@ -3,9 +3,7 @@
 #include <gmssl/sha2.h>
 #include "ypc/common/byte.h"
 #include "ypc/stbox/stx_status.h"
-extern "C" {
-#include "ypc/stbox/keccak/keccak.h"
-}
+
 namespace ypc {
 namespace crypto {
 

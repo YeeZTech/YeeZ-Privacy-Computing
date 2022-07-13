@@ -6,9 +6,7 @@
 #include <glog/logging.h>
 #include <gmssl/sm4.h>
 #include <openssl/rand.h>
-extern "C" {
-#include "ypc/stbox/keccak/keccak.h"
-}
+
 #define AAD_MAC_TEXT_LEN 64
 #define AAD_MAC_PREFIX_POS 24
 static char aad_mac_text[AAD_MAC_TEXT_LEN] = "tech.yeez.key.manager";
