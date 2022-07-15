@@ -3,7 +3,7 @@
 #include "ypc/core/ntobject_file.h"
 #include "ypc/core/privacy_data_reader.h"
 #include "ypc/core/sealed_file.h"
-#include "ypc/corecommon/crypto/stdeth.h"
+#include "ypc/corecommon/crypto/gmssl.h"
 #include "ypc/corecommon/nt_cols.h"
 #include "ypc/stbox/eth/eth_hash.h"
 #include <boost/program_options.hpp>
@@ -18,7 +18,7 @@
 using stx_status = stbox::stx_status;
 using namespace ypc;
 
-typedef ypc::crypto::eth_sgx_crypto crypto_t;
+typedef ypc::crypto::gmssl_sgx_crypto crypto_t;
 typedef ypc::nt<ypc::bytes> ntt;
 void write_batch(simple_sealed_file &sf, const std::vector<ypc::bytes> &batch,
                  const stbox::bytes &public_key) {

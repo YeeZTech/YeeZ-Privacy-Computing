@@ -145,8 +145,18 @@ uint32_t load_and_check_key_pair(const uint8_t *pkey, uint32_t pkey_size,
 
   stbox::bytes expect_pkey;
   ecc::generate_pkey_from_skey(skey, expect_pkey);
+  for (int i = 0; i < 64; i++) {
+    printf("%02x", *(pkey + i));
+  }
+  printf("\n");
+  for (int i = 0; i < 64; i++) {
+    printf("%02x", *(expect_pkey.data() + i));
+  }
+  printf("\n");
   if (memcmp(expect_pkey.data(), pkey, expect_pkey.size()) != 0) {
+    LOG(ERROR) << "enter ";
     return stbox::stx_status::kmgr_pkey_skey_mismatch;
+    //status equal 177
   }
   return stbox::stx_status::success;
 }
@@ -167,6 +177,7 @@ uint32_t forward_private_key(const uint8_t *encrypted_private_key,
 
   stbox::bytes skey;
   se_ret = load_and_check_key_pair(epublic_key, epkey_size, skey);
+  LOG(ERROR) << se_ret;
   if (se_ret) {
     return se_ret;
   }
@@ -177,7 +188,7 @@ uint32_t forward_private_key(const uint8_t *encrypted_private_key,
   se_ret = (sgx_status_t)raw_ecc::decrypt_message_with_prefix(
       skey.data(), skey.size(), encrypted_private_key, cipher_size,
       forward_skey.data(), decrypted_size, ::ypc::utc::crypto_prefix_forward);
-
+  LOG(ERROR) << se_ret;
   if (se_ret) {
     LOG(ERROR) << "decrypt_message_with_prefix forward returns "
                << stbox::status_string(se_ret);
@@ -186,6 +197,7 @@ uint32_t forward_private_key(const uint8_t *encrypted_private_key,
 
   stbox::bytes forward_pub_key;
   se_ret = ecc::generate_pkey_from_skey(forward_skey, forward_pub_key);
+  LOG(ERROR) << se_ret;
   if (se_ret) {
     LOG(ERROR) << "generate_pkey_from_skey returns "
                << stbox::status_string(se_ret);
@@ -199,7 +211,6 @@ uint32_t forward_private_key(const uint8_t *encrypted_private_key,
          forward_pub_key.size());
   memcpy((uint8_t *)str_msg_key.data() + forward_pub_key.size(), ehash,
          ehash_size);
-
   if (private_key_table.find(str_msg_key) != private_key_table.end()) {
     LOG(WARNING) << "key already exist";
     return se_ret;
@@ -211,6 +222,7 @@ uint32_t forward_private_key(const uint8_t *encrypted_private_key,
   se_ret = (sgx_status_t)raw_ecc::verify_signature(
       all.data(), all.size(), sig, sig_size, forward_pub_key.data(),
       forward_pub_key.size());
+  LOG(ERROR) << se_ret;
   if (se_ret) {
     LOG(ERROR) << "Invalid signature, data: " << all
                << ", sig: " << stbox::bytes(sig, sig_size)

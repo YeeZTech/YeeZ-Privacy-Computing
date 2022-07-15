@@ -20,6 +20,7 @@ uint32_t get_secp256k1_signature_size() { return ecc::get_signature_size(); }
 uint32_t generate_secp256k1_key_pair(uint8_t *public_key, uint32_t pkey_size,
                                      uint8_t *sealed_private_key,
                                      uint32_t sealed_size) {
+  LOG(ERROR) << "failed to gen private key ";
   if (public_key == NULL || sealed_private_key == NULL) {
     return SGX_ERROR_OUT_OF_MEMORY;
   }
