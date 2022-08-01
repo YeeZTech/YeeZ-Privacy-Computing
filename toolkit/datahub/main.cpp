@@ -4,6 +4,7 @@
 #include "ypc/core/privacy_data_reader.h"
 #include "ypc/core/sealed_file.h"
 #include "ypc/corecommon/crypto/gmssl.h"
+#include "ypc/corecommon/crypto/stdeth.h"
 #include "ypc/corecommon/nt_cols.h"
 #include "ypc/stbox/eth/eth_hash.h"
 #include <boost/program_options.hpp>
@@ -18,17 +19,27 @@
 using stx_status = stbox::stx_status;
 using namespace ypc;
 
-typedef ypc::crypto::gmssl_sgx_crypto crypto_t;
+typedef ypc::crypto::gmssl_sgx_crypto crypto_t_gmssl;
+typedef ypc::crypto::eth_sgx_crypto crypto_t_eth;
 typedef ypc::nt<ypc::bytes> ntt;
-void write_batch(simple_sealed_file &sf, const std::vector<ypc::bytes> &batch,
+void write_batch (const std::string crypto, simple_sealed_file &sf, const std::vector<ypc::bytes> &batch,
                  const stbox::bytes &public_key) {
   ntt::batch_data_pkg_t pkg;
   ypc::bytes s;
   ypc::bytes batch_str =
       ypc::make_bytes<ypc::bytes>::for_package<ntt::batch_data_pkg_t,
                                                ntt::batch_data>(batch);
-  uint32_t status = crypto_t::encrypt_message_with_prefix(
+  uint32_t status;
+  
+  if (crypto == "gmssl"){
+      status = crypto_t_gmssl::encrypt_message_with_prefix(
       public_key, batch_str, ypc::utc::crypto_prefix_arbitrary, s);
+  }
+  else{
+      status = crypto_t_eth::encrypt_message_with_prefix(
+      public_key, batch_str, ypc::utc::crypto_prefix_arbitrary, s);   
+  }
+  
   if (status) {
     std::stringstream ss;
     ss << "encrypt "
@@ -39,7 +50,7 @@ void write_batch(simple_sealed_file &sf, const std::vector<ypc::bytes> &batch,
   }
   sf.write_item(s);
 }
-uint32_t seal_file(const std::string &plugin, const std::string &file,
+uint32_t seal_file(const std::string &crypto, const std::string &plugin, const std::string &file,
                    const std::string &sealed_file_path,
                    const stbox::bytes &public_key, stbox::bytes &data_hash) {
   // Read origin file use sgx to seal file
@@ -68,7 +79,7 @@ uint32_t seal_file(const std::string &plugin, const std::string &file,
     batch.push_back(item_data);
     batch_size += item_data.size();
     if (batch_size >= ypc::utc::max_item_size) {
-      write_batch(sf, batch, public_key);
+      write_batch(crypto, sf, batch, public_key);
       batch.clear();
       batch_size = 0;
     }
@@ -85,7 +96,7 @@ uint32_t seal_file(const std::string &plugin, const std::string &file,
     ++counter;
   }
   if (batch.size() != 0) {
-    write_batch(sf, batch, public_key);
+    write_batch(crypto, sf, batch, public_key);
     batch.clear();
     batch_size = 0;
   }
@@ -110,6 +121,7 @@ boost::program_options::variables_map parse_command_line(int argc,
     ("use-publickey-hex", bp::value<std::string>(), "public key")
     ("sealed-data-url", bp::value<std::string>(), "Sealed data URL")
     ("output", bp::value<std::string>(), "output meta file path");
+    ("crypto", bp::value<std::string>(), "choose the crypto");
 
   general.add_options()
     ("help", "help message");
@@ -160,6 +172,11 @@ int main(int argc, char *argv[]) {
               << std::endl;
     return -1;
   }
+  if (!vm.count("crypto")) {
+    std::cerr << "crypto not specified"
+              << std::endl;
+    return -1;
+  }
 
   ypc::bytes public_key;
   if (vm.count("use-publickey-hex")) {
@@ -176,6 +193,7 @@ int main(int argc, char *argv[]) {
   std::string data_file = vm["data-url"].as<std::string>();
   std::string output = vm["output"].as<std::string>();
   std::string sealed_data_file = vm["sealed-data-url"].as<std::string>();
+  std::string crypto = vm["crypto"].as<std::string>();
 
   stbox::bytes data_hash;
   std::ofstream ofs;
@@ -187,7 +205,7 @@ int main(int argc, char *argv[]) {
   ofs.close();
 
   auto status =
-      seal_file(plugin, data_file, sealed_data_file, public_key, data_hash);
+      seal_file(crypto, plugin, data_file, sealed_data_file, public_key, data_hash);
   if (status) {
     return -1;
   }
