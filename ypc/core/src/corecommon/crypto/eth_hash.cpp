@@ -49,7 +49,7 @@ uint32_t eth_hash::msg_hash(const uint8_t *raw_msg, uint32_t msg_size,
                                 0x75, 0x6d, 0x20, 0x53, 0x69, 0x67, 0x6e,
                                 0x65, 0x64, 0x20, 0x4d, 0x65, 0x73, 0x73,
                                 0x61, 0x67, 0x65, 0x3a, 0x0a, 0x33, 0x32};
-  const uint32_t l = strlen(prefix);
+  const uint32_t l = sizeof(prefix) / sizeof(prefix[0]);
   bytes msg(l + 32);
   memcpy(msg.data(), prefix, l);
   auto r = hash_256(raw_msg, msg_size, msg.data() + l);
