@@ -5,9 +5,11 @@ const DataProvider = require('./dataprovider.js')();
 
 program
   .description('YeeZ Privacy Data Hub')
+  .option('--name <string>', 'name')
   .option('--data-url <string>', 'data file path')
   .option('--config <string>', 'JSON configuration file')
   .option('--use-publickey-file <string>', 'public key file path')
+  .option('--dian-public-key <string>', 'DIAN public key')
   .option('--sealed-data-url <string>', 'sealed data file path')
   .option('--output <string>', 'data meta output');
 
@@ -33,7 +35,7 @@ if (!options.output) {
 
 const data_lines = new nReadlines(options.dataUrl);
 // TODO dian public key should specify
-DataProvider.init('name', '', data_lines);
+DataProvider.init(options.name, options.dianPublicKey, data_lines);
 const key_file = JSON.parse(fs.readFileSync(options.usePublickeyFile))
 let all = DataProvider.sealFile(key_file);
 

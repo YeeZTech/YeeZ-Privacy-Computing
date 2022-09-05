@@ -48,7 +48,7 @@ const DataProvider = function () {
 	let sealed_data = []
 
 	function batch2ntpackage(batch) {
-		buf_size = 4 + 8 * batch.length
+		buf_size = 4 + 8
 		for (let i = 0; i < batch.length; i++) {
 			buf_size += 8
 			buf_size += batch[i].length
