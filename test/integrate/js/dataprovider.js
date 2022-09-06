@@ -116,11 +116,7 @@ const DataProvider = function () {
 
   const anyEnclave = Buffer.from('bd0c3cce561fac62b90ddd7bfcfe014702aa4327bc2b0b69ef79a7d2a0350f11', 'hex');
 	let data_lines = []
-	let name;
-	let dianpkey;
-	this.init = function (_filename, _dianpkey, _data_lines) {
-	  name = _filename;
-	  dianpkey = _dianpkey;
+	this.init = function (_data_lines) {
 	  let line;
     while (line = _data_lines.next()) {
       data_lines.push(line);

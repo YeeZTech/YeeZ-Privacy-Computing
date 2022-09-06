@@ -76,15 +76,12 @@ class classic_job:
         summary['sealed-output'] = sealed_output
 
         if self.ext:
-            key = get_first_key()
-            pkey = key['public-key']
             param = {
                 "data-url": self.data_url,
                 "config": self.ext['config'],
                 "sealed-data-url": sealed_data_url,
                 "output": sealed_output,
-                "use-publickey-file": data_key_file,
-                "dian-public-key": pkey
+                "use-publickey-file": data_key_file
             }
             r = commonjs.fid_data_provider(**param)
         else:
