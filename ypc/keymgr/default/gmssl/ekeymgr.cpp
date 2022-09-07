@@ -33,7 +33,7 @@ extern "C" {
 using stx_status = stbox::stx_status;
 using scope_guard = stbox::scope_guard;
 using intel_sgx = stbox::crypto::intel_sgx;
-using ecc = ypc::crypto::eth_sgx_crypto;
+using ecc = ypc::crypto::gmssl_sgx_crypto;
 using raw_ecc = ecc;
 using namespace stbox;
 // using namespace stbox::crypto;

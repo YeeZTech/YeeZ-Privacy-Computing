@@ -1,4 +1,5 @@
 add_subdirectory(enclave)
+add_subdirectory(gmssl)
 
 set(edl_path ${PROJECT_SOURCE_DIR}/ypc/core/edl/:${PROJECT_SOURCE_DIR}/ypc/stbox/src)
 

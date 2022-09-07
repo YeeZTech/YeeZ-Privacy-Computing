@@ -35,6 +35,7 @@ boost::program_options::variables_map parse_command_line(int argc,
 
   // clang-format off
   all.add_options()
+    ("crypto", bp::value<std::string>(), "stdeth/gmssl")
     ("help", "help message")
     ("create", "create a secp256k1 key pair")
     ("list", "list secp256k1 keys")
@@ -79,7 +80,7 @@ void create_key(const std::shared_ptr<keymgr_sgx_module> &ptr,
                 const std::string &key_dir,
                 const boost::program_options::variables_map &vm) {
   ypc::bref public_key, private_key;
-  ptr->generate_secp256k1_key_pair(public_key, private_key);
+  ptr->generate_ecc_key_pair(public_key, private_key);
   ypc::bytes pkey(public_key.data(), public_key.len());
   ypc::bytes skey(private_key.data(), private_key.len());
   boost::filesystem::path output_path =
@@ -312,21 +313,37 @@ void verify_signature(const boost::program_options::variables_map &vm,
   std::cout << "Signature verify success. Valid signature." << std::endl;
 }
 
-std::string find_keymgr_enclave_path(const std::string &current_path) {
+std::string find_keymgr_enclave_path(const std::string &current_path, std::string crypto_type) {
   // 1. check if keymgr.signed.so in project lib dir
+  
   std::string project_lib_path =
       ypc::join_path(ypc::dirname(current_path), "../lib/keymgr.signed.so");
+  if (crypto_type == "gmssl")
+  {
+    std::string project_lib_path =
+      ypc::join_path(ypc::dirname(current_path), "../lib/keymgr_gmssl.signed.so");
+  }
   if (ypc::is_file_exists(project_lib_path)) {
     return project_lib_path;
   }
   // 2. check if exists in /usr/local/lib
   std::string usr_local_lib_path =
       ypc::join_path("/usr/local/lib", "./keymgr.signed.so");
+  if (crypto_type == "gmssl")
+  {
+    std::string usr_local_lib_path =
+        ypc::join_path("/usr/local/lib", "./keymgr_gmssl.signed.so");
+  }
   if (ypc::is_file_exists(usr_local_lib_path)) {
     return usr_local_lib_path;
   }
   // 3. check if exists in /usr/lib
   std::string usr_lib_path = ypc::join_path("/usr/lib", "./keymgr.signed.so");
+  if (crypto_type == "gmssl")
+  {
+    std::string usr_local_lib_path =
+        ypc::join_path("/usr/local/lib", "./keymgr_gmssl.signed.so");
+  }
   if (ypc::is_file_exists(usr_lib_path)) {
     return usr_lib_path;
   }
@@ -354,8 +371,16 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
+
+  if (!vm.count("crypto")) {
+    std::cerr << "crypto should be specified!" << std::endl;
+    return -1;
+  }
+  
+  std::string crypto_type = vm["crypto"].as<std::string>();
   std::string kmgr_enclave_path =
-      find_keymgr_enclave_path(ypc::complete_path(argv[0]));
+      find_keymgr_enclave_path(ypc::complete_path(argv[0]), crypto_type);
+
   std::shared_ptr<keymgr_sgx_module> ptr;
   try {
     ptr = std::make_shared<keymgr_sgx_module>(kmgr_enclave_path.c_str());

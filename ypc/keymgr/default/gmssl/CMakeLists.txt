@@ -1,5 +1,5 @@
 
-set(T_SRCS ekeymgr.cpp
+set(T_SRCS ${PROJECT_SOURCE_DIR}/ypc/keymgr/default/enclave/ekeymgr.cpp
   ${PROJECT_SOURCE_DIR}/ypc/core/src/core_t/ecommon/signer_verify.cpp
   ${PROJECT_SOURCE_DIR}/ypc/core/src/core_t/ecommon/package.cpp
   ${FF_SRC_PATH}/net/common/archive.cpp
@@ -12,8 +12,8 @@ add_enclave_library(keymgr_gmssl
   EDL ekeymgr.edl
   EDL_SEARCH_PATHS "${edl_path}")
 
-target_link_libraries(keymgr_gmssl stbox_common_t stbox_secp256k1_t stbox_channel_t stbox_crypto_t sgx_ecc_t ypc_stdeth_t ypc_gmssl_t dl)
+target_link_libraries(keymgr_gmssl stbox_common_t stbox_channel_t stbox_crypto_t sgx_gmssl_ecc_t ypc_stdeth_t ypc_gmssl_t dl)
 
-enclave_sign(keymgr_gmssl KEY ekeymgr_private.pem
-  CONFIG ekeymgr.config.xml)
+enclave_sign(keymgr_gmssl KEY ${PROJECT_SOURCE_DIR}/ypc/keymgr/default/enclave/ekeymgr_private.pem
+  CONFIG ${PROJECT_SOURCE_DIR}/ypc/keymgr/default/enclave/ekeymgr.config.xml)
 install(FILES ${PROJECT_SOURCE_DIR}/lib/keymgr_gmssl.signed.so DESTINATION lib COMPONENT c_keymgr OPTIONAL)

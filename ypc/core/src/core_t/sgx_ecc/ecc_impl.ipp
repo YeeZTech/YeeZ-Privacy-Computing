@@ -1,26 +1,15 @@
-#include "ecc_t.h"
-#include "ypc/common/crypto_prefix.h"
-#include "ypc/corecommon/crypto/gmssl.h"
-#include "ypc/stbox/tsgx/crypto/seal.h"
-#include "ypc/stbox/tsgx/crypto/seal_sgx.h"
-#include "ypc/stbox/tsgx/log.h"
-
-using ecc = ypc::crypto::gmssl_sgx_crypto;
-using raw_ecc = ecc;
-using sealer = stbox::crypto::raw_device_sealer<stbox::crypto::intel_sgx>;
-
 uint64_t stbox_ecc_version() { return 1; }
-uint32_t get_secp256k1_public_key_size() { return ecc::get_public_key_size(); }
-uint32_t get_secp256k1_sealed_private_key_size() {
+uint32_t get_ecc_public_key_size() { return ecc::get_public_key_size(); }
+uint32_t get_ecc_sealed_private_key_size() {
   return sealer::get_sealed_data_size(ecc::get_private_key_size());
 }
 
-uint32_t get_secp256k1_signature_size() { return ecc::get_signature_size(); }
+uint32_t get_ecc_signature_size() { return ecc::get_signature_size(); }
 
-uint32_t generate_secp256k1_key_pair(uint8_t *public_key, uint32_t pkey_size,
+uint32_t generate_ecc_key_pair(uint8_t *public_key, uint32_t pkey_size,
                                      uint8_t *sealed_private_key,
                                      uint32_t sealed_size) {
-  LOG(ERROR) << "failed to gen private key ";
+  
   if (public_key == NULL || sealed_private_key == NULL) {
     return SGX_ERROR_OUT_OF_MEMORY;
   }
@@ -45,7 +34,7 @@ uint32_t generate_secp256k1_key_pair(uint8_t *public_key, uint32_t pkey_size,
                            sealed_size);
 }
 
-uint32_t generate_secp256k1_pkey_from_sealed_skey(uint8_t *sealed_key,
+uint32_t generate_ecc_pkey_from_sealed_skey(uint8_t *sealed_key,
                                                   uint32_t sealed_size,
                                                   uint8_t *pkey,
                                                   uint32_t pkey_size) {
