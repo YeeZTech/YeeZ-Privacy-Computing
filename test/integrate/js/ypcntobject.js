@@ -81,6 +81,87 @@ const YPCNtObject = function () {
 		return buffer
 	}
 
+	// schema = [{"name": "", "type": "string"}, {"name": "", "type": "uint64_t"}]
+	this.decodeBytes = function (schema, buf) {
+		if(!schema) return ''
+		const buffer = new ByteBuffer(buf.length, ByteBuffer.LITTLE_ENDIAN);
+		buffer.append(buf, 0);
+		let offset = 4;
+		let args = [];
+		let v = null;
+		for (let i = 0; i < schema.length; i++) {
+			let d = schema[i];
+			args.push(d);
+			switch (d["type"]) {
+				case "bool":
+					v = buffer.readInt8(offset);
+					args[i]["value"] = v == 1 ? true : false;
+					offset += 1;
+					break;
+				case "int8_t":
+					v = buffer.readInt8(offset);
+					args[i]["value"] = v;
+					offset += 1;
+					break;
+				case "uint8_t":
+					v = buffer.readUint8(offset);
+					args[i]["value"] = v;
+					offset += 1;
+					break;
+				case "int16_t":
+					v = buffer.readInt16(offset);
+					args[i]["value"] = v;
+					offset += 2;
+					break;
+				case "uint16_t":
+					v = buffer.readUint16(offset);
+					args[i]["value"] = v;
+					offset += 2;
+					break;
+				case "int32_t":
+					v = buffer.readInt32(offset);
+					args[i]["value"] = v;
+					offset += 4;
+					break;
+				case "uint32_t":
+					v = buffer.readUint32(offset);
+					args[i]["value"] = v;
+					offset += 4;
+					break;
+				case "int64_t":
+					v = buffer.readInt64(offset);
+					args[i]["value"] = v.toNumber();
+					offset += 8;
+					break;
+				case "uint64_t":
+					v = buffer.readUint64(offset);
+					args[i]["value"] = v.toNumber();
+					offset += 8;
+					break;
+				case "float":
+					v = buffer.readFloat(offset);
+					args[i]["value"] = v;
+					offset += 4;
+					break;
+				case "double":
+					v = buffer.readDouble(offset);
+					args[i]["value"] = v;
+					offset += 8;
+					break;
+				case "string":
+					byteLen = buffer.readUint64(offset);
+					byteLen = byteLen.toNumber();
+					offset += 8;
+					buf = buffer.slice(offset, offset + byteLen);
+					//v = buffer.readString(byteLen, offset)
+					args[i]["value"] = buf.toString("utf8");
+					offset += byteLen;
+					break;
+			}
+		}
+		return args;
+	};
+
 	this.getLengthOf = function (input) {
 		var c = 4
 		var inputLength = input.length

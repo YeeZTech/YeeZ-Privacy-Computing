@@ -1,11 +1,6 @@
 const YPCCrypto = require('./ypccrypto.js')()
 const YPCNtObject = require('./ypcntobject.js')()
-//var skey = YPCCrypto.generatePrivateKey()
-//var pkey = YPCCrypto.generatePublicKeyFromPrivateKey(skey)
-//var encrypted_secret = YPCCrypto.generateForwardSecretKey(pkey, skey)
-//var ehash = skey
-//var sig = YPCCrypto.generateSignature(skey, skey, pkey, ehash)
-//var encrypted_input = YPCCrypto.generateEncryptedInput(local_pkey, input)
+const DataProvider = require('./dataprovider.js')()
 
 var argv = require("yargs").argv
 const fs = require('fs')
@@ -87,6 +82,14 @@ function main(){
 
     let json = JSON.stringify(obj)
     fs.writeFileSync(argv.output, json)
+  }
+  if(argv.checkSealedData){
+    console.log('simjs library check')
+    console.log('argv, ', argv)
+
+    key_file = JSON.parse(fs.readFileSync(argv.usePrivatekeyFile))
+    all_sealed = fs.readFileSync(argv.sealedFile)
+    DataProvider.checkSealedData(key_file, all_sealed)
   }
 
 }

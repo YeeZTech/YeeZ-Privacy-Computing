@@ -32,6 +32,14 @@ const DataProvider = function () {
 		buf.writeUint64(header.item_number, 24)
 		return buf
 	}
+  function buffer2header_t(buf_header) {
+    let hd = new header_t(0, 0, 0, 0)
+    hd.magic_number = Buffer.from(buf_header.buffer.slice(0, 8));
+    hd.version_number = buf_header.readUint64(8).toNumber();
+    hd.block_number = buf_header.readUint64(16).toNumber();
+    hd.item_number = buf_header.readUint64(24).toNumber();
+    return hd;
+  }
 
 	function block_info_t2buffer(bi) {
 		let buf = new ByteBuffer(32, ByteBuffer.LITTLE_ENDIAN)
@@ -71,6 +79,22 @@ const DataProvider = function () {
 		}
 		return buf.buffer
 	}
+  function ntpackage2batch(pkg) {
+    batch = []
+		let buf = new ByteBuffer(pkg.length, ByteBuffer.LITTLE_ENDIAN)
+		buf.append(pkg)
+		offset = 4
+    cnt = buf.readUint64(offset).toNumber();
+    offset += 8
+    for (let i = 0; i < cnt; i++) {
+      len = buf.readUint64(offset).toNumber();
+      offset += 8
+      s = buf.buffer.slice(offset, offset + len);
+      batch.push(s)
+      offset += len
+    }
+    return batch
+  }
 
 	function write_batch(batch, public_key) {
 		let pkg_bytes = batch2ntpackage(batch)
@@ -200,6 +224,37 @@ const DataProvider = function () {
 		return [all, output_content]
 	}
 
+	this.checkSealedData = function (key_file, all_sealed) {
+    let skey = Buffer.from(key_file['private-key'], 'hex');
+    let sealed_data = new ByteBuffer(all_sealed.length, ByteBuffer.LITTLE_ENDIAN)
+    sealed_data.append(all_sealed)
+
+		let data_hash = keccak256(Buffer.from('Fidelius', 'utf-8'))
+    let hd = buffer2header_t(sealed_data);
+    let data_offset = 0;
+    let block_start_offset = 32 + 32 * BlockNumLimit
+    for (let i = 0; i < hd.item_number; i++) {
+      let offset = block_start_offset + data_offset;
+      let item_size = sealed_data.readUint64(offset).toNumber();
+      //console.log('item size:', item_size);
+      offset += 8;
+      let cipher = Buffer.from(sealed_data.buffer.slice(offset, offset + item_size));
+      //console.log('get cipher object:', cipher);
+      //console.log('get cipher:', cipher.toString('hex'));
+      //console.log('decrypt msg skey:', skey.toString('hex'));
+      let msg = YPCCrypto.decryptMessage(skey, cipher);
+      batch = ntpackage2batch(msg)
+      for (let i = 0; i < batch.length; i++) {
+        let k = Buffer.from(data_hash.toString('hex') + batch[i].toString('hex'), 'hex')
+        data_hash = keccak256(k)
+      }
+      //console.log('decrypt msg done');
+      data_offset += 8;
+      data_offset += item_size;
+    }
+    console.log('data hash:', data_hash.toString('hex'));
+    return true;
+	}
 }
 
 module.exports = DataProvider
