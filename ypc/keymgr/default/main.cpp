@@ -364,23 +364,21 @@ int main(int argc, char *argv[]) {
 
   if (!vm.count("create") && !vm.count("list") && !vm.count("remove") &&
       !vm.count("sign") && !vm.count("verify") && !vm.count("encrypt") &&
-      !vm.count("decrypt")) {
+      !vm.count("decrypt") && !vm.count("crypto")) {
     std::cerr << "one of [create, list, remove, sign, verify, encrypt, "
-                 "decrypt] must be specified!"
+                 "decrypt, crypto] must be specified!"
               << std::endl;
     return -1;
   }
-
 
   if (!vm.count("crypto")) {
     std::cerr << "crypto should be specified!" << std::endl;
     return -1;
   }
-  
-  std::string crypto_type = vm["crypto"].as<std::string>();
-  std::string kmgr_enclave_path =
-      find_keymgr_enclave_path(ypc::complete_path(argv[0]), crypto_type);
 
+  std::string crypto_type = vm["crypto"].as<std::string>();
+  std::string kmgr_enclave_path = find_keymgr_enclave_path(ypc::complete_path(argv[0]), crypto_type);
+  std::cout << "kmgr_enclave_path: " << kmgr_enclave_path << std::endl;
   std::shared_ptr<keymgr_sgx_module> ptr;
   try {
     ptr = std::make_shared<keymgr_sgx_module>(kmgr_enclave_path.c_str());
@@ -389,22 +387,38 @@ int main(int argc, char *argv[]) {
               << e.what();
     return -1;
   }
+  
+  std::string key_dir_stdeth = create_dir_if_not_exist(".", ".yeez.stdeth_key/");
+  std::string bak_dir_stdeth = create_dir_if_not_exist(".yeez.stdeth_key/", "backup/");
 
-  std::string key_dir = create_dir_if_not_exist(".", ".yeez.key/");
-  std::string bak_dir = create_dir_if_not_exist(".yeez.key/", "backup/");
 
-  if (vm.count("create")) {
-    create_key(ptr, key_dir, vm);
+  std::string key_dir_gmssl = create_dir_if_not_exist(".", ".yeez.gmssl_key/");
+  std::string bak_dir_gmssl = create_dir_if_not_exist(".yeez.gmssl_key/", "backup/");
+
+  if (vm.count("create") && crypto_type == "stdeth") {
+    create_key(ptr, key_dir_stdeth, vm);
+    return 0;
+  }
+  else if (vm.count("create") && crypto_type == "gmssl"){
+    create_key(ptr, key_dir_gmssl, vm);
     return 0;
   }
 
-  if (vm.count("list")) {
-    list_keys(key_dir, ptr);
+  if (vm.count("list") && crypto_type == "stdeth") {
+    list_keys(key_dir_stdeth, ptr);
+    return 0;
+  }
+  else if (vm.count("list") && crypto_type == "gmssl"){
+    list_keys(key_dir_gmssl, ptr);
     return 0;
   }
 
-  if (vm.count("remove")) {
-    remove_key(vm, key_dir);
+  if (vm.count("remove") && crypto_type == "stdeth") {
+    remove_key(vm, key_dir_stdeth);
+    return 0;
+  }
+  else if (vm.count("remove") && crypto_type == "gmssl"){
+    remove_key(vm, key_dir_gmssl);
     return 0;
   }
 

@@ -1,4 +1,4 @@
-#include "common.h"
+#include "../enclave/common.h"
 #include "ekeymgr_t.h" /* print_string */
 #include "ypc/common/crypto_prefix.h"
 #include "ypc/core_t/ecommon/signer_verify.h"
@@ -41,6 +41,8 @@ using namespace stbox;
 std::shared_ptr<stbox::dh_session_responder> dh_resp_session(nullptr);
 std::shared_ptr<ypc::nt<stbox::bytes>::access_list_package_t>
     access_control_policy;
+
+#define KEY_PATH ".yeez.gmssl_key"
 
 #include "../ekeymgr.ipp"
 

@@ -22,6 +22,7 @@ uint32_t sm2_ecc::generate_pkey_from_skey(const uint8_t *skey,
                                           uint32_t skey_size, uint8_t *pkey,
                                           uint32_t pkey_size) {
   SM2_KEY tmp;
+  LOG(INFO) << "sm2_ecc::generate_pkey_from_skey";
   int res = sm2_key_set_private_key(&tmp, skey);
   if (res == -1) {
     return stbox::stx_status::sm2_point_generate_error;

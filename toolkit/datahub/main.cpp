@@ -115,13 +115,13 @@ boost::program_options::variables_map parse_command_line(int argc,
 
   // clang-format off
   seal_data_opts.add_options()
+    ("crypto", bp::value<std::string>(), "choose the crypto")
     ("data-url", bp::value<std::string>(), "Data URL")
     ("plugin-path", bp::value<std::string>(), "shared library for reading data")
     ("use-publickey-file", bp::value<std::string>(), "public key file")
     ("use-publickey-hex", bp::value<std::string>(), "public key")
     ("sealed-data-url", bp::value<std::string>(), "Sealed data URL")
     ("output", bp::value<std::string>(), "output meta file path");
-    ("crypto", bp::value<std::string>(), "choose the crypto");
 
   general.add_options()
     ("help", "help message");

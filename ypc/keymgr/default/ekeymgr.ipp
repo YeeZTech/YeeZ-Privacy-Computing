@@ -64,7 +64,8 @@ uint32_t load_key_pair_if_not_exist(uint8_t *pkey_ptr, uint32_t pkey_size,
       stbox::crypto::intel_sgx>::get_sealed_data_size(*skey_size);
   stbox::bytes sealed_key(sealed_size);
 
-  std::string key_path(".yeez.key/");
+  LOG(INFO) << "KEY_PATH: " << KEY_PATH;
+  std::string key_path(KEY_PATH);
   uint32_t ret = stbox::ocall_cast<uint32_t>(ocall_load_key_pair)(
       key_path.c_str(), key_path.size(), pkey_ptr, pkey_size, sealed_key.data(),
       sealed_size);
@@ -100,7 +101,11 @@ uint32_t load_and_check_key_pair(const uint8_t *pkey, uint32_t pkey_size,
   }
 
   stbox::bytes expect_pkey;
-  ecc::generate_pkey_from_skey(skey, expect_pkey);
+  auto ret = ecc::generate_pkey_from_skey(skey, expect_pkey);
+  if (ret != 0) {
+    LOG(ERROR) << "generate_pkey_from_skey failed, exit code: " << ret;
+    return 1;
+  }
   for (int i = 0; i < 64; i++) {
     printf("%02x", *(pkey + i));
   }
@@ -110,7 +115,13 @@ uint32_t load_and_check_key_pair(const uint8_t *pkey, uint32_t pkey_size,
   }
   printf("\n");
   if (memcmp(expect_pkey.data(), pkey, expect_pkey.size()) != 0) {
-    LOG(ERROR) << "enter ";
+    for (int i = 0; i < 64; i++) {
+      printf("%02x", *(expect_pkey.data() + i));
+    }
+    printf("\n");
+    for (int i = 0; i < 64; i++) {
+      printf("%02x", *(pkey + i));
+    }
     return stbox::stx_status::kmgr_pkey_skey_mismatch;
     //status equal 177
   }

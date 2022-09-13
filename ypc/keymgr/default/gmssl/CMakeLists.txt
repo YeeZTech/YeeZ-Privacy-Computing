@@ -1,5 +1,5 @@
 
-set(T_SRCS ${PROJECT_SOURCE_DIR}/ypc/keymgr/default/enclave/ekeymgr.cpp
+set(T_SRCS ${PROJECT_SOURCE_DIR}/ypc/keymgr/default/gmssl/ekeymgr.cpp
   ${PROJECT_SOURCE_DIR}/ypc/core/src/core_t/ecommon/signer_verify.cpp
   ${PROJECT_SOURCE_DIR}/ypc/core/src/core_t/ecommon/package.cpp
   ${FF_SRC_PATH}/net/common/archive.cpp

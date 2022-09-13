@@ -38,6 +38,7 @@ uint32_t parser::parse() {
 
   uint32_t ret = 0;
   if (shu_skey.size() > 0) {
+    LOG(INFO) << "keymgr_enclave_path: " << keymgr_enclave_path;
     ret = m_keymgr->forward_private_key(
         shu_skey.data(), shu_skey.size(), epkey.data(), epkey.size(),
         ehash.data(), ehash.size(), shu_forward_sig.data(),
