@@ -1,30 +1,31 @@
 #!/usr/bin/python3
 import common
-import commonjs
+#import commonjs
 import os
 import sys
 import json
 
 
-def get_first_key():
-    keys = common.fid_keymgr_list()
+def get_first_key(crypto):
+    keys = common.fid_keymgr_list(crypto)
 
     if len(keys) == 0:
         common.fid_keymgr_create("test")
 
-    keys = common.fid_keymgr_list()
+    keys = common.fid_keymgr_list(crypto)
     pkey = ''
     private_key = ''
     for k, v in keys.items():
         pkey = v
-        private_key = common.get_keymgr_private_key(k)
+        private_key = common.get_keymgr_private_key(k, crypto)
         break
     return {'public-key': pkey, "private-key": private_key}
 
 
 class classic_job:
 
-    def __init__(self, name, data_url, parser_url, plugin_url, input_param, ext=dict()):
+    def __init__(self, crypto, name, data_url, parser_url, plugin_url, input_param, ext=dict()):
+        self.crypto = crypto
         self.name = name
         self.data_url = data_url
         self.parser_url = parser_url
@@ -43,6 +44,8 @@ class classic_job:
         # 0. generate key
         data_key_file = self.name + ".data.key.json"
         param = {
+            "crypto": self.crypto,
+            "gen-key": "",
             "gen-key": "",
             "no-password": "",
             "output": data_key_file
@@ -55,6 +58,7 @@ class classic_job:
         # 1. generate key
         key_file = self.name + ".key.json"
         param = {
+            "crypto": self.crypto,
             "gen-key": "",
             "no-password": "",
             "output": key_file
@@ -77,15 +81,17 @@ class classic_job:
 
         if self.ext:
             param = {
+                "crypto": self.crypto,
                 "data-url": self.data_url,
                 "config": self.ext['config'],
                 "sealed-data-url": sealed_data_url,
                 "output": sealed_output,
                 "use-publickey-file": data_key_file
             }
-            r = commonjs.fid_data_provider(**param)
+            r = common.fid_data_provider(**param)
         else:
             param = {
+                "crypto": self.crypto,
                 "data-url": self.data_url,
                 "plugin-path": self.plugin_url,
                 "sealed-data-url": sealed_data_url,
@@ -100,13 +106,14 @@ class classic_job:
         print("done seal data with hash: {}, cmd: {}".format(data_hash, r[0]))
 
         # use first pkey
-        key = get_first_key()
+        key = get_first_key(self.crypto)
         pkey = key['public-key']
         summary['tee-pkey'] = key['public-key']
 
         # 3. call terminusto generate forward message
         forward_result = self.name + ".shukey.foward.json"
         param = {
+            "crypto": self.crypto,
             "forward": "",
             "use-privatekey-file": data_key_file,
             "tee-pubkey": pkey,
@@ -121,13 +128,14 @@ class classic_job:
         # 4.0. call terminusto generate forward message
         param_key_forward_result = self.name + ".request.shukey.foward.json"
         param = {
+            "crypto": self.crypto,
             "forward": "",
             "use-privatekey-file": key_file,
             "tee-pubkey": pkey,
             "use-enclave-hash": enclave_hash,
             "output": param_key_forward_result
         }
-        commonjs.fid_terminus(**param)
+        common.fid_terminus(**param)
         rq_forward_json = {}
         with open(param_key_forward_result, 'r') as of:
             rq_forward_json = json.load(of)
@@ -135,6 +143,7 @@ class classic_job:
         # 4.1. call terminus to generate request
         param_output_url = self.name + "_param.json"
         param = {
+            "crypto": self.crypto,
             "request": "",
             "use-param": self.input,
             "param-format": "text",
@@ -142,7 +151,7 @@ class classic_job:
             "output": param_output_url
         }
 
-        r = commonjs.fid_terminus(**param)
+        r = common.fid_terminus(**param)
         print("done termins with cmd: {}".format(r[0]))
         param_json = {}
         with open(param_output_url) as of:
@@ -173,7 +182,7 @@ class classic_job:
                 }
             ],
             "parser_path": self.parser_url,
-            "keymgr_path": common.kmgr_enclave,
+            "keymgr_path": common.kmgr_enclave[self.crypto],
             "parser_enclave_hash": enclave_hash,
             "dian_pkey": pkey,
             "model": {
@@ -181,6 +190,7 @@ class classic_job:
                 "public-key": ""
             },
             "param": {
+                "crypto": self.crypto,
                 "param_data": param_json["encrypted-input"],
                 "public-key": shukey_json["public-key"],
                 "allowances": ""
@@ -213,6 +223,7 @@ class classic_job:
         decrypted_result = self.name + ".result"
 
         param = {
+            "crypto": self.crypto,
             "decrypt": "",
             "use-param": encrypted_result,
             "use-privatekey-file": key_file,

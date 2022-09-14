@@ -13,7 +13,7 @@ public:
   }
   static uint32_t get_public_key_size() { return ecc_t::get_public_key_size(); }
   static uint32_t gen_private_key(uint32_t skey_size, uint8_t *skey) {
-    return ecc_t::gen_privae_key(skey_size, skey);
+    return ecc_t::gen_private_key(skey_size, skey);
   }
 
   template <typename BytesType>

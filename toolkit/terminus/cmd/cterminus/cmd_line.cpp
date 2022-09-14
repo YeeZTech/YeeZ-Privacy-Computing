@@ -17,6 +17,7 @@ parse_command_line(int argc, char *argv[]) {
 
   // clang-format off
   general.add_options()
+    ("crypto", bp::value<std::string>(), "stdeth/gmssl")
     ("gen-key", "generate an ECC key pair to encrypt/decrypt request")
     ("request", "generate request")
     ("forward", "forward private key to enclave")
@@ -26,6 +27,7 @@ parse_command_line(int argc, char *argv[]) {
     ("sha3", "to SHA3-256 message ")
     ("relay", "generate relay info")
     ("help", "help message");
+    
 
   key.add_options()
     ("no-password", "no password when gen-key")

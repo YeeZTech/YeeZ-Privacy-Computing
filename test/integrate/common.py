@@ -11,7 +11,10 @@ sdk_dir = os.path.dirname(test_dir).replace(" ", "\ ")
 
 bin_dir = os.path.join(sdk_dir, "./bin")
 lib_dir = os.path.join(sdk_dir, "./lib")
-kmgr_enclave = os.path.join(lib_dir, "keymgr.signed.so")
+kmgr_enclave = {
+    'stdeth': os.path.join(lib_dir, "keymgr.signed.so"),
+    'gmssl': os.path.join(lib_dir, "keymgr_gmssl.signed.so"),
+}
 
 
 def execute_cmd(cmd):
@@ -32,8 +35,10 @@ def fid_keymgr_create(user_id):
     return [cmd, output]
 
 
-def fid_keymgr_list():
+def fid_keymgr_list(crypto):
     cmd = os.path.join(bin_dir, "./keymgr_tool")
+    cmd = cmd + " --crypto {}".format(crypto)
+    # should combine crypto with the original cmd
     output = execute_cmd("{} --list".format(cmd))
     ls = output.split("\n")
     tkeyid = ''
@@ -53,8 +58,9 @@ def fid_keymgr_list():
     return keys
 
 
-def get_keymgr_private_key(keyid):
+def get_keymgr_private_key(keyid, crypto_type):
     cmd = os.path.join(bin_dir, "./keymgr_tool")
+    cmd = cmd + " --crypto {}".format(crypto_type)
     output = execute_cmd("{} --list".format(cmd))
     ls = output.split("\n")
     ks = ls[0].split(' ')
@@ -106,16 +112,18 @@ def fid_analyzer(**kwargs):
     output = execute_cmd(cmd)
     return [cmd, output]
 
+
 def iris_data(**kwargs):
     cmd = os.path.join(bin_dir, "./iris_gen_classify_input")
     for k, v in kwargs.items():
         cmd = cmd + " --{} {}".format(k, v)
-    output = execute_cmd(cmd);
+    output = execute_cmd(cmd)
     return [cmd, output]
+
 
 def iris_model(**kwargs):
     cmd = os.path.join(bin_dir, "./iris_gen_model")
     for k, v in kwargs.items():
         cmd = cmd + " --{} {}".format(k, v)
-    output = execute_cmd(cmd);
+    output = execute_cmd(cmd)
     return [cmd, output]
