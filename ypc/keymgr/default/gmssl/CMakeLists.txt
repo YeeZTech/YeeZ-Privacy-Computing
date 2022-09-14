@@ -9,7 +9,7 @@ set(edl_path ${PROJECT_SOURCE_DIR}/ypc/core/edl/:${PROJECT_SOURCE_DIR}/ypc/stbox
 
 add_enclave_library(keymgr_gmssl
   SRCS ${T_SRCS}
-  EDL ekeymgr.edl
+  EDL ../enclave/ekeymgr.edl
   EDL_SEARCH_PATHS "${edl_path}")
 
 target_link_libraries(keymgr_gmssl stbox_common_t stbox_channel_t stbox_crypto_t sgx_gmssl_ecc_t ypc_stdeth_t ypc_gmssl_t dl)

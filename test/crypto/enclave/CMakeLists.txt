@@ -9,7 +9,7 @@ add_enclave_library(test_crypto_enclave
   EDL enclave.edl
   EDL_SEARCH_PATHS "${edl_path}")
 
-target_link_libraries(test_crypto_enclave stbox_channel_t sgx_ecc_t ypc_stdeth_t ypc_gmssl_t)
+target_link_libraries(test_crypto_enclave stbox_channel_t sgx_eth_ecc_t ypc_stdeth_t )
 
 enclave_sign(test_crypto_enclave KEY enclave_private.pem
   CONFIG enclave.config.xml)

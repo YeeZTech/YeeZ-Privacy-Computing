@@ -182,7 +182,7 @@ class classic_job:
                 }
             ],
             "parser_path": self.parser_url,
-            "keymgr_path": common.kmgr_enclave,
+            "keymgr_path": common.kmgr_enclave[self.crypto],
             "parser_enclave_hash": enclave_hash,
             "dian_pkey": pkey,
             "model": {

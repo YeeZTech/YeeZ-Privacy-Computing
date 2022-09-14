@@ -2,7 +2,6 @@
 #include "ypc/corecommon/crypto/gmssl/sm2_ecc.h"
 #include "ypc/corecommon/crypto/gmssl/sm3_hash.h"
 #include "ypc/corecommon/crypto/gmssl/sm4_aes.h"
-
 #include "ypc/corecommon/crypto/crypto_pack.h"
 
 namespace ypc {

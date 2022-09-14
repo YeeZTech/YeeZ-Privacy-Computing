@@ -6,7 +6,6 @@
 #include "ypc/stbox/tsgx/log.h"
 
 using ecc = ypc::crypto::eth_sgx_crypto;
-using raw_ecc = ecc;
 using sealer = stbox::crypto::raw_device_sealer<stbox::crypto::intel_sgx>;
 
 #include "ecc_impl.ipp"

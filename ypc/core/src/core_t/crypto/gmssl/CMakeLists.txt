@@ -2,7 +2,6 @@
 set(gmssl_src sm2_ecc.cpp sm3_hash.cpp sm4_aes.cpp)
 
 include_directories(${PROJECT_SOURCE_DIR}/ypc/stbox/include/ypc/stbox/)
-#add_trusted_library(ypc_gmssl_t SHARED ${gmssl_src})
 add_trusted_library(ypc_gmssl_t
   ypc_gmssl_t
   SRCS "${gmssl_src}"

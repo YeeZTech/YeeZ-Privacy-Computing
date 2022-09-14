@@ -7,9 +7,8 @@ uint32_t get_ecc_sealed_private_key_size() {
 uint32_t get_ecc_signature_size() { return ecc::get_signature_size(); }
 
 uint32_t generate_ecc_key_pair(uint8_t *public_key, uint32_t pkey_size,
-                                     uint8_t *sealed_private_key,
-                                     uint32_t sealed_size) {
-  
+                               uint8_t *sealed_private_key,
+                               uint32_t sealed_size) {
   if (public_key == NULL || sealed_private_key == NULL) {
     return SGX_ERROR_OUT_OF_MEMORY;
   }
@@ -23,8 +22,8 @@ uint32_t generate_ecc_key_pair(uint8_t *public_key, uint32_t pkey_size,
     return se_ret;
   }
 
-  se_ret = (sgx_status_t)raw_ecc::generate_pkey_from_skey(
-      skey.data(), skey.size(), public_key, pkey_size);
+  se_ret = (sgx_status_t)ecc::generate_pkey_from_skey(skey.data(), skey.size(),
+                                                      public_key, pkey_size);
 
   if (se_ret) {
     LOG(ERROR) << "failed to gen public key " << se_ret;
@@ -35,9 +34,8 @@ uint32_t generate_ecc_key_pair(uint8_t *public_key, uint32_t pkey_size,
 }
 
 uint32_t generate_ecc_pkey_from_sealed_skey(uint8_t *sealed_key,
-                                                  uint32_t sealed_size,
-                                                  uint8_t *pkey,
-                                                  uint32_t pkey_size) {
+                                            uint32_t sealed_size, uint8_t *pkey,
+                                            uint32_t pkey_size) {
   stbox::bytes skey(ecc::get_private_key_size());
   auto se_ret =
       sealer::unseal_data(sealed_key, sealed_size, skey.data(), skey.size());
@@ -46,8 +44,8 @@ uint32_t generate_ecc_pkey_from_sealed_skey(uint8_t *sealed_key,
     return se_ret;
   }
 
-  se_ret = raw_ecc::generate_pkey_from_skey(skey.data(), skey.size(), pkey,
-                                            pkey_size);
+  se_ret =
+      ecc::generate_pkey_from_skey(skey.data(), skey.size(), pkey, pkey_size);
 
   return se_ret;
 }
@@ -62,31 +60,31 @@ uint32_t sign_message(uint8_t *sealed_private_key, uint32_t sealed_size,
     LOG(ERROR) << "failed to unseal private key " << se_ret;
     return se_ret;
   }
-  return raw_ecc::sign_message(skey.data(), skey.size(), data, data_size, sig,
-                               sig_size);
+  return ecc::sign_message(skey.data(), skey.size(), data, data_size, sig,
+                           sig_size);
 }
 
 uint32_t verify_signature(uint8_t *data, uint32_t data_size, uint8_t *sig,
                           uint32_t sig_size, uint8_t *public_key,
                           uint32_t pkey_size) {
-  return raw_ecc::verify_signature(data, data_size, sig, sig_size, public_key,
-                                   pkey_size);
+  return ecc::verify_signature(data, data_size, sig, sig_size, public_key,
+                               pkey_size);
 }
 
 uint32_t get_encrypted_message_size(uint32_t data_size) {
-  return raw_ecc::get_encrypt_message_size_with_prefix(data_size);
+  return ecc::get_encrypt_message_size_with_prefix(data_size);
 }
 
 uint32_t encrypt_message(uint8_t *public_key, uint32_t pkey_size, uint8_t *data,
                          uint32_t data_size, uint8_t *cipher,
                          uint32_t cipher_size) {
-  return raw_ecc::encrypt_message_with_prefix(
+  return ecc::encrypt_message_with_prefix(
       public_key, pkey_size, data, data_size, ypc::utc::crypto_prefix_arbitrary,
       cipher, cipher_size);
 }
 
 uint32_t get_decrypted_message_size(uint32_t cipher_size) {
-  return raw_ecc::get_decrypt_message_size_with_prefix(cipher_size);
+  return ecc::get_decrypt_message_size_with_prefix(cipher_size);
 }
 
 uint32_t decrypt_message(uint8_t *sealed_private_key, uint32_t sealed_size,
@@ -100,8 +98,8 @@ uint32_t decrypt_message(uint8_t *sealed_private_key, uint32_t sealed_size,
     return se_ret;
   }
 
-  se_ret = raw_ecc::decrypt_message_with_prefix(
-      skey.data(), skey.size(), cipher, cipher_size, data, data_size,
-      ypc::utc::crypto_prefix_arbitrary);
+  se_ret = ecc::decrypt_message_with_prefix(skey.data(), skey.size(), cipher,
+                                            cipher_size, data, data_size,
+                                            ypc::utc::crypto_prefix_arbitrary);
   return se_ret;
 }

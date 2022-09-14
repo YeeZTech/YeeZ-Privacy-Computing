@@ -315,13 +315,11 @@ void verify_signature(const boost::program_options::variables_map &vm,
 
 std::string find_keymgr_enclave_path(const std::string &current_path, std::string crypto_type) {
   // 1. check if keymgr.signed.so in project lib dir
-  
   std::string project_lib_path =
       ypc::join_path(ypc::dirname(current_path), "../lib/keymgr.signed.so");
-  if (crypto_type == "gmssl")
-  {
-    std::string project_lib_path =
-      ypc::join_path(ypc::dirname(current_path), "../lib/keymgr_gmssl.signed.so");
+  if (crypto_type == "gmssl") {
+    project_lib_path = ypc::join_path(ypc::dirname(current_path),
+                                      "../lib/keymgr_gmssl.signed.so");
   }
   if (ypc::is_file_exists(project_lib_path)) {
     return project_lib_path;
@@ -329,9 +327,8 @@ std::string find_keymgr_enclave_path(const std::string &current_path, std::strin
   // 2. check if exists in /usr/local/lib
   std::string usr_local_lib_path =
       ypc::join_path("/usr/local/lib", "./keymgr.signed.so");
-  if (crypto_type == "gmssl")
-  {
-    std::string usr_local_lib_path =
+  if (crypto_type == "gmssl") {
+    usr_local_lib_path =
         ypc::join_path("/usr/local/lib", "./keymgr_gmssl.signed.so");
   }
   if (ypc::is_file_exists(usr_local_lib_path)) {
@@ -339,10 +336,8 @@ std::string find_keymgr_enclave_path(const std::string &current_path, std::strin
   }
   // 3. check if exists in /usr/lib
   std::string usr_lib_path = ypc::join_path("/usr/lib", "./keymgr.signed.so");
-  if (crypto_type == "gmssl")
-  {
-    std::string usr_local_lib_path =
-        ypc::join_path("/usr/local/lib", "./keymgr_gmssl.signed.so");
+  if (crypto_type == "gmssl") {
+    usr_lib_path = ypc::join_path("/usr/lib", "./keymgr_gmssl.signed.so");
   }
   if (ypc::is_file_exists(usr_lib_path)) {
     return usr_lib_path;
@@ -378,7 +373,6 @@ int main(int argc, char *argv[]) {
 
   std::string crypto_type = vm["crypto"].as<std::string>();
   std::string kmgr_enclave_path = find_keymgr_enclave_path(ypc::complete_path(argv[0]), crypto_type);
-  std::cout << "kmgr_enclave_path: " << kmgr_enclave_path << std::endl;
   std::shared_ptr<keymgr_sgx_module> ptr;
   try {
     ptr = std::make_shared<keymgr_sgx_module>(kmgr_enclave_path.c_str());
@@ -387,38 +381,26 @@ int main(int argc, char *argv[]) {
               << e.what();
     return -1;
   }
-  
-  std::string key_dir_stdeth = create_dir_if_not_exist(".", ".yeez.stdeth_key/");
-  std::string bak_dir_stdeth = create_dir_if_not_exist(".yeez.stdeth_key/", "backup/");
 
-
-  std::string key_dir_gmssl = create_dir_if_not_exist(".", ".yeez.gmssl_key/");
-  std::string bak_dir_gmssl = create_dir_if_not_exist(".yeez.gmssl_key/", "backup/");
-
-  if (vm.count("create") && crypto_type == "stdeth") {
-    create_key(ptr, key_dir_stdeth, vm);
-    return 0;
+  std::string key_dir = create_dir_if_not_exist(".", ".yeez.stdeth_key/");
+  std::string bak_dir = create_dir_if_not_exist(".yeez.stdeth_key/", "backup/");
+  if (crypto_type == "gmssl") {
+    key_dir = create_dir_if_not_exist(".", ".yeez.gmssl_key/");
+    bak_dir = create_dir_if_not_exist(".yeez.gmssl_key/", "backup/");
   }
-  else if (vm.count("create") && crypto_type == "gmssl"){
-    create_key(ptr, key_dir_gmssl, vm);
+
+  if (vm.count("create")) {
+    create_key(ptr, key_dir, vm);
     return 0;
   }
 
-  if (vm.count("list") && crypto_type == "stdeth") {
-    list_keys(key_dir_stdeth, ptr);
-    return 0;
-  }
-  else if (vm.count("list") && crypto_type == "gmssl"){
-    list_keys(key_dir_gmssl, ptr);
+  if (vm.count("list")) {
+    list_keys(key_dir, ptr);
     return 0;
   }
 
-  if (vm.count("remove") && crypto_type == "stdeth") {
-    remove_key(vm, key_dir_stdeth);
-    return 0;
-  }
-  else if (vm.count("remove") && crypto_type == "gmssl"){
-    remove_key(vm, key_dir_gmssl);
+  if (vm.count("remove")) {
+    remove_key(vm, key_dir);
     return 0;
   }
 
