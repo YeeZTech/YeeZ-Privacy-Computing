@@ -10,7 +10,7 @@ def get_first_key(crypto):
     keys = common.fid_keymgr_list(crypto)
 
     if len(keys) == 0:
-        common.fid_keymgr_create("test")
+        common.fid_keymgr_create("test", crypto)
 
     keys = common.fid_keymgr_list(crypto)
     pkey = ''

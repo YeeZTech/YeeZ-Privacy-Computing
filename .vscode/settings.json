@@ -1,0 +1,7 @@
+{
+    "cmake.configureOnOpen": false,
+    "files.associations": {
+        "chrono": "cpp",
+        "*.ipp": "cpp"
+    }
+}

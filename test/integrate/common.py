@@ -26,8 +26,9 @@ def execute_cmd(cmd):
     return p.stdout.read().decode('utf-8', errors='ignore')
 
 
-def fid_keymgr_create(user_id):
+def fid_keymgr_create(user_id, crypto):
     cmd = os.path.join(bin_dir, "./keymgr_tool")
+    cmd = cmd + " --crypto {}".format(crypto)
     param = {"create": "", "user-id": user_id}
     for k, v in param.items():
         cmd = cmd + " --{} {}".format(k, v)
