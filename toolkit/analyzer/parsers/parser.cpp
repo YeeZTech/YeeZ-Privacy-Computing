@@ -43,7 +43,7 @@ uint32_t parser::parse() {
         shu_skey.data(), shu_skey.size(), epkey.data(), epkey.size(),
         ehash.data(), ehash.size(), shu_forward_sig.data(),
         shu_forward_sig.size());
-
+    LOG(INFO) << "This is the res when get error" << ret ;
     if (ret) {
       LOG(ERROR) << "forward_message got error " << ypc::status_string(ret);
       return ret;
@@ -254,7 +254,6 @@ uint32_t parser::next_data_batch(const uint8_t *data_hash, uint32_t hash_size,
     *len = b.size();
     return stbox::stx_status::success;
   } else {
-    LOG(ERROR) << "data with hash: " << hash << " reach end";
     return stbox::stx_status::sealed_file_reach_end;
   }
 }
