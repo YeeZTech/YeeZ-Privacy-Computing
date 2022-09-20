@@ -1,9 +1,9 @@
 #include "ypc/corecommon/crypto/gmssl/sm2_ecc.h"
 #include "ypc/corecommon/crypto/gmssl/sm3_hash.h"
-#include <openssl/rand.h>
-#include <glog/logging.h>
-#include <gmssl/sm2.h>
+#include "ypc/stbox/gmssl/sm2.h"
 #include "ypc/stbox/stx_status.h"
+#include <glog/logging.h>
+#include <openssl/rand.h>
 
 namespace ypc {
 namespace crypto {
@@ -76,16 +76,19 @@ uint32_t sm2_ecc::ecdh_shared_key(const uint8_t *skey, uint32_t skey_size,
                                   const uint8_t *public_key, uint32_t pkey_size,
                                   uint8_t *shared_key,
                                   uint32_t shared_key_size) {
-  if (shared_key_size != 16) {
-    LOG(ERROR) << "invalid aes key size " << shared_key_size << ", expect 16";
+  if (shared_key_size != sm2_ecc::get_ecdh_shared_key_size()) {
+    LOG(ERROR) << "invalid aes key size " << shared_key_size << ", expect "
+               << sm2_ecc::get_ecdh_shared_key_size();
     return stbox::stx_status::ecc_invalid_aes_key_size;
   }
-  if (skey_size != 32) {
-    LOG(ERROR) << "invalid skey size " << skey_size << ", expect 32";
+  if (skey_size != sm2_ecc::get_private_key_size()) {
+    LOG(ERROR) << "invalid skey size " << skey_size << ", expect "
+               << sm2_ecc::get_private_key_size();
     return stbox::stx_status::ecc_invalid_skey_size;
   }
-  if (pkey_size != 64) {
-    LOG(ERROR) << "invalid pkey size " << pkey_size << ", expect 64";
+  if (pkey_size != sm2_ecc::get_public_key_size()) {
+    LOG(ERROR) << "invalid pkey size " << pkey_size << ", expect "
+               << sm2_ecc::get_public_key_size();
     return stbox::stx_status::ecc_invalid_pkey_size;
   }
 
@@ -103,10 +106,11 @@ uint32_t sm2_ecc::ecdh_shared_key(const uint8_t *skey, uint32_t skey_size,
     return stbox::stx_status::sm2_shared_key_error;
   }
 
-  uint8_t tmp_shared_key[64], hash[32];
-  memcpy(tmp_shared_key, &out, 64);
-  sm3_hash::msg_hash(tmp_shared_key, 64, hash, 32);
-  memcpy(shared_key, hash, 16);
+  uint32_t hash_size = sm3_hash::get_msg_hash_size();
+  uint8_t tmp_shared_key[pkey_size], hash[hash_size];
+  memcpy(tmp_shared_key, &out, pkey_size);
+  sm3_hash::msg_hash(tmp_shared_key, pkey_size, hash, hash_size);
+  memcpy(shared_key, hash, shared_key_size);
   return stbox::stx_status::success;
 }
 

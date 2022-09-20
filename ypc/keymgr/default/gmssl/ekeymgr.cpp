@@ -34,8 +34,8 @@ using stx_status = stbox::stx_status;
 using scope_guard = stbox::scope_guard;
 using intel_sgx = stbox::crypto::intel_sgx;
 using ecc = ypc::crypto::gmssl_sgx_crypto;
-using raw_ecc = ecc;
-using namespace stbox;
+// using raw_ecc = ecc;
+// using namespace stbox;
 // using namespace stbox::crypto;
 
 std::shared_ptr<stbox::dh_session_responder> dh_resp_session(nullptr);

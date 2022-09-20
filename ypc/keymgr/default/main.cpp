@@ -313,7 +313,8 @@ void verify_signature(const boost::program_options::variables_map &vm,
   std::cout << "Signature verify success. Valid signature." << std::endl;
 }
 
-std::string find_keymgr_enclave_path(const std::string &current_path, std::string crypto_type) {
+std::string find_keymgr_enclave_path(const std::string &current_path,
+                                     const std::string &crypto_type) {
   // 1. check if keymgr.signed.so in project lib dir
   std::string project_lib_path =
       ypc::join_path(ypc::dirname(current_path), "../lib/keymgr.signed.so");

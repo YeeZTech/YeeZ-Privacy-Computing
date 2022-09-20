@@ -22,7 +22,8 @@ using namespace ypc;
 typedef ypc::crypto::gmssl_sgx_crypto crypto_t_gmssl;
 typedef ypc::crypto::eth_sgx_crypto crypto_t_eth;
 typedef ypc::nt<ypc::bytes> ntt;
-void write_batch (const std::string crypto, simple_sealed_file &sf, const std::vector<ypc::bytes> &batch,
+void write_batch(const std::string &crypto, simple_sealed_file &sf,
+                 const std::vector<ypc::bytes> &batch,
                  const stbox::bytes &public_key) {
   ntt::batch_data_pkg_t pkg;
   ypc::bytes s;
@@ -30,16 +31,13 @@ void write_batch (const std::string crypto, simple_sealed_file &sf, const std::v
       ypc::make_bytes<ypc::bytes>::for_package<ntt::batch_data_pkg_t,
                                                ntt::batch_data>(batch);
   uint32_t status;
-  
   if (crypto == "gmssl"){
-      status = crypto_t_gmssl::encrypt_message_with_prefix(
-      public_key, batch_str, ypc::utc::crypto_prefix_arbitrary, s);
+    status = crypto_t_gmssl::encrypt_message_with_prefix(
+        public_key, batch_str, ypc::utc::crypto_prefix_arbitrary, s);
+  } else {
+    status = crypto_t_eth::encrypt_message_with_prefix(
+        public_key, batch_str, ypc::utc::crypto_prefix_arbitrary, s);
   }
-  else{
-      status = crypto_t_eth::encrypt_message_with_prefix(
-      public_key, batch_str, ypc::utc::crypto_prefix_arbitrary, s);   
-  }
-  
   if (status) {
     std::stringstream ss;
     ss << "encrypt "
@@ -50,8 +48,8 @@ void write_batch (const std::string crypto, simple_sealed_file &sf, const std::v
   }
   sf.write_item(s);
 }
-uint32_t seal_file(const std::string &crypto, const std::string &plugin, const std::string &file,
-                   const std::string &sealed_file_path,
+uint32_t seal_file(const std::string &crypto, const std::string &plugin,
+                   const std::string &file, const std::string &sealed_file_path,
                    const stbox::bytes &public_key, stbox::bytes &data_hash) {
   // Read origin file use sgx to seal file
   privacy_data_reader reader(plugin, file);
@@ -173,8 +171,7 @@ int main(int argc, char *argv[]) {
     return -1;
   }
   if (!vm.count("crypto")) {
-    std::cerr << "crypto not specified"
-              << std::endl;
+    std::cerr << "crypto not specified" << std::endl;
     return -1;
   }
 

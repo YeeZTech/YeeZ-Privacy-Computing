@@ -43,7 +43,6 @@ uint32_t parser::parse() {
         shu_skey.data(), shu_skey.size(), epkey.data(), epkey.size(),
         ehash.data(), ehash.size(), shu_forward_sig.data(),
         shu_forward_sig.size());
-    LOG(INFO) << "This is the res when get error" << ret ;
     if (ret) {
       LOG(ERROR) << "forward_message got error " << ypc::status_string(ret);
       return ret;
