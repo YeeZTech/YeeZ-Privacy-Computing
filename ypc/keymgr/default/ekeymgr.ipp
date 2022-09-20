@@ -218,7 +218,6 @@ stbox::bytes handle_pkg(const uint8_t *data, size_t data_len,
                 iter->second.get<dian_pkey_nt>();
           return;
         }
-        LOG(INFO) << "try to find private key failed!";
 
         str_msg_key = pkey + any_enclave_hash;
         iter = private_key_table.find(str_msg_key);

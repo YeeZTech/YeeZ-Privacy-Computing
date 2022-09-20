@@ -39,7 +39,6 @@ def fid_keymgr_create(user_id, crypto):
 def fid_keymgr_list(crypto):
     cmd = os.path.join(bin_dir, "./keymgr_tool")
     cmd = cmd + " --crypto {}".format(crypto)
-    # should combine crypto with the original cmd
     output = execute_cmd("{} --list".format(cmd))
     ls = output.split("\n")
     tkeyid = ''

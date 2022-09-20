@@ -15,6 +15,7 @@ int generate_allowance(ypc::terminus::crypto_pack *crypto,
       ypc::hex_bytes(vm["dhash"].as<std::string>()).as<ypc::bytes>();
 
   auto ei = ypc::terminus::enclave_interaction(crypto);
+  // allowance is a ypc::bytes sig(65);
   ypc::bytes allowance =
       ei.generate_allowance(private_key, hash, enclave_hash, dian_pkey, dhash);
 
