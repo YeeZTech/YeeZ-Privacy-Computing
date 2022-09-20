@@ -144,7 +144,7 @@ uint32_t forward_private_key(const uint8_t *encrypted_private_key,
   uint32_t decrypted_size =
       ecc::get_decrypt_message_size_with_prefix(cipher_size);
   stbox::bytes forward_skey(decrypted_size);
-  se_ret = (sgx_status_t)raw_ecc::decrypt_message_with_prefix(
+  se_ret = (sgx_status_t)ecc::decrypt_message_with_prefix(
       skey.data(), skey.size(), encrypted_private_key, cipher_size,
       forward_skey.data(), decrypted_size, ::ypc::utc::crypto_prefix_forward);
   if (se_ret) {
@@ -176,9 +176,9 @@ uint32_t forward_private_key(const uint8_t *encrypted_private_key,
   stbox::bytes all =
       stbox::bytes(epublic_key, epkey_size) + stbox::bytes(ehash, ehash_size);
 
-  se_ret = (sgx_status_t)raw_ecc::verify_signature(
-      all.data(), all.size(), sig, sig_size, forward_pub_key.data(),
-      forward_pub_key.size());
+  se_ret = (sgx_status_t)ecc::verify_signature(all.data(), all.size(), sig,
+                                               sig_size, forward_pub_key.data(),
+                                               forward_pub_key.size());
   if (se_ret) {
     LOG(ERROR) << "Invalid signature, data: " << all
                << ", sig: " << stbox::bytes(sig, sig_size)
@@ -218,7 +218,8 @@ stbox::bytes handle_pkg(const uint8_t *data, size_t data_len,
                 iter->second.get<dian_pkey_nt>();
           return;
         }
-        LOG(INFO) << "try to find private key failed!";
+        LOG(INFO) << "Peer enclave not in key table, try to use enclave "
+                  << any_enclave_hash;
 
         str_msg_key = pkey + any_enclave_hash;
         iter = private_key_table.find(str_msg_key);
