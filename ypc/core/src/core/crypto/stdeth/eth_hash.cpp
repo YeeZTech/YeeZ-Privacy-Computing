@@ -36,11 +36,11 @@ uint32_t eth_hash::sha3_256(const uint8_t *msg, uint32_t msg_size,
   sha3_SetFlags(&c, SHA3_FLAGS_KECCAK);
   sha3_Update(&c, msg, msg_size);
   uint8_t *_hash = (uint8_t *)sha3_Finalize(&c);
-  memcpy(hash, _hash, 32);
+  memcpy(hash, _hash, KECCAK256_HASH_SIZE);
   return stbox::stx_status::success;
 }
 
-uint32_t eth_hash::get_msg_hash_size() { return 32; }
+uint32_t eth_hash::get_msg_hash_size() { return KECCAK256_HASH_SIZE; }
 
 uint32_t eth_hash::msg_hash(const uint8_t *raw_msg, uint32_t msg_size,
                             uint8_t *hash, uint32_t hash_size) {

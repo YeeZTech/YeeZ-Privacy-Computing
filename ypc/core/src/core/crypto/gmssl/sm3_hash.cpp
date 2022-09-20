@@ -1,7 +1,7 @@
 #include "ypc/corecommon/crypto/gmssl/sm3_hash.h"
-#include <gmssl/sm3.h>
-#include <gmssl/sha2.h>
 #include "ypc/common/byte.h"
+#include "ypc/stbox/gmssl/sha2.h"
+#include "ypc/stbox/gmssl/sm3.h"
 #include "ypc/stbox/stx_status.h"
 
 namespace ypc {

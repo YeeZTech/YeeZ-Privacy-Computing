@@ -18,7 +18,7 @@ uint32_t sm4_aes::encrypt_with_prefix(const uint8_t *key, uint32_t key_size,
                                       const uint8_t *data, uint32_t data_size,
                                       uint32_t prefix, uint8_t *cipher,
                                       uint32_t cipher_size, uint8_t *out_mac) {
-  if (key_size != 16) {
+  if (key_size != get_key_size()) {
     LOG(ERROR) << "invalid key size: " << key_size << ", expect 16!";
     return stbox::stx_status::ecc_invalid_aes_key_size;
   }
@@ -56,7 +56,7 @@ uint32_t sm4_aes::decrypt_with_prefix(const uint8_t *key, uint32_t key_size,
                                       uint32_t cipher_size, uint32_t prefix,
                                       uint8_t *data, uint32_t data_size,
                                       const uint8_t *in_mac) {
-  if (key_size != 16) {
+  if (key_size != get_key_size()) {
     LOG(ERROR) << "invalid key size: " << key_size << ", expect 16!";
     return stbox::stx_status::ecc_invalid_aes_key_size;
   }
@@ -74,9 +74,9 @@ uint32_t sm4_aes::decrypt_with_prefix(const uint8_t *key, uint32_t key_size,
 
   SM4_KEY sm4_key;
   sm4_set_encrypt_key(&sm4_key, key);
-  int ret =
-      sm4_gcm_decrypt(&sm4_key, p_iv_text, INITIALIZATION_VECTOR_SIZE, mac_text,
-                      AAD_MAC_TEXT_LEN, cipher, data_size, in_mac, 16, data);
+  int ret = sm4_gcm_decrypt(&sm4_key, p_iv_text, INITIALIZATION_VECTOR_SIZE,
+                            mac_text, AAD_MAC_TEXT_LEN, cipher, data_size,
+                            in_mac, get_mac_code_size(), data);
   if (ret == -1) {
     return stbox::stx_status::sm4_decrypt_error;
   }

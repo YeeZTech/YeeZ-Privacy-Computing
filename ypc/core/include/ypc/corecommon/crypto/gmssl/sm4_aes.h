@@ -2,11 +2,11 @@
 #include "ypc/corecommon/crypto/aes_gcm_traits.h"
 #include <cstdint>
 
-namespace ypc{
-namespace crypto{
+namespace ypc {
+namespace crypto {
 
 #define INITIALIZATION_VECTOR_SIZE 12
-class sm4_aes{
+class sm4_aes {
 public:
   static inline uint32_t get_mac_code_size() { return 16; }
   static inline uint32_t get_cipher_size(uint32_t data_size) {
