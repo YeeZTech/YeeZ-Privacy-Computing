@@ -52,6 +52,7 @@ public:
       LOG(ERROR) << "error for generate_ecc_pkey_from_skey: " << status;
       return status;
     }
+
     if (pubkey != check_pkey) {
       LOG(ERROR) << "check failed, invalid private key";
       return stbox::stx_status::kmgr_session_inconsistency_pkey_skey;

@@ -14,15 +14,9 @@ template <typename Crypto> struct allowance {
     BytesType pkey;
     auto ret = ecc::generate_pkey_from_skey(private_key, pkey);
     if (ret) {
-      LOG(INFO) << "return without verify signature " << ret;
       return ret;
     }
-    LOG(INFO) << "ret after verify";
-    LOG(INFO) << msg;
-    LOG(INFO) << allowance;
-    LOG(INFO) << pkey;
     ret = ecc::verify_signature(msg, allowance, pkey);
-    LOG(INFO) << "the res after vefify" << ret;
     return ret;
   }
 

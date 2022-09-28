@@ -218,7 +218,7 @@ class classic_job:
                 "allowances": [
                     {
                         "signature": allowance_json["signature"],
-                        "public-key": shukey_json["public-key"],
+                        "public-key": data_shukey_json["public-key"],
                         "data_hash": summary["data-hash"],
                     }
                 ],    
