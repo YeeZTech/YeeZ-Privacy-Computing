@@ -12,6 +12,7 @@ bytes enclave_interaction::generate_allowance(const bytes &private_key,
                                               const bytes &target_enclave_hash,
                                               const bytes &dian_pkey,
                                               const bytes &dhash) {
+  //generate_allowance(private_key, hash, enclave_hash, dian_pkey, dhash);
   bytes to_sign_data = param_hash + target_enclave_hash + dian_pkey + dhash;
 
   return m_crypto->sign_message(to_sign_data, private_key);

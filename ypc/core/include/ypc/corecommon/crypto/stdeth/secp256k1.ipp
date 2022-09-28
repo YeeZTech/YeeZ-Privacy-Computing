@@ -134,6 +134,7 @@ uint32_t secp256k1::verify_signature(
   //auto hash = stbox::eth::msg_hash(data, data_size);
   se_ret = (sgx_status_t)secp256k1_ecdsa_verify(ctx, &secp256k1_sig,
                                                 data, &secp256k1_pkey);
+  
   if (!se_ret) {
     LOG(ERROR) << "secp256k1_ecdsa_verify return " << (uint32_t)se_ret;
     return stbox::stx_status::ecc_secp256_ecdsa_verify_error;

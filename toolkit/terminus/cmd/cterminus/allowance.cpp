@@ -4,9 +4,7 @@
 int generate_allowance(ypc::terminus::crypto_pack *crypto,
                        const boost::program_options::variables_map &vm) {
   ypc::bytes private_key = get_param_privatekey(vm);
-
-  ypc::bytes hash =
-      ypc::hex_bytes(vm["use-param"].as<std::string>()).as<ypc::bytes>();
+  ypc::bytes param = ypc::bytes(vm["use-param"].as<std::string>());
   ypc::bytes enclave_hash =
       ypc::hex_bytes(vm["use-enclave-hash"].as<std::string>()).as<ypc::bytes>();
   ypc::bytes dian_pkey =
@@ -17,13 +15,19 @@ int generate_allowance(ypc::terminus::crypto_pack *crypto,
   auto ei = ypc::terminus::enclave_interaction(crypto);
   // allowance is a ypc::bytes sig(65);
   ypc::bytes allowance =
-      ei.generate_allowance(private_key, hash, enclave_hash, dian_pkey, dhash);
+      ei.generate_allowance(private_key, crypto->sha3_256(param), enclave_hash, dian_pkey, dhash);
 
   ypc::bytes pkey = crypto->gen_ecc_public_key_from_private_key(private_key);
 
   std::unordered_map<std::string, ypc::bytes> result;
   result["signature"] = allowance;
   result["pkey"] = pkey;
+  result["private_key"] = allowance;
+  result["param"] = param;
+  result["hash"] = crypto->sha3_256(param);
+  result["enclave_hash"] = enclave_hash;
+  result["dian_pkey"] = dian_pkey;
+  result["dhash"] = dhash;
 
   if (vm.count("output")) {
     std::string output_path =
@@ -37,6 +41,10 @@ int generate_allowance(ypc::terminus::crypto_pack *crypto,
   } else {
     std::cout << "allowance_sig: " << allowance << std::endl;
     std::cout << "pkey: " << pkey << std::endl;
+    std::cout << "private_key: " << private_key << std::endl;
+    std::cout << "enclave_hash: " << enclave_hash << std::endl;
+    std::cout << "dian_pkey: " << dian_pkey << std::endl;
+    std::cout << "dhash: " << dhash << std::endl;
   }
   return 0;
 }

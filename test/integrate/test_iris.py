@@ -11,7 +11,7 @@ if __name__ == "__main__":
     data = os.path.join(common.bin_dir, "iris.data")
     parser = os.path.join(common.lib_dir, "iris_parser.signed.so")
     plugin = os.path.join(common.lib_dir, "libiris_reader.so")
-    input_param = "\"[{\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"123\\\"}]\""
+    input_param = "\"[{\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"12\\\"}]\""
     cj = classic_job(crypto, name, data, parser, plugin, input_param)
     cj.run()
 

@@ -149,7 +149,7 @@ class classic_job:
         param = {
             "crypto": self.crypto,
             "request": "",
-            "use-param": "123",
+            "use-param": self.input,
             "param-format": "text",
             "use-publickey-file": key_file,
             "output": param_output_url
@@ -168,7 +168,7 @@ class classic_job:
         param = {
             "crypto": self.crypto,
             "allowance": "",
-            "use-param": "123",
+            "use-param": self.input,
             "use-privatekey-file": data_key_file,
             "use-enclave-hash": enclave_hash,
             "tee-pubkey": pkey,
@@ -213,11 +213,17 @@ class classic_job:
                 "public-key": ""
             },
             "param": {
-                "crypto": self.crypto,
                 "param_data": param_json["encrypted-input"],
                 "public-key": shukey_json["public-key"],
-                "allowances": allowance_json["signature"]
+                "allowances": [
+                    {
+                        "signature": allowance_json["signature"],
+                        "public-key": shukey_json["public-key"],
+                        "data_hash": summary["data-hash"],
+                    }
+                ],    
             }}
+ 
 
         parser_input_file = self.name + "parser_input.json"
         with open(parser_input_file, "w") as of:

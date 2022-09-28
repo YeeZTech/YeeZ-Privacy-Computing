@@ -33,6 +33,7 @@ public:
     bytes hash(hash_size);
     uint32_t ret = hash_t::msg_hash(data, data_size, hash.data(), hash_size);
     if (ret) {
+      //iris example didn't enter this condition
       return ret;
     }
     ret = ecc_t::verify_signature(hash.data(), hash_size, sig, sig_size,
@@ -51,8 +52,12 @@ public:
   template <typename BytesType>
   static uint32_t verify_signature(const BytesType &data, const BytesType &sig,
                                    const BytesType &public_key) {
+    //return 0;
+    //verify_signature(msg, allowance, pkey);
+    
     return verify_signature(data.data(), data.size(), sig.data(), sig.size(),
                             public_key.data(), public_key.size());
+    
   }
 };
 } // namespace internal

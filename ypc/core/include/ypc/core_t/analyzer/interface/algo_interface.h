@@ -52,11 +52,12 @@ class algo_interface<Crypto, DataSession, ParserT, Result, ModelT,
 
 protected:
   uint32_t parse_data_item_impl(const uint8_t *input_param, uint32_t len) {
+    
     ntt::param_t param =
         make_package<cast_obj_to_package<ntt::param_t>::type>::from_bytes(
             input_param, len);
-
     request_key_var_t::m_pkey4v = param.get<ntt::pkey>();
+    LOG(INFO) << m_pkey4v;
     stbox::bytes dian_pkey;
     auto ret = keymgr_interface_t::request_private_key_for_public_key(
         request_key_var_t::m_pkey4v, request_key_var_t::m_private_key,
@@ -67,8 +68,8 @@ protected:
     }
     stbox::bytes decrypted_param(
         ecc::get_decrypt_message_size_with_prefix(len));
-
     auto param_data = param.get<ntt::param_data>();
+    LOG(INFO) << param_data;
 
     ret = ecc::decrypt_message_with_prefix(request_key_var_t::m_private_key,
                                            param_data, decrypted_param,
@@ -79,6 +80,8 @@ protected:
       return ret;
     }
     param.set<ntt::param_data>(decrypted_param);
+    auto tmp_allowance = param.get<ntt::allowances>();
+    LOG(INFO) << tmp_allowance.size() << " and capacity is " << tmp_allowance.capacity();
     ret = allowance_checker_t::check_allowance(param);
     if (ret) {
       LOG(ERROR) << "check_allowance failed: " << stbox::status_string(ret);

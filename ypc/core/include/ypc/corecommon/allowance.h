@@ -10,12 +10,19 @@ template <typename Crypto> struct allowance {
   template <typename BytesType>
   static uint32_t check(const BytesType &private_key, const BytesType &msg,
                         const BytesType &allowance) {
+    //check(private_key, to_check_data, allow);
     BytesType pkey;
     auto ret = ecc::generate_pkey_from_skey(private_key, pkey);
     if (ret) {
+      LOG(INFO) << "return without verify signature " << ret;
       return ret;
     }
+    LOG(INFO) << "ret after verify";
+    LOG(INFO) << msg;
+    LOG(INFO) << allowance;
+    LOG(INFO) << pkey;
     ret = ecc::verify_signature(msg, allowance, pkey);
+    LOG(INFO) << "the res after vefify" << ret;
     return ret;
   }
 
