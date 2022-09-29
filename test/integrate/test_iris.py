@@ -5,7 +5,7 @@ import common
 if __name__ == "__main__":
     # should also set template param (Crypto) of iris_parser
     # and update iris_parser.signed.so by compiling the source code
-    crypto = "gmssl"
+    crypto = "stdeth"
 
     name = "iris"
     data = os.path.join(common.bin_dir, "iris.data")

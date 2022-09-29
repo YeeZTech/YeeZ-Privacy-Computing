@@ -238,31 +238,31 @@ class classic_job:
         r = common.fid_analyzer(**param)
         print("done fid_analyzer with cmd: {}".format(r[0]))
 
-        # result_json = {}
-        # with open(parser_output_file) as of:
-        #     result_json = json.load(of)
-        # summary['encrypted-result'] = result_json["encrypted_result"]
-        # summary["result-signature"] = result_json["result_signature"]
-        # summary["cost-signature"] = result_json["cost_signature"]
+        result_json = {}
+        with open(parser_output_file) as of:
+            result_json = json.load(of)
+        summary['encrypted-result'] = result_json["encrypted_result"]
+        summary["result-signature"] = result_json["result_signature"]
+        summary["cost-signature"] = result_json["cost_signature"]
 
-        # with open(self.name + ".summary.json", "w") as of:
-        #     json.dump(summary, of)
+        with open(self.name + ".summary.json", "w") as of:
+            json.dump(summary, of)
 
-        # encrypted_result = summary["encrypted-result"]
+        encrypted_result = summary["encrypted-result"]
 
-        # decrypted_result = self.name + ".result"
+        decrypted_result = self.name + ".result"
 
-        # param = {
-        #     "crypto": self.crypto,
-        #     "decrypt": "",
-        #     "use-param": encrypted_result,
-        #     "use-privatekey-file": key_file,
-        #     "output": decrypted_result
-        # }
-        # r = common.fid_terminus(**param)
+        param = {
+            "crypto": self.crypto,
+            "decrypt": "",
+            "use-param": encrypted_result,
+            "use-privatekey-file": key_file,
+            "output": decrypted_result
+        }
+        r = common.fid_terminus(**param)
 
-        # with open(decrypted_result) as f:
-        #     self.result = f.readlines()
+        with open(decrypted_result) as f:
+            self.result = f.readlines()
 
     @staticmethod
     def read_data_hash(fp):
