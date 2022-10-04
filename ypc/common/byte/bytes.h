@@ -66,6 +66,42 @@ public:
 
   inline bool empty() const { return m_size == 0; }
 
+  bool operator<(const bytes_base<ByteType> &v) const {
+    if (v.m_size == m_size) {
+      if (memcmp(m_value.get(), v.m_value.get(), m_size) == 0) {
+        return false;
+      }
+    }
+
+    for (size_t i = 0; i < m_size && i < v.m_size; i++) {
+      if (m_value[i] > v.m_value[i]) {
+        return false;
+      }
+    }
+    if (v.m_size < m_size) {
+      return false;
+    }
+    return true;
+  }
+
+  bool operator>(const bytes_base<ByteType> &v) const {
+    if (v.m_size == m_size) {
+      if (memcmp(m_value.get(), v.m_value.get(), m_size) == 0) {
+        return false;
+      }
+    }
+
+    for (size_t i = 0; i < m_size && i < v.m_size; i++) {
+      if (m_value[i] < v.m_value[i]) {
+        return false;
+      }
+    }
+    if (v.m_size > m_size) {
+      return false;
+    }
+    return true;
+  }
+
 protected:
   std::unique_ptr<byte_t[]> m_value;
   size_t m_size;

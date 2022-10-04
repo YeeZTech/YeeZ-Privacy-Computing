@@ -1,4 +1,5 @@
 const YPCCrypto = require('./ypccrypto.js')()
+const keccak256 = require('keccak256')
 const YPCNtObject = require('./ypcntobject.js')()
 const DataProvider = require('./dataprovider.js')()
 
@@ -48,6 +49,14 @@ function main(){
     let json = JSON.stringify(obj)
     fs.writeFileSync(argv.output, json)
   }
+  if(argv.sha3){
+    input_buf = YPCNtObject.generateBytes(JSON.parse(argv.useParam))
+    let obj={}
+    obj['hash'] = keccak256(new Buffer(input_buf.toArrayBuffer())).toString('hex')
+    let json = JSON.stringify(obj)
+    fs.writeFileSync(argv.output, json)
+  }
+
   if(argv.forward){
     console.log('simjs library forward')
     console.log('argv, ', argv)

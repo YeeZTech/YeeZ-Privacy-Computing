@@ -1,0 +1,3 @@
+add_subdirectory(generator)
+add_subdirectory(first_match/enclave)
+add_subdirectory(first_match/normal)

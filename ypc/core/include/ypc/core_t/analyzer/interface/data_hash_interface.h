@@ -15,11 +15,20 @@ class data_hash_interface : virtual public data_hash_var,
 protected:
   void set_data_hash() {
     stbox::bytes joint_bytes;
+    std::vector<stbox::bytes> rs;
     for (uint32_t i = 0; i < data_source_var<DataSession>::m_datasource.size();
          ++i) {
       auto t = data_source_var<DataSession>::m_datasource[i]->data_hash();
       joint_bytes += t;
+      rs.push_back(t);
       LOG(INFO) << i << "-th data with data hash: " << t;
+    }
+    std::sort(rs.begin(), rs.end());
+    rs.erase(std::unique(rs.begin(), rs.end()), rs.end());
+
+    for (uint32_t i = 0; i < rs.size(); ++i) {
+      joint_bytes += rs[i];
+      LOG(INFO) << i << "-th data with data hash: " << rs[i];
     }
 
     Crypto::hash_256(joint_bytes, data_hash_var::m_data_hash);
