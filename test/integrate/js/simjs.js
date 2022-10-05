@@ -53,8 +53,8 @@ function main(){
     input_buf = YPCNtObject.generateBytes(JSON.parse(argv.useParam))
     let obj={}
     obj['hash'] = keccak256(new Buffer(input_buf.toArrayBuffer())).toString('hex')
-    let json = JSON.stringify(obj)
-    fs.writeFileSync(argv.output, json)
+    //let json = JSON.stringify(obj)
+    fs.writeFileSync(argv.output, obj['hash'])
   }
 
   if(argv.forward){

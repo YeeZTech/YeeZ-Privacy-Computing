@@ -240,10 +240,9 @@ class multistream_job:
 
         r = commonjs.fid_terminus(**param)
         print("done termins with cmd: {}".format(r[0]))
-        param_hash_json = {}
-        with open(param_hash_output_url) as of:
-            param_hash_json = json.load(of)
-        summary["param-hash"] = param_hash_json["hash"]
+
+        with open(param_hash_output_url) as f:
+            summary["param-hash"] = f.readlines()[0]
 
         result_url = self.name + ".result.encrypted"
 

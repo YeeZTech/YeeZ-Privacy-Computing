@@ -52,7 +52,7 @@ int sha3_message(ypc::terminus::crypto_pack *crypto,
     std::string output_path =
         ypc::complete_path(vm["output"].as<std::string>());
     std::ofstream os(output_path, std::ios::out);
-    os << "{\"hash\":\"" << data << "\"}";
+    os << data;
   } else {
     std::cout << data << std::endl;
   }
