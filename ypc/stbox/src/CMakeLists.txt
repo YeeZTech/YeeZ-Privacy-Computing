@@ -18,7 +18,7 @@ add_trusted_library(stbox_common_t
   EDL ./stbox.edl
   EDL_SEARCH_PATHS .)
 # trusted library is staticly linked, do not need to install
-#install(TARGETS stbox_common_t DESTINATION lib COMPONENT c_stbox_common OPTIONAL)
+install(TARGETS stbox_common_t DESTINATION lib COMPONENT c_stbox_common OPTIONAL)
 
 set(stbox_core_src ${stbox_src} usgx/error_message.cpp
   usgx/sgx_module.cpp

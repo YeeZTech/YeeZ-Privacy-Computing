@@ -9,3 +9,4 @@ add_trusted_library(ypc_gmssl_t
   EDL_SEARCH_PATHS ${PROJECT_SOURCE_DIR}/ypc/stbox/src)
 
 target_link_libraries(ypc_gmssl_t stbox_common_t stbox_gmssl_t)
+install(TARGETS ypc_gmssl_t DESTINATION lib COMPONENT c_ypc_core OPTIONAL)

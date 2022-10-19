@@ -77,6 +77,30 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/)
 
+MACRO(INSTALL_HEADERS_WITH_DIRECTORY HEADER_LIST)
+  FOREACH(HEADER ${${HEADER_LIST}})
+    STRING(REPLACE "${PROJECT_SOURCE_DIR}/" "" RPATH ${HEADER})
+    STRING(REGEX MATCH "(.*)/"  DIR ${RPATH})
+    INSTALL(FILES ${HEADER} DESTINATION include/${DIR})
+  ENDFOREACH(HEADER)
+ENDMACRO(INSTALL_HEADERS_WITH_DIRECTORY)
+
+file(GLOB_RECURSE DEPLOY_FILES_AND_DIRS_hpda hpda/include/*.h hpda/include/*.hpp)
+file(GLOB_RECURSE DEPLOY_FILES_AND_DIRS_ypc_common ypc/common/*.h ypc/common/*.hpp)
+file(GLOB_RECURSE DEPLOY_FILES_AND_DIRS_ypc_core ypc/core/include/*.h ypc/core/include/*.hpp ypc/core/include/*.ipp ypc/core/*.edl)
+file(GLOB_RECURSE DEPLOY_FILES_AND_DIRS_ypc_keymgr ypc/keymgr/include/*.h ypc/keymgr/include/*.hpp ypc/keymgr/include/*.ipp ypc/keymgr/*.edl)
+file(GLOB_RECURSE DEPLOY_FILES_AND_DIRS_ypc_stbox ypc/stbox/include/*.h ypc/stbox/include/*.hpp ypc/stbox/include/*.ipp ypc/stbox/*.edl)
+file(GLOB_RECURSE DEPLOY_FILES_AND_DIRS_ypc_stbox ypc/stbox/include/*.h ypc/stbox/include/*.hpp ypc/stbox/include/*.ipp ypc/stbox/*.edl)
+file(GLOB_RECURSE DEPLOY_FILES_AND_DIRS_toolkit toolkit/terminus/lib/include/*.h)
+set(DEPLOY_FILES_AND_DIRS ${DEPLOY_FILES_AND_DIRS_hpda}
+  ${DEPLOY_FILES_AND_DIRS_ypc_common}
+  ${DEPLOY_FILES_AND_DIRS_ypc_core}
+  ${DEPLOY_FILES_AND_DIRS_ypc_keymgr}
+  ${DEPLOY_FILES_AND_DIRS_ypc_stbox}
+  ${DEPLOY_FILES_AND_DIRS_toolkit}
+  )
+INSTALL_HEADERS_WITH_DIRECTORY(DEPLOY_FILES_AND_DIRS)
+
 add_subdirectory(vendor/pybind11)
 
 add_subdirectory(ypc)
