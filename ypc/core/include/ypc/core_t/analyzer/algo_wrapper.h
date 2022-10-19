@@ -60,6 +60,7 @@ public:
   }
 
   uint32_t parse_data_item(const uint8_t *input_param, uint32_t len) {
+
     uint32_t ret = algo_interface_t::parse_data_item_impl(input_param, len);
     if (ret) {
       LOG(ERROR) << "parse_data_item_impl failed: "

@@ -49,9 +49,10 @@ public:
     status = (stbox::stx_status)ecc::generate_pkey_from_skey(private_key,
                                                              check_pkey);
     if (status) {
-      LOG(ERROR) << "error for generate_secp256k1_pkey_from_skey: " << status;
+      LOG(ERROR) << "error for generate_ecc_pkey_from_skey: " << status;
       return status;
     }
+
     if (pubkey != check_pkey) {
       LOG(ERROR) << "check failed, invalid private key";
       return stbox::stx_status::kmgr_session_inconsistency_pkey_skey;

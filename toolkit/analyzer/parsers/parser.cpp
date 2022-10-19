@@ -21,6 +21,7 @@ ypc::bytes construct_access_control_policy() {
 
 uint32_t parser::parse() {
   auto parser_enclave_path = m_param.get<parser_path>();
+  LOG(INFO) << parser_enclave_path;
   auto keymgr_enclave_path = m_param.get<keymgr_path>();
   m_parser =
       std::make_shared<ypc::parser_sgx_module>(parser_enclave_path.c_str());
@@ -38,11 +39,11 @@ uint32_t parser::parse() {
 
   uint32_t ret = 0;
   if (shu_skey.size() > 0) {
+    LOG(INFO) << "keymgr_enclave_path: " << keymgr_enclave_path;
     ret = m_keymgr->forward_private_key(
         shu_skey.data(), shu_skey.size(), epkey.data(), epkey.size(),
         ehash.data(), ehash.size(), shu_forward_sig.data(),
         shu_forward_sig.size());
-
     if (ret) {
       LOG(ERROR) << "forward_message got error " << ypc::status_string(ret);
       return ret;
@@ -253,7 +254,6 @@ uint32_t parser::next_data_batch(const uint8_t *data_hash, uint32_t hash_size,
     *len = b.size();
     return stbox::stx_status::success;
   } else {
-    LOG(ERROR) << "data with hash: " << hash << " reach end";
     return stbox::stx_status::sealed_file_reach_end;
   }
 }

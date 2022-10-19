@@ -8,21 +8,21 @@ keymgr_sgx_module::keymgr_sgx_module(const char *mod_path)
     : ::stbox::sgx_module(mod_path) {}
 keymgr_sgx_module::~keymgr_sgx_module() {}
 
-uint32_t keymgr_sgx_module::get_secp256k1_sealed_private_key_size() {
-  return ecall<uint32_t>(::get_secp256k1_sealed_private_key_size);
+uint32_t keymgr_sgx_module::get_ecc_sealed_private_key_size() {
+  return ecall<uint32_t>(::get_ecc_sealed_private_key_size);
 }
 uint32_t
-keymgr_sgx_module::generate_secp256k1_key_pair(bref &_pkey,
+keymgr_sgx_module::generate_ecc_key_pair(bref &_pkey,
                                                bref &_sealed_private_key) {
   uint8_t *public_key;
   uint32_t pkey_size;
   uint8_t *sealed_private_key;
   uint32_t sealed_size;
   stbox::buffer_length_t buf_pub(&pkey_size, &public_key,
-                                 get_secp256k1_public_key_size);
+                                 get_ecc_public_key_size);
   stbox::buffer_length_t buf_sec(&sealed_size, &sealed_private_key,
-                                 ::get_secp256k1_sealed_private_key_size);
-  auto t = ecall<uint32_t>(::generate_secp256k1_key_pair, stbox::xmem(buf_pub),
+                                 ::get_ecc_sealed_private_key_size);
+  auto t = ecall<uint32_t>(::generate_ecc_key_pair, stbox::xmem(buf_pub),
                            stbox::xlen(buf_pub), stbox::xmem(buf_sec),
                            stbox::xlen(buf_sec));
 
@@ -37,7 +37,7 @@ uint32_t keymgr_sgx_module::sign_message(const uint8_t *sealed_private_key,
                                          uint32_t data_size, bref &_sig) {
   uint8_t *sig;
   uint32_t sig_size;
-  stbox::buffer_length_t buf_sig(&sig_size, &sig, get_secp256k1_signature_size);
+  stbox::buffer_length_t buf_sig(&sig_size, &sig, get_ecc_signature_size);
   auto t = ecall<uint32_t>(::sign_message, (uint8_t *)sealed_private_key,
                            sealed_size, (uint8_t *)data, data_size,
                            stbox::xmem(buf_sig), stbox::xlen(buf_sig));

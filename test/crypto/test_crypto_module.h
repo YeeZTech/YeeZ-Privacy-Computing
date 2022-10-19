@@ -11,7 +11,7 @@ public:
 
   ypc::bytes test_generate_pkey(const ypc::bytes &skey);
   ypc::bytes aes_cmac_msg(const ypc::bytes &p_key, const ypc::bytes &msg);
-  ypc::bytes aes_gcm_encrypt(const ypc::bytes &key, const ypc::bytes &data,
+  ypc::bytes test_aes_gcm_encrypt(const ypc::bytes &key, const ypc::bytes &data,
                              ypc::bytes &cipher, const ypc::bytes &iv,
                              const ypc::bytes &aad);
   ypc::bytes ecdh(const ypc::bytes &pkey, const ypc::bytes &skey);

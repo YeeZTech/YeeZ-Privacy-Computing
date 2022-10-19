@@ -5,7 +5,7 @@ int forward_private_key(ypc::terminus::crypto_pack *crypto,
                         const boost::program_options::variables_map &vm) {
   ypc::bytes private_key = get_param_privatekey(vm);
   ypc::bytes tee_pubkey = get_param_tee_pubkey(vm);
-  ypc::bytes enclave_hash = crypto->sha3_256(ypc::bytes("any enclave"));
+  ypc::bytes enclave_hash = crypto->hash_256(ypc::bytes("any enclave"));
   if (vm.count("use-enclave-hash")) {
     enclave_hash = ypc::hex_bytes(vm["use-enclave-hash"].as<std::string>())
                        .as<ypc::bytes>();

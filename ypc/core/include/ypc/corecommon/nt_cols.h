@@ -23,6 +23,7 @@ template <typename BytesType> struct nt {
   define_nt(model_data, BytesType);
   define_nt(param_data, BytesType);
   define_nt(encrypted_sig, BytesType);
+  //define_nt(crypto, std::string);
 
   define_nt(msg, std::string);
   define_nt(succ, bool);

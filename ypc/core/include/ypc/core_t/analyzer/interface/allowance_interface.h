@@ -53,6 +53,7 @@ struct check_data_allowance<sealed_data_stream>
         return stbox::stx_status::success;
       }
     }
+    
     LOG(ERROR) << "data source "
                << data_source_var_t::m_datasource->expect_data_hash()
                << " have no allowance";
@@ -112,6 +113,7 @@ public:
     }
 
     std::vector<stbox::bytes> checked_pkey;
+
     auto allowances = param.get<ntt::allowances>();
     for (auto allowance_i : allowances) {
       stbox::bytes pkey4v = allowance_i.get<ntt::pkey>();
@@ -151,6 +153,7 @@ public:
     }
     ret = data_checker_t::check_allowance_d(checked_pkey);
     if (ret) {
+      LOG(INFO) << "enter line 160 allowance_interface";
       LOG(ERROR) << "check_data_allowance failed: "
                  << stbox::status_string(ret);
       return ret;

@@ -10,6 +10,7 @@ template <typename Crypto> struct allowance {
   template <typename BytesType>
   static uint32_t check(const BytesType &private_key, const BytesType &msg,
                         const BytesType &allowance) {
+    //check(private_key, to_check_data, allow);
     BytesType pkey;
     auto ret = ecc::generate_pkey_from_skey(private_key, pkey);
     if (ret) {

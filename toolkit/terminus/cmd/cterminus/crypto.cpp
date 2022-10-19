@@ -47,7 +47,7 @@ int sha3_message(ypc::terminus::crypto_pack *crypto,
                  const boost::program_options::variables_map &vm) {
 
   ypc::bytes message = get_param_use_param(vm);
-  ypc::bytes data = crypto->sha3_256(message);
+  ypc::bytes data = crypto->hash_256(message);
   if (vm.count("output")) {
     std::string output_path =
         ypc::complete_path(vm["output"].as<std::string>());

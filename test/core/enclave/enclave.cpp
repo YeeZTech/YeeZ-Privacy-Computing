@@ -23,7 +23,6 @@
 #include <unordered_map>
 
 using ecc = ypc::crypto::eth_sgx_crypto;
-using raw_ecc = ecc;
 using sealer = stbox::crypto::device_sealer<stbox::crypto::intel_sgx>;
 using raw_sealer = stbox::crypto::raw_device_sealer<stbox::crypto::intel_sgx>;
 
@@ -64,10 +63,10 @@ uint32_t get_encrypted_result_and_signature(
       ecc::get_encrypt_message_size_with_prefix(result.size());
 
   uint8_t pkey[64];
-  raw_ecc::generate_pkey_from_skey(_private_key, private_key_size, pkey, 64);
+  ecc::generate_pkey_from_skey(_private_key, private_key_size, pkey, 64);
   LOG(INFO) << "pkey: " << stbox::bytes(pkey, 64);
 
-  auto status = raw_ecc::encrypt_message_with_prefix(
+  auto status = ecc::encrypt_message_with_prefix(
       (const uint8_t *)&pkey[0], 64, (const uint8_t *)result.data(),
       result.size(), ::ypc::utc::crypto_prefix_arbitrary, _encrypted_res,
       res_size);
@@ -78,15 +77,14 @@ uint32_t get_encrypted_result_and_signature(
   LOG(INFO) << "enclave_hash: " << enclave_hash;
   LOG(INFO) << "cost message: " << cost_msg;
 
-  status = raw_ecc::sign_message(_private_key, private_key_size,
-                                 (uint8_t *)&cost_msg[0], cost_msg.size(),
-                                 _cost_sig, cost_sig_size);
+  status =
+      ecc::sign_message(_private_key, private_key_size, (uint8_t *)&cost_msg[0],
+                        cost_msg.size(), _cost_sig, cost_sig_size);
 
   auto msg = cost_msg + stbox::bytes(_encrypted_res, res_size);
   LOG(INFO) << "result message: " << msg;
-  status =
-      raw_ecc::sign_message(_private_key, private_key_size, (uint8_t *)&msg[0],
-                            msg.size(), _result_sig, sig_size);
+  status = ecc::sign_message(_private_key, private_key_size, (uint8_t *)&msg[0],
+                             msg.size(), _result_sig, sig_size);
   return status;
 }
 

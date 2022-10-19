@@ -37,7 +37,7 @@ ypc::bytes test_crypto_sgx_module::aes_cmac_msg(const ypc::bytes &p_key,
   }
   return ypc::bytes(ret, 16);
 }
-ypc::bytes test_crypto_sgx_module::aes_gcm_encrypt(const ypc::bytes &key,
+ypc::bytes test_crypto_sgx_module::test_aes_gcm_encrypt(const ypc::bytes &key,
                                                    const ypc::bytes &data,
                                                    ypc::bytes &cipher,
                                                    const ypc::bytes &iv,

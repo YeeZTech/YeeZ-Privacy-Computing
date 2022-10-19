@@ -29,12 +29,12 @@ public:
     }
     return ret;
   }
-  virtual bytes sha3_256(const bytes &msg) {
+  virtual bytes hash_256(const bytes &msg) {
     bytes sig;
     auto status = crypto_t::hash_256(msg, sig);
     if (status) {
-      std::cerr << "sha3_256 return " << std::hex << status << std::endl;
-      throw std::runtime_error("terminus lib sha3_256 fail");
+      std::cerr << "hash_256 return " << std::hex << status << std::endl;
+      throw std::runtime_error("terminus lib hash_256 fail");
     }
     return sig;
   }

@@ -1,4 +1,6 @@
 
+add_subdirectory(gmssl)
+
 add_library(stbox_keccak_u keccak/keccak.c)
 add_sgx_library(stbox_keccak_t stbox_keccak_t SRCS keccak/keccak.c)
 
