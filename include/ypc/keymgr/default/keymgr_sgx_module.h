@@ -18,8 +18,7 @@ public:
 
   ///////////
   uint32_t get_ecc_sealed_private_key_size();
-  uint32_t generate_ecc_key_pair(bref &public_key,
-                                       bref &sealed_private_key);
+  uint32_t generate_ecc_key_pair(bref &public_key, bref &sealed_private_key);
 
   uint32_t sign_message(const uint8_t *sealed_private_key, uint32_t sealed_size,
                         const uint8_t *data, uint32_t data_size, bref &sig);
