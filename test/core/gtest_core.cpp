@@ -1,5 +1,5 @@
 #include "test_ypc_module.h"
-#include "ypc/byte.h"
+#include "ypc/core/byte.h"
 #include <gtest/gtest.h>
 #include <memory>
 

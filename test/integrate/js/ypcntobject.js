@@ -1,5 +1,4 @@
 var ByteBuffer = require('bytebuffer')
-var Long = require('long')
 
 const YPCNtObject = function () {
 	if (!(this instanceof YPCNtObject)) {
@@ -11,66 +10,68 @@ const YPCNtObject = function () {
 	// {"type":"int8", "value":120},
 	// {"type":"bytes", "value":0xdadfdfdfdfd}]
 	this.generateBytes = function (input) {
-		length = this.getLengthOf(input)
-		buffer = new ByteBuffer(length, ByteBuffer.LITTLE_ENDIAN)
+		let length = this.getLengthOf(input)
+		let buffer = new ByteBuffer(length, ByteBuffer.LITTLE_ENDIAN)
 		var inputLength = input.length
-		offset = 4
+		let offset = 4
 		for (var i = 0; i < inputLength; i++) {
-			d = input[i]
-			v = d['value']
+			let d = input[i]
+			let v = d['value']
+
 			switch (d['type']) {
 				case 'bool':
-					buffer.writeInt8(d['value'] === 'true' ? 1 : 0, offset)
+					buffer.writeInt8(d['value'] == true ? 1 : 0, offset)
 					offset += 1
 					break
 				case 'uint8_t':
-					buffer.writeUint8(Number(v), offset)
+					buffer.writeUint8(v, offset)
 					offset += 1
 					break
 				case 'int8_t':
-					buffer.writeInt8(Number(v), offset)
+					buffer.writeInt8(v, offset)
 					offset += 1
 					break
 				case 'int16_t':
-					buffer.writeInt16(Number(v), offset)
+					buffer.writeInt16(v, offset)
 					offset += 2
 					break
 				case 'uint16_t':
-					buffer.writeUint16(Number(v), offset)
+					buffer.writeUint16(v, offset)
 					offset += 2
 					break
 				case 'int32_t':
-					buffer.writeInt32(Number(v), offset)
+					buffer.writeInt32(v, offset)
 					offset += 4
 					break
 				case 'uint32_t':
-					buffer.writeUint32(Number(v), offset)
+					buffer.writeUint32(v, offset)
 					offset += 4
 					break
 				case 'int64_t':
-					buffer.writeInt64(ByteBuffer.Long.fromString(v, false, 10), offset)
+					buffer.writeInt64(v, offset)
 					offset += 8
 					break
 				case 'uint64_t':
-					buffer.writeUint64(ByteBuffer.Long.fromString(v, true, 10), offset)
+					buffer.writeUint16(v, offset)
 					offset += 8
 					break
 				case 'float':
-					buffer.writeFloat(Number(v), offset)
+					buffer.writeFloat(v, offset)
 					offset += 4
 					break
 				case 'double':
-					buffer.writeDouble(Number(v), offset)
+					buffer.writeDouble(v, offset)
 					offset += 8
 					break
 				case 'string':
-					buffer.writeUint64(Buffer.byteLength(v, 'utf8'), offset)
+				  byteLen = Buffer.byteLength(v, 'utf8')
+					buffer.writeUint64(byteLen, offset)
 					offset += 8
 					buffer.writeString(v, offset)
-					offset += v.length
+					offset += byteLen
 					break
 				case 'bytes':
-					buffer.writeUint64(Buffer.from(v, 'utf-8').length, offset)
+					buffer.writeUint64(v.length, offset)
 					offset += 8
 					buffer.append(v, offset)
 					offset += v.length
@@ -80,12 +81,93 @@ const YPCNtObject = function () {
 		return buffer
 	}
 
+	// schema = [{"name": "", "type": "string"}, {"name": "", "type": "uint64_t"}]
+	this.decodeBytes = function (schema, buf) {
+		if(!schema) return ''
+		const buffer = new ByteBuffer(buf.length, ByteBuffer.LITTLE_ENDIAN);
+		buffer.append(buf, 0);
+		let offset = 4;
+		let args = [];
+		let v = null;
+		for (let i = 0; i < schema.length; i++) {
+			let d = schema[i];
+			args.push(d);
+			switch (d["type"]) {
+				case "bool":
+					v = buffer.readInt8(offset);
+					args[i]["value"] = v == 1 ? true : false;
+					offset += 1;
+					break;
+				case "int8_t":
+					v = buffer.readInt8(offset);
+					args[i]["value"] = v;
+					offset += 1;
+					break;
+				case "uint8_t":
+					v = buffer.readUint8(offset);
+					args[i]["value"] = v;
+					offset += 1;
+					break;
+				case "int16_t":
+					v = buffer.readInt16(offset);
+					args[i]["value"] = v;
+					offset += 2;
+					break;
+				case "uint16_t":
+					v = buffer.readUint16(offset);
+					args[i]["value"] = v;
+					offset += 2;
+					break;
+				case "int32_t":
+					v = buffer.readInt32(offset);
+					args[i]["value"] = v;
+					offset += 4;
+					break;
+				case "uint32_t":
+					v = buffer.readUint32(offset);
+					args[i]["value"] = v;
+					offset += 4;
+					break;
+				case "int64_t":
+					v = buffer.readInt64(offset);
+					args[i]["value"] = v.toNumber();
+					offset += 8;
+					break;
+				case "uint64_t":
+					v = buffer.readUint64(offset);
+					args[i]["value"] = v.toNumber();
+					offset += 8;
+					break;
+				case "float":
+					v = buffer.readFloat(offset);
+					args[i]["value"] = v;
+					offset += 4;
+					break;
+				case "double":
+					v = buffer.readDouble(offset);
+					args[i]["value"] = v;
+					offset += 8;
+					break;
+				case "string":
+					byteLen = buffer.readUint64(offset);
+					byteLen = byteLen.toNumber();
+					offset += 8;
+					buf = buffer.slice(offset, offset + byteLen);
+					//v = buffer.readString(byteLen, offset)
+					args[i]["value"] = buf.toString("utf8");
+					offset += byteLen;
+					break;
+			}
+		}
+		return args;
+	};
+
 	this.getLengthOf = function (input) {
 		var c = 4
 		var inputLength = input.length
 		for (var i = 0; i < inputLength; i++) {
-			d = input[i]
-			l = 0
+			let d = input[i]
+			let l = 0
 			switch (d['type']) {
 				case 'bool':
 					l = 1
@@ -121,7 +203,8 @@ const YPCNtObject = function () {
 					l = 8
 					break
 				case 'string':
-					l = 8 + d['value'].length
+				  byteLen = Buffer.byteLength(d['value'], 'utf8')
+					l = 8 + byteLen
 					break
 				case 'bytes':
 					l = 8 + d['value'].length

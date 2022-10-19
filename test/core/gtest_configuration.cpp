@@ -1,6 +1,6 @@
-#include "ypc/command_executor.h"
-#include "ypc/configuration.h"
-#include "ypc/filesystem.h"
+#include "ypc/core/command_executor.h"
+#include "ypc/core/configuration.h"
+#include "ypc/core/filesystem.h"
 #include <boost/filesystem.hpp>
 #include <gtest/gtest.h>
 

@@ -207,6 +207,11 @@ template <typename InputObjType, typename GroupByType, typename AggregatorType,
 using groupby = internal::groupby_impl<InputObjType, ntobject<ARGS...>,
                                        GroupByType, AggregatorType>;
 
+template <typename InputObjType, typename OutputObjType, typename GroupByType,
+          typename AggregatorType>
+using groupby_t = internal::groupby_impl<InputObjType, OutputObjType,
+                                         GroupByType, AggregatorType>;
+
 namespace group {
 template <typename InputObjType, typename OutputObjType>
 using sum = internal::sum<InputObjType, OutputObjType>;

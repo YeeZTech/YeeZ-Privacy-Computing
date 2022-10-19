@@ -1,5 +1,6 @@
 #pragma once
 #include "ypc/terminus/crypto_pack.h"
+
 namespace ypc {
 namespace terminus {
 class interaction_base {

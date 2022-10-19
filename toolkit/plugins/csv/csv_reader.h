@@ -1,6 +1,7 @@
 #pragma once
 #include "csv.h"
 #include "csv_read_assign_helper.h"
+#include "ypc/corecommon/package.h"
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <ff/util/ntobject.h>
@@ -49,11 +50,6 @@ template <typename T>
 class typed_csv_reader : public csv_reader {
 public:
   typedef T item_t;
-  template <typename NT> struct cast_obj_to_package {};
-  template <typename... ARGS>
-  struct cast_obj_to_package<::ff::util::ntobject<ARGS...>> {
-    typedef ::ff::net::ntpackage<0, ARGS...> type;
-  };
 
   // TODO we should add more csv options here
   /// @extra_param should be a json string, like this

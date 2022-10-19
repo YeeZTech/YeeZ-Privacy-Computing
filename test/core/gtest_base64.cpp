@@ -1,4 +1,4 @@
-#include "common/byte/base64.h"
+#include "ypc/common/byte/base64.h"
 #include <gtest/gtest.h>
 
 TEST(test_base64, encode_decode) {

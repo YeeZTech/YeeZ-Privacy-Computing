@@ -1,14 +1,14 @@
-#include "stbox/ebyte.h"
-#include "stbox/stx_common.h"
+#include "ypc/core_t/analyzer/data_source.h"
+#include "ypc/stbox/ebyte.h"
+#include "ypc/stbox/stx_common.h"
 #ifdef YPC_SGX
-#include "stbox/tsgx/log.h"
-#include "ypc_t/analyzer/parser_wrapper_base.h"
-#include "ypc_t/analyzer/to_type.h"
+#include "ypc/stbox/tsgx/log.h"
 #else
 #include <glog/logging.h>
 #endif
 #include "user_type.h"
 
+#include "ypc/corecommon/to_type.h"
 #include <hpda/extractor/raw_data.h>
 #include <hpda/output/memory_output.h>
 #include <hpda/processor/processor_base.h>
@@ -57,11 +57,10 @@ define_nt(iid, int);
 typedef ff::util::ntobject<sepal_len, sepal_wid, petal_len, petal_wid, species>
     extra_nt_t;
 class transform_format
-    : public hpda::processor::internal::processor_base<extra_nt_t,
-                                                       user_item_t> {
+    : public hpda::processor::processor_base_t<extra_nt_t, user_item_t> {
 public:
-  transform_format(::hpda::internal::processor_with_output<extra_nt_t> *t)
-      : hpda::processor::internal::processor_base<extra_nt_t, user_item_t>(t) {}
+  transform_format(::hpda::processor_with_output_t<extra_nt_t> *t)
+      : hpda::processor::processor_base_t<extra_nt_t, user_item_t>(t) {}
 
   virtual bool process() {
     if (!has_input_value()) {
@@ -84,42 +83,16 @@ protected:
 
 class enclave_iris_parser {
 public:
-  enclave_iris_parser() {}
-#ifdef YPC_SGX
-  enclave_iris_parser(
-      ::hpda::internal::processor_with_output<user_item_t> *source,
-      const std::vector<ypc::extra_data_source_group> &extra_data_sources)
-      : m_source(source), m_extra_data_source(extra_data_sources){};
-#else
-  template <typename ET>
-  enclave_iris_parser(
-      ::hpda::internal::processor_with_output<user_item_t> *source, ET &&t)
-      : m_source(source) {}
-#endif
+  enclave_iris_parser(ypc::data_source<stbox::bytes> *source)
+      : m_source(source){};
 
   inline stbox::bytes do_parse(const stbox::bytes &param) {
-#ifdef YPC_SGX
-    hpda::processor::concat<iris_data, species> concat(m_source);
-    std::vector<std::shared_ptr<ypc::to_type<extra_nt_t>>> m_tts;
-    std::vector<std::shared_ptr<transform_format>> tfs;
-
-    for (auto it : m_extra_data_source) {
-      for (auto ds : it.data_sources) {
-        m_tts.push_back(std::make_shared<ypc::to_type<extra_nt_t>>(ds.get()));
-        tfs.push_back(
-            std::make_shared<transform_format>(m_tts[m_tts.size() - 1].get()));
-        concat.add_upper_stream(tfs[tfs.size() - 1].get());
-      }
-    }
+    ypc::to_type<stbox::bytes, extra_nt_t> converter(m_source);
+    transform_format trans(&converter);
 
     hpda::algorithm::kmeans::kmeans_processor<
         hpda::ntobject<iris_data, species>, iris_data, double, iid>
-        km(&concat, 3, 0.001);
-#else
-    hpda::algorithm::kmeans::kmeans_processor<
-        hpda::ntobject<iris_data, species>, iris_data, double, iid>
-        km(m_source, 3, 0.001);
-#endif
+        km(&trans, 3, 0.001);
 
     hpda::output::memory_output<iris_data, species, iid> mo(
         km.data_with_cluster_stream());
@@ -138,15 +111,49 @@ public:
     }
     return result;
   }
-  inline bool merge_parse_result(const std::vector<stbox::bytes> &block_result,
-                                 const stbox::bytes &param,
-                                 stbox::bytes &result) {
-    return false;
+
+protected:
+  ypc::data_source<stbox::bytes> *m_source;
+};
+
+class enclave_iris_means_parser {
+public:
+  enclave_iris_means_parser(ypc::data_source<stbox::bytes> *source)
+      : m_source(source){};
+
+  inline stbox::bytes do_parse(const stbox::bytes &param) {
+    ypc::to_type<stbox::bytes, extra_nt_t> converter(m_source);
+    transform_format trans(&converter);
+
+    typedef hpda::algorithm::kmeans::kmeans_processor<
+        hpda::ntobject<iris_data, species>, iris_data, double, iid>
+        kmeans_t;
+    kmeans_t km(&trans, 3, 0.001);
+
+    hpda::output::memory_output<iid, kmeans_t::mean_point,
+                                kmeans_t::average_distance>
+        mo(km.means_stream());
+
+    mo.get_engine()->run();
+    stbox::bytes result;
+    int i = 0;
+    for (auto it : mo.values()) {
+      result += std::to_string(it.get<iid>());
+      result += " - ";
+      auto id = it.get<kmeans_t::mean_point>();
+      result += " (" + std::to_string(id.template get<sepal_len>());
+      result += " ," + std::to_string(id.get<sepal_wid>());
+      result += " ," + std::to_string(id.get<petal_len>());
+      result += " ," + std::to_string(id.get<petal_wid>());
+      result += ") ";
+      result += "\n";
+      i++;
+      // LOG(INFO) << i << ": " << it.get<species>() << " - "
+      //<< std::to_string(it.get<iid>());
+    }
+    return result;
   }
 
 protected:
-  hpda::internal::processor_with_output<user_item_t> *m_source;
-#ifdef YPC_SGX
-  std::vector<ypc::extra_data_source_group> m_extra_data_source;
-#endif
+  ypc::data_source<stbox::bytes> *m_source;
 };

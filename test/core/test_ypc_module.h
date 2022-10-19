@@ -1,7 +1,7 @@
 #pragma once
-#include "common/crypto_prefix.h"
-#include "stbox/usgx/sgx_module.h"
-#include "ypc/byte.h"
+#include "ypc/common/crypto_prefix.h"
+#include "ypc/core/byte.h"
+#include "ypc/stbox/usgx/sgx_module.h"
 #include <iostream>
 
 using stx_status = stbox::stx_status;

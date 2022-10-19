@@ -1,5 +1,6 @@
 
-#include "ypc/byte.h"
+#include "ypc/core/byte.h"
+#include <algorithm>
 #include <gtest/gtest.h>
 #include <iostream>
 #include <sstream>
@@ -248,5 +249,17 @@ TEST(test_byte, base64_encoding_decoding) {
       "IGZvciBhIGNvbnRpbnVvdXNseSBpbXByb3ZpbmcgZWNvc3lzdGVtLg==");
   // test_base64_encoding_decoding<ypc::fix_bytes<94>>(input);
   test_base64_encoding_decoding<ypc::base64_bytes>(input);
+}
+
+TEST(test_sort, test_sort) {
+  uint64_t v = 124;
+  ypc::bytes a = ypc::number_to_byte<ypc::bytes>(v);
+  ypc::bytes b = ypc::number_to_byte<ypc::bytes>(v + 100);
+  std::vector<ypc::bytes> vs({a, b});
+  std::vector<ypc::bytes> vs1({b, a});
+  std::sort(vs.begin(), vs.end());
+  std::sort(vs1.begin(), vs1.end());
+  EXPECT_TRUE(vs[0] < vs[1]);
+  EXPECT_TRUE(vs1[0] < vs1[1]);
 }
 

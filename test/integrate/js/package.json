@@ -1,0 +1,14 @@
+{
+	"name": "ypc-js-sdk",
+	"version": "1.0.0",
+	"dependencies": {
+		"node-aes-cmac": "",
+		"secp256k1": "",
+		"js-sha256": "",
+		"keccak256": "",
+		"bytebuffer": "",
+		"n-readlines": "",
+		"commander": "",
+		"yargs": ""
+	}
+}

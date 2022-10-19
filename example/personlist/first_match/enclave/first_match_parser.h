@@ -1,12 +1,17 @@
-#include "corecommon/package.h"
-#include "stbox/ebyte.h"
-#include "stbox/stx_common.h"
+#include "ypc/corecommon/package.h"
+#include "ypc/stbox/ebyte.h"
+#include "ypc/stbox/stx_common.h"
 #ifdef EXAMPLE_FM_NORMAL
-#include "glog/logging.h"
+#include <glog/logging.h>
+typedef ypc::bytes bytes;
 #else
-#include "stbox/tsgx/log.h"
+#include "ypc/core_t/analyzer/data_source.h"
+#include "ypc/stbox/tsgx/log.h"
+typedef stbox::bytes bytes;
 #endif
 #include "user_type.h"
+#include "ypc/corecommon/data_source.h"
+#include "ypc/corecommon/to_type.h"
 #include <hpda/extractor/raw_data.h>
 #include <hpda/output/memory_output.h>
 #include <hpda/processor/query/filter.h>
@@ -18,18 +23,15 @@ typedef ff::net::ntpackage<0, input_buf> input_buf_t;
 class first_match_parser {
 public:
   first_match_parser() {}
-  template <typename ET>
-  first_match_parser(
-      ::hpda::extractor::internal::extractor_base<user_item_t> *source,
-      ET &&ignore)
-      : m_source(source){};
+  first_match_parser(ypc::data_source<bytes> *source) : m_source(source){};
 
-  inline stbox::bytes do_parse(const stbox::bytes &param) {
+  inline bytes do_parse(const bytes &param) {
     LOG(INFO) << "do parse";
+    ypc::to_type<bytes, user_item_t> converter(m_source);
     auto pkg = ypc::make_package<input_buf_t>::from_bytes(param);
     int counter = 0;
     hpda::processor::internal::filter_impl<user_item_t> match(
-        m_source, [&](const user_item_t &v) {
+        &converter, [&](const user_item_t &v) {
           counter++;
           std::string zjhm = v.get<ZJHM>();
           if (zjhm == pkg.get<input_buf>()) {
@@ -42,7 +44,7 @@ public:
     mo.get_engine()->run();
     LOG(INFO) << "do parse done";
 
-    stbox::bytes result;
+    bytes result;
     for (auto it : mo.values()) {
       stbox::printf("found\n");
       result += it.get<XM>();
@@ -53,10 +55,9 @@ public:
     return result;
   }
 
-  inline bool merge_parse_result(const std::vector<stbox::bytes> &block_result,
-                                 const stbox::bytes &param,
-                                 stbox::bytes &result) {
-    stbox::bytes s;
+  inline bool merge_parse_result(const std::vector<bytes> &block_result,
+                                 const bytes &param, bytes &result) {
+    bytes s;
     for (auto k : block_result) {
       s = s + k;
     }
@@ -65,6 +66,6 @@ public:
   }
 
 protected:
-  hpda::extractor::internal::extractor_base<user_item_t> *m_source;
+  ypc::data_source<bytes> *m_source;
 };
 

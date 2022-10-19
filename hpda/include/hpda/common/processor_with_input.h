@@ -33,9 +33,17 @@ public:
 
   inline void consume_input_value() { m_upper_stream->reset_done_value(); }
 
+  inline void change_upper_stream(processor_with_output<InputObjType> *input) {
+    m_upper_stream = input;
+  }
+
 protected:
   internal::processor_with_output<InputObjType> *m_upper_stream;
 };
 
 } // namespace internal
+template <typename... ARGS>
+using processor_with_input = internal::processor_with_input<ntobject<ARGS...>>;
+template <typename T>
+using processor_with_input_t = internal::processor_with_input<T>;
 } // namespace hpda

@@ -2,7 +2,7 @@
 
 enclave {
     include "sgx_eid.h"
-    include "stbox/tsgx/channel/dh_cdef.h"
+    include "ypc/stbox/tsgx/channel/dh_cdef.h"
     from "sgx_tstdc.edl" import *;
     from "ecc.edl" import *;
 

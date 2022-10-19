@@ -39,3 +39,4 @@ bin
 generate
 
 test/integrate
+.vscode/

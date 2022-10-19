@@ -1,16 +1,15 @@
-#include "./test_crypto_module.h"
-#include "common/crypto_prefix.h"
+#include "test_crypto_module.h"
 #include "enclave_u.h"
-#include "sgx_dh.h"
-#include "sgx_eid.h"
-#include "sgx_error.h"
-#include "stbox/eth/util.h"
-#include "stbox/stx_status.h"
-#include "stbox/tsgx/channel/dh_cdef.h"
-#include "stbox/usgx/sgx_module.h"
-#include "ypc/byte.h"
-#include "ypc/ref.h"
+#include "ypc/common/crypto_prefix.h"
+#include "ypc/core/byte.h"
+#include "ypc/core/ref.h"
+#include "ypc/stbox/stx_status.h"
+#include "ypc/stbox/tsgx/channel/dh_cdef.h"
+#include "ypc/stbox/usgx/sgx_module.h"
 #include <iostream>
+#include <sgx_dh.h>
+#include <sgx_eid.h>
+#include <sgx_error.h>
 
 test_crypto_sgx_module::test_crypto_sgx_module(const char *mod_path)
     : stbox::sgx_module(mod_path) {}
@@ -38,7 +37,7 @@ ypc::bytes test_crypto_sgx_module::aes_cmac_msg(const ypc::bytes &p_key,
   }
   return ypc::bytes(ret, 16);
 }
-ypc::bytes test_crypto_sgx_module::aes_gcm_encrypt(const ypc::bytes &key,
+ypc::bytes test_crypto_sgx_module::test_aes_gcm_encrypt(const ypc::bytes &key,
                                                    const ypc::bytes &data,
                                                    ypc::bytes &cipher,
                                                    const ypc::bytes &iv,
@@ -87,7 +86,7 @@ ypc::bytes test_crypto_sgx_module::encrypt(const ypc::bytes &pkey,
                            prefix, (uint8_t *)&data[0], data.size(),
                            (uint8_t *)&cipher[0], cipher.size());
   if (t != 0) {
-    std::cout << "ret: " << t << std::endl;
+    std::cout << "ret: " << stbox::status_string(t) << std::endl;
     throw std::runtime_error("invalid encrypt call");
   }
   return cipher;
@@ -103,7 +102,7 @@ ypc::bytes test_crypto_sgx_module::decrypt(const ypc::bytes &skey,
                            prefix, (uint8_t *)&cipher[0], cipher.size(),
                            (uint8_t *)&data[0], data.size());
   if (t != 0) {
-    std::cout << "ret: " << t << std::endl;
+    std::cout << "ret: " << stbox::status_string(t) << std::endl;
     throw std::runtime_error("invalid decrypt call");
   }
   return data;
@@ -115,7 +114,7 @@ ypc::bytes test_crypto_sgx_module::sign_message(const ypc::bytes &skey,
       ecall<uint32_t>(::test_sign_message, (uint8_t *)&skey[0], 32,
                       (uint8_t *)&data[0], data.size(), (uint8_t *)&sig[0]);
   if (t != 0) {
-    std::cout << "ret: " << t << std::endl;
+    std::cout << "ret: " << stbox::status_string(t) << std::endl;
     throw std::runtime_error("invalid sign");
   }
   return sig;

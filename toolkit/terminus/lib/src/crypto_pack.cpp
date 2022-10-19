@@ -1,17 +1,20 @@
-#include "ypc/terminus/crypto_pack.h"
+#include "toolkit/terminus/lib/include/ypc/terminus/crypto_pack.h"
+#include "ypc/corecommon/crypto/crypto_pack.h"
+#include "ypc/corecommon/crypto/stdeth.h"
+#include "ypc/corecommon/crypto/gmssl.h"
 
 namespace ypc {
 namespace terminus {
-bytes crypto_pack::sign_message(const bytes &message,
-                                const bytes &private_key) {
-  return sign_hash(chain_hash(message), private_key);
+
+std::unique_ptr<crypto_pack> intel_sgx_and_eth_compatible() {
+  return std::unique_ptr<crypto_pack>(
+      new crypto_pack_t<::ypc::crypto::eth_sgx_crypto>());
 }
 
-bool crypto_pack::verify_message_signature(const bytes &sig,
-                                           const bytes &message,
-                                           const bytes &pubkey) {
-  auto hash = chain_hash(message);
-  return verify_hash_signature(sig, hash, pubkey);
+std::unique_ptr<crypto_pack> sm_compatible() {
+  return std::unique_ptr<crypto_pack>(
+      new crypto_pack_t<::ypc::crypto::gmssl_sgx_crypto>());
 }
+
 } // namespace terminus
 } // namespace ypc

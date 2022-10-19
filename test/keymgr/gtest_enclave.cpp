@@ -20,8 +20,7 @@ int main() {
 
   uint32_t pkey_size, skey_size;
   uint8_t *public_key, *private_key;
-  ptr->generate_secp256k1_key_pair(&public_key, &pkey_size, &private_key,
-                                   &skey_size);
+  ptr->generate_ecc_key_pair(&public_key, &pkey_size, &private_key, &skey_size);
 
   uint32_t sig_size;
   uint8_t *sig;

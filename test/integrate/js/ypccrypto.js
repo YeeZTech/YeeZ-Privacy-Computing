@@ -30,14 +30,9 @@ const YPCCrypto = function () {
 	const algorithm = 'aes-128-gcm'
 	const aad = Buffer.from('tech.yeez.key.manager')
 
-	const iv_array = new Uint8Array([
-		89, 101, 101, 90, 70, 105, 100, 101, 108, 105, 117, 115
-	])
-	const iv = Buffer.from(iv_array)
-
-  //let cmac_key = new Uint8Array(16)
-  //cmac_key.set('yeez.tech.stbox')
-  let cmac_key = Buffer.from("7965657a2e746563682e7374626f7800", 'hex')
+	//let cmac_key = new Uint8Array(16)
+	//cmac_key.set('yeez.tech.stbox')
+	let cmac_key = Buffer.from('7965657a2e746563682e7374626f7800', 'hex')
 
 	let derivation_buffer = new Uint8Array(aad.length + 4)
 	derivation_buffer[0] = 0x01
@@ -74,18 +69,16 @@ const YPCCrypto = function () {
 			pkey = Uint8Array.from([...prefix, ...pkey])
 		}
 		const shared_key = gen_ecdh_key_from(skey, pkey)
-		console.log('ecdh key: ', shared_key.toString('hex'))
 		// The following algorithm is from ypc/stbox/src/tsgx/crypto/ecp.cpp
 		const options = { returnAsBuffer: true }
 		const key_derive_key = aesCmac(cmac_key, shared_key, options)
-		console.log('cmac_key: ', cmac_key.toString('hex'))
-		console.log("first derive key: ", key_derive_key.toString('hex'))
 		const derived_key = aesCmac(key_derive_key, derivation_buffer, options)
 		return derived_key
 	}
 
 	this._encryptMessage = function (pkey, skey, msg, prefix) {
 		const enc_key = this.generateAESKeyFrom(pkey, skey)
+		let iv = randomBytes(12)
 		let cipher = crypto.createCipheriv(algorithm, enc_key, iv)
 		const tad = new Uint8Array(64)
 		tad.set(aad)
@@ -102,12 +95,14 @@ const YPCCrypto = function () {
 			msg.length +
 			64 + // public key size
 			// sig_size + // sinature_size
-			16 // gcm tag size
+			16 + // gcm tag size
+		  12 //iv size
 
 		cipher = new Uint8Array(length)
 		cipher.set(encrypted)
-		cipher.set(this.generatePublicKeyFromPrivateKey(skey), encrypted.length)
-		cipher.set(tag, msg.length + 64)
+		cipher.set(iv, encrypted.length)
+		cipher.set(this.generatePublicKeyFromPrivateKey(skey), encrypted.length + 12)
+		cipher.set(tag, msg.length + 64 + 12)
 		return Buffer.from(cipher)
 	}
 
@@ -118,22 +113,22 @@ const YPCCrypto = function () {
 	}
 	this.generateEncryptedInput = function (local_pkey, input) {
 		const ots = this.generatePrivateKey()
-		console.log('input:', input)
-		console.log('input.buffer:', input.buffer)
 		return this._encryptMessage(local_pkey, ots, input.buffer, 0x2)
 	}
 	// 调用
-	this.decryptMessage = function (skey, msg) {
-		const encrypted = msg.slice(0, msg.length - 64 - 16)
-		const pkey = msg.slice(encrypted.length, msg.length - 16)
+	this._decryptMessageWithPrefix = function (skey, msg, prefix) {
+		const encrypted = msg.slice(0, msg.length - 64 - 16 - 12)
+		const liv = msg.slice(encrypted.length, msg.length - 64 - 16)
+
+		const pkey = msg.slice(encrypted.length + 12, msg.length - 16)
 		const tag = msg.slice(msg.length - 16)
 
 		const enc_key = this.generateAESKeyFrom(pkey, skey)
-		const decipher = crypto.createDecipheriv(algorithm, enc_key, iv)
+		const decipher = crypto.createDecipheriv(algorithm, enc_key, liv)
 		decipher.setAuthTag(tag)
 		const tad = new Uint8Array(64)
 		tad.set(aad)
-		tad[24] = 0x2
+		tad[24] = prefix
 		decipher.setAAD(Buffer.from(tad), {
 			plaintextLength: encrypted.length
 		})
@@ -142,38 +137,21 @@ const YPCCrypto = function () {
 		return Buffer.from(dec, 'hex')
 	}
 
-	this.decryptForwardMessage = function (skey, msg) {
-		const encrypted = msg.slice(0, msg.length - 64 - 16)
-		const pkey = msg.slice(encrypted.length, msg.length - 16)
-		const tag = msg.slice(msg.length - 16)
+	this.decryptMessage = function (skey, msg) {
+		return this._decryptMessageWithPrefix(skey, msg, 0x2)
+	}
 
-		const enc_key = this.generateAESKeyFrom(pkey, skey)
-		console.log("xxx pkey:", pkey.toString('hex'), "skey: ", skey.toString('hex'), "derived key: ", enc_key.toString('hex'))
-		const decipher = crypto.createDecipheriv(algorithm, enc_key, iv)
-		decipher.setAuthTag(tag)
-		const tad = new Uint8Array(64)
-		tad.set(aad)
-		tad[24] = 0x1
-		decipher.setAAD(Buffer.from(tad), {
-			plaintextLength: encrypted.length
-		})
-		let dec = decipher.update(encrypted, 'hex', 'hex')
-		dec += decipher.final('hex')
-		return Buffer.from(dec, 'hex')
+	this.decryptForwardMessage = function (skey, msg) {
+		return this._decryptMessageWithPrefix(skey, msg, 0x1)
 	}
 
 	const eth_hash_prefix = Buffer.from('\x19Ethereum Signed Message:\n32')
 
-	this.generateSignature = function (skey, cipher, epkey, ehash) {
-		const data = new Uint8Array(4 + cipher.length + epkey.length + ehash.length)
+	this.generateSignature = function (skey, epkey, ehash) {
+		const data = new Uint8Array(epkey.length + ehash.length)
 
-		data[0] = 0x1
-		data[1] = 0
-		data[2] = 0
-		data[3] = 0
-		data.set(cipher, 4)
-		data.set(epkey, 4 + cipher.length)
-		data.set(ehash, 4 + cipher.length + epkey.length)
+		data.set(epkey, 0)
+		data.set(ehash, epkey.length)
 		const raw_hash = keccak256(Buffer.from(data))
 		let msg = new Uint8Array(eth_hash_prefix.length + raw_hash.length)
 		msg.set(eth_hash_prefix)

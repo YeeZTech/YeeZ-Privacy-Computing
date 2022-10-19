@@ -13,7 +13,7 @@
 #endif
 
 #ifdef YPC_SGX
-#include "stbox/tsgx/log.h"
+#include "ypc/stbox/tsgx/log.h"
 #endif
 
 namespace hpda {

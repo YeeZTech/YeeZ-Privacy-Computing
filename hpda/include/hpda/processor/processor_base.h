@@ -23,5 +23,7 @@ public:
   inline InputObjType input_value() const { return base::input_value(); }
 };
 } // namespace internal
+template <typename InputT, typename OutputT>
+using processor_base_t = internal::processor_base<InputT, OutputT>;
 } // namespace processor
 } // namespace hpda

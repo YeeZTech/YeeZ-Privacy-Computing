@@ -1,5 +1,5 @@
 
-set(ypc_dep_libs cryptopp boost_program_options boost_filesystem boost_system glog)
+set(ypc_dep_libs boost_program_options boost_filesystem boost_system glog)
 
 file(GLOB sub_folders ./*)
 foreach(folder ${sub_folders})

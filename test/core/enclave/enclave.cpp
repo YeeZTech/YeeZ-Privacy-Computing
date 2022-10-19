@@ -1,34 +1,28 @@
-#include "common/crypto_prefix.h"
-#include "common/endian.h"
 #include "enclave_t.h" /* print_string */
+#include "ypc/common/crypto_prefix.h"
+#include "ypc/common/endian.h"
+#include "ypc/core_t/ecommon/signer_verify.h"
+#include "ypc/corecommon/crypto/stdeth.h"
+#include "ypc/stbox/ebyte.h"
+#include "ypc/stbox/scope_guard.h"
+#include "ypc/stbox/stx_common.h"
+#include "ypc/stbox/tsgx/channel/dh_session_responder.h"
+#include "ypc/stbox/tsgx/crypto/seal.h"
+#include "ypc/stbox/tsgx/crypto/seal_sgx.h"
+#include "ypc/stbox/tsgx/log.h"
+
+#include <sgx_ecp_types.h>
+#include <sgx_tcrypto.h>
+#include <sgx_trts.h>
+#include <sgx_tseal.h>
+
 #include <stdarg.h>
 #include <stdio.h> /* vsnprintf */
 #include <stdlib.h>
 #include <string.h>
 #include <unordered_map>
 
-#include "sgx_ecp_types.h"
-#include "sgx_tcrypto.h"
-#include "stbox/scope_guard.h"
-#include "stbox/stx_common.h"
-#include <sgx_tcrypto.h>
-#include <sgx_trts.h>
-#include <sgx_tseal.h>
-
-#include "keymgr/common/message_type.h"
-#include "stbox/ebyte.h"
-#include "stbox/eth/eth_hash.h"
-#include "stbox/tsgx/channel/dh_session_responder.h"
-#include "stbox/tsgx/crypto/ecc.h"
-#include "stbox/tsgx/crypto/ecp_interface.h"
-#include "stbox/tsgx/crypto/seal.h"
-#include "stbox/tsgx/crypto/seal_sgx.h"
-#include "stbox/tsgx/crypto/secp256k1/ecc_secp256k1.h"
-#include "stbox/tsgx/log.h"
-#include "ypc_t/ecommon/signer_verify.h"
-
-using ecc = stbox::crypto::ecc<stbox::crypto::secp256k1>;
-using raw_ecc = stbox::crypto::raw_ecc<stbox::crypto::secp256k1>;
+using ecc = ypc::crypto::eth_sgx_crypto;
 using sealer = stbox::crypto::device_sealer<stbox::crypto::intel_sgx>;
 using raw_sealer = stbox::crypto::raw_device_sealer<stbox::crypto::intel_sgx>;
 
@@ -37,8 +31,8 @@ using raw_sealer = stbox::crypto::raw_device_sealer<stbox::crypto::intel_sgx>;
 #define SGX_AES_GCM_128BIT_TAG_T_SIZE sizeof(sgx_aes_gcm_128bit_tag_t)
 
 extern "C" {
-#include "stbox/../../src/tsgx/secp256k1/hash.h"
-#include "stbox/keccak/keccak.h"
+#include "ypc/stbox/keccak/keccak.h"
+#include "ypc/stbox/src/tsgx/secp256k1/hash.h"
 }
 
 using stx_status = stbox::stx_status;
@@ -69,10 +63,10 @@ uint32_t get_encrypted_result_and_signature(
       ecc::get_encrypt_message_size_with_prefix(result.size());
 
   uint8_t pkey[64];
-  raw_ecc::generate_pkey_from_skey(_private_key, private_key_size, pkey, 64);
+  ecc::generate_pkey_from_skey(_private_key, private_key_size, pkey, 64);
   LOG(INFO) << "pkey: " << stbox::bytes(pkey, 64);
 
-  auto status = raw_ecc::encrypt_message_with_prefix(
+  auto status = ecc::encrypt_message_with_prefix(
       (const uint8_t *)&pkey[0], 64, (const uint8_t *)result.data(),
       result.size(), ::ypc::utc::crypto_prefix_arbitrary, _encrypted_res,
       res_size);
@@ -83,15 +77,14 @@ uint32_t get_encrypted_result_and_signature(
   LOG(INFO) << "enclave_hash: " << enclave_hash;
   LOG(INFO) << "cost message: " << cost_msg;
 
-  status = raw_ecc::sign_message(_private_key, private_key_size,
-                                 (uint8_t *)&cost_msg[0], cost_msg.size(),
-                                 _cost_sig, cost_sig_size);
+  status =
+      ecc::sign_message(_private_key, private_key_size, (uint8_t *)&cost_msg[0],
+                        cost_msg.size(), _cost_sig, cost_sig_size);
 
   auto msg = cost_msg + stbox::bytes(_encrypted_res, res_size);
   LOG(INFO) << "result message: " << msg;
-  status =
-      raw_ecc::sign_message(_private_key, private_key_size, (uint8_t *)&msg[0],
-                            msg.size(), _result_sig, sig_size);
+  status = ecc::sign_message(_private_key, private_key_size, (uint8_t *)&msg[0],
+                             msg.size(), _result_sig, sig_size);
   return status;
 }
 

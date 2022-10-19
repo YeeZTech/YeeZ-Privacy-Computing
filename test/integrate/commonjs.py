@@ -16,8 +16,8 @@ kmgr_enclave = os.path.join(lib_dir, "keymgr.signed.so")
 
 
 def execute_cmd(cmd):
-    print("execute_cmd: {}".format(cmd))
     cmd = 'node ' + cmd
+    print("execute_cmd: {}".format(cmd))
     p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
     p.wait()
     if p.returncode != 0:
@@ -28,6 +28,14 @@ def execute_cmd(cmd):
 
 def fid_terminus(**kwargs):
     cmd = os.path.join(current_dir, "./js/simjs.js")
+    for k, v in kwargs.items():
+        cmd = cmd + " --{} {}".format(k, v)
+    output = execute_cmd(cmd)
+    return [cmd, output]
+
+
+def fid_data_provider(**kwargs):
+    cmd = os.path.join(current_dir, "./js/simdataprovider.js")
     for k, v in kwargs.items():
         cmd = cmd + " --{} {}".format(k, v)
     output = execute_cmd(cmd)
