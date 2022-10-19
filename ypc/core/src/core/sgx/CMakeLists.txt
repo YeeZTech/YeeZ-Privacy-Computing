@@ -2,8 +2,8 @@ add_subdirectory(usgx)
 
 add_untrusted_library(ypc_parser_module SHARED
   SRCS "parser_sgx_module.cpp"
-  EDL ${PROJECT_SOURCE_DIR}/ypc/core/edl/eparser.edl
-  EDL_SEARCH_PATHS ${PROJECT_SOURCE_DIR}/ypc/core/edl/:${PROJECT_SOURCE_DIR}/ypc/stbox/src/:${PROJECT_SOURCE_DIR}/ypc/stbox/src/tsgx/crypto/)
+  EDL ${PROJECT_SOURCE_DIR}/include/ypc/edl/eparser.edl
+  EDL_SEARCH_PATHS ${PROJECT_SOURCE_DIR}/include/ypc/edl/:${PROJECT_SOURCE_DIR}/include/ypc/stbox/)
 
 if (${ENABLE_DIANSHU})
   set(ypc_usgx dshttp_request)

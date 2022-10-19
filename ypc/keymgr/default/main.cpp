@@ -1,5 +1,5 @@
-#include "keymgr_sgx_module.h"
 #include "ypc/keymgr/common/util.h"
+#include "ypc/keymgr/default/keymgr_sgx_module.h"
 #include "ypc/stbox/stx_common.h"
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>

@@ -1,5 +1,3 @@
-include_directories(${PROJECT_SOURCE_DIR}/ypc/stbox/include/ypc/stbox/)
-
 set(gmssl_src
 	sha256.c
 	sm3.c

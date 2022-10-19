@@ -15,9 +15,10 @@ set(stbox_t_src ${stbox_src}
 add_trusted_library(stbox_common_t
   stbox_common
   SRCS "${stbox_t_src}"
-  EDL ./stbox.edl
-  EDL_SEARCH_PATHS .)
+  EDL ${PROJECT_SOURCE_DIR}/include/ypc/stbox/stbox.edl
+  EDL_SEARCH_PATHS ${PROJECT_SOURCE_DIR}/include/ypc/stbox/)
 # trusted library is staticly linked, do not need to install
+target_link_libraries(stbox_common_t stbox_keccak_t)
 install(TARGETS stbox_common_t DESTINATION lib COMPONENT c_stbox_common OPTIONAL)
 
 set(stbox_core_src ${stbox_src} usgx/error_message.cpp
@@ -27,10 +28,9 @@ set(stbox_core_src ${stbox_src} usgx/error_message.cpp
 
 add_untrusted_library(stbox_common_u SHARED
   SRCS "${stbox_core_src}"
-  EDL ./stbox.edl
-  EDL_SEARCH_PATHS .)
+  EDL ${PROJECT_SOURCE_DIR}/include/ypc/stbox/stbox.edl
+  EDL_SEARCH_PATHS ${PROJECT_SOURCE_DIR}/include/ypc/stbox/)
 target_link_libraries(stbox_common_u glog stbox_keccak_u)
-target_link_libraries(stbox_common_t stbox_keccak_t)
 install(TARGETS stbox_common_u DESTINATION lib COMPONENT c_stbox_common OPTIONAL)
 
 

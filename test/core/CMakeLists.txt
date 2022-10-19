@@ -19,13 +19,10 @@ add_executable(gtest_core
 add_test(NAME test-core
   COMMAND gtest_core)
 
-set( ${PROJECT_SOURCE_DIR}/ypc/core/edl/:${PROJECT_SOURCE_DIR}/ypc/stbox/src)
-
-
 add_untrusted_library(test_ypc_lib SHARED
   SRCS "test_ypc_module.cpp"
   EDL ./enclave/enclave.edl
-  EDL_SEARCH_PATHS ${PROJECT_SOURCE_DIR}/ypc/core/edl/:${PROJECT_SOURCE_DIR}/ypc/stbox/src/:${PROJECT_SOURCE_DIR}/ypc/stbox/src/tsgx/crypto/)
+  EDL_SEARCH_PATHS ${PROJECT_SOURCE_DIR}/include/ypc/edl/:${PROJECT_SOURCE_DIR}/include/ypc/stbox)
 target_link_libraries(test_ypc_lib ypc_stdeth_u stbox_common_u)
 
 add_executable(gen_sign_for_ypc gen_sign_for_ypc.cpp)

@@ -59,11 +59,8 @@ endif()
 include_directories(${SGX_INCLUDE_DIR})
 include_directories(/usr/local/include)
 link_directories(/usr/local/lib)
-include_directories(${PROJECT_SOURCE_DIR})
-include_directories(${PROJECT_SOURCE_DIR}/hpda/include)
-include_directories(${PROJECT_SOURCE_DIR}/ypc/core/include)
-include_directories(${PROJECT_SOURCE_DIR}/ypc/stbox/include)
-include_directories(${PROJECT_SOURCE_DIR}/tookit/include)
+include_directories(${PROJECT_SOURCE_DIR}/include)
+include_directories(${PROJECT_SOURCE_DIR}/include/ypc/stbox)
 include_directories(${PROJECT_SOURCE_DIR}/vendor/fflib/include/)
 link_directories(${PROJECT_SOURCE_DIR}/vendor/fflib/lib/)
 link_directories(${SGX_LIBRARY_DIR})
@@ -81,24 +78,11 @@ MACRO(INSTALL_HEADERS_WITH_DIRECTORY HEADER_LIST)
   FOREACH(HEADER ${${HEADER_LIST}})
     STRING(REPLACE "${PROJECT_SOURCE_DIR}/" "" RPATH ${HEADER})
     STRING(REGEX MATCH "(.*)/"  DIR ${RPATH})
-    INSTALL(FILES ${HEADER} DESTINATION include/${DIR})
+    INSTALL(FILES ${HEADER} DESTINATION ${DIR})
   ENDFOREACH(HEADER)
 ENDMACRO(INSTALL_HEADERS_WITH_DIRECTORY)
 
-file(GLOB_RECURSE DEPLOY_FILES_AND_DIRS_hpda hpda/include/*.h hpda/include/*.hpp)
-file(GLOB_RECURSE DEPLOY_FILES_AND_DIRS_ypc_common ypc/common/*.h ypc/common/*.hpp)
-file(GLOB_RECURSE DEPLOY_FILES_AND_DIRS_ypc_core ypc/core/include/*.h ypc/core/include/*.hpp ypc/core/include/*.ipp ypc/core/*.edl)
-file(GLOB_RECURSE DEPLOY_FILES_AND_DIRS_ypc_keymgr ypc/keymgr/include/*.h ypc/keymgr/include/*.hpp ypc/keymgr/include/*.ipp ypc/keymgr/*.edl)
-file(GLOB_RECURSE DEPLOY_FILES_AND_DIRS_ypc_stbox ypc/stbox/include/*.h ypc/stbox/include/*.hpp ypc/stbox/include/*.ipp ypc/stbox/*.edl)
-file(GLOB_RECURSE DEPLOY_FILES_AND_DIRS_ypc_stbox ypc/stbox/include/*.h ypc/stbox/include/*.hpp ypc/stbox/include/*.ipp ypc/stbox/*.edl)
-file(GLOB_RECURSE DEPLOY_FILES_AND_DIRS_toolkit toolkit/terminus/lib/include/*.h)
-set(DEPLOY_FILES_AND_DIRS ${DEPLOY_FILES_AND_DIRS_hpda}
-  ${DEPLOY_FILES_AND_DIRS_ypc_common}
-  ${DEPLOY_FILES_AND_DIRS_ypc_core}
-  ${DEPLOY_FILES_AND_DIRS_ypc_keymgr}
-  ${DEPLOY_FILES_AND_DIRS_ypc_stbox}
-  ${DEPLOY_FILES_AND_DIRS_toolkit}
-  )
+file(GLOB_RECURSE DEPLOY_FILES_AND_DIRS include/*.h include/*.hpp include/*.edl include/*.ipp include/*.def)
 INSTALL_HEADERS_WITH_DIRECTORY(DEPLOY_FILES_AND_DIRS)
 
 add_subdirectory(vendor/pybind11)

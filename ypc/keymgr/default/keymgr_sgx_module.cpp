@@ -1,4 +1,4 @@
-#include "keymgr_sgx_module.h"
+#include "ypc/keymgr/default/keymgr_sgx_module.h"
 #include "ekeymgr_u.h"
 #include "sgx_urts.h"
 #include <glog/logging.h>

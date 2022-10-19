@@ -1,7 +1,7 @@
-#include "toolkit/terminus/lib/include/ypc/terminus/crypto_pack.h"
+#include "ypc/terminus/crypto_pack.h"
 #include "ypc/corecommon/crypto/crypto_pack.h"
-#include "ypc/corecommon/crypto/stdeth.h"
 #include "ypc/corecommon/crypto/gmssl.h"
+#include "ypc/corecommon/crypto/stdeth.h"
 
 namespace ypc {
 namespace terminus {

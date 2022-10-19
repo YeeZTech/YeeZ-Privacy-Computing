@@ -25,7 +25,6 @@ using ecc = ypc::crypto::eth_sgx_crypto;
 
 extern "C" {
 #include "ypc/stbox/keccak/keccak.h"
-#include "ypc/stbox/src/tsgx/secp256k1/hash.h"
 }
 
 using stx_status = stbox::stx_status;
