@@ -2,7 +2,9 @@
 add_subdirectory(gmssl)
 
 add_library(stbox_keccak_u keccak/keccak.c)
+install(TARGETS stbox_keccak_u DESTINATION lib COMPONENT c_stbox_common OPTIONAL)
 add_sgx_library(stbox_keccak_t stbox_keccak_t SRCS keccak/keccak.c)
+install(TARGETS stbox_keccak_t DESTINATION lib COMPONENT c_stbox_common OPTIONAL)
 
 set(stbox_src stx_status.cpp stx_common.cpp exception.cpp)
 
