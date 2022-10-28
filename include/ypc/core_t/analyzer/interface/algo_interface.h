@@ -52,7 +52,6 @@ class algo_interface<Crypto, DataSession, ParserT, Result, ModelT,
 
 protected:
   uint32_t parse_data_item_impl(const uint8_t *input_param, uint32_t len) {
-    
     ntt::param_t param =
         make_package<cast_obj_to_package<ntt::param_t>::type>::from_bytes(
             input_param, len);

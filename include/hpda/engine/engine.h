@@ -11,6 +11,8 @@ public:
   //! affect.
   void add_functor(functor *f);
 
+  void remove_functor(functor * f);
+
   void run();
 
 protected:

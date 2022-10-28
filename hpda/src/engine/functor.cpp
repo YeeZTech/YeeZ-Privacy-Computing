@@ -4,7 +4,9 @@
 namespace hpda {
 functor::functor() : m_has_value(false) {}
 
-functor::~functor() {}
+functor::~functor() {
+  m_engine->remove_functor(this);
+}
 
 void functor::set_engine(engine *e) {
   m_engine = e;
