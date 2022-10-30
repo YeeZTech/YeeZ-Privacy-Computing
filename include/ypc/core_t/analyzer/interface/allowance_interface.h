@@ -53,7 +53,7 @@ struct check_data_allowance<sealed_data_stream>
         return stbox::stx_status::success;
       }
     }
-    
+
     LOG(ERROR) << "data source "
                << data_source_var_t::m_datasource->expect_data_hash()
                << " have no allowance";
@@ -107,6 +107,9 @@ public:
     auto param_data = param.get<ntt::param_data>();
     stbox::bytes param_hash;
     auto ret = Crypto::hash_256(param_data, param_hash);
+#ifdef DEBUG
+    LOG(INFO) << "param: " << param_data << ", param_hash: " << param_hash;
+#endif
     if (ret) {
       LOG(ERROR) << "hash_256 failed: " << stbox::status_string(ret);
       return ret;
@@ -115,6 +118,9 @@ public:
     std::vector<stbox::bytes> checked_pkey;
 
     auto allowances = param.get<ntt::allowances>();
+#ifdef DEBUG
+    LOG(INFO) << "to check " << allowances.size() << "allowances";
+#endif
     for (auto allowance_i : allowances) {
       stbox::bytes pkey4v = allowance_i.get<ntt::pkey>();
       if (pkey4v.size() != 0) {
@@ -129,21 +135,40 @@ public:
         }
 
         stbox::bytes allow = allowance_i.get<ntt::signature>();
+        if (allow.size() == 0) {
+#ifdef DEBUG
+          LOG(INFO) << "got empty allowance and ignore it for data: "
+                    << allowance_i.get<ntt::data_hash>();
+#endif
+          continue;
+        }
 
         stbox::bytes to_check_data =
             param_hash + enclave_hash_var::m_enclave_hash + dian_pkey +
             allowance_i.get<ntt::data_hash>();
+#ifdef DEBUG
+        LOG(INFO) << "to check allowance data " << to_check_data
+                  << ", allow: " << allow;
+#endif
 
         ret = allowance<Crypto>::check(private_key, to_check_data, allow);
         if (ret) {
+          LOG(INFO) << "to check data: " << to_check_data;
           LOG(WARNING) << "check_allowance" << allow
                        << " failed: " << stbox::status_string(ret)
                        << ", ignore it";
         } else {
+#ifdef DEBUG
+          LOG(INFO) << "check allowance succ for data "
+                    << allowance_i.get<ntt::data_hash>();
+#endif
           checked_pkey.push_back(pkey4v + allowance_i.get<ntt::data_hash>());
         }
       }
     }
+#ifdef DEBUG
+    LOG(INFO) << "check all allowances done, start check model allowance";
+#endif
 
     ret = model_checker_t::check_allowance_m(checked_pkey);
     if (ret) {
@@ -151,6 +176,9 @@ public:
                  << stbox::status_string(ret);
       return ret;
     }
+#ifdef DEBUG
+    LOG(INFO) << "check model allowance done, start check data allowance";
+#endif
     ret = data_checker_t::check_allowance_d(checked_pkey);
     if (ret) {
       LOG(INFO) << "enter line 160 allowance_interface";
@@ -158,6 +186,9 @@ public:
                  << stbox::status_string(ret);
       return ret;
     }
+#ifdef DEBUG
+    LOG(INFO) << "check allowance done";
+#endif
     return ret;
   }
 };

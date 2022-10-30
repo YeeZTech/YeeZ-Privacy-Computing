@@ -367,11 +367,6 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
-  if (!vm.count("crypto")) {
-    std::cerr << "crypto should be specified!" << std::endl;
-    return -1;
-  }
-
   std::string crypto_type = vm["crypto"].as<std::string>();
   std::string kmgr_enclave_path = find_keymgr_enclave_path(ypc::complete_path(argv[0]), crypto_type);
   std::shared_ptr<keymgr_sgx_module> ptr;
