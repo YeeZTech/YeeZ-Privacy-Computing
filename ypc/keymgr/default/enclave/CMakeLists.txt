@@ -14,6 +14,11 @@ add_enclave_library(keymgr
 
 target_link_libraries(keymgr stbox_common_t stbox_channel_t stbox_crypto_t sgx_eth_ecc_t ypc_stdeth_t dl)
 
-enclave_sign(keymgr KEY ekeymgr_private.pem
-  CONFIG ekeymgr.config.xml)
+if(SGX_MODE STREQUAL "Debug")
+  enclave_sign(keymgr KEY ekeymgr_private.pem
+    CONFIG ekeymgr.config.debug.xml)
+else()
+  enclave_sign(keymgr KEY ekeymgr_private.pem
+    CONFIG ekeymgr.config.xml)
+endif()
 install(FILES ${PROJECT_SOURCE_DIR}/lib/keymgr.signed.so DESTINATION lib COMPONENT c_keymgr OPTIONAL)

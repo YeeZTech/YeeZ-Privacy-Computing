@@ -35,7 +35,7 @@ boost::program_options::variables_map parse_command_line(int argc,
 
   // clang-format off
   all.add_options()
-    ("crypto", bp::value<std::string>(), "stdeth/gmssl")
+    ("crypto", bp::value<std::string>()->default_value("stdeth"), "stdeth/gmssl")
     ("help", "help message")
     ("create", "create a secp256k1 key pair")
     ("list", "list secp256k1 keys")
