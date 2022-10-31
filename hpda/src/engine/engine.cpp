@@ -14,7 +14,21 @@ namespace hpda {
 void engine::add_functor(functor *f) {
   m_functors.push_back(f);
 }
-
+void engine::remove_functor(functor * f){
+  
+  bool found = true;
+  while(found){
+    found = false;
+    for(std::vector<functor *>::const_iterator it = m_functors.begin();
+    it != m_functors.end(); it++){
+      if(*it == f){
+        m_functors.erase(it);
+        found = true;
+        break;
+      }
+    }
+  }
+}
 void engine::run() {
   build_graph();
   auto outputs = find_outputs();
@@ -107,6 +121,8 @@ void engine::run() {
 
 // We assume there is no circle, it's a DAG
 void engine::build_graph() {
+  m_predecessors.clear();
+  m_successors.clear();
   for (auto f : m_functors) {
     if (m_predecessors.find(f) == m_predecessors.end()) {
       m_predecessors.insert(std::make_pair(f, std::unordered_set<functor *>()));

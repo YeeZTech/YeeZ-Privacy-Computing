@@ -1,5 +1,3 @@
-include_directories(${PROJECT_SOURCE_DIR}/ypc/stbox/include/ypc/stbox/)
-
 set(gmssl_src
 	sha256.c
 	sm3.c
@@ -24,8 +22,10 @@ add_library(gmssl
   ${gmssl_src}
   )
 target_link_libraries(gmssl dl)
+install(TARGETS gmssl DESTINATION lib COMPONENT c_stbox_common OPTIONAL)
 
 add_sgx_library(stbox_gmssl_t
   stbox_gmssl_t
   SRCS "${gmssl_src}")
+install(TARGETS stbox_gmssl_t DESTINATION lib COMPONENT c_stbox_common OPTIONAL)
 

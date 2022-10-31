@@ -21,10 +21,15 @@ ypc::bytes construct_access_control_policy() {
 
 uint32_t parser::parse() {
   auto parser_enclave_path = m_param.get<parser_path>();
-  LOG(INFO) << parser_enclave_path;
+#ifdef DEBUG
+  LOG(INFO) << "parser enclave path: " << parser_enclave_path;
+#endif
   auto keymgr_enclave_path = m_param.get<keymgr_path>();
   m_parser =
       std::make_shared<ypc::parser_sgx_module>(parser_enclave_path.c_str());
+#ifdef DEBUG
+  LOG(INFO) << "keymgr enclave path: " << keymgr_enclave_path;
+#endif
   m_keymgr = std::make_shared<keymgr_sgx_module>(keymgr_enclave_path.c_str());
 
   ypc::bytes policy = construct_access_control_policy();

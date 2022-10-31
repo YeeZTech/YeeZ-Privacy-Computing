@@ -2,7 +2,7 @@
 set(T_SRCS enclave.cpp
   )
 
-set(edl_path ${PROJECT_SOURCE_DIR}/ypc/core/edl:${PROJECT_SOURCE_DIR}/ypc/stbox/src)
+set(edl_path ${PROJECT_SOURCE_DIR}/include/ypc/edl:${PROJECT_SOURCE_DIR}/include/ypc/stbox)
 
 add_enclave_library(test_crypto_enclave
   SRCS ${T_SRCS}

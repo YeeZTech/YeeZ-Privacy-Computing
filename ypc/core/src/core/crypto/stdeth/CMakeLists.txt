@@ -7,3 +7,4 @@ set(stdeth_src ../../../corecommon/crypto/eth_hash.cpp rijndael128GCM.cpp secp25
 
 add_library(ypc_stdeth_u SHARED ${stdeth_src})
 target_link_libraries(ypc_stdeth_u ${OPENSSL_CRYPTO_LIBRARY} stbox_keccak_u secp256k1)
+install(TARGETS ypc_stdeth_u DESTINATION lib COMPONENT c_ypc_core OPTIONAL)

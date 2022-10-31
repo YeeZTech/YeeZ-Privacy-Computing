@@ -1,9 +1,9 @@
-#include "common.h"
 #include "ekeymgr_t.h" /* print_string */
 #include "ypc/common/crypto_prefix.h"
 #include "ypc/core_t/ecommon/signer_verify.h"
-#include "ypc/corecommon/crypto/stdeth.h"
 #include "ypc/corecommon/crypto/gmssl.h"
+#include "ypc/corecommon/crypto/stdeth.h"
+#include "ypc/keymgr/default/enclave/common.h"
 #include "ypc/stbox/ebyte.h"
 #include "ypc/stbox/scope_guard.h"
 #include "ypc/stbox/stx_common.h"
@@ -43,5 +43,4 @@ std::shared_ptr<ypc::nt<stbox::bytes>::access_list_package_t>
 
 #define KEY_PATH ".yeez.stdeth_key"
 
-#include "../ekeymgr.ipp"
-
+#include "ypc/keymgr/default/ekeymgr.ipp"

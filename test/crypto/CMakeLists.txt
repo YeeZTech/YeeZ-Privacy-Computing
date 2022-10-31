@@ -8,7 +8,7 @@ add_executable(gtest_gmssl
 target_link_libraries(gtest_gmssl gtest ypc_gmssl_u stbox_common_u ypc_core)
 
 set(src main.cpp gtest_crypto.cpp gtest_gmssl.cpp)
-set(edl_path ${PROJECT_SOURCE_DIR}/ypc/core/edl/:${PROJECT_SOURCE_DIR}/ypc/stbox/src)
+set(edl_path ${PROJECT_SOURCE_DIR}/include/ypc/edl/:${PROJECT_SOURCE_DIR}/include/ypc/stbox)
 
 
 add_untrusted_library(test_crypto_lib SHARED

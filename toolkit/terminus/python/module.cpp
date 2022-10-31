@@ -1,3 +1,4 @@
+#include "ypc/common/crypto_prefix.h"
 #include "ypc/terminus/crypto_pack.h"
 #include "ypc/terminus/enclave_interaction.h"
 #include "ypc/terminus/interaction.h"
@@ -7,6 +8,10 @@
 namespace py = pybind11;
 
 enum crypto_pack_type { intel_sgx_and_eth, chinese_sm };
+enum crypto_prefix_type {
+  forward = ypc::utc::crypto_prefix_forward,
+  arbitrary = ypc::utc::crypto_prefix_arbitrary
+};
 
 auto cast = [](const py::bytes &p) -> ypc::bytes {
   std::string b = std::string(p);
@@ -19,6 +24,9 @@ public:
     switch (cpt) {
     case crypto_pack_type::intel_sgx_and_eth:
       m_crypto = ypc::terminus::intel_sgx_and_eth_compatible();
+      break;
+    case crypto_pack_type::chinese_sm:
+      m_crypto = ypc::terminus::sm_compatible();
       break;
     default:
       throw std::runtime_error("not support type");
@@ -34,6 +42,52 @@ public:
     ypc::bytes sk(b.c_str(), b.size());
     auto s = m_crypto->gen_ecc_public_key_from_private_key(sk);
     return py::bytes((const char *)s.data(), s.size());
+  }
+  py::bytes hash_256(const py::bytes &msg) {
+    std::string b = std::string(msg);
+    ypc::bytes m(b.c_str(), b.size());
+    auto s = m_crypto->hash_256(m);
+    return py::bytes((const char *)s.data(), s.size());
+  }
+
+  py::bytes encrypt(const py::bytes &msg, const py::bytes &public_key,
+                    uint32_t prefix) {
+    std::string a(msg);
+    std::string b(public_key);
+    ypc::bytes m(a.c_str(), a.size());
+    ypc::bytes k(b.c_str(), b.size());
+    auto s = m_crypto->ecc_encrypt(m, k, prefix);
+    return py::bytes((const char *)s.data(), s.size());
+  }
+
+  py::bytes decrypt(const py::bytes &msg, const py::bytes &private_key,
+                    uint32_t prefix) {
+    std::string a(msg);
+    std::string b(private_key);
+    ypc::bytes m(a.c_str(), a.size());
+    ypc::bytes k(b.c_str(), b.size());
+    auto s = m_crypto->ecc_decrypt(m, k, prefix);
+    return py::bytes((const char *)s.data(), s.size());
+  }
+
+  py::bytes sign(const py::bytes &msg, const py::bytes &private_key) {
+    std::string a(msg);
+    std::string b(private_key);
+    ypc::bytes m(a.c_str(), a.size());
+    ypc::bytes k(b.c_str(), b.size());
+    auto s = m_crypto->sign_message(m, k);
+    return py::bytes((const char *)s.data(), s.size());
+  }
+
+  bool verify_sig(const py::bytes &sig, const py::bytes &msg,
+                  const py::bytes &public_key) {
+    std::string a(msg);
+    std::string b(public_key);
+    std::string c(sig);
+    ypc::bytes m(a.c_str(), a.size());
+    ypc::bytes k(b.c_str(), b.size());
+    ypc::bytes s(c.c_str(), c.size());
+    return m_crypto->verify_message_signature(s, m, k);
   }
 
   std::unique_ptr<ypc::terminus::crypto_pack> m_crypto;
@@ -110,13 +164,22 @@ PYBIND11_MODULE(pyterminus, m) {
       .value("IntelSGXAndEthCompatible", crypto_pack_type::intel_sgx_and_eth)
       .value("ChineseSM", crypto_pack_type::chinese_sm)
       .export_values();
+  py::enum_<crypto_prefix_type>(m, "CryptoPrefixType")
+      .value("forward", crypto_prefix_type::forward)
+      .value("arbitrary", crypto_prefix_type::arbitrary)
+      .export_values();
 
   py::class_<crypto_pack_wrapper, std::shared_ptr<crypto_pack_wrapper>>(
       m, "CryptoPack")
       .def(py::init<crypto_pack_type>())
       .def("gen_ecc_private_key", &crypto_pack_wrapper::gen_ecc_private_key)
       .def("gen_ecc_public_key_from_private_key",
-           &crypto_pack_wrapper::gen_ecc_public_key_from_private_key);
+           &crypto_pack_wrapper::gen_ecc_public_key_from_private_key)
+      .def("hash_256", &crypto_pack_wrapper::hash_256)
+      .def("encrypt", &crypto_pack_wrapper::encrypt)
+      .def("decrypt", &crypto_pack_wrapper::decrypt)
+      .def("sign", &crypto_pack_wrapper::sign)
+      .def("verify_sig", &crypto_pack_wrapper::verify_sig);
 
   py::class_<single_data_onchain_result_wrapper,
              std::shared_ptr<single_data_onchain_result_wrapper>>

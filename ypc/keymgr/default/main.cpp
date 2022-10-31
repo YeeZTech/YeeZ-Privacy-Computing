@@ -1,5 +1,5 @@
-#include "keymgr_sgx_module.h"
 #include "ypc/keymgr/common/util.h"
+#include "ypc/keymgr/default/keymgr_sgx_module.h"
 #include "ypc/stbox/stx_common.h"
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
@@ -35,7 +35,7 @@ boost::program_options::variables_map parse_command_line(int argc,
 
   // clang-format off
   all.add_options()
-    ("crypto", bp::value<std::string>(), "stdeth/gmssl")
+    ("crypto", bp::value<std::string>()->default_value("stdeth"), "stdeth/gmssl")
     ("help", "help message")
     ("create", "create a secp256k1 key pair")
     ("list", "list secp256k1 keys")
@@ -364,11 +364,6 @@ int main(int argc, char *argv[]) {
     std::cerr << "one of [create, list, remove, sign, verify, encrypt, "
                  "decrypt, crypto] must be specified!"
               << std::endl;
-    return -1;
-  }
-
-  if (!vm.count("crypto")) {
-    std::cerr << "crypto should be specified!" << std::endl;
     return -1;
   }
 

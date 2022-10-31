@@ -32,7 +32,6 @@ using raw_sealer = stbox::crypto::raw_device_sealer<stbox::crypto::intel_sgx>;
 
 extern "C" {
 #include "ypc/stbox/keccak/keccak.h"
-#include "ypc/stbox/src/tsgx/secp256k1/hash.h"
 }
 
 using stx_status = stbox::stx_status;

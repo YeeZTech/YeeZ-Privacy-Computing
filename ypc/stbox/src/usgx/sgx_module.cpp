@@ -23,7 +23,8 @@ sgx_module::sgx_module(const char *mod_path) : internal::sgx_module_base() {
   ret = sgx_create_enclave(mod_path, SGX_DEBUG_FLAG, NULL, NULL, &m_sgx_eid,
                            NULL);
   if (ret != SGX_SUCCESS) {
-    std::cerr << "sgx_create_enclave fail " << status_string(ret);
+    std::cerr << "sgx_create_enclave fail " << status_string(ret)
+              << ", for file: " << mod_path << std::endl;
     throw std::runtime_error(std::to_string(ret));
   }
 }

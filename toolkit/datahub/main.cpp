@@ -122,7 +122,7 @@ boost::program_options::variables_map parse_command_line(int argc,
 
   // clang-format off
   seal_data_opts.add_options()
-    ("crypto", bp::value<std::string>(), "choose the crypto")
+    ("crypto", bp::value<std::string>()->default_value("stdeth"), "choose the crypto, stdeth/gmssl")
     ("data-url", bp::value<std::string>(), "Data URL")
     ("plugin-path", bp::value<std::string>(), "shared library for reading data")
     ("use-publickey-file", bp::value<std::string>(), "public key file")

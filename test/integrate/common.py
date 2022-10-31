@@ -26,7 +26,7 @@ def execute_cmd(cmd):
     return p.stdout.read().decode('utf-8', errors='ignore')
 
 
-def fid_keymgr_create(user_id, crypto):
+def fid_keymgr_create(user_id, crypto="stdeth"):
     cmd = os.path.join(bin_dir, "./keymgr_tool")
     cmd = cmd + " --crypto {}".format(crypto)
     param = {"create": "", "user-id": user_id}
@@ -36,7 +36,7 @@ def fid_keymgr_create(user_id, crypto):
     return [cmd, output]
 
 
-def fid_keymgr_list(crypto):
+def fid_keymgr_list(crypto="stdeth"):
     cmd = os.path.join(bin_dir, "./keymgr_tool")
     cmd = cmd + " --crypto {}".format(crypto)
     output = execute_cmd("{} --list".format(cmd))
@@ -58,7 +58,7 @@ def fid_keymgr_list(crypto):
     return keys
 
 
-def get_keymgr_private_key(keyid, crypto_type):
+def get_keymgr_private_key(keyid, crypto_type = "stdeth"):
     cmd = os.path.join(bin_dir, "./keymgr_tool")
     cmd = cmd + " --crypto {}".format(crypto_type)
     output = execute_cmd("{} --list".format(cmd))
