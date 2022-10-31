@@ -52,9 +52,17 @@ class algo_interface<Crypto, DataSession, ParserT, Result, ModelT,
 
 protected:
   uint32_t parse_data_item_impl(const uint8_t *input_param, uint32_t len) {
+#ifdef DEBUG
+    LOG(INFO) << "start parse data";
+#endif
     ntt::param_t param =
         make_package<cast_obj_to_package<ntt::param_t>::type>::from_bytes(
             input_param, len);
+
+#ifdef DEBUG
+    LOG(INFO) << "done unmarshal param, start request private key";
+#endif
+
     request_key_var_t::m_pkey4v = param.get<ntt::pkey>();
     stbox::bytes dian_pkey;
     auto ret = keymgr_interface_t::request_private_key_for_public_key(
@@ -64,6 +72,9 @@ protected:
       LOG(ERROR) << "request_private_key failed: " << stbox::status_string(ret);
       return ret;
     }
+#ifdef DEBUG
+    LOG(INFO) << "start decrypt param";
+#endif
     stbox::bytes decrypted_param(
         ecc::get_decrypt_message_size_with_prefix(len));
     auto param_data = param.get<ntt::param_data>();
@@ -76,6 +87,9 @@ protected:
                  << stbox::status_string(ret);
       return ret;
     }
+#ifdef DEBUG
+    LOG(INFO) << "start check allowance";
+#endif
     param.set<ntt::param_data>(decrypted_param);
     auto tmp_allowance = param.get<ntt::allowances>();
     ret = allowance_checker_t::check_allowance(param);
@@ -93,8 +107,14 @@ protected:
 
     encrypted_param_var::m_encrypted_param = param_data;
 
+#ifdef DEBUG
+    LOG(INFO) << "start do_parse";
+#endif
     result_var::m_result = do_parse_interface_t::do_parse(
         decrypted_param.data(), decrypted_param.size());
+#ifdef DEBUG
+    LOG(INFO) << "end parse ";
+#endif
     result_var::m_cost_gas = 0;
     return stbox::stx_status::success;
   }
@@ -121,19 +141,31 @@ class algo_interface<Crypto, DataSession, ParserT, Result, ModelT,
 
 protected:
   uint32_t parse_data_item_impl(const uint8_t *input_param, uint32_t len) {
+#ifdef DEBUG
+    LOG(INFO) << "start parse data";
+#endif
     ntt::param_t param =
         make_package<cast_obj_to_package<ntt::param_t>::type>::from_bytes(
             input_param, len);
 
+#ifdef DEBUG
+    LOG(INFO) << "start check allowance";
+#endif
     uint32_t ret = allowance_checker_t::check_allowance(param);
     if (ret) {
       LOG(ERROR) << "check_allowance failed: " << stbox::status_string(ret);
       return ret;
     }
 
+#ifdef DEBUG
+    LOG(INFO) << "start do_parse";
+#endif
     auto param_data = param.get<ntt::param_data>();
     result_var::m_result =
         do_parse_interface_t::do_parse(param_data.data(), param_data.size());
+#ifdef DEBUG
+    LOG(INFO) << "end parse ";
+#endif
     return stbox::stx_status::success;
   }
 };
