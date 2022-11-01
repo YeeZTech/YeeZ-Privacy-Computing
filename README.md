@@ -35,8 +35,8 @@ $ sudo apt install mysql-server libgoogle-glog-dev libboost-all-dev libmysqlcppc
 ```
 $ git clone https://github.com/YeeZTech/YeeZ-Privacy-Computing.git
 $ cd YeeZ-Privacy-Computing && git submodule update --init
-$ cd vendor/fflib && mkdir -p build && cd build && cmake -DRelease=1 .. && make
-$ cd YeeZ-Privacy-Computing && mkdir -p build
+$ cd vendor/fflib && mkdir -p build && cd build && cmake -DRelease=1 ../ && make -j8
+$ cd YeeZ-Privacy-Computing && mkdir -p build && cd build
 $ cmake -DSGX_MODE=Debug -DSGX_HW=OFF ../
 $ make -j8
 ```
