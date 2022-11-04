@@ -13,12 +13,15 @@ if __name__ == "__main__":
     name = "findperson"
     gen_personlist()
 
+    crypto = "stdeth"
     data = "person_list"
     parser = os.path.join(common.lib_dir, "person_first_match.signed.so")
     plugin = os.path.join(common.lib_dir, "libperson_reader.so")
     # input_param = "421003198607270527"
     input_param = "\"[{\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"421003198607262936\\\"}]\""
-    cj = classic_job(name, data, parser, plugin, input_param)
+    cj = classic_job(crypto, name, data, parser, plugin, input_param, {
+        'request-use-js': True,
+    })
     cj.run()
 
     print("result is : ", cj.result)

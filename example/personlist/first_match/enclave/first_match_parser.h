@@ -28,6 +28,7 @@ public:
   inline bytes do_parse(const bytes &param) {
     LOG(INFO) << "do parse";
     ypc::to_type<bytes, user_item_t> converter(m_source);
+    // param must be serialized ntpackage
     auto pkg = ypc::make_package<input_buf_t>::from_bytes(param);
     int counter = 0;
     hpda::processor::internal::filter_impl<user_item_t> match(
@@ -68,4 +69,3 @@ public:
 protected:
   ypc::data_source<bytes> *m_source;
 };
-

@@ -22,13 +22,11 @@ int generate_allowance(ypc::terminus::crypto_pack *crypto,
 
   std::unordered_map<std::string, ypc::bytes> result;
   result["signature"] = allowance;
-  result["pkey"] = pkey;
-  result["private_key"] = private_key;
+  result["public-key"] = pkey;
   result["param"] = param;
-  result["hash"] = crypto->hash_256(param);
   result["enclave_hash"] = enclave_hash;
   result["dian_pkey"] = dian_pkey;
-  result["dhash"] = dhash;
+  result["data_hash"] = dhash;
 
   if (vm.count("output")) {
     std::string output_path =
@@ -41,11 +39,11 @@ int generate_allowance(ypc::terminus::crypto_pack *crypto,
     boost::property_tree::json_parser::write_json(output_path, pt);
   } else {
     std::cout << "allowance_sig: " << allowance << std::endl;
-    std::cout << "pkey: " << pkey << std::endl;
-    std::cout << "private_key: " << private_key << std::endl;
+    std::cout << "public-key: " << pkey << std::endl;
+    std::cout << "param: " << param << std::endl;
     std::cout << "enclave_hash: " << enclave_hash << std::endl;
     std::cout << "dian_pkey: " << dian_pkey << std::endl;
-    std::cout << "dhash: " << dhash << std::endl;
+    std::cout << "data_hash: " << dhash << std::endl;
   }
   return 0;
 }

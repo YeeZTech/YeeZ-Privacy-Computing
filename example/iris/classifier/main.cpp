@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
   model.set<mean>(means);
   typename ypc::cast_obj_to_package<means_t>::type pkg = model;
   auto ret = ypc::make_bytes<ypc::bytes>::for_package(pkg);
-  std::cout << ret << std::endl;
+  std::cout << ret;
 
   return 0;
 }
