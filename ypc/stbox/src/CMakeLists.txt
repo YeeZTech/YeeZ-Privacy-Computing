@@ -3,7 +3,7 @@ add_subdirectory(gmssl)
 
 add_library(stbox_keccak_u keccak/keccak.c)
 install(TARGETS stbox_keccak_u DESTINATION lib COMPONENT c_stbox_common OPTIONAL)
-add_sgx_library(stbox_keccak_t stbox_keccak_t SRCS keccak/keccak.c)
+add_sgx_library(stbox_keccak_t SRCS keccak/keccak.c)
 install(TARGETS stbox_keccak_t DESTINATION lib COMPONENT c_stbox_common OPTIONAL)
 
 set(stbox_src stx_status.cpp stx_common.cpp exception.cpp)
@@ -20,7 +20,6 @@ add_trusted_library(stbox_common_t
   EDL ${PROJECT_SOURCE_DIR}/include/ypc/stbox/stbox.edl
   EDL_SEARCH_PATHS ${PROJECT_SOURCE_DIR}/include/ypc/stbox/)
 # trusted library is staticly linked, do not need to install
-target_link_libraries(stbox_common_t stbox_keccak_t)
 install(TARGETS stbox_common_t DESTINATION lib COMPONENT c_stbox_common OPTIONAL)
 
 set(stbox_core_src ${stbox_src} usgx/error_message.cpp
@@ -32,7 +31,6 @@ add_untrusted_library(stbox_common_u SHARED
   SRCS "${stbox_core_src}"
   EDL ${PROJECT_SOURCE_DIR}/include/ypc/stbox/stbox.edl
   EDL_SEARCH_PATHS ${PROJECT_SOURCE_DIR}/include/ypc/stbox/)
-target_link_libraries(stbox_common_u glog stbox_keccak_u)
 install(TARGETS stbox_common_u DESTINATION lib COMPONENT c_stbox_common OPTIONAL)
 
 

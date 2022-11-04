@@ -12,7 +12,7 @@ add_enclave_library(keymgr
   EDL ${PROJECT_SOURCE_DIR}/include/ypc/keymgr/default/enclave/ekeymgr.edl
   EDL_SEARCH_PATHS ${edl_path})
 
-target_link_libraries(keymgr stbox_common_t stbox_channel_t stbox_crypto_t sgx_eth_ecc_t ypc_stdeth_t dl)
+target_link_libraries(keymgr stbox_channel_t stbox_crypto_t sgx_eth_ecc_t ypc_stdeth_t)
 
 if(SGX_MODE STREQUAL "Debug")
   enclave_sign(keymgr KEY ekeymgr_private.pem

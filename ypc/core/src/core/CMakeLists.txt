@@ -14,5 +14,5 @@ add_library(ypc_core SHARED
   status.cpp
   version.cpp
   ${PROJECT_SOURCE_DIR}/vendor/fflib/src/net/common/archive.cpp)
-target_link_libraries(ypc_core ypc_common_u mysqlcppconn boost_program_options boost_filesystem boost_system glog dl)
+target_link_libraries(ypc_core mysqlcppconn boost_program_options boost_filesystem glog )
 install(TARGETS ypc_core DESTINATION lib COMPONENT c_ypc_core OPTIONAL)
