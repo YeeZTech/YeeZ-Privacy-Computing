@@ -1,1 +1,0 @@
-{"type":"csv","schema":[{"name":"ID", "type":"uint64_t"},{"name":"CITY", "type":"std::string"},{"name":"STATE", "type":"std::string"},{"name":"LAT_N", "type":"float"},{"name":"LONG_W", "type":"float"}]}

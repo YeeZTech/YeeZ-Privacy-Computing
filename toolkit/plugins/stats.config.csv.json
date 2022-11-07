@@ -1,1 +1,0 @@
-{"type":"csv","schema":[{"name":"ID", "type":"uint64_t"},{"name":"MONTH", "type":"uint64_t"},{"name":"TEMP_F", "type":"float"},{"name":"RAIN_I", "type":"float"}]}
