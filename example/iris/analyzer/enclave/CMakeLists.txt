@@ -7,7 +7,11 @@ add_enclave_library(iris_parser SRCS ${T_SRCS}
 
 target_link_libraries(iris_parser stbox_common_t stbox_channel_t ypc_analyzer_t ypc_stdeth_t ypc_gmssl_t)
 
-
-enclave_sign(iris_parser KEY enclave_private.pem
-  CONFIG enclave.config.xml)
+if(SGX_MODE STREQUAL "Debug")
+  enclave_sign(iris_parser KEY enclave_private.pem
+    CONFIG enclave.config.debug.xml)
+else()
+  enclave_sign(iris_parser KEY enclave_private.pem
+    CONFIG enclave.config.xml)
+endif()
 install(FILES ${PROJECT_SOURCE_DIR}/lib/iris_parser.signed.so DESTINATION lib COMPONENT c_example_iris OPTIONAL)
