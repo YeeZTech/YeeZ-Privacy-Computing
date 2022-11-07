@@ -15,6 +15,7 @@ add_executable(gtest_core
   gtest_ntobject_file.cpp
   gtest_ntjson.cpp
   )
+target_link_libraries(gtest_core ypc_common_u)
 
 add_test(NAME test-core
   COMMAND gtest_core)
