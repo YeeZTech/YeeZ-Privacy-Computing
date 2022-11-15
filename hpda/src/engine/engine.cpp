@@ -15,7 +15,7 @@ void engine::add_functor(functor *f) {
   m_functors.push_back(f);
 }
 void engine::remove_functor(functor * f){
-  
+
   bool found = true;
   while(found){
     found = false;
@@ -123,6 +123,7 @@ void engine::run() {
 void engine::build_graph() {
   m_predecessors.clear();
   m_successors.clear();
+  m_reach_ends.clear();
   for (auto f : m_functors) {
     if (m_predecessors.find(f) == m_predecessors.end()) {
       m_predecessors.insert(std::make_pair(f, std::unordered_set<functor *>()));
