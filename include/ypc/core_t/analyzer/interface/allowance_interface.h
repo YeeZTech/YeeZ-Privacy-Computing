@@ -181,7 +181,6 @@ public:
 #endif
     ret = data_checker_t::check_allowance_d(checked_pkey);
     if (ret) {
-      LOG(INFO) << "enter line 160 allowance_interface";
       LOG(ERROR) << "check_data_allowance failed: "
                  << stbox::status_string(ret);
       return ret;

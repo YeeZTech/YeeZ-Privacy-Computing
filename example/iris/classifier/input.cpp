@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
       vm["petal-len"].as<double>(), vm["petal-wid"].as<double>());
 
   auto ret = ypc::make_bytes<ypc::bytes>::for_package(md1);
-  std::cout << ret << std::endl;
+  std::cout << ret;
 
   return 0;
 }

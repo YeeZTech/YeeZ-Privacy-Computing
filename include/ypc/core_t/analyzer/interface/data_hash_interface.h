@@ -19,10 +19,9 @@ protected:
     for (uint32_t i = 0; i < data_source_var<DataSession>::m_datasource.size();
          ++i) {
       auto t = data_source_var<DataSession>::m_datasource[i]->data_hash();
-      joint_bytes += t;
       rs.push_back(t);
-      LOG(INFO) << i << "-th data with data hash: " << t;
     }
+
     std::sort(rs.begin(), rs.end());
     rs.erase(std::unique(rs.begin(), rs.end()), rs.end());
 

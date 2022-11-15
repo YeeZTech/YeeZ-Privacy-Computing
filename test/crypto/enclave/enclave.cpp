@@ -38,9 +38,9 @@ uint32_t aes_cmac_msg(uint8_t *p_key, uint8_t *p_src, uint32_t src_len,
                                   src_len, (sgx_cmac_128bit_tag_t *)p_mac);
 }
 
-uint32_t test_aes_gcm_encrypt(uint8_t *key, uint8_t *data, uint32_t data_size,
-                              uint8_t *cipher, uint8_t *iv, uint32_t iv_size,
-                              uint8_t *aad, uint32_t aad_size, uint8_t *mac) {
+uint32_t aes_gcm_encrypt(uint8_t *key, uint8_t *data, uint32_t data_size,
+                         uint8_t *cipher, uint8_t *iv, uint32_t iv_size,
+                         uint8_t *aad, uint32_t aad_size, uint8_t *mac) {
 
   return sgx_rijndael128GCM_encrypt((const sgx_aes_gcm_128bit_key_t *)key, data,
                                     data_size, cipher, iv, iv_size, aad,

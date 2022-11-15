@@ -18,11 +18,33 @@
 
 using stx_status = stbox::stx_status;
 using namespace ypc;
-
-typedef ypc::crypto::gmssl_sgx_crypto crypto_t_gmssl;
-typedef ypc::crypto::eth_sgx_crypto crypto_t_eth;
 typedef ypc::nt<ypc::bytes> ntt;
-void write_batch(const std::string &crypto, simple_sealed_file &sf,
+
+class crypto_base {
+public:
+  virtual uint32_t encrypt_message_with_prefix(const ypc::bytes &public_key,
+                                               const ypc::bytes &data,
+                                               uint32_t prefix,
+                                               ypc::bytes &cipher) = 0;
+  virtual uint32_t hash_256(const ypc::bytes &msg, ypc::bytes &hash) = 0;
+};
+typedef std::shared_ptr<crypto_base> crypto_ptr_t;
+template <typename Crypto> class crypto_tool : public crypto_base {
+public:
+  typedef Crypto crypto_t;
+  virtual uint32_t encrypt_message_with_prefix(const ypc::bytes &public_key,
+                                               const ypc::bytes &data,
+                                               uint32_t prefix,
+                                               ypc::bytes &cipher) {
+    return crypto_t::encrypt_message_with_prefix(public_key, data, prefix,
+                                                 cipher);
+  }
+  virtual uint32_t hash_256(const ypc::bytes &msg, ypc::bytes &hash) {
+    return crypto_t::hash_256(msg, hash);
+  }
+};
+
+void write_batch(const crypto_ptr_t &crypto_ptr, simple_sealed_file &sf,
                  const std::vector<ypc::bytes> &batch,
                  const ypc::bytes &public_key) {
   ntt::batch_data_pkg_t pkg;
@@ -30,14 +52,8 @@ void write_batch(const std::string &crypto, simple_sealed_file &sf,
   ypc::bytes batch_str =
       ypc::make_bytes<ypc::bytes>::for_package<ntt::batch_data_pkg_t,
                                                ntt::batch_data>(batch);
-  uint32_t status;
-  if (crypto == "gmssl"){
-    status = crypto_t_gmssl::encrypt_message_with_prefix(
-        public_key, batch_str, ypc::utc::crypto_prefix_arbitrary, s);
-  } else {
-    status = crypto_t_eth::encrypt_message_with_prefix(
-        public_key, batch_str, ypc::utc::crypto_prefix_arbitrary, s);
-  }
+  uint32_t status = crypto_ptr->encrypt_message_with_prefix(
+      public_key, batch_str, ypc::utc::crypto_prefix_arbitrary, s);
   if (status) {
     std::stringstream ss;
     ss << "encrypt "
@@ -48,7 +64,7 @@ void write_batch(const std::string &crypto, simple_sealed_file &sf,
   }
   sf.write_item(s);
 }
-uint32_t seal_file(const std::string &crypto, const std::string &plugin,
+uint32_t seal_file(const crypto_ptr_t &crypto_ptr, const std::string &plugin,
                    const std::string &file, const std::string &sealed_file_path,
                    const ypc::bytes &public_key, ypc::bytes &data_hash) {
   // Read origin file use sgx to seal file
@@ -58,11 +74,7 @@ uint32_t seal_file(const std::string &crypto, const std::string &plugin,
   // k = k + std::string(sealer_path);
 
   // magic string here!
-  if (crypto == "gmssl") {
-    crypto_t_gmssl::hash_256(bytes("Fidelius"), data_hash);
-  } else {
-    crypto_t_eth::hash_256(bytes("Fidelius"), data_hash);
-  }
+  crypto_ptr->hash_256(bytes("Fidelius"), data_hash);
 
   bytes item_data = reader.read_item_data();
   if (item_data.size() > ypc::utc::max_item_size) {
@@ -81,17 +93,13 @@ uint32_t seal_file(const std::string &crypto, const std::string &plugin,
     batch.push_back(item_data);
     batch_size += item_data.size();
     if (batch_size >= ypc::utc::max_item_size) {
-      write_batch(crypto, sf, batch, public_key);
+      write_batch(crypto_ptr, sf, batch, public_key);
       batch.clear();
       batch_size = 0;
     }
 
     ypc::bytes k = data_hash + item_data;
-    if (crypto == "gmssl") {
-      crypto_t_gmssl::hash_256(k, data_hash);
-    } else {
-      crypto_t_eth::hash_256(k, data_hash);
-    }
+    crypto_ptr->hash_256(k, data_hash);
 
     item_data = reader.read_item_data();
     if (item_data.size() > ypc::utc::max_item_size) {
@@ -103,7 +111,7 @@ uint32_t seal_file(const std::string &crypto, const std::string &plugin,
     ++counter;
   }
   if (batch.size() != 0) {
-    write_batch(crypto, sf, batch, public_key);
+    write_batch(crypto_ptr, sf, batch, public_key);
     batch.clear();
     batch_size = 0;
   }
@@ -210,8 +218,17 @@ int main(int argc, char *argv[]) {
   }
   ofs.close();
 
-  auto status =
-      seal_file(crypto, plugin, data_file, sealed_data_file, public_key, data_hash);
+  crypto_ptr_t crypto_ptr;
+  if (crypto == "stdeth") {
+    crypto_ptr = std::make_shared<crypto_tool<ypc::crypto::eth_sgx_crypto>>();
+  } else if (crypto == "gmssl") {
+    crypto_ptr = std::make_shared<crypto_tool<ypc::crypto::gmssl_sgx_crypto>>();
+  } else {
+    throw std::runtime_error("Unsupperted crypto type!");
+  }
+
+  auto status = seal_file(crypto_ptr, plugin, data_file, sealed_data_file,
+                          public_key, data_hash);
   if (status) {
     return -1;
   }

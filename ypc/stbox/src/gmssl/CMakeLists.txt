@@ -21,7 +21,6 @@ add_library(gmssl
   SHARED
   ${gmssl_src}
   )
-target_link_libraries(gmssl dl)
 install(TARGETS gmssl DESTINATION lib COMPONENT c_stbox_common OPTIONAL)
 
 add_sgx_library(stbox_gmssl_t

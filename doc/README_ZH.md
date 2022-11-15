@@ -35,8 +35,9 @@ $ sudo apt install mysql-server libgoogle-glog-dev libboost-all-dev libmysqlcppc
 ### 源码编译 Fidelius
 ```
 $ git clone https://github.com/YeeZTech/YeeZ-Privacy-Computing.git
-$ git submodule update --init
-$ cd YeeZ-Privacy-Computing && mkdir build
+$ cd YeeZ-Privacy-Computing && git submodule update --init
+$ cd vendor/fflib && mkdir -p build && cd build && cmake -DRelease=1 ../ && make -j8
+$ cd YeeZ-Privacy-Computing && mkdir -p build && cd build
 $ cmake -DSGX_MODE=Debug -DSGX_HW=OFF ../
 $ make -j8
 ```
