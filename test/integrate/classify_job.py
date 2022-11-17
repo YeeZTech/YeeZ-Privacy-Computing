@@ -81,9 +81,10 @@ class classic_job:
             "public-key": shukey_json["public-key"]
         }
         allowance_obj = {
-            "encrypted_sig": allowance_json["signature"],
+            # "encrypted_sig": allowance_json["signature"],
             "public-key": allowance_json["public-key"],
-            "data_hash": model_hash
+            "data_hash": model_hash,
+            "signature": allowance_json["signature"]
         }
         allowances = [allowance_obj]
         parser_input_file = self.name + ".classifier.parser_input.json"

@@ -17,6 +17,11 @@ struct check_model_allowance : virtual public internal::model_var<ModelT> {
 
   typedef internal::model_var<ModelT> model_var_t;
   uint32_t check_allowance_m(const std::vector<stbox::bytes> &checked_pkey) {
+#ifdef DEBUG
+    LOG(INFO) << "expect allowance for model with hash: "
+              << model_var_t::m_model_hash << " with pkey "
+              << model_var_t::m_model_pkey;
+#endif
     for (auto pkey : checked_pkey) {
       if (pkey == model_var_t::m_model_pkey + model_var_t::m_model_hash) {
         return stbox::stx_status::success;
@@ -119,7 +124,7 @@ public:
 
     auto allowances = param.get<ntt::allowances>();
 #ifdef DEBUG
-    LOG(INFO) << "to check " << allowances.size() << "allowances";
+    LOG(INFO) << "to check " << allowances.size() << " allowances";
 #endif
     for (auto allowance_i : allowances) {
       stbox::bytes pkey4v = allowance_i.get<ntt::pkey>();

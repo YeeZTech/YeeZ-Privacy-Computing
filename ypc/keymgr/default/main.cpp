@@ -14,12 +14,21 @@ class keymgr_helper {
 public:
   keymgr_helper(const std::string &crypto) {
     if (crypto == "stdeth") {
+#ifdef DEBUG
+      m_key_dir = std::string(".yeez.stdeth_key.debug/");
+#else
       m_key_dir = std::string(".yeez.stdeth_key/");
+#endif
       m_lib_name = std::string("./keymgr.signed.so");
       return;
     }
     if (crypto == "gmssl") {
+#ifdef DEBUG
+      m_key_dir = std::string(".yeez.gmssl_key.debug/");
+#else
       m_key_dir = std::string(".yeez.gmssl_key/");
+#endif
+
       m_lib_name = std::string("./keymgr_gmssl.signed.so");
       return;
     }

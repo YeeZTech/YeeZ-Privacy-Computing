@@ -41,6 +41,10 @@ std::shared_ptr<stbox::dh_session_responder> dh_resp_session(nullptr);
 std::shared_ptr<ypc::nt<stbox::bytes>::access_list_package_t>
     access_control_policy;
 
+#ifdef DEBUG
+#define KEY_PATH ".yeez.stdeth_key.debug"
+#else
 #define KEY_PATH ".yeez.stdeth_key"
+#endif
 
 #include "ypc/keymgr/default/ekeymgr.ipp"

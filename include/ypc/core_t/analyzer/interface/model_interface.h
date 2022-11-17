@@ -67,7 +67,7 @@ public:
         make_package<typename cast_obj_to_package<ModelT>::type>::from_bytes(
             decrypted_model);
     model_var_t::m_model_pkey = mod.get<ntt::pkey>();
-    ret = ecc::hash_256(model_data, model_var_t::m_model_hash);
+    ret = ecc::hash_256(decrypted_model, model_var_t::m_model_hash);
     if (ret) {
       LOG(ERROR) << "hash_256 failed: " << stbox::status_string(ret);
       return ret;
