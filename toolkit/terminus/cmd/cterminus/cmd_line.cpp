@@ -1,4 +1,5 @@
 #include "cmd_line.h"
+#include "ypc/core/version.h"
 
 std::tuple<boost::program_options::variables_map,
            std::function<uint32_t(ypc::terminus::crypto_pack *crypto)>>
@@ -28,7 +29,8 @@ parse_command_line(int argc, char *argv[]) {
     ("sha3", "to SHA3-256 message ")
     ("relay", "generate relay info")
     ("sign", "to sign message")
-    ("help", "help message");
+    ("help", "help message")
+    ("version", "show version");
 
 
   key.add_options()
@@ -150,6 +152,9 @@ parse_command_line(int argc, char *argv[]) {
   if (vm.count("help")) {
     std::cout << all << std::endl;
     exit(-1);
+  }
+  if (vm.count("version")) {
+    std::cout << ypc::get_ypc_version() << std::endl;
   }
   std::cerr << "no options specified" << std::endl;
   exit(-1);

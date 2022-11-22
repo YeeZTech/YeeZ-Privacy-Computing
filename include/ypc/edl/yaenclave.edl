@@ -6,7 +6,7 @@ enclave {
   from "sgx_tstdc.edl" import *;
 
   trusted {
-    public uint32_t get_ypc_analyzer_version();
+    public uint64_t get_ypc_analyzer_version();
   };
 
 

@@ -5,6 +5,7 @@
 #include "ypc/stbox/stx_status.h"
 #include "ypc/stbox/tsgx/channel/dh_cdef.h"
 #include "ypc/stbox/usgx/sgx_module.h"
+#include "ypc/version.h"
 #include <sgx_dh.h>
 #include <sgx_eid.h>
 #include <sgx_error.h>
@@ -17,6 +18,8 @@ public:
   virtual ~keymgr_sgx_module();
 
   ///////////
+  ypc::version get_keymgr_version();
+
   uint32_t get_ecc_sealed_private_key_size();
   uint32_t generate_ecc_key_pair(bref &public_key, bref &sealed_private_key);
 

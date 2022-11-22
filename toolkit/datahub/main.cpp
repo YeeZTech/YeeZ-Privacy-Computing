@@ -3,10 +3,10 @@
 #include "ypc/core/ntobject_file.h"
 #include "ypc/core/privacy_data_reader.h"
 #include "ypc/core/sealed_file.h"
+#include "ypc/core/version.h"
 #include "ypc/corecommon/crypto/gmssl.h"
 #include "ypc/corecommon/crypto/stdeth.h"
 #include "ypc/corecommon/nt_cols.h"
-#include "ypc/corecommon/crypto/stdeth.h"
 #include <boost/program_options.hpp>
 #include <boost/progress.hpp>
 #include <boost/property_tree/json_parser.hpp>
@@ -138,8 +138,10 @@ boost::program_options::variables_map parse_command_line(int argc,
     ("sealed-data-url", bp::value<std::string>(), "Sealed data URL")
     ("output", bp::value<std::string>(), "output meta file path");
 
+
   general.add_options()
-    ("help", "help message");
+    ("help", "help message")
+    ("version", "show version");
 
   // clang-format on
 
@@ -151,6 +153,10 @@ boost::program_options::variables_map parse_command_line(int argc,
 
   if (vm.count("help")) {
     std::cout << all << std::endl;
+    exit(-1);
+  }
+  if (vm.count("version")) {
+    std::cout << ypc::get_ypc_version() << std::endl;
     exit(-1);
   }
   return vm;

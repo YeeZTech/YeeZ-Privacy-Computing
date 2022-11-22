@@ -76,7 +76,8 @@ boost::program_options::variables_map parse_command_line(int argc,
     ("sign", bp::value<std::string>(), "sign a message")
     ("verify", bp::value<std::string>(), "verify a signature")
     ("encrypt", bp::value<std::string>(), "encrypt a message")
-    ("decrypt", bp::value<std::string>(), "decrypt from cipher message");
+    ("decrypt", bp::value<std::string>(), "decrypt from cipher message")
+    ("version", "show version");
 
   create.add_options()
     ("user-id", bp::value<std::string>(), "user id for created key");
@@ -105,6 +106,10 @@ boost::program_options::variables_map parse_command_line(int argc,
   if (vm.count("help")) {
     std::cout << all << std::endl;
     exit(-1);
+  }
+  if (vm.count("version")) {
+    std::cout << std::to_string(YPC_KEYMGR_RUNTIME_VERSION) << std::endl;
+    exit(0);
   }
   return vm;
 }

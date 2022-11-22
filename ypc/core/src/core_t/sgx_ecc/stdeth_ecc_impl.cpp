@@ -4,6 +4,7 @@
 #include "ypc/stbox/tsgx/crypto/seal.h"
 #include "ypc/stbox/tsgx/crypto/seal_sgx.h"
 #include "ypc/stbox/tsgx/log.h"
+#include "ypc/version.h"
 
 using ecc = ypc::crypto::eth_sgx_crypto;
 using sealer = stbox::crypto::raw_device_sealer<stbox::crypto::intel_sgx>;

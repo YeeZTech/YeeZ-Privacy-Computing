@@ -1,4 +1,4 @@
-uint64_t stbox_ecc_version() { return 1; }
+uint64_t stbox_ecc_version() { return YPC_ECC_T_VERSION.data(); }
 uint32_t get_ecc_public_key_size() { return ecc::get_public_key_size(); }
 uint32_t get_ecc_sealed_private_key_size() {
   return sealer::get_sealed_data_size(ecc::get_private_key_size());

@@ -8,6 +8,9 @@ keymgr_sgx_module::keymgr_sgx_module(const char *mod_path)
     : ::stbox::sgx_module(mod_path) {}
 keymgr_sgx_module::~keymgr_sgx_module() {}
 
+ypc::version keymgr_sgx_module::get_keymgr_version() {
+  return ypc::version(ecall<uint64_t>(::get_keymgr_version));
+}
 uint32_t keymgr_sgx_module::get_ecc_sealed_private_key_size() {
   return ecall<uint32_t>(::get_ecc_sealed_private_key_size);
 }

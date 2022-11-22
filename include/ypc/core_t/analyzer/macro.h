@@ -1,5 +1,6 @@
 #include "sgx_utils.h"
 #include "ypc/core_t/analyzer/helper/ecall_impl_helper.h"
+#include "ypc/version.h"
 
 #define COMMON_PARSER_IMPL(pw)                                                 \
   uint32_t begin_parse_data_item() {                                           \

@@ -4,8 +4,10 @@
 #include <cstdlib>
 #include <stdio.h>
 #include <string.h>
+#include <ypc/version.h>
 
-uint64_t stbox_common_version() { return 1; }
+uint64_t stbox_common_version() { return YPC_STBOX_VERSION.data(); }
+
 namespace stbox {
 int printf(const char *fmt, ...) {
   char buf[BUFSIZ] = {'\0'};

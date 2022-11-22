@@ -15,6 +15,7 @@
 #include <sgx_report.h>
 #include <sgx_utils.h>
 
+#include "ypc/version.h"
 #include <stdarg.h>
 #include <stdio.h> /* vsnprintf */
 #include <stdlib.h>
@@ -41,6 +42,10 @@ std::shared_ptr<stbox::dh_session_responder> dh_resp_session(nullptr);
 std::shared_ptr<ypc::nt<stbox::bytes>::access_list_package_t>
     access_control_policy;
 
+#ifdef DEBUG
+#define KEY_PATH ".yeez.gmssl_key.debug"
+#else
 #define KEY_PATH ".yeez.gmssl_key"
+#endif
 
 #include "ypc/keymgr/default/ekeymgr.ipp"

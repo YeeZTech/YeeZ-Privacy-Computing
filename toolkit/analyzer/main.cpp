@@ -1,4 +1,5 @@
 #include "iodef.h"
+#include "ypc/core/version.h"
 //#include "parser.h"
 #include "sgx_bridge.h"
 #include "ypc/core/configuration.h"
@@ -24,6 +25,7 @@ boost::program_options::variables_map parse_command_line(int argc,
   // clang-format off
   all.add_options()
     ("help", "help message")
+    ("version", "show version")
     ("input", bp::value<std::string>(), "input parameters JSON file")
     ("output", bp::value<std::string>(), "output result JSON file")
     ("gen-example-input", bp::value<std::string>(), "generate example input parameters JSON file");
@@ -35,6 +37,10 @@ boost::program_options::variables_map parse_command_line(int argc,
 
   if (vm.count("help")) {
     std::cout << all << std::endl;
+    exit(-1);
+  }
+  if (vm.count("version")) {
+    std::cout << ypc::get_ypc_version() << std::endl;
     exit(-1);
   }
   if (vm.count("gen-example-input")) {

@@ -11,6 +11,7 @@
 #include "ypc/stbox/tsgx/crypto/seal.h"
 #include "ypc/stbox/tsgx/crypto/seal_sgx.h"
 #include "ypc/stbox/tsgx/log.h"
+#include "ypc/version.h"
 
 #include <sgx_report.h>
 #include <sgx_utils.h>

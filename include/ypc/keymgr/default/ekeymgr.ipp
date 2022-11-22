@@ -1,3 +1,8 @@
+
+uint64_t get_keymgr_version(){
+  return YPC_KEYMGR_T_VERSION.data();
+}
+
 uint32_t set_access_control_policy(uint8_t *policy, uint32_t in_size) {
   try {
     access_control_policy = std::make_shared<ypc::nt<stbox::bytes>::access_list_package_t>();

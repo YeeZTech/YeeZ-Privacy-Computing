@@ -1,3 +1,3 @@
 #include "yaenclave_t.h"
-#include "ypc/core_t/ecommon/version.h"
-uint32_t get_ypc_analyzer_version() { return ypc::version(1, 0, 0).data(); }
+#include "ypc/version.h"
+uint64_t get_ypc_analyzer_version() { return YPC_CORE_T_VERSION.data(); }

@@ -13,6 +13,6 @@ install(TARGETS keymgr_module DESTINATION lib COMPONENT c_keymgr OPTIONAL)
 add_sgx_executable(keymgr_tool
   SRCS main.cpp no_use_extra_data_bridge.cpp)
 add_dependencies(keymgr_tool keymgr-sign)
-target_link_libraries(keymgr_tool keymgr_module)
+target_link_libraries(keymgr_tool keymgr_module ypc_common_u)
 install(TARGETS keymgr_tool DESTINATION bin COMPONENT c_keymgr OPTIONAL)
 
