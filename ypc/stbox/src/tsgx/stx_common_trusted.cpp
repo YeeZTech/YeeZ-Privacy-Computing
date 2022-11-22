@@ -10,6 +10,8 @@ uint64_t stbox_common_version() { return YPC_STBOX_VERSION.data(); }
 
 namespace stbox {
 int printf(const char *fmt, ...) {
+  // This could be buggy, so one should not use this.
+  // We keep this for compatiability and debug.
   char buf[BUFSIZ] = {'\0'};
   va_list ap;
   va_start(ap, fmt);
