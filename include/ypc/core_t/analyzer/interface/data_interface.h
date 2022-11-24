@@ -16,13 +16,19 @@
 namespace ypc {
 namespace internal {
 
-template <typename Crypto, typename DataSession> class data_interface {};
+template <typename Crypto, typename DataSession, typename ParserT>
+class data_interface {};
 
-template <typename Crypto>
-class data_interface<Crypto, raw_data_stream>
-    : virtual public data_source_var<raw_data_stream> {
+template <typename Crypto, typename ParserT>
+class data_interface<Crypto, raw_data_stream, ParserT>
+    : virtual public data_source_var<raw_data_stream>,
+      virtual public parser_var<ParserT> {
+
+  typedef parser_var<ParserT> parser_var_t;
+
 public:
   uint32_t init_data_source(const uint8_t *data_source_info, uint32_t len) {
+    parser_var_t::m_parser.reset();
     // in this case, @data_source_info is data hash
     m_datasource.reset(
         new raw_data_provider(stbox::bytes(data_source_info, len)));
@@ -39,19 +45,22 @@ public:
   }
 };
 
-template <typename Crypto>
-class data_interface<Crypto, noinput_data_stream>
-    : virtual public data_source_var<noinput_data_stream> {
+template <typename Crypto, typename ParserT>
+class data_interface<Crypto, noinput_data_stream, ParserT>
+    : virtual public data_source_var<noinput_data_stream>,
+      virtual public parser_var<ParserT> {
 public:
   uint32_t check_actual_data_hash() { return stbox::stx_status::success; }
 };
 
-template <typename Crypto>
-class data_interface<Crypto, sealed_data_stream>
+template <typename Crypto, typename ParserT>
+class data_interface<Crypto, sealed_data_stream, ParserT>
     : virtual public data_source_var<sealed_data_stream>,
       virtual public keymgr_interface<Crypto>,
-      virtual public keymgr_session {
+      virtual public keymgr_session,
+      virtual public parser_var<ParserT> {
   typedef keymgr_interface<Crypto> keymgr_interface_t;
+  typedef parser_var<ParserT> parser_var_t;
 
 public:
   uint32_t init_data_source(const uint8_t *data_source_info, uint32_t len) {
@@ -73,6 +82,9 @@ public:
     }
 
     m_ds_use_pkey = pkg.get<ntt::pkey>() + pkg.get<ntt::data_hash>();
+
+    parser_var_t::m_parser.reset();
+
     m_datasource.reset(new sealed_data_provider<Crypto>(
         pkg.get<ntt::data_hash>(), private_key));
     return stbox::stx_status::success;
@@ -89,12 +101,14 @@ public:
   }
 };
 
-template <typename Crypto>
-class data_interface<Crypto, multi_data_stream>
+template <typename Crypto, typename ParserT>
+class data_interface<Crypto, multi_data_stream, ParserT>
     : virtual public data_source_var<multi_data_stream>,
       virtual public keymgr_session,
-      virtual public keymgr_interface<Crypto> {
+      virtual public keymgr_interface<Crypto>,
+      virtual public parser_var<ParserT> {
   typedef keymgr_interface<Crypto> keymgr_interface_t;
+  typedef parser_var<ParserT> parser_var_t;
 
 public:
   uint32_t init_data_source(const uint8_t *data_source_info, uint32_t len) {
@@ -107,6 +121,10 @@ public:
       LOG(ERROR) << "init_keymgr_session failed: " << stbox::status_string(ret);
       return ret;
     }
+    m_ds_use_pkey.clear();
+
+    parser_var_t::m_parser.reset();
+
     auto infos = pkg.get<ntt::sealed_data_info_vector>();
     for (auto sdi : infos) {
       if (sdi.get<ntt::pkey>().size() != 0) {

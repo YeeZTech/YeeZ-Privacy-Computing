@@ -7,9 +7,10 @@ enclave {
   from "stbox.edl" import *;
 
   trusted {
-    public uint32_t begin_parse_data_item();
+    public uint32_t init();
+    public uint32_t init_parser();
     public uint32_t parse_data_item([in, size=len]const uint8_t * sealed_data, uint32_t len);
-    public uint32_t end_parse_data_item();
+    public uint32_t finalize();
 
     public uint32_t get_enclave_hash_size();
     public uint32_t get_enclave_hash([out, size=hash_size] uint8_t * hash, uint32_t hash_size);
@@ -23,15 +24,6 @@ enclave {
 
     public uint32_t get_parser_type();
 
-
-    /*public uint32_t add_block_parse_result(uint16_t block_index,*/
-    /*[in, size=res_size] uint8_t * block_result, uint32_t res_size, [in, size=hash_size] uint8_t *data_hash,*/
-                                          /*uint32_t hash_size, [in, size=sig_size] uint8_t *sig,*/
-                                          /*uint32_t sig_size);*/
-    /*public uint32_t merge_parse_result([in, size=len] uint8_t * encrypted_param, uint32_t len);*/
-    /*public uint32_t need_continue();*/
-
-    /*public uint32_t set_extra_data([in, size=in_size] uint8_t * extra_data, uint32_t in_size);*/
   };
 
 
@@ -45,5 +37,10 @@ enclave {
                              [out] uint8_t ** data, [out] uint32_t *len);
 
     void free_data_batch([user_check] uint8_t *data);
+
+    uint32_t write_to_storage([in, size=32] const uint8_t * key,
+                [in, size=len] const uint8_t * val, size_t len);
+    uint32_t read_from_storage([in, size=32] const uint8_t * key,
+                [out, size=data_size] uint8_t * val, size_t data_size);
   };
 };

@@ -3,15 +3,16 @@
 #include "ypc/version.h"
 
 #define COMMON_PARSER_IMPL(pw)                                                 \
-  uint32_t begin_parse_data_item() {                                           \
+  uint32_t init() {                                                            \
     stbox::bytes hash(get_enclave_hash_size());                                \
     get_enclave_hash(hash.data(), hash.size());                                \
                                                                                \
     pw.set_enclave_hash(hash.data(), hash.size());                             \
                                                                                \
-    return pw.begin_parse_data_item();                                         \
+    return pw.init();                                                          \
   }                                                                            \
-  uint32_t end_parse_data_item() { return pw.end_parse_data_item(); }          \
+  uint32_t init_parser() { return pw.init_parser(); }                          \
+  uint32_t finalize() { return pw.finalize(); }                                \
                                                                                \
   uint32_t get_enclave_hash_size() { return SGX_HASH_SIZE; }                   \
   uint32_t get_enclave_hash(uint8_t *hash, uint32_t hash_size) {               \

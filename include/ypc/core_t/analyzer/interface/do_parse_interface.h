@@ -86,6 +86,11 @@ class do_parse_interface<ParserT, void, false, true>
   typedef parser_var<ParserT> parser_var_t;
 protected:
   stbox::bytes do_parse(const uint8_t *input_param, uint32_t len) {
+    if (!parser_var_t::m_parser) {
+      LOG(ERROR) << "parser is null, need to call init_parser first";
+      return stbox::bytes();
+    }
+
     set_analyzer_context_helper<ParserT>::set(parser_var_t::m_parser.get(),
                                               this);
     return parser_var_t::m_parser->do_parse(input_param, len);
@@ -99,6 +104,11 @@ class do_parse_interface<ParserT, void, false, false>
 
 protected:
   stbox::bytes do_parse(const uint8_t *input_param, uint32_t len) {
+    if (!parser_var_t::m_parser) {
+      LOG(ERROR) << "parser is null, need to call init_parser first";
+      return stbox::bytes();
+    }
+
     set_analyzer_context_helper<ParserT>::set(parser_var_t::m_parser.get(),
                                               this);
     return parser_var_t::m_parser->do_parse(stbox::bytes(input_param, len));
@@ -115,6 +125,11 @@ class do_parse_interface<ParserT, ModelT, true, true>
 
 protected:
   stbox::bytes do_parse(const uint8_t *input_param, uint32_t len) {
+    if (!parser_var_t::m_parser) {
+      LOG(ERROR) << "parser is null, need to call init_parser first";
+      return stbox::bytes();
+    }
+
     set_analyzer_context_helper<ParserT>::set(parser_var_t::m_parser.get(),
                                               this);
     return parser_var_t::m_parser->do_parse(model_var_t::m_model, input_param,
@@ -132,6 +147,11 @@ class do_parse_interface<ParserT, ModelT, true, false>
 
 protected:
   stbox::bytes do_parse(const uint8_t *input_param, uint32_t len) {
+    if (!parser_var_t::m_parser) {
+      LOG(ERROR) << "parser is null, need to call init_parser first";
+      return stbox::bytes();
+    }
+
     set_analyzer_context_helper<ParserT>::set(parser_var_t::m_parser.get(),
                                               this);
     return parser_var_t::m_parser->do_parse(model_var_t::m_model,

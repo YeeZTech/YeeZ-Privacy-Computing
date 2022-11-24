@@ -79,10 +79,14 @@ uint32_t parser::parse() {
     return ret;
   }
 
-  ret = m_parser->begin_parse_data_item();
+  ret = m_parser->init();
   if (ret != stx_status::success) {
-    LOG(ERROR) << "begin_parse_data_item, got error: "
-               << ypc::status_string(ret);
+    LOG(ERROR) << "init, got error: " << ypc::status_string(ret);
+    return ret;
+  }
+  ret = m_parser->init_parser();
+  if (ret != stx_status::success) {
+    LOG(ERROR) << "init_parser, got error: " << ypc::status_string(ret);
     return ret;
   }
   auto param_var = m_param.get<ntt::param>();
@@ -94,15 +98,6 @@ uint32_t parser::parse() {
     return ret;
   }
 
-  ret = m_parser->end_parse_data_item();
-  if (ret != stx_status::success) {
-    LOG(ERROR) << "end_parse_data_item, got error: " << ypc::status_string(ret);
-  }
-
-  if (ret) {
-    LOG(ERROR) << "do_parse got error " << ypc::status_string(ret);
-    return ret;
-  }
   LOG(INFO) << "parse done";
 
   ypc::bytes res;
@@ -111,6 +106,12 @@ uint32_t parser::parse() {
     LOG(ERROR) << "get_analyze_result got error " << ypc::status_string(ret);
     return ret;
   }
+
+  ret = m_parser->finalize();
+  if (ret != stx_status::success) {
+    LOG(ERROR) << "shutdown, got error: " << ypc::status_string(ret);
+  }
+
   ret = dump_result(res);
   if (ret) {
     LOG(ERROR) << "dump_result got error " << ypc::status_string(ret);
@@ -265,3 +266,24 @@ uint32_t parser::next_data_batch(const uint8_t *data_hash, uint32_t hash_size,
 
 void parser::free_data_batch(uint8_t *data) { delete[] data; }
 
+uint32_t parser::write_to_storage(const uint8_t *key, const uint8_t *val,
+                                  size_t val_len) {
+  m_storage.insert(
+      std::make_pair(ypc::bytes(key, 32), ypc::bytes(val, val_len)));
+  return stbox::stx_status::success;
+}
+
+uint32_t parser::read_from_storage(const uint8_t *key, uint8_t *val,
+                                   size_t val_len) {
+  ypc::bytes k(key, 32);
+  auto it = m_storage.find(k);
+  if (it != m_storage.end()) {
+    if (it->second.size() != val_len) {
+      return stbox::stx_status::storage_invalid_val_length;
+    }
+    memcpy(val, it->second.data(), val_len);
+    return stbox::stx_status::success;
+  } else {
+    return stbox::stx_status::storage_key_not_found;
+  }
+}

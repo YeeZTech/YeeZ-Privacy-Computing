@@ -20,8 +20,7 @@ const char *status_string(uint32_t status) {
 #undef YPC_STATUS
   } else {
     // defined in stbox status
-    return "unknown ypc status";
-    // return ::stbox::status_string(status);
+    return ::stbox::status_string(status);
   }
 }
 } // namespace ypc

@@ -10,8 +10,12 @@ parser_sgx_module::parser_sgx_module(const char *mod_path)
     : ::stbox::sgx_module(mod_path) {}
 parser_sgx_module::~parser_sgx_module() {}
 
-uint32_t parser_sgx_module::begin_parse_data_item() {
-  auto retval = ecall<uint32_t>(::begin_parse_data_item);
+uint32_t parser_sgx_module::init() {
+  auto retval = ecall<uint32_t>(::init);
+  return retval;
+}
+uint32_t parser_sgx_module::init_parser() {
+  auto retval = ecall<uint32_t>(::init_parser);
   return retval;
 }
 
@@ -20,8 +24,8 @@ uint32_t parser_sgx_module::parse_data_item(const uint8_t *data, size_t len) {
   return retval;
 }
 
-uint32_t parser_sgx_module::end_parse_data_item() {
-  auto retval = ecall<uint32_t>(::end_parse_data_item);
+uint32_t parser_sgx_module::finalize() {
+  auto retval = ecall<uint32_t>(::finalize);
   return retval;
 }
 

@@ -28,7 +28,7 @@ class algo_wrapper
       virtual public Result,
       virtual public internal::keymgr_session,
       virtual public internal::parser_interface<DataSession, ParserT>,
-      virtual public internal::data_interface<Crypto, DataSession>,
+      virtual public internal::data_interface<Crypto, DataSession, ParserT>,
       virtual public internal::data_hash_interface<Crypto, DataSession>,
       virtual public internal::model_interface<Crypto, ModelT> {
   typedef internal::keymgr_session keymgr_session_t;
@@ -38,10 +38,11 @@ class algo_wrapper
       algo_interface_t;
   typedef internal::data_hash_interface<Crypto, DataSession>
       data_hash_interface_t;
-  typedef internal::data_interface<Crypto, DataSession> data_interface_t;
+  typedef internal::data_interface<Crypto, DataSession, ParserT>
+      data_interface_t;
 
 public:
-  uint32_t begin_parse_data_item() {
+  uint32_t init() {
     LOG(INFO) << "start init keymgr session...";
     uint32_t ret = keymgr_session_t::init_keymgr_session();
     if (ret) {
@@ -49,13 +50,18 @@ public:
                  << stbox::status_string(ret);
       return ret;
     }
-    LOG(INFO) << "init keymgr session done, start create_parser";
-    ret = parser_interface_t::create_parser();
+    LOG(INFO) << "init keymgr session done";
+    return stbox::stx_status::success;
+  }
+
+  uint32_t init_parser() {
+    LOG(INFO) << "start create_parser";
+    auto ret = parser_interface_t::create_parser();
     if (ret) {
       LOG(ERROR) << "create_parser failed: " << stbox::status_string(ret);
       return ret;
     }
-    LOG(INFO) << "begin_parse_data_item done";
+    LOG(INFO) << "init_parser done";
     return stbox::stx_status::success;
   }
 
@@ -68,11 +74,9 @@ public:
       return ret;
     }
     data_hash_interface_t::set_data_hash();
-    return stbox::stx_status::success;
-  }
 
-  uint32_t end_parse_data_item() {
-    uint32_t ret = data_interface_t::check_actual_data_hash();
+    ret = data_interface_t::check_actual_data_hash();
+
     if (ret) {
       LOG(ERROR) << "check_actual_ata_hash failed: "
                  << stbox::status_string(ret);
@@ -83,8 +87,10 @@ public:
       LOG(ERROR) << "generate result failed: " << stbox::status_string(ret);
       return ret;
     }
-    return keymgr_session_t::close_keymgr_session();
+    return stbox::stx_status::success;
   }
+
+  uint32_t finalize() { return keymgr_session_t::close_keymgr_session(); }
 
   uint32_t get_parser_type() const {
     ypc::utc::parser_type_t type;

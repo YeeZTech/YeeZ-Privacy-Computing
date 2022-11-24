@@ -13,11 +13,6 @@ enum crypto_prefix_type {
   arbitrary = ypc::utc::crypto_prefix_arbitrary
 };
 
-auto cast = [](const py::bytes &p) -> ypc::bytes {
-  std::string b = std::string(p);
-  ypc::bytes sk(b.c_str(), b.size());
-  return sk;
-};
 class crypto_pack_wrapper {
 public:
   crypto_pack_wrapper(crypto_pack_type cpt) : m_type(cpt) {
@@ -33,61 +28,34 @@ public:
     }
   }
 
-  py::bytes gen_ecc_private_key() {
+  ypc::bytes gen_ecc_private_key() {
     auto s = m_crypto->gen_ecc_private_key();
-    return py::bytes((const char *)s.data(), s.size());
+    return s;
   }
-  py::bytes gen_ecc_public_key_from_private_key(const py::bytes &private_key) {
-    std::string b = std::string(private_key);
-    ypc::bytes sk(b.c_str(), b.size());
-    auto s = m_crypto->gen_ecc_public_key_from_private_key(sk);
-    return py::bytes((const char *)s.data(), s.size());
+  ypc::bytes
+  gen_ecc_public_key_from_private_key(const ypc::bytes &private_key) {
+    auto s = m_crypto->gen_ecc_public_key_from_private_key(private_key);
+    return s;
   }
-  py::bytes hash_256(const py::bytes &msg) {
-    std::string b = std::string(msg);
-    ypc::bytes m(b.c_str(), b.size());
-    auto s = m_crypto->hash_256(m);
-    return py::bytes((const char *)s.data(), s.size());
+  ypc::bytes hash_256(const ypc::bytes &msg) { return m_crypto->hash_256(msg); }
+
+  ypc::bytes encrypt(const ypc::bytes &msg, const ypc::bytes &public_key,
+                     uint32_t prefix) {
+    return m_crypto->ecc_encrypt(msg, public_key, prefix);
   }
 
-  py::bytes encrypt(const py::bytes &msg, const py::bytes &public_key,
-                    uint32_t prefix) {
-    std::string a(msg);
-    std::string b(public_key);
-    ypc::bytes m(a.c_str(), a.size());
-    ypc::bytes k(b.c_str(), b.size());
-    auto s = m_crypto->ecc_encrypt(m, k, prefix);
-    return py::bytes((const char *)s.data(), s.size());
+  ypc::bytes decrypt(const ypc::bytes &msg, const ypc::bytes &private_key,
+                     uint32_t prefix) {
+    return m_crypto->ecc_decrypt(msg, private_key, prefix);
   }
 
-  py::bytes decrypt(const py::bytes &msg, const py::bytes &private_key,
-                    uint32_t prefix) {
-    std::string a(msg);
-    std::string b(private_key);
-    ypc::bytes m(a.c_str(), a.size());
-    ypc::bytes k(b.c_str(), b.size());
-    auto s = m_crypto->ecc_decrypt(m, k, prefix);
-    return py::bytes((const char *)s.data(), s.size());
+  ypc::bytes sign(const ypc::bytes &msg, const ypc::bytes &private_key) {
+    return m_crypto->sign_message(msg, private_key);
   }
 
-  py::bytes sign(const py::bytes &msg, const py::bytes &private_key) {
-    std::string a(msg);
-    std::string b(private_key);
-    ypc::bytes m(a.c_str(), a.size());
-    ypc::bytes k(b.c_str(), b.size());
-    auto s = m_crypto->sign_message(m, k);
-    return py::bytes((const char *)s.data(), s.size());
-  }
-
-  bool verify_sig(const py::bytes &sig, const py::bytes &msg,
-                  const py::bytes &public_key) {
-    std::string a(msg);
-    std::string b(public_key);
-    std::string c(sig);
-    ypc::bytes m(a.c_str(), a.size());
-    ypc::bytes k(b.c_str(), b.size());
-    ypc::bytes s(c.c_str(), c.size());
-    return m_crypto->verify_message_signature(s, m, k);
+  bool verify_sig(const ypc::bytes &sig, const ypc::bytes &msg,
+                  const ypc::bytes &public_key) {
+    return m_crypto->verify_message_signature(sig, msg, public_key);
   }
 
   std::unique_ptr<ypc::terminus::crypto_pack> m_crypto;
@@ -104,29 +72,28 @@ public:
         : encrypted_skey((const char *)_encrypted_skey.data(),
                          _encrypted_skey.size()),
           signature((const char *)_signature.data(), _signature.size()) {}
-    py::bytes encrypted_skey;
-    py::bytes signature;
+    ypc::bytes encrypted_skey;
+    ypc::bytes signature;
   } forward_info;
 
   enclave_interaction_wrapper(std::shared_ptr<crypto_pack_wrapper> crypto)
       : m_crypto(crypto), m_instance(crypto.get()->m_crypto.get()) {}
 
-  py::bytes generate_allowance(const py::bytes &private_key,
-                               const py::bytes &param_hash,
-                               const py::bytes &target_enclave_hash,
-                               const py::bytes &dian_pkey,
-                               const py::bytes &dhash) {
-    auto r = m_instance.generate_allowance(cast(private_key), cast(param_hash),
-                                           cast(target_enclave_hash),
-                                           cast(dian_pkey), cast(dhash));
-    return py::bytes((const char *)r.data(), r.size());
+  ypc::bytes generate_allowance(const ypc::bytes &private_key,
+                                const ypc::bytes &param_hash,
+                                const ypc::bytes &target_enclave_hash,
+                                const ypc::bytes &dian_pkey,
+                                const ypc::bytes &dhash) {
+    auto r = m_instance.generate_allowance(
+        private_key, param_hash, target_enclave_hash, dian_pkey, dhash);
+    return r;
   }
 
-  forward_info forward_private_key(const py::bytes &private_key,
-                                   const py::bytes &dian_pkey,
-                                   const py::bytes &enclave_hash){
-    auto r = m_instance.forward_private_key(cast(private_key), cast(dian_pkey),
-                                            cast(enclave_hash));
+  forward_info forward_private_key(const ypc::bytes &private_key,
+                                   const ypc::bytes &dian_pkey,
+                                   const ypc::bytes &enclave_hash) {
+    auto r =
+        m_instance.forward_private_key(private_key, dian_pkey, enclave_hash);
     return forward_info(r.encrypted_skey, r.signature);
   }
 
@@ -141,16 +108,16 @@ public:
       std::shared_ptr<crypto_pack_wrapper> crypto)
       : m_crypto(crypto), m_instance(crypto.get()->m_crypto.get()) {}
 
-  py::bytes generate_request(const py::bytes &param,
-                             const py::bytes &public_key) {
-    auto r = m_instance.generate_request(cast(param), cast(public_key));
-    return py::bytes((const char *)r.data(), r.size());
+  ypc::bytes generate_request(const ypc::bytes &param,
+                              const ypc::bytes &public_key) {
+    auto r = m_instance.generate_request(param, public_key);
+    return r;
   }
 
-  py::bytes decrypt_result(const py::bytes &result,
-                           const py::bytes &private_key) {
-    auto r = m_instance.decrypt_result(cast(result), cast(private_key));
-    return py::bytes((const char *)r.data(), r.size());
+  ypc::bytes decrypt_result(const ypc::bytes &result,
+                            const ypc::bytes &private_key) {
+    auto r = m_instance.decrypt_result(result, private_key);
+    return r;
   }
 
 protected:
@@ -160,6 +127,27 @@ protected:
 
 PYBIND11_MODULE(pyterminus, m) {
   m.doc() = "Python module of Fidelius toolkit - terminus";
+
+  py::class_<ypc::bytes>(m, "YPCBytes", py::buffer_protocol())
+      .def_buffer([](ypc::bytes &m) -> py::buffer_info {
+        return py::buffer_info(m.data(), sizeof(uint8_t),
+                               py::format_descriptor<uint8_t>::format(), 1,
+                               {m.size()}, {1});
+      })
+      .def(py::init([](py::buffer b) -> ypc::bytes {
+        py::buffer_info info = b.request();
+        if (info.format != py::format_descriptor<uint8_t>::format()) {
+          throw std::runtime_error(
+              "Incompatiable format: expected a byte array!");
+        }
+        return ypc::bytes((uint8_t *)info.ptr, info.shape[0]);
+      }))
+      .def("__len__", &ypc::bytes::size)
+      .def("__str__", [](const ypc::bytes &b) {
+        auto k = b.as<ypc::bytes::hex_bytes_t>();
+        return std::string((const char *)k.data(), k.size());
+      });
+
   py::enum_<crypto_pack_type>(m, "CryptoPackType")
       .value("IntelSGXAndEthCompatible", crypto_pack_type::intel_sgx_and_eth)
       .value("ChineseSM", crypto_pack_type::chinese_sm)
