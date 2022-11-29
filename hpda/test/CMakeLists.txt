@@ -16,4 +16,4 @@ add_executable(hpda_gtest gtest_main.cpp
   kmeans/tuple_point.cpp
   kmeans/test_kmeans_iris.cpp
   )
-target_link_libraries(hpda_gtest gtest_main glog hpda)
+target_link_libraries(hpda_gtest PRIVATE gtest_main glog hpda)

@@ -1,9 +1,26 @@
 find_package(OpenSSL REQUIRED)
-include_directories(${OPENSSL_INCLUDE_DIR})
-link_directories(${OPENSSL_LIB})
+#include_directories(${OPENSSL_INCLUDE_DIR})
+#link_directories(${OPENSSL_LIB})
 
 set(gmssl_src sm2_ecc.cpp ../../../corecommon/crypto/sm3_hash.cpp sm4_aes.cpp)
 
-add_library(ypc_gmssl_u SHARED ${gmssl_src})
-target_link_libraries(ypc_gmssl_u ${OPENSSL_CRYPTO_LIBRARY} gmssl)
-install(TARGETS ypc_gmssl_u DESTINATION lib COMPONENT c_ypc_core OPTIONAL)
+add_library(core_gmssl SHARED ${gmssl_src})
+target_include_directories(core_gmssl PUBLIC
+  "${OPENSSL_INCLUDE_DIR}"
+  "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
+  "$<BUILD_INTERFACE:${FF_INCLUDE_DIR}>"
+  "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
+
+target_link_directories(core_gmssl PUBLIC ${OPENSSL_LIB})
+
+target_link_libraries(core_gmssl ${OPENSSL_CRYPTO_LIBRARY} stbox_gmssl)
+
+install(TARGETS core_gmssl EXPORT mod_core_gmssl
+  DESTINATION lib)
+
+install(EXPORT mod_core_gmssl
+  DESTINATION "${config_install_dir}/core"
+  NAMESPACE "${namespace}"
+  )
+
+add_version(core_gmssl)

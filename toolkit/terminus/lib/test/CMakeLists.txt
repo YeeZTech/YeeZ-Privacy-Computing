@@ -2,7 +2,15 @@ add_executable(gtest_terminus
   main.cpp
   gtest_intel_sgx.cpp
   )
-target_link_libraries(gtest_terminus gtest ypc_terminus glog boost_system pthread)
+find_package (Threads REQUIRED)
 
-add_test(NAME gtest-terminus
-  COMMAND gtest_terminus)
+target_include_directories(gtest_terminus PUBLIC
+  "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
+  "$<BUILD_INTERFACE:${FF_INCLUDE_DIR}>"
+  "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+  )
+target_link_libraries(gtest_terminus gtest terminus
+  ${CMAKE_THREAD_LIBS_INIT}
+  )
+
+gtest_discover_tests(gtest_terminus)

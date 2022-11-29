@@ -1,6 +1,7 @@
 #include "ypc/stbox/usgx/sgx_module.h"
 #include "sgx_urts.h"
 #include "ypc/stbox/usgx/error_message.h"
+#include <glog/logging.h>
 #include <iostream>
 
 namespace stbox {
@@ -18,6 +19,7 @@ sgx_module::sgx_module(const char *mod_path) : internal::sgx_module_base() {
   m_mod_path = std::string(mod_path);
   sgx_status_t ret = SGX_ERROR_UNEXPECTED;
 
+  LOG(INFO) << "SGX_DEBUG_FLAG: " << SGX_DEBUG_FLAG;
   /* Call sgx_create_enclave to initialize an enclave instance */
   /* Debug Support: set 2nd parameter to 1 */
   ret = sgx_create_enclave(mod_path, SGX_DEBUG_FLAG, NULL, NULL, &m_sgx_eid,

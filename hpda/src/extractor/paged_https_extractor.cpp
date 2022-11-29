@@ -1,4 +1,5 @@
 #include <curl/curl.h>
+#include <glog/logging.h>
 #include <hpda/extractor/paged_https_extractor.h>
 
 size_t writeFunction(void *ptr, size_t size, size_t nmemb, std::string *data) {

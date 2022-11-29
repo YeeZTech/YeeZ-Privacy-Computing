@@ -1,6 +1,7 @@
 #pragma once
 #include <boost/foreach.hpp>
 #include <boost/property_tree/ptree.hpp>
+#include <glog/logging.h>
 #include <hpda/processor/processor_base.h>
 
 namespace hpda {

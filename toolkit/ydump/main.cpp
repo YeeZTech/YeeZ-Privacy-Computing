@@ -75,8 +75,12 @@ int main(int argc, char *argv[]) {
   }
 
   std::unordered_map<std::string, std::string> result;
+#ifdef DEBUG
+  LOG(INFO) << "this is for debug";
+  // LOG(INFO) << " "
+#endif
 
-  ypc::bytes enclave_hash;
+      ypc::bytes enclave_hash;
   if (etype == "parser") {
     ypc::parser_sgx_module mod(enclave_path.c_str());
     mod.get_enclave_hash(enclave_hash);

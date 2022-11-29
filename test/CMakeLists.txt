@@ -1,3 +1,6 @@
+include_directories(${PROJECT_SOURCE_DIR}/include)
+include_directories(${FF_INCLUDE_DIR})
+link_directories(${FF_LIB_DIR})
 
 file(GLOB sub_folders ./*)
 foreach(folder ${sub_folders})

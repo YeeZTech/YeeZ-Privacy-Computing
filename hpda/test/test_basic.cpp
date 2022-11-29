@@ -1,3 +1,4 @@
+#include <glog/logging.h>
 #include <gtest/gtest.h>
 #include <hpda/extractor/raw_data.h>
 #include <hpda/output/memory_output.h>

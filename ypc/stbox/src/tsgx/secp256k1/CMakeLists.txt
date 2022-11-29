@@ -11,3 +11,17 @@ add_sgx_library(stbox_secp256k1_t
   SRCS "${secp256k1_src}")
 
 install(TARGETS stbox_secp256k1_t DESTINATION lib COMPONENT c_stbox_common OPTIONAL)
+
+target_include_directories(stbox_secp256k1_t PUBLIC
+  "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
+  "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/ypc/stbox>"
+  "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+  "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/ypc/stbox>"
+)
+
+install(TARGETS stbox_secp256k1_t EXPORT mod_secp256k1_t
+  DESTINATION lib)
+
+install(EXPORT mod_secp256k1_t
+  DESTINATION "${config_install_dir}/stbox"
+  NAMESPACE "${namespace}")

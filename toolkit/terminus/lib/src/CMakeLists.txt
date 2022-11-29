@@ -4,6 +4,19 @@ set(src
   enclave_interaction.cpp
 )
 
-add_library(ypc_terminus SHARED ${src})
-target_link_libraries(ypc_terminus ypc_stdeth_u ypc_gmssl_u)
-install(TARGETS ypc_terminus DESTINATION lib COMPONENT c_yterminus OPTIONAL)
+add_library(terminus SHARED ${src})
+
+target_link_libraries(terminus core_stdeth core_gmssl glog)
+
+target_include_directories(terminus PUBLIC
+  "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
+  "$<BUILD_INTERFACE:${FF_INCLUDE_DIR}>"
+  "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+  )
+
+install(TARGETS terminus EXPORT mod_terminus
+  DESTINATION lib)
+install(EXPORT mod_terminus
+  DESTINATION "${config_install_dir}/toolkit"
+  NAMESPACE "${namespace}"
+  )

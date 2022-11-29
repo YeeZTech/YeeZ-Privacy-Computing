@@ -15,7 +15,7 @@ add_executable(gtest_core
   gtest_ntobject_file.cpp
   gtest_ntjson.cpp
   )
-target_link_libraries(gtest_core ypc_common_u)
+target_link_libraries(gtest_core common)
 
 add_test(NAME test-core
   COMMAND gtest_core)
@@ -24,13 +24,15 @@ add_untrusted_library(test_ypc_lib SHARED
   SRCS "test_ypc_module.cpp"
   EDL ./enclave/enclave.edl
   EDL_SEARCH_PATHS ${PROJECT_SOURCE_DIR}/include/ypc/edl/:${PROJECT_SOURCE_DIR}/include/ypc/stbox)
-target_link_libraries(test_ypc_lib ypc_stdeth_u stbox_common_u)
+
+target_link_libraries(test_ypc_lib core_stdeth stbox_common)
 
 add_executable(gen_sign_for_ypc gen_sign_for_ypc.cpp)
-target_link_libraries(gen_sign_for_ypc test_ypc_lib ypc_core stbox_common_u)
+target_link_libraries(gen_sign_for_ypc test_ypc_lib core stbox_common)
 
 add_dependencies(gen_sign_for_ypc test_ypc_enclave-sign)
-target_link_libraries(gtest_core gtest ypc_core stbox_common_u test_ypc_lib)
+target_link_libraries(gtest_core gtest core stbox_common test_ypc_lib)
 
 add_executable(gen_input_param gen_input_param.cpp)
-target_link_libraries(gen_input_param ypc_core pthread)
+target_link_libraries(gen_input_param core pthread)
+gtest_discover_tests(gtest_core)

@@ -1,0 +1,102 @@
+@PACKAGE_INIT@
+
+set_and_check(YPC_LIB_DIR "@PACKAGE_LIB_INSTALL_DIR@")
+set_and_check(YPC_INCLUDE_DIR "@PACKAGE_INCLUDE_INSTALL_DIR@")
+
+list(APPEND CMAKE_MODULE_PATH ${YPC_LIB_DIR}/cmake/@PROJECT_NAME@)
+include(Util)
+
+add_component(common
+  COMP_TARGETS common/mod_common.cmake)
+add_component(common_t
+  COMP_TARGETS common/mod_common_t.cmake)
+
+
+add_component(stbox
+  COMP_TARGETS stbox/mod_stbox_common.cmake)
+add_component(stbox_t
+  COMP_TARGETS "stbox/mod_stbox_common_t.cmake stbox/mod_crypto_t.cmake stbox/mod_channel_t.cmake"
+  )
+
+add_component(gmssl
+  COMP_TARGETS "stbox/mod_gmssl.cmake core/mod_core_gmssl.cmake"
+  )
+add_component(gmssl_t
+  COMP_TARGETS "stbox/mod_stbox_common_t.cmake stbox/mod_gmssl_t.cmake core/mod_gmssl_t.cmake")
+
+add_component(stdeth
+  COMP_TARGETS "stbox/mod_keccak.cmake core/mod_core_stdeth.cmake")
+
+add_component(stdeth_t
+  COMP_TARGETS "stbox/mod_stbox_common_t.cmake stbox/mod_secp256k1_t.cmake stbox/mod_keccak_t.cmake core/mod_stdeth_t.cmake")
+
+add_component(core
+  COMP_TARGETS "common/mod_common.cmake stbox/mod_stbox_common.cmake core/mod_core.cmake")
+
+add_component(core_t
+  COMP_TARGETS "stbox/mod_stbox_common_t.cmake stbox/mod_channel_t.cmake stbox/mod_crypto_t.cmake core/mod_analyzer_t.cmake")
+
+add_component(core_parser_module
+  COMP_TARGETS core/mod_core_parser_module.cmake)
+
+add_component(keymgr
+  COMP_TARGETS "common/mod_common.cmake stbox/mod_stbox_common.cmake core/mod_core.cmake keymgr/mod_keymgr_utils.cmake")
+
+
+set(_supported_comp common stbox gmssl stdeth core core_parser_module keymgr)
+
+if(NOT DEFINED CMAKE_BUILD_TYPE)
+  message(STATUS "build type not define, use Debug as CMAKE_BUILD_TYPE")
+  set(CMAKE_BUILD_TYPE "Debug")
+endif()
+
+if(NOT DEFINED SGX_MODE)
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+  set(SGX_MODE "Debug")
+elseif(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
+  set(SGX_MODE "Release")
+elseif(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+  set(SGX_MODE "PreRelease")
+endif()
+endif()
+
+if(NOT DEFINED SGX_HW)
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+  set(SGX_HW OFF)
+elseif(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
+  set(SGX_HW ON)
+elseif(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+  set(SGX_HW ON)
+endif()
+endif()
+
+find_package(SGX)
+set(_supported_sgx_comp common_t stbox_t gmssl_t stdeth_t core_t keymgr)
+if(SGX_FOUND)
+  set(_supported_comp ${_supported_comp} ${_supported_sgx_comp})
+endif()
+
+foreach(_comp ${@PROJECT_NAME@_FIND_COMPONENTS})
+  if(_comp IN_LIST _supported_sgx_comp AND NOT SGX_FOUND)
+    set(@PROJECT_NAME@_FOUND False)
+    set(@PROJECT_NAME@_NOT_FOUND_MESSAGE "require SGX related component:" ${_comp} " , yet SGX is not found")
+  endif()
+endforeach()
+
+foreach(_comp ${@PROJECT_NAME@_FIND_COMPONENTS})
+  if(NOT _comp IN_LIST _supported_comp)
+    set(@PROJECT_NAME@_FOUND False)
+    list(JOIN _supported_comp , _supported_comp_str)
+    set(@PROJECT_NAME@_NOT_FOUND_MESSAGE "Unsupported component: ${_comp}, should be one of " ${_supported_comp_str})
+  endif()
+endforeach()
+
+
+#use_component(${@PROJECT_NAME@_FIND_COMPONENTS})
+list(LENGTH @PROJECT_NAME@_FIND_COMPONENTS FIND_COMPONENTS_COUNT)
+if(FIND_COMPONENTS_COUNT EQUAL 0)
+  use_component(${_supported_comp})
+else()
+  use_component(${YPC_FIND_COMPONENTS})
+endif()
+

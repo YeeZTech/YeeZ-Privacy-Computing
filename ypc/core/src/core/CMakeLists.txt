@@ -1,7 +1,8 @@
 add_subdirectory(sgx)
 add_subdirectory(crypto)
+find_package (Threads REQUIRED)
 
-add_library(ypc_core SHARED
+add_library(core SHARED
   timer_loop.cpp
   poption_require.cpp
   db.cpp
@@ -13,6 +14,29 @@ add_library(ypc_core SHARED
   exceptions.cpp
   status.cpp
   version.cpp
-  ${PROJECT_SOURCE_DIR}/vendor/fflib/src/net/common/archive.cpp)
-target_link_libraries(ypc_core mysqlcppconn boost_program_options boost_filesystem glog boost_system ypc_common_u)
-install(TARGETS ypc_core DESTINATION lib COMPONENT c_ypc_core OPTIONAL)
+  ${FF_PATH}/src/net/common/archive.cpp)
+
+target_include_directories(core PUBLIC
+  "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
+  "$<BUILD_INTERFACE:${FF_INCLUDE_DIR}>"
+  "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
+
+target_link_libraries(core
+  mysqlcppconn
+  boost_program_options
+  boost_filesystem
+  glog
+  boost_system
+  ${CMAKE_THREAD_LIBS_INIT}
+  common
+  )
+
+install(TARGETS core EXPORT mod_core
+  DESTINATION lib)
+
+install(EXPORT mod_core
+  DESTINATION "${config_install_dir}/core"
+  NAMESPACE "${namespace}"
+  )
+
+add_version(core)

@@ -1,0 +1,70 @@
+
+define_property(TARGET PROPERTY COMP_NAME
+  BRIEF_DOCS "component name"
+  FULL_DOCS "Component name for find_package()")
+define_property(TARGET PROPERTY COMP_TARGET_PATH
+  BRIEF_DOCS "component targets"
+  FULL_DOCS "Component targets path for find_package()")
+
+function(add_component target)
+  set(multiValueArgs COMP_TARGETS)
+  cmake_parse_arguments(ADD_COMPONENT "${options}"
+      "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    if(NOT TARGET @PROJECT_NAME@_${target})
+      add_custom_target(@PROJECT_NAME@_${target})
+      set_target_properties(@PROJECT_NAME@_${target} PROPERTIES
+        COMP_NAME ${target}
+        COMP_TARGET_PATH ${ADD_COMPONENT_COMP_TARGETS}
+      )
+  endif()
+endfunction()
+
+function(use_component)
+  set(targets ${ARGN})
+  set(all_paths)
+  foreach(target ${targets})
+    get_target_property(target_path_str @PROJECT_NAME@_${target} COMP_TARGET_PATH)
+    string(REPLACE " " ";" target_path ${target_path_str})
+    foreach(tp ${target_path})
+      if(${tp} IN_LIST all_paths)
+      else()
+        list(APPEND all_paths ${tp})
+      endif()
+    endforeach()
+  endforeach()
+
+  foreach(path ${all_paths})
+    string(CONCAT path_str "${YPC_LIB_DIR}/cmake/@PROJECT_NAME@/" ${path})
+    include(${path_str})
+  endforeach()
+endfunction()
+
+
+function(add_ypc_applet target)
+  set(oneValueArgs CRYPTO)
+  set(multiValueArgs SRCS)
+  cmake_parse_arguments(ADD_YPC_APPLET "${options}"
+      "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    if((NOT ADD_YPC_APPLET_CRYPTO STREQUAL "stdeth") AND (NOT APP_YPC_APPLET_CRYPTO STREQUAL "gmssl"))
+      message(FATAL_ERROR "add_ypc_applet can only use 'stdeth' or 'gmssl' for CRYPTO " )
+    endif()
+
+  add_enclave_library(${target} SRCS ${ADD_YPC_APPLET_SRCS}
+    EDL ${YPC_INCLUDE_DIR}/ypc/edl/eparser.edl
+    EDL_SEARCH_PATHS ${YPC_INCLUDE_DIR}/ypc/edl/:${YPC_INCLUDE_DIR}/ypc/stbox/
+  )
+  target_include_directories(${target}-edlobj PUBLIC
+    "${YPC_INCLUDE_DIR}"
+    )
+
+  target_include_directories(${target} PUBLIC
+    "${YPC_INCLUDE_DIR}"
+    )
+  target_link_libraries(${target}
+    @PROJECT_NAME@::stbox_common_t
+    @PROJECT_NAME@::stbox_channel_t
+    @PROJECT_NAME@::analyzer_t @PROJECT_NAME@::${ADD_YPC_APPLET_CRYPTO}_t)
+endfunction()
+

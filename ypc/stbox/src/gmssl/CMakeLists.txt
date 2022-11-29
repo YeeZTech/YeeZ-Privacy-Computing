@@ -17,14 +17,40 @@ set(gmssl_src
 	block_cipher.c
   )
 
-add_library(gmssl
+add_library(stbox_gmssl
   SHARED
   ${gmssl_src}
   )
-install(TARGETS gmssl DESTINATION lib COMPONENT c_stbox_common OPTIONAL)
+target_include_directories(stbox_gmssl PUBLIC
+  "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
+  "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/ypc/stbox>"
+  "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+  "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/ypc/stbox>"
+)
+
+install(TARGETS stbox_gmssl EXPORT mod_gmssl
+  DESTINATION lib
+)
+install(EXPORT mod_gmssl
+  DESTINATION "${config_install_dir}/stbox"
+  NAMESPACE "${namespace}")
+
+add_version(stbox_gmssl)
 
 add_sgx_library(stbox_gmssl_t
   stbox_gmssl_t
   SRCS "${gmssl_src}")
-install(TARGETS stbox_gmssl_t DESTINATION lib COMPONENT c_stbox_common OPTIONAL)
 
+target_include_directories(stbox_gmssl_t PUBLIC
+  "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
+  "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/ypc/stbox>"
+  "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+  "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/ypc/stbox>"
+)
+
+install(TARGETS stbox_gmssl_t EXPORT mod_gmssl_t
+  DESTINATION lib COMPONENT c_stbox_common OPTIONAL)
+
+install(EXPORT mod_gmssl_t
+  DESTINATION "${config_install_dir}/stbox"
+  NAMESPACE "${namespace}")

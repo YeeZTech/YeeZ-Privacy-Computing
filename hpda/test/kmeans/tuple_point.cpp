@@ -1,4 +1,5 @@
 #include "tuple_point.h"
+#include <ostream>
 
 Point operator+(const Point &p1, const Point &p2) {
   Point s(p1);
