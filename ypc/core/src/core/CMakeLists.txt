@@ -1,4 +1,7 @@
+if(SGX_FOUND)
 add_subdirectory(sgx)
+endif()
+
 add_subdirectory(crypto)
 find_package (Threads REQUIRED)
 

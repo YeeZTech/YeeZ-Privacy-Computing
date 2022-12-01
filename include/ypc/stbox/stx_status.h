@@ -1,5 +1,4 @@
 #pragma once
-#include <sgx_error.h>
 #include <string>
 
 namespace stbox {

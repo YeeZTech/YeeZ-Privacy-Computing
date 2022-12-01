@@ -17,6 +17,7 @@ install(EXPORT mod_keccak
 
 add_version(stbox_keccak)
 
+if(SGX_FOUND)
 add_sgx_library(stbox_keccak_t SRCS ${src})
 
 target_include_directories(stbox_keccak_t PUBLIC
@@ -31,3 +32,4 @@ install(TARGETS stbox_keccak_t EXPORT mod_keccak_t
 install(EXPORT mod_keccak_t
   DESTINATION "${config_install_dir}/stbox"
   NAMESPACE "${namespace}")
+endif()
