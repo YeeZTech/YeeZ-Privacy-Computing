@@ -19,6 +19,7 @@ target_include_directories(stbox_common_t PUBLIC
   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/ypc/stbox>"
 )
 
+AddClangTidy(stbox_common_t)
 install(TARGETS stbox_common_t EXPORT mod_stbox_common_t
   DESTINATION lib)
 
@@ -57,6 +58,8 @@ install(TARGETS stbox_common EXPORT mod_stbox_common
 install(EXPORT mod_stbox_common
   DESTINATION "${config_install_dir}/stbox"
   NAMESPACE "${namespace}")
+
+AddClangTidy(stbox_common)
 
 add_version(stbox_common)
 

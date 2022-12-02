@@ -18,3 +18,4 @@ install(EXPORT mod_keymgr_utils
   )
 
 add_version(keymgr_utils)
+AddClangTidy(keymgr_utils)

@@ -37,3 +37,5 @@ install(TARGETS analyzer_t
 install(EXPORT mod_analyzer_t
   DESTINATION "${config_install_dir}/core"
   NAMESPACE "${namespace}")
+
+AddClangTidy(analyzer_t)

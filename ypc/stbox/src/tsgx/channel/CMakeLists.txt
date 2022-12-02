@@ -24,3 +24,5 @@ install(TARGETS stbox_channel_t EXPORT mod_channel_t
 install(EXPORT mod_channel_t
   DESTINATION "${config_install_dir}/stbox"
   NAMESPACE "${namespace}")
+
+AddClangTidy(stbox_channel_t)

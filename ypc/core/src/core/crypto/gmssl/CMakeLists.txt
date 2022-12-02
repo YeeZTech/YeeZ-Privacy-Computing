@@ -23,4 +23,5 @@ install(EXPORT mod_core_gmssl
   NAMESPACE "${namespace}"
   )
 
+AddClangTidy(core_gmssl)
 add_version(core_gmssl)

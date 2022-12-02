@@ -20,3 +20,5 @@ install(EXPORT mod_terminus
   DESTINATION "${config_install_dir}/toolkit"
   NAMESPACE "${namespace}"
   )
+
+AddClangTidy(terminus)

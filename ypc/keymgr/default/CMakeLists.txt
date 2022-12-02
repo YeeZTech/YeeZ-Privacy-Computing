@@ -19,3 +19,5 @@ add_dependencies(keymgr_tool keymgr-sign)
 target_link_libraries(keymgr_tool keymgr_module common)
 install(TARGETS keymgr_tool DESTINATION bin )
 
+AddClangTidy(keymgr_module)
+AddClangTidy(keymgr_tool)

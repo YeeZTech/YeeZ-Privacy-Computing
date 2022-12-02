@@ -36,3 +36,6 @@ install(TARGETS stdeth_ecc_t EXPORT mod_stdeth_ecc_t
 install(EXPORT mod_stdeth_ecc_t
   DESTINATION "${config_install_dir}/core"
   NAMESPACE "${namespace}")
+
+AddClangTidy(stdeth_ecc_t)
+AddClangTidy(gmssl_ecc_t)

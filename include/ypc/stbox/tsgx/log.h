@@ -2,6 +2,7 @@
 #include "ypc/stbox/ebyte.h"
 #include "ypc/stbox/stx_common.h"
 #include "ypc/stbox/stx_status.h"
+#include <sgx_error.h>
 #include <string>
 
 namespace stbox {
