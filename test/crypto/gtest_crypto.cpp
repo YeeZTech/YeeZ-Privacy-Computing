@@ -1,3 +1,4 @@
+#include "../project_path.h"
 #include "test_crypto_module.h"
 #include <gtest/gtest.h>
 #include <iostream>
@@ -6,8 +7,8 @@ namespace {
 class crypto_test : public testing::Test {
 protected:
   void SetUp() override {
-    m_module.reset(
-        new test_crypto_sgx_module("../lib/test_crypto_enclave.signed.so"));
+    m_module.reset(new test_crypto_sgx_module(
+        PROJECT_SOURCE_DIR "/lib/test_crypto_enclave.signed.so"));
   }
 
 protected:
@@ -19,7 +20,6 @@ TEST_F(crypto_test, aes_cmac_msg) {
   ypc::bytes pkey("k3Men*p/2.3j4abB");
   ypc::bytes msg("this|is|a|test|message");
   ypc::bytes result = m_module->aes_cmac_msg(pkey, msg);
-
   ypc::hex_bytes expect("0125c538f8be7c4eea370f992a4ffdcb");
   EXPECT_TRUE(expect.as<ypc::bytes>() == result);
 }

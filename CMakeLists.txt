@@ -53,6 +53,7 @@ else()
 endif()
 
 configure_file("${PROJECT_SOURCE_DIR}/cmake/version.h.in" "${PROJECT_SOURCE_DIR}/include/ypc/version.h")
+configure_file("${PROJECT_SOURCE_DIR}/cmake/project_path.h.in" "${PROJECT_SOURCE_DIR}/test/project_path.h")
 
 set(FF_PATH ${PROJECT_SOURCE_DIR}/vendor/fflib)
 set(FF_SRC_PATH ${FF_PATH}/src)

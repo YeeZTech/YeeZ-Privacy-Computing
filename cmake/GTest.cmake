@@ -17,8 +17,8 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 option(INSTALL_GMOCK "Install GMock" OFF)
 option(INSTALL_GTEST "Install GTest" ON)
 
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+#if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   FetchContent_MakeAvailable(googletest)
-endif()
+#endif()
 include(GoogleTest)
 

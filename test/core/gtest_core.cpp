@@ -1,3 +1,4 @@
+#include "../project_path.h"
 #include "test_ypc_module.h"
 #include "ypc/core/byte.h"
 #include <gtest/gtest.h>
@@ -8,7 +9,7 @@ protected:
   void SetUp() override {
     if (!mod) {
       mod = std::make_shared<test_ypc_sgx_module>(
-          "../lib/test_ypc_enclave.signed.so");
+          PROJECT_SOURCE_DIR "/lib/test_ypc_enclave.signed.so");
     }
   }
   std::shared_ptr<test_ypc_sgx_module> mod;
