@@ -60,7 +60,8 @@ uint32_t secp256k1::generate_pkey_from_skey(const uint8_t *skey,
     return stbox::stx_status::ecc_secp256k1_ec_pubkey_create_error;
   }
   ::ypc::utc::change_pubkey_endian((uint8_t *)pkey, sizeof(secp256k1_pubkey));
-  return SGX_SUCCESS;
+  return stbox::stx_status::success;
+  //return SGX_SUCCESS;
 }
 
 uint32_t secp256k1::get_signature_size() {
@@ -106,7 +107,7 @@ uint32_t secp256k1::verify_signature(
     LOG(ERROR)<<"invalid data size, should be 32";
     return stbox::stx_status::ecc_verify_invalid_data_size;
   }
-  sgx_status_t se_ret;
+  uint32_t se_ret;
   auto ctx = init_secp256k1_context();
 
   secp256k1_pubkey secp256k1_pkey;
@@ -115,7 +116,7 @@ uint32_t secp256k1::verify_signature(
                                    sizeof(secp256k1_pubkey));
 
   secp256k1_ecdsa_recoverable_signature rsig;
-  se_ret = (sgx_status_t)secp256k1_ecdsa_recoverable_signature_parse_compact(
+  se_ret = secp256k1_ecdsa_recoverable_signature_parse_compact(
       ctx, &rsig, sig, *(sig + 64) - 27);
   if (!se_ret) {
     LOG(ERROR) << "secp256k1_ecdsa_recoverable_signature_parse_compact return "
@@ -123,7 +124,7 @@ uint32_t secp256k1::verify_signature(
     return stbox::stx_status::ecc_secp256k1_ecdsa_sign_recoverable_error;
   }
   secp256k1_ecdsa_signature secp256k1_sig;
-  se_ret = (sgx_status_t)secp256k1_ecdsa_recoverable_signature_convert(
+  se_ret = secp256k1_ecdsa_recoverable_signature_convert(
       ctx, &secp256k1_sig, &rsig);
   if (!se_ret) {
     LOG(ERROR) << "secp256k1_ecdsa_recoverable_signature_convert return "
@@ -132,14 +133,14 @@ uint32_t secp256k1::verify_signature(
   }
 
   //auto hash = stbox::eth::msg_hash(data, data_size);
-  se_ret = (sgx_status_t)secp256k1_ecdsa_verify(ctx, &secp256k1_sig,
+  se_ret = secp256k1_ecdsa_verify(ctx, &secp256k1_sig,
                                                 data, &secp256k1_pkey);
-  
+
   if (!se_ret) {
     LOG(ERROR) << "secp256k1_ecdsa_verify return " << (uint32_t)se_ret;
     return stbox::stx_status::ecc_secp256_ecdsa_verify_error;
   }
-  return SGX_SUCCESS;
+  return stbox::stx_status::success;
 }
 
   }

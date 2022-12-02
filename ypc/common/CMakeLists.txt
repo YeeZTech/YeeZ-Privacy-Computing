@@ -1,5 +1,6 @@
 set(src byte/base58.cpp byte/base64.cpp version.cpp)
 
+if(SGX_FOUND)
 add_sgx_library(common_t
   common_t
   SRCS ${src})
@@ -15,6 +16,7 @@ install(TARGETS common_t EXPORT mod_common_t
 install(EXPORT mod_common_t
   DESTINATION "${config_install_dir}/common"
   NAMESPACE "${namespace}")
+endif()
 
 add_library(common SHARED ${src})
 

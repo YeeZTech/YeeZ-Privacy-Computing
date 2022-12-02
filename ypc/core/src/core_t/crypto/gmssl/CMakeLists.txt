@@ -19,3 +19,5 @@ install(TARGETS gmssl_t EXPORT mod_gmssl_t
 install(EXPORT mod_gmssl_t
   DESTINATION "${config_install_dir}/core"
   NAMESPACE "${namespace}")
+
+AddClangTidy(gmssl_t)

@@ -23,3 +23,5 @@ install(TARGETS stbox_crypto_t EXPORT mod_crypto_t
 install(EXPORT mod_crypto_t
   DESTINATION "${config_install_dir}/stbox"
   NAMESPACE "${namespace}")
+
+AddClangTidy(stbox_crypto_t)

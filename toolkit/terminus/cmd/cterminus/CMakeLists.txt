@@ -15,3 +15,4 @@ target_include_directories(yterminus PUBLIC
   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
   )
 install(TARGETS yterminus DESTINATION bin)
+AddClangTidy(yterminus)

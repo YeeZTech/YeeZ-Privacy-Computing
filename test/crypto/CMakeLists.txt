@@ -1,4 +1,3 @@
-add_subdirectory(enclave)
 
 include_directories(${PROJECT_SOURCE_DIR}/ypc/stbox/include/ypc/stbox/)
 add_executable(gtest_gmssl
@@ -6,6 +5,9 @@ add_executable(gtest_gmssl
   gtest_gmssl.cpp
   )
 target_link_libraries(gtest_gmssl gtest core_gmssl stbox_common core)
+
+if(SGX_FOUND)
+add_subdirectory(enclave)
 
 set(src main.cpp gtest_crypto.cpp gtest_gmssl.cpp)
 set(edl_path ${PROJECT_SOURCE_DIR}/include/ypc/edl/:${PROJECT_SOURCE_DIR}/include/ypc/stbox)
@@ -22,3 +24,4 @@ add_dependencies(test_crypto test_crypto_enclave-sign)
 target_link_libraries(test_crypto test_crypto_lib core gtest)
 
 gtest_discover_tests(test_crypto)
+endif()

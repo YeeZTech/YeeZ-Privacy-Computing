@@ -11,6 +11,7 @@ target_include_directories(gtest_terminus PUBLIC
   )
 target_link_libraries(gtest_terminus gtest terminus
   ${CMAKE_THREAD_LIBS_INIT}
+  boost_system
   )
 
 gtest_discover_tests(gtest_terminus)

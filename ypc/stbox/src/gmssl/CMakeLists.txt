@@ -37,6 +37,7 @@ install(EXPORT mod_gmssl
 
 add_version(stbox_gmssl)
 
+if(SGX_FOUND)
 add_sgx_library(stbox_gmssl_t
   stbox_gmssl_t
   SRCS "${gmssl_src}")
@@ -54,3 +55,6 @@ install(TARGETS stbox_gmssl_t EXPORT mod_gmssl_t
 install(EXPORT mod_gmssl_t
   DESTINATION "${config_install_dir}/stbox"
   NAMESPACE "${namespace}")
+
+endif()
+

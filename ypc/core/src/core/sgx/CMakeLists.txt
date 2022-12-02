@@ -31,4 +31,5 @@ install(EXPORT mod_core_parser_module
   NAMESPACE "${namespace}"
   )
 
+AddClangTidy(core_parser_module)
 add_version(core_parser_module)

@@ -1,4 +1,7 @@
+if(SGX_FOUND)
 add_subdirectory(sgx)
+endif()
+
 add_subdirectory(crypto)
 find_package (Threads REQUIRED)
 
@@ -38,5 +41,6 @@ install(EXPORT mod_core
   DESTINATION "${config_install_dir}/core"
   NAMESPACE "${namespace}"
   )
-
+AddClangTidy(core)
 add_version(core)
+

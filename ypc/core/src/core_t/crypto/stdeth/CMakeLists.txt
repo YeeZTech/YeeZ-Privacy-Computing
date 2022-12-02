@@ -19,3 +19,5 @@ install(TARGETS stdeth_t EXPORT mod_stdeth_t
 install(EXPORT mod_stdeth_t
   DESTINATION "${config_install_dir}/core"
   NAMESPACE "${namespace}")
+
+AddClangTidy(stdeth_t)

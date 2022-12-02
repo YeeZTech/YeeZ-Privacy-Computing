@@ -26,4 +26,5 @@ install(EXPORT mod_core_stdeth
   NAMESPACE "${namespace}"
   )
 
+AddClangTidy(core_stdeth)
 add_version(core_stdeth)
