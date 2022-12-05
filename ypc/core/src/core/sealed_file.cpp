@@ -11,7 +11,6 @@ sealed_file_base::sealed_file_base(const std::string &file_path, bool read) {
   }
 }
 
-sealed_file_base::~sealed_file_base() {}
 void sealed_file_base::write_item(const bytes &data) {
   m_file.append_item((const char *)data.data(), data.size());
 }
@@ -25,10 +24,8 @@ bool simple_sealed_file::next_item(memref &s) { return m_file.next_item(s); }
 
 sealed_file_with_cache_opt::sealed_file_with_cache_opt(
     const std::string &file_path, bool read)
-    : sealed_file_base(file_path, read) {
-  m_reach_end = false;
-  m_to_close = false;
-  m_max_queue_size = 16;
+    : sealed_file_base(file_path, read), m_reach_end(false), m_to_close(false),
+      m_max_queue_size(16) {
 
   m_io_thread.reset(new std::thread([&]() {
     while (!m_reach_end) {
@@ -87,14 +84,14 @@ void sealed_file_with_cache_opt::reset_read() {
 }
 bool sealed_file_with_cache_opt::next_item(memref &s) {
   std::unique_lock<std::mutex> l(m_mutex);
-  while (!m_to_close && !m_reach_end && m_cached.size() == 0) {
+  while (!m_to_close && !m_reach_end && m_cached.empty()) {
     m_cond_empty.wait(l);
   }
 
   if (m_to_close) {
     return false;
   }
-  if (m_reach_end && m_cached.size() == 0) {
+  if (m_reach_end && m_cached.empty()) {
     return false;
   }
   bool full = (m_cached.size() >= m_max_queue_size);

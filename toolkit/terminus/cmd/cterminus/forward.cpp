@@ -6,7 +6,7 @@ int forward_private_key(ypc::terminus::crypto_pack *crypto,
   ypc::bytes private_key = get_param_privatekey(vm);
   ypc::bytes tee_pubkey = get_param_tee_pubkey(vm);
   ypc::bytes enclave_hash = crypto->hash_256(ypc::bytes("any enclave"));
-  if (vm.count("use-enclave-hash")) {
+  if (vm.count("use-enclave-hash") != 0u) {
     enclave_hash = ypc::hex_bytes(vm["use-enclave-hash"].as<std::string>())
                        .as<ypc::bytes>();
   }
@@ -20,18 +20,18 @@ int forward_private_key(ypc::terminus::crypto_pack *crypto,
   result["forward_sig"] = fi.signature;
   result["enclave_hash"] = enclave_hash;
 
-  if (vm.count("output")) {
+  if (vm.count("output") != 0u) {
     std::string output_path =
         ypc::complete_path(vm["output"].as<std::string>());
 
     boost::property_tree::ptree pt;
-    for (auto it = result.begin(); it != result.end(); it++) {
-      pt.put(it->first, it->second);
+    for (auto & it : result) {
+      pt.put(it.first, it.second);
     }
     boost::property_tree::json_parser::write_json(output_path, pt);
   } else {
-    for (auto it = result.begin(); it != result.end(); it++) {
-      std::cout << it->first << ": " << it->second << std::endl;
+    for (auto & it : result) {
+      std::cout << it.first << ": " << it.second << std::endl;
     }
   }
   return 0;

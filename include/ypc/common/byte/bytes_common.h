@@ -23,12 +23,15 @@ static inline void to_hex(uint8_t num, uint8_t *high, uint8_t *low) {
 }
 
 static inline uint8_t hex2dec(uint8_t hex) {
-  if (hex >= '0' && hex <= '9')
+  if (hex >= '0' && hex <= '9') {
     return hex - '0';
-  if (hex >= 'A' && hex <= 'F')
+  }
+  if (hex >= 'A' && hex <= 'F') {
     return hex - 'A' + 10;
-  if (hex >= 'a' && hex <= 'f')
+  }
+  if (hex >= 'a' && hex <= 'f') {
     return hex - 'a' + 10;
+  }
   throw std::invalid_argument("Invalid hex");
 }
 template <typename ByteType1, typename ByteType2>

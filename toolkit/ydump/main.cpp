@@ -30,12 +30,12 @@ boost::program_options::variables_map parse_command_line(int argc,
   bp::variables_map vm;
   boost::program_options::store(bp::parse_command_line(argc, argv, all), vm);
 
-  if (vm.count("help")) {
+  if (vm.count("help") != 0u) {
     std::cout << all << std::endl;
     exit(-1);
   }
 
-  if (vm.count("version")) {
+  if (vm.count("version") != 0u) {
     std::cout << ypc::get_ypc_version() << std::endl;
     exit(-1);
   }
@@ -62,12 +62,12 @@ int main(int argc, char *argv[]) {
   }
 
   std::string etype = "parser";
-  if (vm.count("enclave-type")) {
+  if (vm.count("enclave-type") != 0u) {
     etype = vm["enclave-type"].as<std::string>();
   }
 
   std::string enclave_path;
-  if (vm.count("enclave")) {
+  if (vm.count("enclave") != 0u) {
     enclave_path = vm["enclave"].as<std::string>();
   } else {
     std::cerr << "missing --enclave";
@@ -97,18 +97,18 @@ int main(int argc, char *argv[]) {
   result["enclave-hash"] = ss.str();
   result["version"] = ypc::get_ypc_version();
 
-  if (vm.count("output")) {
+  if (vm.count("output") != 0u) {
     std::string output_path =
         ypc::complete_path(vm["output"].as<std::string>());
 
     boost::property_tree::ptree pt;
-    for (auto it = result.begin(); it != result.end(); it++) {
-      pt.put(it->first, it->second);
+    for (auto & it : result) {
+      pt.put(it.first, it.second);
     }
     boost::property_tree::json_parser::write_json(output_path, pt);
   } else {
-    for (auto it = result.begin(); it != result.end(); ++it) {
-      std::cout << it->first << ": " << it->second << std::endl;
+    for (auto & it : result) {
+      std::cout << it.first << ": " << it.second << std::endl;
     }
   }
 

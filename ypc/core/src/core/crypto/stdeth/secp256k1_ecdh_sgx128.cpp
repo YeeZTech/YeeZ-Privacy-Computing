@@ -37,27 +37,27 @@ int derive_key(const uint8_t *shared_key, size_t shared_key_len,
 
   se_ret = ::ypc::openssl::sgx::rijndael128_cmac_msg(
       cmac_key, shared_key, shared_key_len, key_derive_key.data());
-  if (se_ret) {
+  if (se_ret != 0) {
     return se_ret;
   }
 
   uint32_t derivation_buffer_length = EC_DERIVATION_BUFFER_SIZE(label_length);
   ypc::bytes p_derivation_buffer(derivation_buffer_length);
-  memset(p_derivation_buffer.data(), p_derivation_buffer.size(), 0);
+  memset(p_derivation_buffer.data(), 0, p_derivation_buffer.size());
   /*counter = 0x01 */
   p_derivation_buffer[0] = 0x01;
   /*label*/
   memcpy(&p_derivation_buffer[1], label, label_length);
   /*output_key_len=0x0080*/
   p_derivation_buffer[p_derivation_buffer.size() - 3] = 0;
-  uint16_t *key_len =
+  auto *key_len =
       (uint16_t *)&p_derivation_buffer[derivation_buffer_length - 2];
   *key_len = 0x0080;
 
   se_ret = ::ypc::openssl::sgx::rijndael128_cmac_msg(
       key_derive_key.data(), p_derivation_buffer.data(),
       derivation_buffer_length, derived_128bit_key);
-  if (se_ret) {
+  if (se_ret != 0) {
     return se_ret;
   }
   return 0;
@@ -89,7 +89,7 @@ uint32_t secp256k1_ecdh_sgx128::ecdh_shared_key(
   auto se_ret = secp256k1_ecdh(ctx, ec256_dh_shared_key.data(), &lpkey, skey,
                                ecdh_hash_function_sha256, NULL);
 
-  if (!se_ret) {
+  if (0 == se_ret) {
     LOG(ERROR) << "secp256k1_ecdh returns: " << (uint32_t)se_ret;
     return stbox::stx_status::ecc_secp256k1_ecdh_error;
   }

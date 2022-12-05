@@ -12,10 +12,10 @@ public:
 };
 class opt : public opt_base {
 public:
-  template <typename T> opt(T &&_s) : m_value(_s) {}
+  template <typename T> explicit opt(T &&_s) : m_value(_s) {}
 
-  virtual bool check(const boost::program_options::variables_map &vm,
-                     bool exit_if_fail) const;
+  virtual auto check(const boost::program_options::variables_map &vm,
+                     bool exit_if_fail) const -> bool;
   virtual std::string to_string() const { return m_value; }
 
 protected:

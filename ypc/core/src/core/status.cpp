@@ -3,10 +3,10 @@
 
 namespace ypc {
 const char *status_string(uint32_t status) {
-  if (!status) {
+  if (0U == status) {
     return "success";
   }
-  if (status & 0x20000) {
+  if (0U == (status & 0x20000)) {
 #define YPC_STATUS(a, b)                                                       \
   case 0x20000 | b:                                                            \
     return #a;

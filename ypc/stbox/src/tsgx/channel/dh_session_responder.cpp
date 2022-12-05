@@ -64,7 +64,7 @@ stx_status dh_session_responder_instance::end_session() {
 stx_status dh_session_responder::session_request(sgx_dh_msg1_t *dh_msg1,
                                                  uint32_t *session_id) {
 
-  if (!session_id || !dh_msg1) {
+  if (session_id == nullptr || dh_msg1 == nullptr) {
     return stx_status::invalid_parameter_error;
   }
   *session_id = m_next_session_id;
@@ -91,7 +91,7 @@ stx_status dh_session_responder::exchange_report(sgx_dh_msg2_t *dh_msg2,
   if (!it->second->is_in_progress()) {
     return stx_status::invalid_session;
   }
-  if (!dh_msg2 || !dh_msg3) {
+  if (dh_msg2 == nullptr || dh_msg3 == nullptr) {
     return stx_status::invalid_parameter_error;
   }
 
@@ -117,6 +117,6 @@ stx_status dh_session_responder::end_session(uint32_t session_id) {
   }
   auto ret = it->second->end_session();
   m_all_sessions.erase(it);
-  return stx_status::success;
+  return ret;
 }
 } // namespace stbox

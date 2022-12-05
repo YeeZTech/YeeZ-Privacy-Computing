@@ -7,7 +7,7 @@
 namespace ypc {
 class component_load_failure : public std::exception {
 public:
-  component_load_failure(const std::string &name);
+  explicit component_load_failure(const std::string &name);
   virtual const char *what() const throw();
 
 protected:
@@ -32,6 +32,11 @@ public:
                       const std::string &extra_param);
   virtual ~privacy_data_reader();
 
+  privacy_data_reader(const privacy_data_reader &) = delete;
+  privacy_data_reader(privacy_data_reader &&) = delete;
+  privacy_data_reader &operator=(privacy_data_reader &&) = delete;
+  privacy_data_reader &operator=(const privacy_data_reader &) = delete;
+
   void reset_for_read();
   bytes read_item_data();
   uint64_t get_item_number();
@@ -52,13 +57,15 @@ protected:
     return r;
   }
 
-  typedef void *(*create_item_reader_func_t)(const char *, int);
-  typedef int (*reset_for_read_func_t)(void *);
-  typedef int (*read_item_data_func_t)(void *, char *, int *);
-  typedef int (*close_item_reader_func_t)(void *);
-  typedef uint64_t (*get_item_number_func_t)(void *);
-  typedef int (*get_sample_data_func_t)(void *, char *, int *);
-  typedef int (*get_data_format_func_t)(void *, char *, int *);
+  // NOLINTBEGIN(modernize-use-using)
+  typedef void *(*create_item_reader_func_t)(const char *, int); // NOLINT
+  typedef int (*reset_for_read_func_t)(void *);                  // NOLINT
+  typedef int (*read_item_data_func_t)(void *, char *, int *);   // NOLINT
+  typedef int (*close_item_reader_func_t)(void *);               // NOLINT
+  typedef uint64_t (*get_item_number_func_t)(void *);            // NOLINT
+  typedef int (*get_sample_data_func_t)(void *, char *, int *);  // NOLINT
+  typedef int (*get_data_format_func_t)(void *, char *, int *);  // NOLINT
+  // NOLINTEND(modernize-use-using)
 
   const std::string m_plugin_path;
   const std::string m_extra_param;

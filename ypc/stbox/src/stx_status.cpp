@@ -7,7 +7,7 @@
 
 namespace stbox {
 const char *status_string(uint32_t status) {
-  if (status & 0x10000) {
+  if (0U == (status & 0x10000)) {
 #define ATT_STATUS(a, b)                                                       \
   case b | 0x10000:                                                            \
     return #a;

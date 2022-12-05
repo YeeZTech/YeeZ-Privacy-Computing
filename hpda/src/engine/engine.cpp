@@ -32,7 +32,7 @@ void engine::remove_functor(functor * f){
 void engine::run() {
   build_graph();
   auto outputs = find_outputs();
-  if (outputs.size() == 0) {
+  if (outputs.empty()) {
     throw std::runtime_error("cannot find output");
   }
   std::queue<functor *> to_process;

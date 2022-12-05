@@ -32,7 +32,7 @@ privacy_data_reader::privacy_data_reader(const std::string &plugin_path,
                                          const std::string &extra_param)
     : m_plugin_path(complete_path(plugin_path)), m_extra_param(extra_param) {
   m_lib_handle = dlopen(m_plugin_path.c_str(), RTLD_LAZY);
-  if (!m_lib_handle) {
+  if (m_lib_handle == nullptr) {
     LOG(ERROR) << "failed to open " << m_plugin_path
                << " with error: " << dlerror();
     throw std::runtime_error("failed to call dlopen");
@@ -55,12 +55,12 @@ privacy_data_reader::privacy_data_reader(const std::string &plugin_path,
       get_opt_func_with_name<get_data_format_func_t>("get_data_format");
 
   m_handle = m_create_item_reader(m_extra_param.c_str(), m_extra_param.size());
-  if (!m_handle) {
+  if (m_handle == nullptr) {
     throw std::runtime_error("failed to create item reader");
   }
 }
 privacy_data_reader::~privacy_data_reader() {
-  if (m_handle) {
+  if (m_handle != nullptr) {
     m_close_item_reader(m_handle);
     m_handle = nullptr;
   }
@@ -73,7 +73,7 @@ uint64_t privacy_data_reader::get_item_number() {
 }
 
 bytes privacy_data_reader::get_sample_data() {
-  if (!m_get_sample_data) {
+  if (m_get_sample_data == nullptr) {
     return bytes();
   }
   int len;
@@ -88,7 +88,7 @@ bytes privacy_data_reader::get_sample_data() {
 }
 
 std::string privacy_data_reader::get_data_format() {
-  if (!m_get_data_format) {
+  if (m_get_data_format == nullptr) {
     return std::string();
   }
   int len;

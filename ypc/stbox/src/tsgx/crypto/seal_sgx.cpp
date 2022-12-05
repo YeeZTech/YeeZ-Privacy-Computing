@@ -56,7 +56,7 @@ uint32_t raw_device_sealer<intel_sgx>::unseal_data(const uint8_t *sealed_data,
   auto se_ret =
       sgx_unseal_data((const sgx_sealed_data_t *)sealed_data, mac_text.data(),
                       (uint32_t *)&aad_mac_len, data, &unseal_size);
-  if (se_ret) {
+  if (se_ret != 0U) {
     LOG(ERROR) << "sgx_unseal_data returns: " << se_ret;
     return se_ret;
   }

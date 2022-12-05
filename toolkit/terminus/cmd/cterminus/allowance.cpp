@@ -28,13 +28,13 @@ int generate_allowance(ypc::terminus::crypto_pack *crypto,
   result["dian_pkey"] = dian_pkey;
   result["data_hash"] = dhash;
 
-  if (vm.count("output")) {
+  if (vm.count("output") != 0u) {
     std::string output_path =
         ypc::complete_path(vm["output"].as<std::string>());
 
     boost::property_tree::ptree pt;
-    for (auto it = result.begin(); it != result.end(); it++) {
-      pt.put(it->first, it->second);
+    for (auto & it : result) {
+      pt.put(it.first, it.second);
     }
     boost::property_tree::json_parser::write_json(output_path, pt);
   } else {

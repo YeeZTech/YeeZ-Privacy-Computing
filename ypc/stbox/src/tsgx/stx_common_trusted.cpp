@@ -1,9 +1,9 @@
 #include "stbox_t.h"
 #include "ypc/stbox/stx_common.h"
 #include <cstdarg>
+#include <cstdio>
 #include <cstdlib>
-#include <stdio.h>
-#include <string.h>
+#include <cstring>
 #include <ypc/version.h>
 
 uint64_t stbox_common_version() { return YPC_STBOX_VERSION.data(); }

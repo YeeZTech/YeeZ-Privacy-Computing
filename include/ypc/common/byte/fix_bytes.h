@@ -16,8 +16,9 @@ std::array<T, N> make_array_impl(std::initializer_list<T> t,
 
 template <typename T, std::size_t N>
 std::array<T, N> make_array(std::initializer_list<T> t) {
-  if (N < t.size())
+  if (N < t.size()) {
     throw std::out_of_range("make_array out of range");
+  }
   return make_array_impl<T, N>(t, std::make_index_sequence<N>());
 };
 } // end namespace internal
@@ -25,7 +26,7 @@ std::array<T, N> make_array(std::initializer_list<T> t) {
 
 template <typename ByteType, size_t ByteLength = 32> class fix_bytes {
 public:
-  typedef ByteType byte_t;
+  using byte_t = ByteType;
   const static size_t fixed_length;
 
   static_assert(sizeof(ByteType) == 1,
@@ -47,11 +48,13 @@ public:
       throw std::runtime_error("unmatched byte length");
     }
   }
+  virtual ~fix_bytes() = default;
 
   fix_bytes<ByteType, ByteLength> &
   operator=(const fix_bytes<ByteType, ByteLength> &v) {
-    if (&v == this)
+    if (&v == this) {
       return *this;
+    }
     m_value = v.m_value;
     return *this;
   }

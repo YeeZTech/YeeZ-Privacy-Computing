@@ -35,15 +35,15 @@ boost::program_options::variables_map parse_command_line(int argc,
   boost::program_options::store(
       boost::program_options::parse_command_line(argc, argv, all), vm);
 
-  if (vm.count("help")) {
+  if (vm.count("help") != 0u) {
     std::cout << all << std::endl;
     exit(-1);
   }
-  if (vm.count("version")) {
+  if (vm.count("version") != 0u) {
     std::cout << ypc::get_ypc_version() << std::endl;
     exit(-1);
   }
-  if (vm.count("gen-example-input")) {
+  if (vm.count("gen-example-input") != 0u) {
     input_param_t example;
     ypc::ntjson::to_json_file(example,
                               vm["gen-example-input"].as<std::string>());
@@ -64,12 +64,12 @@ int main(int argc, char *argv[]) {
     std::cerr << "invalid cmd line parameters!" << std::endl;
     return -1;
   }
-  if (!vm.count("input")) {
+  if (vm.count("input") == 0u) {
     std::cerr << "input not specified" << std::endl;
     return -1;
   }
 
-  if (!vm.count("output")) {
+  if (vm.count("output") == 0u) {
     std::cerr << "output not specified" << std::endl;
     return -1;
   }

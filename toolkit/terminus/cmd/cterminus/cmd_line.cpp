@@ -136,7 +136,7 @@ parse_command_line(int argc, char *argv[]) {
   nds.push_back({"sign", sign, sign_message});
 
   for (auto it : nds) {
-    if (vm.count(std::get<0>(it))) {
+    if (vm.count(std::get<0>(it)) != 0u) {
       auto unregistered = bp::collect_unrecognized(parsedOptions.options,
                                                    bp::include_positional);
       auto parsed_options =
@@ -149,11 +149,11 @@ parse_command_line(int argc, char *argv[]) {
     }
   }
 
-  if (vm.count("help")) {
+  if (vm.count("help") != 0u) {
     std::cout << all << std::endl;
     exit(-1);
   }
-  if (vm.count("version")) {
+  if (vm.count("version") != 0u) {
     std::cout << ypc::get_ypc_version() << std::endl;
   }
   std::cerr << "no options specified" << std::endl;

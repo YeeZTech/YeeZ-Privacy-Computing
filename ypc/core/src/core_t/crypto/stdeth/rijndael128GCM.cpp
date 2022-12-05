@@ -44,16 +44,16 @@ rijndael128GCM::encrypt_with_prefix(const uint8_t *key, uint32_t key_size,
   uint8_t mac_text[AAD_MAC_TEXT_LEN];
   memset(mac_text, 0, AAD_MAC_TEXT_LEN);
   memcpy(mac_text, aad_mac_text, AAD_MAC_TEXT_LEN);
-  uint32_t *p_prefix = (uint32_t *)(mac_text + AAD_MAC_PREFIX_POS);
+  auto *p_prefix = (uint32_t *)(mac_text + AAD_MAC_PREFIX_POS);
   *p_prefix = prefix;
 
   uint8_t *p_iv_text = cipher + data_size;
   auto se_ret = sgx_read_rand(p_iv_text, INITIALIZATION_VECTOR_SIZE);
-  if (se_ret) {
+  if (se_ret != 0U) {
     LOG(ERROR) << "call sgx_read_rand failed";
     return se_ret;
   }
-  sgx_aes_gcm_128bit_tag_t *p_out_mac = (sgx_aes_gcm_128bit_tag_t *)out_mac;
+  auto *p_out_mac = (sgx_aes_gcm_128bit_tag_t *)out_mac;
   se_ret = sgx_rijndael128GCM_encrypt(
       (const sgx_aes_gcm_128bit_key_t *)key, data, data_size, cipher, p_iv_text,
       INITIALIZATION_VECTOR_SIZE, mac_text, AAD_MAC_TEXT_LEN, p_out_mac);
@@ -80,7 +80,7 @@ rijndael128GCM::decrypt_with_prefix(const uint8_t *key, uint32_t key_size,
   uint8_t mac_text[AAD_MAC_TEXT_LEN];
   memset(mac_text, 0, AAD_MAC_TEXT_LEN);
   memcpy(mac_text, aad_mac_text, AAD_MAC_TEXT_LEN);
-  uint32_t *p_prefix = (uint32_t *)(mac_text + AAD_MAC_PREFIX_POS);
+  auto *p_prefix = (uint32_t *)(mac_text + AAD_MAC_PREFIX_POS);
   *p_prefix = prefix;
 
   const uint8_t *p_iv_text = cipher + data_size;

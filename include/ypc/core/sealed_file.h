@@ -16,18 +16,23 @@ namespace ypc {
 namespace internal {
 class sealed_file_base {
 public:
-  typedef blockfile<0x4788d13e7fefe21f, 1024 * 1024,
-                    256 * ::ypc::utc::max_item_size>
-      blockfile_t;
+  using blockfile_t = blockfile<0x4788d13e7fefe21f, 1024 * 1024,
+                                256 * ::ypc::utc::max_item_size>;
 
   sealed_file_base(const std::string &file_path, bool read);
 
-  virtual ~sealed_file_base();
+  virtual ~sealed_file_base() = default;
   virtual void write_item(const bytes &data);
 
   virtual void reset_read() = 0;
 
   virtual bool next_item(memref &s) = 0;
+
+public:
+  sealed_file_base(const sealed_file_base &) = delete;
+  sealed_file_base(sealed_file_base &&) = delete;
+  sealed_file_base &operator=(sealed_file_base &&) = delete;
+  sealed_file_base &operator=(const sealed_file_base &) = delete;
 
 protected:
   blockfile_t m_file;
@@ -52,6 +57,12 @@ public:
 
   virtual bool next_item(memref &s);
 
+  sealed_file_with_cache_opt(const sealed_file_with_cache_opt &) = delete;
+  sealed_file_with_cache_opt(sealed_file_with_cache_opt &&) = delete;
+  sealed_file_with_cache_opt &operator=(sealed_file_with_cache_opt &&) = delete;
+  sealed_file_with_cache_opt &
+  operator=(const sealed_file_with_cache_opt &) = delete;
+
 protected:
   std::unique_ptr<std::thread> m_io_thread;
   std::queue<memref> m_cached;
@@ -70,7 +81,7 @@ define_nt(sfm_path, std::string);
 define_nt(sfm_hash, ypc::bytes);
 define_nt(sfm_index, uint16_t);
 define_nt(sfm_num, uint16_t);
-typedef ::ff::net::ntpackage<1, sfm_path, sfm_index, sfm_hash> sfm_item_t;
+using sfm_item_t = ::ff::net::ntpackage<1, sfm_path, sfm_index, sfm_hash>;
 define_nt(sfm_items, std::vector<sfm_item_t>);
 
-typedef ::ff::net::ntpackage<2, sfm_items, sfm_num, sfm_hash> sfm_t;
+using sfm_t = ::ff::net::ntpackage<2, sfm_items, sfm_num, sfm_hash>;

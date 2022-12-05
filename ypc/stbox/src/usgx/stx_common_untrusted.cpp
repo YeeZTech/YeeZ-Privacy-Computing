@@ -1,7 +1,7 @@
 #include <cstdarg>
+#include <cstring>
 #include <glog/logging.h>
 #include <iostream>
-#include <string.h>
 
 namespace stbox {
 int printf(const char *fmt, ...) {

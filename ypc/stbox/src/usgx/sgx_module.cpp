@@ -6,7 +6,6 @@
 
 namespace stbox {
 namespace internal {
-sgx_module_base::~sgx_module_base() {}
 
 void buffer_length_traits::call(sgx_module_base &m) {
   //*m_len = m.ecall<uint32_t>(m_func);
@@ -15,8 +14,8 @@ void buffer_length_traits::call(sgx_module_base &m) {
 }
 
 } // namespace internal
-sgx_module::sgx_module(const char *mod_path) : internal::sgx_module_base() {
-  m_mod_path = std::string(mod_path);
+sgx_module::sgx_module(const char *mod_path)
+    : internal::sgx_module_base(mod_path) {
   sgx_status_t ret = SGX_ERROR_UNEXPECTED;
 
   LOG(INFO) << "SGX_DEBUG_FLAG: " << SGX_DEBUG_FLAG;

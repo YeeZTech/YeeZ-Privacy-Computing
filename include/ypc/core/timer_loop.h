@@ -7,7 +7,7 @@ namespace ypc {
 
 class timer_loop {
 public:
-  inline timer_loop(boost::asio::io_service *service)
+  inline explicit timer_loop(boost::asio::io_service *service)
       : m_service(service), m_exit_flag(false) {
     command_queue::instance().listen_command<exit_command>(
         this,
@@ -30,9 +30,9 @@ public:
   }
 
 protected:
-  void timer_callback(const boost::system::error_code &ec, long seconds,
+  void timer_callback(const boost::system::error_code &ec, uint64_t seconds,
                       boost::asio::deadline_timer *timer,
-                      std::function<void()> func);
+                      const std::function<void()> &func);
 
 protected:
   boost::asio::io_service *m_service;

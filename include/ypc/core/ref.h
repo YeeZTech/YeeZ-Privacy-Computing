@@ -29,6 +29,6 @@ private:
   std::shared_ptr<T> m_holder;
 };
 
-typedef ref<uint8_t> bref;
+using bref = ref<uint8_t>;
 } // namespace ypc
 

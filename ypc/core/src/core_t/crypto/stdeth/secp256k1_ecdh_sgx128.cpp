@@ -41,7 +41,7 @@ static sgx_status_t derive_key(const sgx_ec256_dh_shared_t *shared_key,
                                sgx_ec_key_128bit_t *derived_key) {
   sgx_status_t se_ret = SGX_SUCCESS;
   sgx_ec_key_128bit_t key_derive_key;
-  if (!shared_key || !derived_key || !label) {
+  if (shared_key == nullptr || derived_key == nullptr || label == nullptr) {
     return SGX_ERROR_INVALID_PARAMETER;
   }
 
@@ -64,7 +64,7 @@ static sgx_status_t derive_key(const sgx_ec256_dh_shared_t *shared_key,
   /* derivation_buffer = counter(0x01) || label || 0x00 ||
    * output_key_len(0x0080) */
   uint32_t derivation_buffer_length = EC_DERIVATION_BUFFER_SIZE(label_length);
-  uint8_t *p_derivation_buffer = (uint8_t *)malloc(derivation_buffer_length);
+  auto *p_derivation_buffer = (uint8_t *)malloc(derivation_buffer_length);
   if (p_derivation_buffer == NULL) {
     return SGX_ERROR_OUT_OF_MEMORY;
   }
@@ -75,7 +75,7 @@ static sgx_status_t derive_key(const sgx_ec256_dh_shared_t *shared_key,
   /*label*/
   memcpy(&p_derivation_buffer[1], label, label_length);
   /*output_key_len=0x0080*/
-  uint16_t *key_len =
+  auto *key_len =
       (uint16_t *)&p_derivation_buffer[derivation_buffer_length - 2];
   *key_len = 0x0080;
 
@@ -118,7 +118,7 @@ uint32_t secp256k1_ecdh_sgx128::ecdh_shared_key(
       (sgx_status_t)secp256k1_ecdh(ctx, (uint8_t *)&ec256_dh_shared_key, &lpkey,
                                    skey, ecdh_hash_function_sha256, NULL);
 
-  if (!se_ret) {
+  if (se_ret == 0) {
     LOG(ERROR) << "secp256k1_ecdh returns: " << (uint32_t)se_ret;
     return stbox::stx_status::ecc_secp256k1_ecdh_error;
   }

@@ -27,21 +27,21 @@ int sgx::rijndael128_cmac_msg(const uint8_t *cmac_128bit_key,
 
     // init CMAC ctx with the corresponding size, key and AES alg.
 
-    if (!CMAC_Init((CMAC_CTX *)pState, (const void *)cmac_128bit_key, 16,
-                   EVP_aes_128_cbc(), NULL)) {
+    if (0 == CMAC_Init((CMAC_CTX *)pState, (const void *)cmac_128bit_key, 16,
+                       EVP_aes_128_cbc(), NULL)) {
       break;
     }
 
     // perform CMAC hash on p_src
     //
-    if (!CMAC_Update((CMAC_CTX *)pState, p_src, src_len)) {
+    if (0 == CMAC_Update((CMAC_CTX *)pState, p_src, src_len)) {
       break;
     }
 
     // finalize CMAC hashing
     //
-    if (!CMAC_Final((CMAC_CTX *)pState, (unsigned char *)mac_128bit,
-                    &mactlen)) {
+    if (0 ==
+        CMAC_Final((CMAC_CTX *)pState, (unsigned char *)mac_128bit, &mactlen)) {
       break;
     }
 
@@ -52,10 +52,10 @@ int sgx::rijndael128_cmac_msg(const uint8_t *cmac_128bit_key,
     }
 
     ret = 0;
-  } while (0);
+  } while (false);
 
   // we're done, clear and free CMAC ctx
-  if (pState) {
+  if (pState != nullptr) {
     CMAC_CTX_free((CMAC_CTX *)pState);
   }
   return ret;
@@ -122,36 +122,34 @@ int sgx::rijndael128GCM_encrypt(const uint8_t *aes_gcm_128bit_key,
       throw std::runtime_error("EVP_EncryptInit_ex failed");
     }
 
-    if (!EVP_CIPHER_CTX_ctrl(m_ctx.get(), EVP_CTRL_GCM_SET_IVLEN, iv_len,
-                             NULL)) {
+    if (0 == EVP_CIPHER_CTX_ctrl(m_ctx.get(), EVP_CTRL_GCM_SET_IVLEN, iv_len,
+                                 NULL)) {
       throw std::runtime_error("EVP_CIPHER_CTX_ctrl failed");
     }
 
-    if (!EVP_DecryptInit_ex(m_ctx.get(), NULL, NULL, aes_gcm_128bit_key,
-                            p_iv)) {
+    if (0 ==
+        EVP_DecryptInit_ex(m_ctx.get(), NULL, NULL, aes_gcm_128bit_key, p_iv)) {
       throw std::runtime_error("EVP_DecryptInit_ex failed");
     }
 
-    if (!EVP_DecryptUpdate(m_ctx.get(), NULL, &len, p_aad, aad_len)) {
+    if (0 == EVP_DecryptUpdate(m_ctx.get(), NULL, &len, p_aad, aad_len)) {
       throw std::runtime_error("EVP_DecryptUpdate failed");
     }
 
-    if (!EVP_DecryptUpdate(m_ctx.get(), p_dst, &len, p_src, src_len)) {
+    if (0 == EVP_DecryptUpdate(m_ctx.get(), p_dst, &len, p_src, src_len)) {
       throw std::runtime_error("EVP_DecryptUpdate failed");
     }
 
-    auto plaintext_len = len;
-    if (!EVP_CIPHER_CTX_ctrl(m_ctx.get(), EVP_CTRL_GCM_SET_TAG, 16,
-                             (void *)aes_gcm_128bit_in_mac)) {
+    if (0 == EVP_CIPHER_CTX_ctrl(m_ctx.get(), EVP_CTRL_GCM_SET_TAG, 16,
+                                 (void *)aes_gcm_128bit_in_mac)) {
       throw std::runtime_error("EVP_CIPHER_CTX_ctrl failed");
     }
     auto ret = EVP_DecryptFinal_ex(m_ctx.get(), p_dst + len, &len);
     if (ret > 0) {
       return 0;
-    } else {
-      LOG(ERROR) << "invalid data";
-      return 1;
     }
+    LOG(ERROR) << "invalid data";
+    return 1;
   }
 
   int sgx::sha256_msg(const uint8_t *message, size_t size,

@@ -7,7 +7,7 @@ namespace internal {
 
 stbox::stx_status km_verify_peer_enclave_trust(
     sgx_dh_session_enclave_identity_t *peer_enclave_identity) {
-  if (!peer_enclave_identity) {
+  if (peer_enclave_identity == nullptr) {
     LOG(ERROR) << "verify key manager enclave failed";
     return stbox::stx_status::invalid_parameter_error;
   }

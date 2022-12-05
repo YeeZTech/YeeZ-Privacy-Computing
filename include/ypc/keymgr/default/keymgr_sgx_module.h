@@ -14,8 +14,8 @@ using stx_status = stbox::stx_status;
 using bref = ypc::bref;
 class keymgr_sgx_module : public stbox::sgx_module {
 public:
-  keymgr_sgx_module(const char *mod_path);
-  virtual ~keymgr_sgx_module();
+  explicit keymgr_sgx_module(const char *mod_path);
+  virtual ~keymgr_sgx_module() = default;
 
   ///////////
   ypc::version get_keymgr_version();

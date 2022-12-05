@@ -12,7 +12,8 @@ namespace internal {
 
 template <typename NtObjTy> class ntobject_file_base {
 public:
-  ntobject_file_base(const std::string &file_path) : m_path(file_path) {}
+  explicit ntobject_file_base(const std::string &file_path)
+      : m_path(file_path) {}
 
   inline NtObjTy &data() { return m_sfm_data; }
 
@@ -84,12 +85,11 @@ template <typename NtObjTy>
 class ntobject_file<NtObjTy, 1>
     : public internal::ntobject_file_base<
           typename cast_obj_to_package<NtObjTy>::type> {
-  typedef internal::ntobject_file_base<
-      typename cast_obj_to_package<NtObjTy>::type>
-      base_t;
+  using base_t =
+      internal::ntobject_file_base<typename cast_obj_to_package<NtObjTy>::type>;
 
 public:
-  ntobject_file(const std::string &file_path) : base_t(file_path) {}
+  explicit ntobject_file(const std::string &file_path) : base_t(file_path) {}
 
   inline NtObjTy &data() { return m_local_data; }
 
@@ -109,14 +109,14 @@ protected:
 
 template <typename NtObjTy>
 class ntobject_file<NtObjTy, 2> : public internal::ntobject_file_base<NtObjTy> {
-  typedef internal::ntobject_file_base<NtObjTy> base_t;
+  using base_t = internal::ntobject_file_base<NtObjTy>;
 
 public:
-  ntobject_file(const std::string &file_path) : base_t(file_path) {}
+  explicit ntobject_file(const std::string &file_path) : base_t(file_path) {}
 };
 template <typename NtObjTy> class ntobject_file<NtObjTy, 0> {
 public:
-  ntobject_file(const std::string &file_path) {
+  explicit ntobject_file(const std::string &file_path) {
     static_assert(
         internal::check_nt_type<NtObjTy>::value != 0,
         "ntobject_file only support ff::util::ntobject and ff::net::ntpackage");

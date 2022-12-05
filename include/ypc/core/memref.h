@@ -19,7 +19,7 @@ public:
     m_len = 0;
   }
   inline void dealloc() {
-    if (m_data) {
+    if (m_data != nullptr) {
       delete[] m_data;
       m_data = nullptr;
       m_len = 0;

@@ -31,7 +31,7 @@ protected:
 
 protected:
   input_param_t m_param;
-  ypc::utc::parser_type_t m_ptype;
+  ypc::utc::parser_type_t m_ptype{};
 
   std::shared_ptr<ypc::parser_sgx_module> m_parser;
   std::shared_ptr<keymgr_sgx_module> m_keymgr;

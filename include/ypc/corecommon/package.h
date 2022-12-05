@@ -33,7 +33,7 @@ template <typename BytesType> struct make_bytes {
   }
   template <typename PackageType>
   static BytesType for_package(const PackageType &_pkg) {
-    PackageType &pkg = (PackageType &)_pkg;
+    auto &pkg = (PackageType &)_pkg;
     ff::net::marshaler lm(ff::net::marshaler::length_retriver);
     pkg.arch(lm);
 
@@ -67,23 +67,23 @@ template <typename PackageType> struct make_package {
 template <typename NT, uint32_t PackageID = 0> struct cast_obj_to_package {};
 template <uint32_t PackageID, typename... ARGS>
 struct cast_obj_to_package<::ff::util::ntobject<ARGS...>, PackageID> {
-  typedef ::ff::net::ntpackage<PackageID, ARGS...> type;
+  using type = ::ff::net::ntpackage<PackageID, ARGS...>;
 };
 
 template <uint32_t PackageID, typename... ARGS>
 struct cast_obj_to_package<::ff::net::ntpackage<PackageID, ARGS...>,
                            PackageID> {
-  typedef ::ff::net::ntpackage<PackageID, ARGS...> type;
+  using type = ::ff::net::ntpackage<PackageID, ARGS...>;
 };
 
 template <typename PT> struct cast_package_to_obj {};
 template <uint32_t PackageID, typename... ARGS>
 struct cast_package_to_obj<::ff::net::ntpackage<PackageID, ARGS...>> {
-  typedef ::ff::util::ntobject<ARGS...> type;
+  using type = ::ff::util::ntobject<ARGS...>;
 };
 template <typename... ARGS>
 struct cast_package_to_obj<::ff::util::ntobject<ARGS...>> {
-  typedef ::ff::util::ntobject<ARGS...> type;
+  using type = ::ff::util::ntobject<ARGS...>;
 };
 
 } // namespace ypc
@@ -92,7 +92,7 @@ namespace ff {
 namespace net {
 template <typename... ARGS> struct archive_helper<ff::util::ntobject<ARGS...>> {
 public:
-  typedef ff::util::ntobject<ARGS...> data_t;
+  using data_t = ff::util::ntobject<ARGS...>;
   static uint32_t serialize(char *buf, const data_t &d, size_t len) {
     typename ypc::cast_obj_to_package<data_t>::type ret = d;
     marshaler m(buf, len, marshaler::serializer);

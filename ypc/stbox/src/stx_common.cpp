@@ -1,6 +1,6 @@
 #include "ypc/stbox/stx_common.h"
 #include <cstdint>
-#include <stdlib.h>
+#include <cstdlib>
 
 namespace stbox {
 void print_hex(uint8_t *data, size_t data_len) {

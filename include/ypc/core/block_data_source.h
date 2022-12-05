@@ -8,12 +8,12 @@
 #include <hpda/extractor/raw_data.h>
 
 namespace ypc {
-typedef ::ff::util::ntobject<nt<bytes>::data> data_source_output_t;
+using data_source_output_t = ::ff::util::ntobject<nt<bytes>::data>;
 
 template <typename FT>
 class block_data_source : public data_source<ypc::bytes> {
 public:
-  typedef data_source<ypc::bytes>::data_source_output_t user_item_t;
+  using user_item_t = data_source<ypc::bytes>::data_source_output_t;
   block_data_source(FT *fh) : m_file(fh) { m_data_reach_end = false; }
 
   virtual ~block_data_source() {

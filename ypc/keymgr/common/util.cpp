@@ -90,7 +90,7 @@ uint32_t ocall_load_key_pair(const char *key_path_name, uint32_t path_size,
       break;
     }
   }
-  if (ret) {
+  if (ret != 0) {
     throw std::runtime_error(
         boost::str(boost::format("Key pair not found in path %1%!") % key_dir));
   }

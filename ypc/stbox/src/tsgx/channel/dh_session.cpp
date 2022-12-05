@@ -3,9 +3,10 @@
 namespace stbox {
 
 dh_session::dh_session()
-    : m_send_request_ocall_set(false), m_verify_peer_enclave_trust_set(false) {}
+    : m_send_request_ocall_set(false), m_verify_peer_enclave_trust_set(false),
+      m_state(), m_session_id(), m_status(), m_self_identity(),
+      m_peer_identity() {}
 
-dh_session::~dh_session() {}
 
 stx_status dh_session::send_request_recv_response(const char *inp_buff,
                                                   size_t inp_buff_len,
@@ -28,13 +29,13 @@ stx_status dh_session::send_request_recv_response(const char *inp_buff,
   plaintext = (const uint8_t *)(" ");
   plaintext_length = 0;
   scope_guard _req([&req_message]() {
-    if (req_message) {
+    if (req_message != nullptr) {
       free(req_message);
     }
     req_message = nullptr;
   });
   scope_guard _res([&resp_message]() {
-    if (resp_message) {
+    if (resp_message != nullptr) {
       free(resp_message);
     }
     resp_message = nullptr;
@@ -54,11 +55,12 @@ stx_status dh_session::send_request_recv_response(const char *inp_buff,
   // Allocate memory for the AES-GCM request message
   req_message =
       (secure_message_t *)malloc(sizeof(secure_message_t) + inp_buff_len);
-  if (!req_message)
+  if (req_message == nullptr) {
     return stx_status::malloc_error;
+  }
   memset(req_message, 0, sizeof(secure_message_t) + inp_buff_len);
 
-  const uint32_t data2encrypt_length = (uint32_t)inp_buff_len;
+  auto data2encrypt_length = (uint32_t)inp_buff_len;
 
   // Set the payload size to data to encrypt length
   req_message->message_aes_gcm_data.payload_size = data2encrypt_length;
@@ -86,7 +88,7 @@ stx_status dh_session::send_request_recv_response(const char *inp_buff,
   // Allocate memory for the response message
   resp_message =
       (secure_message_t *)malloc(sizeof(secure_message_t) + max_out_buff_size);
-  if (!resp_message) {
+  if (resp_message == nullptr) {
     return stx_status::malloc_error;
   }
 
@@ -167,7 +169,7 @@ stx_status dh_session::generate_response(secure_message_t *req_message,
   plaintext = (const uint8_t *)(" ");
   plaintext_length = 0;
 
-  if (!req_message || !resp_message) {
+  if (req_message == nullptr || resp_message == nullptr) {
     return stx_status::invalid_parameter_error;
   }
 
@@ -189,7 +191,7 @@ stx_status dh_session::generate_response(secure_message_t *req_message,
   memset(&l_tag, 0, TAG_SIZE);
   plain_text_offset = decrypted_data_length;
   decrypted_data = (uint8_t *)malloc(decrypted_data_length);
-  if (!decrypted_data) {
+  if (decrypted_data == nullptr) {
     return stx_status::malloc_error;
   }
   malloc_memory_guard<uint8_t> _dd(decrypted_data);
@@ -224,13 +226,13 @@ stx_status dh_session::generate_response(secure_message_t *req_message,
 
   // Code to build the response back to the Source Enclave
   temp_resp_message = (secure_message_t *)malloc(resp_message_calc_size);
-  if (!temp_resp_message) {
+  if (temp_resp_message == nullptr) {
     return stx_status::malloc_error;
   }
   malloc_memory_guard<secure_message_t> _t(temp_resp_message);
 
   memset(temp_resp_message, 0, sizeof(secure_message_t) + resp_data_length);
-  const uint32_t data2encrypt_length = (uint32_t)resp_data_length;
+  auto data2encrypt_length = (uint32_t)resp_data_length;
   temp_resp_message->session_id = m_session_id;
   temp_resp_message->message_aes_gcm_data.payload_size = data2encrypt_length;
 

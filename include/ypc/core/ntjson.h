@@ -126,8 +126,8 @@ template <int Index> struct to_json_helper {
   template <typename NtObjTy>
   static auto write(boost::property_tree::ptree &pt, const NtObjTy &data) ->
       typename std::enable_if<(NtObjTy::type_list::len > Index), void>::type {
-    typedef typename ff::util::get_type_at_index_in_typelist<
-        typename NtObjTy::type_list, Index>::type ctype;
+    using ctype = typename ff::util::get_type_at_index_in_typelist<
+        typename NtObjTy::type_list, Index>::type;
     ptree_put_helper<ctype>::write(pt, data);
     to_json_helper<Index + 1>::write(pt, data);
   }
@@ -149,9 +149,9 @@ template <int Index> struct from_json_helper {
   template <typename NtObjTy>
   static auto read(const boost::property_tree::ptree &pt, NtObjTy &data) ->
       typename std::enable_if<(NtObjTy::type_list::len > Index), void>::type {
-    typedef typename ff::util::get_type_at_index_in_typelist<
-        typename NtObjTy::type_list, Index>::type ctype;
-    typedef typename ff::util::internal::nt_traits<ctype>::type vtype;
+    using ctype = typename ff::util::get_type_at_index_in_typelist<
+        typename NtObjTy::type_list, Index>::type;
+    using vtype = typename ff::util::internal::nt_traits<ctype>::type;
     ptree_get_helper<ctype>::read(pt, data);
     from_json_helper<Index + 1>::read(pt, data);
   }
