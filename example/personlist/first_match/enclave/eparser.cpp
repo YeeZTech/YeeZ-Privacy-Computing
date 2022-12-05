@@ -5,7 +5,7 @@
 
 ypc::algo_wrapper<ypc::crypto::eth_sgx_crypto, ypc::sealed_data_stream,
                   first_match_parser,
-                  ypc::offchain_result<ypc::crypto::eth_sgx_crypto>>
+                  ypc::onchain_result<ypc::crypto::eth_sgx_crypto>>
     pw;
 
 YPC_PARSER_IMPL(pw);
