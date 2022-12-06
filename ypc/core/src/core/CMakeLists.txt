@@ -6,7 +6,6 @@ add_subdirectory(crypto)
 find_package (Threads REQUIRED)
 
 add_library(core SHARED
-  timer_loop.cpp
   poption_require.cpp
   db.cpp
   configuration.cpp

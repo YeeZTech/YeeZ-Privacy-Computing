@@ -2,8 +2,8 @@
 #include "openssl.h"
 #include "ypc/common/endian.h"
 #include "ypc/stbox/stx_status.h"
-#include <secp256k1.h>
-#include <secp256k1_ecdh.h>
+#include "ypc/stbox/tsgx/secp256k1/secp256k1.h"
+#include "ypc/stbox/tsgx/secp256k1/secp256k1_ecdh.h"
 
 #define AAD_MAC_TEXT_LEN 64
 static char aad_mac_text[AAD_MAC_TEXT_LEN] = "tech.yeez.key.manager";

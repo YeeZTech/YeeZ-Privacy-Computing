@@ -1,16 +1,14 @@
-#include "ypc/corecommon/crypto/stdeth/secp256k1.h"
 #include "ypc/common/byte.h"
 #include "ypc/common/endian.h"
+#include "ypc/corecommon/crypto/stdeth/secp256k1.h"
 #include "ypc/stbox/stx_common.h"
 #include "ypc/stbox/stx_status.h"
-#ifdef YPC_SGX
 #include "ypc/stbox/tsgx/secp256k1/secp256k1.h"
+#include "ypc/stbox/tsgx/secp256k1/secp256k1_ecdh.h"
 #include "ypc/stbox/tsgx/secp256k1/secp256k1_recovery.h"
+#ifdef YPC_SGX
 #include "ypc/stbox/tsgx/log.h"
 #else
-#include <secp256k1.h>
-#include <secp256k1_ecdh.h>
-#include <secp256k1_recovery.h>
 #include <glog/logging.h>
 #endif
 

@@ -30,11 +30,6 @@ public:
 
   static db_info_t read_db_config_file(const std::string &filename);
   static net_info_t read_net_info_from_file(const std::string &conf_file);
-
-  inline std::string contract_upload_method_id() const { return "0x58f4f6a7"; }
-  inline std::string contract_buy_method_id() const { return "0xa6f2ae3a"; }
-  inline std::string contract_meta_method_id() const { return "0x074c8841"; }
-  inline std::string contract_sell_method_id() const { return "0xeb48e53c"; }
 };
 
 } // namespace ypc
