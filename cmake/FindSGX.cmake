@@ -54,7 +54,7 @@ endif()
 
 if(SGX_FOUND)
     set(SGX_HW ON CACHE BOOL "Run SGX on hardware, OFF for simulation.")
-    set(SGX_MODE PreRelease CACHE STRING "SGX build mode: Debug; PreRelease; Release.")
+    #set(SGX_MODE PreRelease CACHE STRING "SGX build mode: Debug; PreRelease; Release.")
 
     if(SGX_HW)
         set(SGX_URTS_LIB sgx_urts)
