@@ -2,11 +2,12 @@
 #include <sstream>
 
 namespace stbox {
-typedef struct _sgx_errlist_t {
+struct _sgx_errlist_t {
   sgx_status_t err;
   const char *msg;
   const char *sug; /* Suggestion */
-} sgx_errlist_t;
+};
+using sgx_errlist_t = _sgx_errlist_t;
 /* Error code returned by sgx_create_enclave */
 static sgx_errlist_t sgx_errlist[] = {
     {SGX_ERROR_UNEXPECTED, "Unexpected error occurred.", NULL},

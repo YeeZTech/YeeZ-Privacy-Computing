@@ -9,7 +9,7 @@ namespace ypc {
 namespace crypto {
 #define KECCAK256_HASH_SIZE 32
 
-typedef ::ypc::utc::bytes<uint8_t, ::ypc::utc::byte_encode::raw_bytes> bytes;
+using bytes = ::ypc::utc::bytes<uint8_t, ::ypc::utc::byte_encode::raw_bytes>;
 
 uint32_t eth_hash::hash_256(const uint8_t *msg, uint32_t msg_size,
                             uint8_t *hash) {

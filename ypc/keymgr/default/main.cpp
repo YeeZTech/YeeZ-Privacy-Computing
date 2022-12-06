@@ -40,7 +40,7 @@ private:
   std::string m_key_dir;
   std::string m_lib_name;
 };
-typedef std::shared_ptr<keymgr_helper> keymgr_helper_ptr_t;
+using keymgr_helper_ptr_t = std::shared_ptr<keymgr_helper>;
 
 using namespace stbox;
 using ntt = ypc::nt<ypc::bytes>;

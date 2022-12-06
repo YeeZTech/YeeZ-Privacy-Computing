@@ -18,7 +18,7 @@
 
 using stx_status = stbox::stx_status;
 using namespace ypc;
-typedef ypc::nt<ypc::bytes> ntt;
+using ntt = ypc::nt<ypc::bytes>;
 
 class crypto_base {
 public:
