@@ -9,7 +9,7 @@ include(FetchContent)
 FetchContent_Declare(
   googletest
   GIT_REPOSITORY ${GIT_REPO}
-  #GIT_TAG release-1.11.0
+  GIT_TAG origin/main
 )
 
 #For Windows: Prevent overriding the parent project's compiler/linker settings
