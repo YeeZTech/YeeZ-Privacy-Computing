@@ -1,6 +1,4 @@
 find_package(OpenSSL REQUIRED)
-#include_directories(${OPENSSL_INCLUDE_DIR})
-#link_directories(${OPENSSL_LIB})
 
 set(stdeth_src ../../../corecommon/crypto/eth_hash.cpp rijndael128GCM.cpp secp256k1.cpp secp256k1_ecdh_sgx128.cpp openssl.cpp)
 
@@ -14,9 +12,8 @@ target_include_directories(core_stdeth PUBLIC
   "$<BUILD_INTERFACE:${FF_INCLUDE_DIR}>"
   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
 
-target_link_directories(core_stdeth PUBLIC ${OPENSSL_LIB})
 
-target_link_libraries(core_stdeth ${OPENSSL_CRYPTO_LIBRARY} stbox_keccak secp256k1)
+target_link_libraries(core_stdeth PUBLIC ${OPENSSL_CRYPTO_LIBRARY} stbox_keccak stbox_secp256k1)
 
 install(TARGETS core_stdeth EXPORT mod_core_stdeth
   DESTINATION lib)

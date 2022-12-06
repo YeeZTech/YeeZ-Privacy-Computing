@@ -25,3 +25,22 @@ install(TARGETS stbox_secp256k1_t EXPORT mod_secp256k1_t
 install(EXPORT mod_secp256k1_t
   DESTINATION "${config_install_dir}/stbox"
   NAMESPACE "${namespace}")
+
+add_library(stbox_secp256k1 SHARED ${secp256k1_src})
+
+target_include_directories(stbox_secp256k1 PUBLIC
+  "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
+  "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/ypc/stbox>"
+  "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+  "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/ypc/stbox>"
+)
+
+install(TARGETS stbox_secp256k1 EXPORT mod_secp256k1
+  DESTINATION lib
+)
+
+install(EXPORT mod_secp256k1
+  DESTINATION "${config_install_dir}/stbox"
+  NAMESPACE "${namespace}")
+
+add_version(stbox_secp256k1)

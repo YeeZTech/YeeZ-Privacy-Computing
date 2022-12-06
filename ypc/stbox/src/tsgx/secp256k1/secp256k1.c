@@ -612,6 +612,7 @@ int secp256k1_ec_pubkey_combine(const secp256k1_context* ctx, secp256k1_pubkey *
 
 
 int printf_std(const char *fmt, ...) {
+#ifdef YPC_SGX
   va_list ap;
   char buf[BUFSIZ] = {'\0'};
   /*va_start(ap, fmt);*/
@@ -619,4 +620,7 @@ int printf_std(const char *fmt, ...) {
   /*va_end(ap);*/
   ocall_print_string(buf);
   return (int)strnlen(buf, BUFSIZ - 1) + 1;
+#else
+  return 0;
+#endif
 }

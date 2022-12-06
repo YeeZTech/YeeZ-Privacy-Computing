@@ -21,6 +21,11 @@ endif()
 add_executable(gtest_core
 ${srcs}
 )
+if(SGX_FOUND)
+  target_include_directories(gtest_core PRIVATE "${SGX_INCLUDE_DIR}")
+  target_link_directories(gtest_core PRIVATE "${SGX_LIBRARY_DIR}")
+endif()
+
 target_link_libraries(gtest_core common gtest core core_stdeth)
 
 add_test(NAME test-core
@@ -40,6 +45,10 @@ add_untrusted_library(test_ypc_lib SHARED
 target_link_libraries(test_ypc_lib core_stdeth stbox_common)
 
 add_executable(gen_sign_for_ypc gen_sign_for_ypc.cpp)
+if(SGX_FOUND)
+  target_include_directories(gen_sign_for_ypc PRIVATE "${SGX_INCLUDE_DIR}")
+  target_link_directories(gen_sign_for_ypc PRIVATE "${SGX_LIBRARY_DIR}")
+endif()
 target_link_libraries(gen_sign_for_ypc test_ypc_lib core stbox_common)
 
 add_dependencies(gen_sign_for_ypc test_ypc_enclave-sign)

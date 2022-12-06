@@ -10,7 +10,7 @@ void timer_loop::timer_callback(const boost::system::error_code &ec,
   if (m_exit_flag) {
     return;
   }
-  if (ec) {
+  if (ec) { // NOLINT
     LOG(ERROR) << ec;
     return;
   }

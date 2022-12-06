@@ -118,11 +118,10 @@ parse_command_line(int argc, char *argv[]) {
                            .run();
   bp::store(parsedOptions, vm);
   bp::notify(vm);
-  typedef std::tuple<
+  using next_desc_item = std::tuple<
       std::string, bp::options_description,
       std::function<int(ypc::terminus::crypto_pack *,
-                        const boost::program_options::variables_map &)>>
-      next_desc_item;
+                        const boost::program_options::variables_map &)>>;
 
   std::vector<next_desc_item> nds;
   nds.push_back({"gen-key", key, gen_key});
