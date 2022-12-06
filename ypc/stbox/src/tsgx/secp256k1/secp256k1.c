@@ -28,6 +28,7 @@
 
 
 extern int printf_std(const char *fmt, ...);
+extern int ocall_print_string(const char *fmt);
 
 static void default_illegal_callback_fn(const char* str, void* data) {
     (void)data;

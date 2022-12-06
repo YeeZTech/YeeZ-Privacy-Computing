@@ -20,7 +20,7 @@ bool is_certified_signer(
   // project is built for debug purpose
 #ifdef NDEBUG
 #ifndef EDEBUG // disable check in PreRelease mode
-  if (peer_enclave_identity->attributes.flags & SGX_FLAGS_DEBUG) {
+  if ((peer_enclave_identity->attributes.flags & SGX_FLAGS_DEBUG) != 0u) {
     LOG(ERROR) << "shouldn't loaded as DEBUG";
     return false;
   }

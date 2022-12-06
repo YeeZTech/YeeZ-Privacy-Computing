@@ -37,10 +37,7 @@ else()
   message(STATUS "SGX not found, ignore support for SGX")
 endif()
 
-include(GTest)
 include(SGXHelper)
-
-enable_testing()
 
 if(SGX_MODE STREQUAL "Debug")
   message(STATUS "This is a Debug version!")
@@ -102,11 +99,13 @@ add_subdirectory(hpda)
 if(SGX_FOUND)
 add_subdirectory(example)
 endif()
-add_subdirectory(toolkit)
 
 if(SGX_MODE STREQUAL "Debug")
+  include(GTest)
+  enable_testing()
   add_subdirectory(test)
 endif()
+add_subdirectory(toolkit)
 
 install(
   FILES "${project_config}" "${version_config}" "${util_config}"
