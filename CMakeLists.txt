@@ -10,10 +10,13 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   set(SGX_MODE "Debug")
+  set(SGX_HW OFF)
 elseif(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
   set(SGX_MODE "PreRelease")
+  set(SGX_HW ON)
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
   set(SGX_MODE "Release")
+  set(SGX_HW ON)
 endif()
 
 
@@ -93,6 +96,8 @@ install(DIRECTORY include/
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/"
   MESSAGE_NEVER)
 
+message(STATUS "--------SGX_MODE: " ${SGX_MODE})
+message(STATUS "--------SGX_HW: " ${SGX_HW})
 add_subdirectory(vendor/pybind11)
 
 add_subdirectory(ypc)
