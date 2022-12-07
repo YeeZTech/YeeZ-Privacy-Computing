@@ -26,6 +26,12 @@ def execute_cmd(cmd):
     return p.stdout.read().decode('utf-8', errors='ignore')
 
 
+def debug_postfix():
+    cmd = 'ldd {}/keymgr_tool | grep libsgx_urts'.format(bin_dir)
+    output = execute_cmd(cmd)
+    return '_debug' if 'sim' in output else str()
+
+
 def fid_keymgr_create(user_id, crypto="stdeth"):
     cmd = os.path.join(bin_dir, "./keymgr_tool")
     cmd = cmd + " --crypto {}".format(crypto)
@@ -58,7 +64,7 @@ def fid_keymgr_list(crypto="stdeth"):
     return keys
 
 
-def get_keymgr_private_key(keyid, crypto_type = "stdeth"):
+def get_keymgr_private_key(keyid, crypto_type="stdeth"):
     cmd = os.path.join(bin_dir, "./keymgr_tool")
     cmd = cmd + " --crypto {}".format(crypto_type)
     output = execute_cmd("{} --list".format(cmd))
