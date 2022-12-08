@@ -65,6 +65,4 @@ add_version(stbox_common)
 
 add_subdirectory(gmssl)
 add_subdirectory(keccak)
-if(SGX_FOUND)
 add_subdirectory(tsgx)
-endif()

@@ -6,6 +6,7 @@ set(secp256k1_src ./secp256k1.c)
 
 #add_library(stbox_secp256k1_u SHARED ${secp256k1_src})
 
+if(SGX_FOUND)
 add_sgx_library(stbox_secp256k1_t
   stbox_secp256k1_t
   SRCS "${secp256k1_src}")
@@ -25,6 +26,7 @@ install(TARGETS stbox_secp256k1_t EXPORT mod_secp256k1_t
 install(EXPORT mod_secp256k1_t
   DESTINATION "${config_install_dir}/stbox"
   NAMESPACE "${namespace}")
+endif()
 
 add_library(stbox_secp256k1 SHARED ${secp256k1_src})
 

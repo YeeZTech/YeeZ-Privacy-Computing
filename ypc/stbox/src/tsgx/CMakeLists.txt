@@ -1,3 +1,5 @@
 add_subdirectory(secp256k1)
+if(SGX_FOUND)
 add_subdirectory(channel)
 add_subdirectory(crypto)
+endif()
