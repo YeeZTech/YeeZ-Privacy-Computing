@@ -140,6 +140,32 @@ class job_step:
         with open(decrypted_result) as f:
             return f.readlines()
 
+    def decrypt_result_key(crypto, encrypted_result, shukey_file, decrypted_result):
+        param = {
+            "crypto": crypto,
+            "decrypt": "",
+            "use-param": encrypted_result,
+            "use-privatekey-file": shukey_file,
+            "output": decrypted_result
+        }
+        r = common.fid_terminus(**param)
+        with open(decrypted_result, 'rb') as f:
+            key = bytearray(f.read())
+            return ''.join(format(x, '02x') for x in key)
+            # return f.readlines()
+
+    def decrypt_result_with_hex(crypto, encrypted_result, shukey, decrypted_result):
+        param = {
+            "crypto": crypto,
+            "decrypt": "",
+            "use-param": encrypted_result,
+            "use-privatekey-hex": shukey,
+            "output": decrypted_result
+        }
+        r = common.fid_terminus(**param)
+        with open(decrypted_result) as f:
+            return f.readlines()
+
     def encrypt_message(crypto, shukey_file, msg, output):
         param = {
             "crypto": crypto,

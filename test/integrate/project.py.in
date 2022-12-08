@@ -1,0 +1,3 @@
+
+def debug_postfix():
+    return '@CMAKE_DEBUG_POSTFIX@'

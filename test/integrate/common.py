@@ -3,6 +3,7 @@ import os
 import sys
 import subprocess
 import json
+import project
 
 current_file = os.path.abspath(__file__)
 current_dir = os.path.dirname(current_file)
@@ -29,7 +30,7 @@ def execute_cmd(cmd):
 def debug_postfix():
     cmd = 'ldd {}/keymgr_tool | grep libsgx_urts'.format(bin_dir)
     output = execute_cmd(cmd)
-    return '_debug' if 'sim' in output else str()
+    return project.debug_postfix() if 'sim' in output else str()
 
 
 def fid_keymgr_create(user_id, crypto="stdeth"):
