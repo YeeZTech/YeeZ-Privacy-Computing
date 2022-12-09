@@ -6,5 +6,3 @@ target_include_directories(iris_reader PUBLIC
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
   )
 target_link_directories(iris_reader PUBLIC ${FF_LIB_DIR})
-
-install(TARGETS iris_reader DESTINATION lib COMPONENT c_example_iris OPTIONAL)

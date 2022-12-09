@@ -11,4 +11,3 @@ else()
   enclave_sign(person_first_match_multi_offchain KEY enclave_private.pem
     CONFIG enclave.config.xml)
 endif()
-install(FILES ${PROJECT_SOURCE_DIR}/lib/person_first_match_multi_offchain.signed.so DESTINATION lib)
