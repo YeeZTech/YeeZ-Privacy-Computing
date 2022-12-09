@@ -12,7 +12,7 @@
 
 class keymgr_helper {
 public:
-  keymgr_helper(const std::string &crypto) {
+  explicit keymgr_helper(const std::string &crypto) {
     if (crypto == "stdeth") {
 #ifdef DEBUG
       m_key_dir = std::string(".yeez.stdeth_key.debug/");
@@ -40,7 +40,7 @@ private:
   std::string m_key_dir;
   std::string m_lib_name;
 };
-typedef std::shared_ptr<keymgr_helper> keymgr_helper_ptr_t;
+using keymgr_helper_ptr_t = std::shared_ptr<keymgr_helper>;
 
 using namespace stbox;
 using ntt = ypc::nt<ypc::bytes>;
@@ -103,11 +103,11 @@ boost::program_options::variables_map parse_command_line(int argc,
   boost::program_options::store(
       boost::program_options::parse_command_line(argc, argv, all), vm);
 
-  if (vm.count("help")) {
+  if (vm.count("help") != 0U) {
     std::cout << all << std::endl;
     exit(-1);
   }
-  if (vm.count("version")) {
+  if (vm.count("version") != 0U) {
     std::cout << std::to_string(YPC_KEYMGR_RUNTIME_VERSION) << std::endl;
     exit(0);
   }
@@ -134,7 +134,7 @@ void create_key(const std::shared_ptr<keymgr_sgx_module> &ptr,
   ntt::keymgr_key_package_t key;
   key.set<ntt::pkey, ntt::sealed_skey, ntt::timestamp>(pkey, skey, s);
   std::string userid;
-  if (vm.count("user-id")) {
+  if (vm.count("user-id") != 0U) {
     userid = vm["user-id"].as<std::string>();
   } else {
     std::cout << "Input user id: ";
@@ -184,7 +184,7 @@ void list_keys(const std::string &key_dir,
         uint32_t ret =
             ptr->encrypt_message(encrypt_pkey.data(), encrypt_pkey.size(),
                                  b_msg.data(), b_msg.size(), cipher);
-        if (!ret) {
+        if (ret == 0U) {
           std::cout << "\t[\033[1;32m"
                     << "Check encrypt success"
                     << "\033[0m"
@@ -199,7 +199,7 @@ void list_keys(const std::string &key_dir,
         ypc::bref raw_msg;
         ret = ptr->decrypt_message(sealed_skey.data(), sealed_skey.size(),
                                    cipher.data(), cipher.size(), raw_msg);
-        if (!ret) {
+        if (ret == 0U) {
           std::cout << "\t[\033[1;32m"
                     << "Check decrypt success"
                     << "\033[0m"
@@ -252,7 +252,7 @@ void remove_key(const boost::program_options::variables_map &vm,
 void encrypt_message(const boost::program_options::variables_map &vm,
                      const std::shared_ptr<keymgr_sgx_module> &ptr) {
   std::string msg = vm["encrypt"].as<std::string>();
-  if (!vm.count("encrypt.public-key")) {
+  if (vm.count("encrypt.public-key") == 0U) {
     std::stringstream ss;
     ss << "`public-key` must be specified!" << std::endl;
     throw std::runtime_error(ss.str());
@@ -261,7 +261,7 @@ void encrypt_message(const boost::program_options::variables_map &vm,
       ypc::hex_bytes(vm["encrypt.public-key"].as<std::string>())
           .as<ypc::bytes>();
   ypc::bytes b_msg;
-  if (vm.count("encrypt.hex")) {
+  if (vm.count("encrypt.hex") != 0U) {
     b_msg = ypc::hex_bytes(msg.c_str()).as<ypc::bytes>();
   } else {
     b_msg = ypc::bytes(msg.c_str());
@@ -279,7 +279,7 @@ void decrypt_message(const boost::program_options::variables_map &vm,
                      const std::shared_ptr<keymgr_sgx_module> &ptr) {
   ypc::bytes b_cipher =
       ypc::hex_bytes(vm["decrypt"].as<std::string>()).as<ypc::bytes>();
-  if (!vm.count("decrypt.private-key")) {
+  if (vm.count("decrypt.private-key") == 0U) {
     std::stringstream ss;
     ss << "`private-key` must be specified!" << std::endl;
     throw std::runtime_error(ss.str());
@@ -297,7 +297,7 @@ void decrypt_message(const boost::program_options::variables_map &vm,
 void sign_message(const boost::program_options::variables_map &vm,
                   const std::shared_ptr<keymgr_sgx_module> &ptr) {
   std::string msg = vm["sign"].as<std::string>();
-  if (!vm.count("sign.private-key")) {
+  if (vm.count("sign.private-key") == 0U) {
     std::stringstream ss;
     ss << "`private-key` must be specified!" << std::endl;
     throw std::runtime_error(ss.str());
@@ -305,7 +305,7 @@ void sign_message(const boost::program_options::variables_map &vm,
   ypc::bytes sign_skey =
       ypc::hex_bytes(vm["sign.private-key"].as<std::string>()).as<ypc::bytes>();
   ypc::bytes b_msg;
-  if (vm.count("sign.hex")) {
+  if (vm.count("sign.hex") != 0U) {
     b_msg = ypc::hex_bytes(msg.c_str()).as<ypc::bytes>();
   } else {
     b_msg = ypc::bytes(msg.c_str());
@@ -322,20 +322,20 @@ void verify_signature(const boost::program_options::variables_map &vm,
   ypc::bytes b_sig =
       ypc::hex_bytes(vm["verify"].as<std::string>()).as<ypc::bytes>();
   std::stringstream ss;
-  if (!vm.count("verify.public-key")) {
+  if (vm.count("verify.public-key") == 0U) {
     ss << "`public-key` must be specified!" << std::endl;
     throw std::runtime_error(ss.str());
   }
   ypc::bytes verify_pkey =
       ypc::hex_bytes(vm["verify.public-key"].as<std::string>())
           .as<ypc::bytes>();
-  if (!vm.count("verify.message")) {
+  if (vm.count("verify.message") == 0U) {
     ss << "`message` must be specified!" << std::endl;
     throw std::runtime_error(ss.str());
   }
   std::string msg = vm["verify.message"].as<std::string>();
   ypc::bytes b_msg;
-  if (vm.count("verify.hex")) {
+  if (vm.count("verify.hex") != 0U) {
     b_msg = ypc::hex_bytes(msg.c_str()).as<ypc::bytes>();
   } else {
     b_msg = ypc::bytes(msg.c_str());
@@ -344,7 +344,7 @@ void verify_signature(const boost::program_options::variables_map &vm,
   auto ret = ptr->verify_signature(b_msg.data(), b_msg.size(), b_sig.data(),
                                    b_sig.size(), verify_pkey.data(),
                                    verify_pkey.size());
-  if (ret) {
+  if (ret != 0U) {
     ss << "Signature verify failed! Invalid signature!" << std::endl;
     throw std::runtime_error(ss.str());
   }
@@ -386,9 +386,9 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
-  if (!vm.count("create") && !vm.count("list") && !vm.count("remove") &&
-      !vm.count("sign") && !vm.count("verify") && !vm.count("encrypt") &&
-      !vm.count("decrypt") && !vm.count("crypto")) {
+  if ((vm.count("create") == 0U) && (vm.count("list") == 0U) && (vm.count("remove") == 0U) &&
+      (vm.count("sign") == 0U) && (vm.count("verify") == 0U) && (vm.count("encrypt") == 0U) &&
+      (vm.count("decrypt") == 0U) && (vm.count("crypto") == 0U)) {
     std::cerr << "one of [create, list, remove, sign, verify, encrypt, "
                  "decrypt, crypto] must be specified!"
               << std::endl;
@@ -412,37 +412,37 @@ int main(int argc, char *argv[]) {
   std::string bak_dir =
       create_dir_if_not_exist(helper_ptr->key_dir(), "backup/");
 
-  if (vm.count("create")) {
+  if (vm.count("create") != 0U) {
     create_key(ptr, key_dir, vm);
     return 0;
   }
 
-  if (vm.count("list")) {
+  if (vm.count("list") != 0U) {
     list_keys(key_dir, ptr);
     return 0;
   }
 
-  if (vm.count("remove")) {
+  if (vm.count("remove") != 0U) {
     remove_key(vm, key_dir);
     return 0;
   }
 
-  if (vm.count("encrypt")) {
+  if (vm.count("encrypt") != 0U) {
     encrypt_message(vm, ptr);
     return 0;
   }
 
-  if (vm.count("decrypt")) {
+  if (vm.count("decrypt") != 0U) {
     decrypt_message(vm, ptr);
     return 0;
   }
 
-  if (vm.count("sign")) {
+  if (vm.count("sign") != 0U) {
     sign_message(vm, ptr);
     return 0;
   }
 
-  if (vm.count("verify")) {
+  if (vm.count("verify") != 0U) {
     verify_signature(vm, ptr);
     return 0;
   }

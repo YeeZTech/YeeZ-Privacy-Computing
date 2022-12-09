@@ -13,8 +13,14 @@ using parser_type_t = ypc::utc::parser_type_t;
 namespace ypc {
 class parser_sgx_module : public stbox::sgx_module {
 public:
-  parser_sgx_module(const char *mod_path);
-  virtual ~parser_sgx_module();
+  explicit parser_sgx_module(const char *mod_path);
+
+  parser_sgx_module(const parser_sgx_module &) = delete;
+  parser_sgx_module(parser_sgx_module &&) = delete;
+  parser_sgx_module &operator=(parser_sgx_module &&) = delete;
+  parser_sgx_module &operator=(const parser_sgx_module &) = delete;
+
+  virtual ~parser_sgx_module() = default;
 
   uint32_t init();
   uint32_t init_parser();

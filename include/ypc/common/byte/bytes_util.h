@@ -25,7 +25,7 @@ namespace net {
 template <typename ByteType, ::ypc::utc::byte_encode Format>
 class archive_helper<::ypc::utc::bytes<ByteType, Format>> {
 public:
-  typedef ::ypc::utc::bytes<ByteType, Format> data_t;
+  using data_t = ::ypc::utc::bytes<ByteType, Format>;
   static uint32_t serialize(char *buf, const data_t &d, size_t len) {
     size_t s = d.size();
     memcpy(buf, (const char *)&s, sizeof(s));
@@ -47,8 +47,8 @@ public:
 namespace std {
 template <typename ByteType, ::ypc::utc::byte_encode Format>
 struct hash<::ypc::utc::bytes<ByteType, Format>> {
-  typedef ::ypc::utc::bytes<ByteType, Format> argument_type;
-  typedef std::size_t result_type;
+  using argument_type = ::ypc::utc::bytes<ByteType, Format>;
+  using result_type = std::size_t;
 
   result_type operator()(argument_type const &s) const noexcept {
     return std::hash<std::string>{}(

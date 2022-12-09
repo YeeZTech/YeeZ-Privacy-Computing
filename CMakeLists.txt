@@ -2,96 +2,126 @@
 #include("cmake/HunterGate.cmake")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-#HunterGate(
-  #URL "https://github.com/cpp-pm/hunter/archive/v0.23.231.tar.gz"
-  #SHA1 "3f9910d70a5be7005a2f23448aff4f7de5ce6bed"
-#)
 
-project(YeezPrivacyComputingSDK)
-cmake_minimum_required(VERSION 3.9.3)
-add_definitions(-std=c++14)
+cmake_minimum_required(VERSION 3.12)
+project(YPC VERSION 0.2.0)
+
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
-find_package(SGX REQUIRED)
 
-enable_testing()
-
-if(SGX_MODE STREQUAL "Debug")
-	message(STATUS "This is a Debug version!")
-	add_definitions(-g)
-  add_definitions(-O0)
-  configure_file(CMakeLists.txt.in googletest-download/CMakeLists.txt)
-  execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
-    RESULT_VARIABLE result
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download )
-    if(result)
-      message(FATAL_ERROR "CMake step for googletest failed: ${result}")
-    endif()
-    execute_process(COMMAND ${CMAKE_COMMAND} --build .
-    RESULT_VARIABLE result
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download )
-    if(result)
-      message(FATAL_ERROR "Build step for googletest failed: ${result}")
-    endif()
-
-    # Prevent overriding the parent project's compiler/linker
-    # settings on Windows
-    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-
-    # Add googletest directly to our build. This defines
-    # the gtest and gtest_main targets.
-    add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
-                    ${CMAKE_CURRENT_BINARY_DIR}/googletest-build
-                    EXCLUDE_FROM_ALL)
-
-    # The gtest/gtest_main targets carry header search path
-    # dependencies automatically when using CMake 2.8.11 or
-    # later. Otherwise we have to add them here ourselves.
-    if (CMAKE_VERSION VERSION_LESS 2.8.11)
-      include_directories("${gtest_SOURCE_DIR}/include")
-    endif()
-else()
-  message(STATUS "This is a " ${SGX_MODE} " version!")
-	add_definitions(-O2)
-	add_definitions(-DNDEBUG)
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+  set(SGX_MODE "Debug")
+  set(SGX_HW OFF)
+elseif(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+  set(SGX_MODE "PreRelease")
+  set(SGX_HW ON)
+elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
+  set(SGX_MODE "Release")
+  set(SGX_HW ON)
 endif()
 
 
-include_directories(${SGX_INCLUDE_DIR})
-include_directories(/usr/local/include)
-link_directories(/usr/local/lib)
-include_directories(${PROJECT_SOURCE_DIR}/include)
-include_directories(${PROJECT_SOURCE_DIR}/include/ypc/stbox)
-include_directories(${PROJECT_SOURCE_DIR}/vendor/fflib/include/)
-link_directories(${PROJECT_SOURCE_DIR}/vendor/fflib/lib/)
-link_directories(${SGX_LIBRARY_DIR})
+if(SGX_MODE STREQUAL "Debug" AND SGX_HW)
+  set(SGX_HW OFF)
+  message(STATUS "Cannot use SGX_HW=ON when SGX_MODE is Debug, correct it to OFF")
+endif()
 
-#hunter_add_package(Boost)
-#find_package(Boost CONFIG REQUIRED)
+if(SGX_MODE STREQUAL "Release" AND NOT SGX_HW)
+  set(SGX_HW ON)
+  message(STATUS "Cannot use SGX_HW=OFF when SGX_MODE is Release, correct it to ON")
+endif()
+
+include(vendor)
+include(Version)
+
+find_package(SGX)
+if(SGX_FOUND)
+  message(STATUS "found SGX, build full support")
+  add_definitions(-DYPC_ENABLE_SGX)
+else()
+  message(STATUS "SGX not found, ignore support for SGX")
+endif()
+
+include(SGXHelper)
+
+if(SGX_MODE STREQUAL "Debug")
+  message(STATUS "This is a Debug version!")
+  add_definitions(-DDEBUG)
+  add_definitions(-g)
+  add_definitions(-O0)
+else()
+  message(STATUS "This is a " ${SGX_MODE} " version!")
+  add_definitions(-O2)
+  add_definitions(-DNDEBUG)
+endif()
+
+configure_file("${PROJECT_SOURCE_DIR}/cmake/version.h.in" "${PROJECT_SOURCE_DIR}/include/ypc/version.h")
+configure_file("${PROJECT_SOURCE_DIR}/cmake/project_path.h.in" "${PROJECT_SOURCE_DIR}/test/project_path.h")
 
 set(FF_PATH ${PROJECT_SOURCE_DIR}/vendor/fflib)
 set(FF_SRC_PATH ${FF_PATH}/src)
+
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/)
 
-MACRO(INSTALL_HEADERS_WITH_DIRECTORY HEADER_LIST)
-  FOREACH(HEADER ${${HEADER_LIST}})
-    STRING(REPLACE "${PROJECT_SOURCE_DIR}/" "" RPATH ${HEADER})
-    STRING(REGEX MATCH "(.*)/"  DIR ${RPATH})
-    INSTALL(FILES ${HEADER} DESTINATION ${DIR})
-  ENDFOREACH(HEADER)
-ENDMACRO(INSTALL_HEADERS_WITH_DIRECTORY)
+include(ClangTidy)
+include(GNUInstallDirs)
+set(config_install_dir "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
 
-file(GLOB_RECURSE DEPLOY_FILES_AND_DIRS include/*.h include/*.hpp include/*.edl include/*.ipp include/*.def)
-INSTALL_HEADERS_WITH_DIRECTORY(DEPLOY_FILES_AND_DIRS)
+set(generated_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
 
+set(version_config "${generated_dir}/${PROJECT_NAME}ConfigVersion.cmake")
+set(project_config "${generated_dir}/${PROJECT_NAME}Config.cmake")
+set(util_config "${generated_dir}/Util.cmake")
+set(TARGETS_EXPORT_NAME "${PROJECT_NAME}Targets")
+set(namespace "${PROJECT_NAME}::")
+
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file("${version_config}" COMPATIBILITY SameMinorVersion)
+
+set(LIB_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR})
+set(INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR})
+configure_package_config_file("cmake/Util.cmake.in"
+  "${util_config}"
+  INSTALL_DESTINATION "${config_install_dir}"
+  PATH_VARS PROJECT_NAME)
+
+configure_package_config_file("cmake/Config.cmake.in"
+  "${project_config}"
+  INSTALL_DESTINATION "${config_install_dir}"
+  PATH_VARS LIB_INSTALL_DIR INCLUDE_INSTALL_DIR PROJECT_NAME)
+
+
+install(DIRECTORY include/
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/"
+  MESSAGE_NEVER)
+
+message(STATUS "--------SGX_MODE: " ${SGX_MODE})
+message(STATUS "--------SGX_HW: " ${SGX_HW})
 add_subdirectory(vendor/pybind11)
 
 add_subdirectory(ypc)
 add_subdirectory(hpda)
+if(SGX_FOUND)
 add_subdirectory(example)
-add_subdirectory(toolkit)
+endif()
 
 if(SGX_MODE STREQUAL "Debug")
+  include(GTest)
+  enable_testing()
   add_subdirectory(test)
+endif()
+add_subdirectory(toolkit)
+
+install(
+  FILES "${project_config}" "${version_config}" "${util_config}"
+  DESTINATION "${config_install_dir}"
+)
+install(
+  FILES "${PROJECT_SOURCE_DIR}/cmake/FindSGX.cmake"
+  DESTINATION "${config_install_dir}"
+  )
+
+if (UNIX)
+  #install(CODE "execute_process(COMMAND ldconfig)")
 endif()

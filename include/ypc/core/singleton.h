@@ -1,12 +1,11 @@
 #pragma once
-#include <boost/thread/shared_mutex.hpp>
 #include <functional>
+#include <memory>
 #include <mutex>
-#include <boost/core/noncopyable.hpp>
 
 namespace ypc {
 
-template <typename T> class singleton : boost::noncopyable {
+template <typename T> class singleton {
 public:
   static T &instance() {
     std::call_once(s_init_once, std::bind(singleton<T>::init));
@@ -36,9 +35,14 @@ template <typename T> std::shared_ptr<T> singleton<T>::s_pInstance;
 template <typename T> std::once_flag singleton<T>::s_init_once;
 template <typename T> std::once_flag singleton<T>::s_dealloc_once;
 
-template <typename T> class singleton_guard : boost::noncopyable {
+template <typename T> class singleton_guard {
 public:
   singleton_guard() = default;
+  singleton_guard(const singleton_guard &) = delete;
+  singleton_guard &operator=(const singleton_guard &) = delete;
+  singleton_guard(singleton_guard &&) = delete;
+  singleton_guard &operator=(singleton_guard &&) = delete;
+
   ~singleton_guard() { singleton<T>::instance().release(); }
 }; // end class singleton_guard
 } // namespace ypc

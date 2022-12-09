@@ -2,10 +2,12 @@
 #include <hpda/engine/functor.h>
 
 namespace hpda {
-functor::functor() : m_has_value(false) {}
+functor::functor() : m_engine(), m_status(), m_has_value(false) {}
 
 functor::~functor() {
-  m_engine->remove_functor(this);
+  if (m_engine != nullptr) {
+    m_engine->remove_functor(this);
+  }
 }
 
 void functor::set_engine(engine *e) {

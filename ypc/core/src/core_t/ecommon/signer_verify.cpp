@@ -11,7 +11,7 @@ bool is_certified_signer(
     std::shared_ptr<nt<stbox::bytes>::access_list_package_t> policy) {
 
   if (/*peer_enclave_identity->isv_prod_id != RESPONDER_PRODID || */
-      !(peer_enclave_identity->attributes.flags & SGX_FLAGS_INITTED)) {
+      0 == (peer_enclave_identity->attributes.flags & SGX_FLAGS_INITTED)) {
     LOG(ERROR) << "SGX_FLAGS_INITTED error";
     return false;
   }
@@ -20,7 +20,7 @@ bool is_certified_signer(
   // project is built for debug purpose
 #ifdef NDEBUG
 #ifndef EDEBUG // disable check in PreRelease mode
-  if (peer_enclave_identity->attributes.flags & SGX_FLAGS_DEBUG) {
+  if ((peer_enclave_identity->attributes.flags & SGX_FLAGS_DEBUG) != 0u) {
     LOG(ERROR) << "shouldn't loaded as DEBUG";
     return false;
   }
@@ -35,8 +35,8 @@ bool is_certified_signer(
       LOG(ERROR) << "failed to get self signer";
       return false;
     }
-    if (memcmp((uint8_t *)&peer_enclave_identity->mr_signer, self_signer.data(),
-               sizeof(sgx_measurement_t))) {
+    if (0 != memcmp((uint8_t *)&peer_enclave_identity->mr_signer,
+                    self_signer.data(), sizeof(sgx_measurement_t))) {
       LOG(ERROR) << "not a trusted signer";
       return false;
     }
@@ -70,8 +70,9 @@ bool is_certified_signer(
     }
     LOG(ERROR) << "enclave not found in whitelist";
     return false;
+  }
 
-  } else if (tag == ypc::utc::access_policy_blacklist) {
+  if (tag == ypc::utc::access_policy_blacklist) {
     LOG(INFO) << "using blacklist policy";
     const std::vector<ntt::access_item_t> &list =
         policy->get<ntt::access_list>();

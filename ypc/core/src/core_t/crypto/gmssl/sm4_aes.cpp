@@ -31,11 +31,11 @@ uint32_t sm4_aes::encrypt_with_prefix(const uint8_t *key, uint32_t key_size,
 
   uint8_t mac_text[AAD_MAC_TEXT_LEN] = {0};
   memcpy(mac_text, aad_mac_text, AAD_MAC_TEXT_LEN);
-  uint32_t *p_prefix = (uint32_t *)(mac_text + AAD_MAC_PREFIX_POS);
+  auto *p_prefix = (uint32_t *)(mac_text + AAD_MAC_PREFIX_POS);
   *p_prefix = prefix;
   uint8_t *p_iv_text = cipher + data_size;
   auto se_ret = sgx_read_rand(p_iv_text, INITIALIZATION_VECTOR_SIZE);
-  if (se_ret) {
+  if (se_ret != 0) {
     LOG(ERROR) << "call sgx_read_rand failed";
     return se_ret;
   }
@@ -68,7 +68,7 @@ uint32_t sm4_aes::decrypt_with_prefix(const uint8_t *key, uint32_t key_size,
   }
   uint8_t mac_text[AAD_MAC_TEXT_LEN] = {0};
   memcpy(mac_text, aad_mac_text, AAD_MAC_TEXT_LEN);
-  uint32_t *p_prefix = (uint32_t *)(mac_text + AAD_MAC_PREFIX_POS);
+  auto *p_prefix = (uint32_t *)(mac_text + AAD_MAC_PREFIX_POS);
   *p_prefix = prefix;
   const uint8_t *p_iv_text = cipher + data_size;
 

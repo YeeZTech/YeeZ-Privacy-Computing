@@ -2,7 +2,7 @@
 
 int getch() {
   int ch;
-  struct termios t_old, t_new;
+  struct termios t_old{}, t_new{};
 
   tcgetattr(STDIN_FILENO, &t_old);
   t_new = t_old;
@@ -27,15 +27,17 @@ std::string getpass(const char *prompt, bool show_asterisk = true) {
   while ((ch = getch()) != RETURN) {
     if (ch == BACKSPACE) {
       if (password.length() != 0) {
-        if (show_asterisk)
+        if (show_asterisk) {
           std::cout << "\b \b";
+}
         password.resize(password.length() - 1);
       }
 
     } else {
       password += ch;
-      if (show_asterisk)
+      if (show_asterisk) {
         std::cout << '*';
+}
     }
   }
   std::cout << std::endl;
@@ -46,13 +48,13 @@ int gen_key(ypc::terminus::crypto_pack *crypto,
             const boost::program_options::variables_map &vm) {
   std::string password;
 
-  if (!vm.count("no-password")) {
+  if (vm.count("no-password") == 0u) {
     // TODO we should encrypt the private key with password
     std::cerr << "We do not support password mode yet." << std::endl;
     exit(-1);
   }
 
-  if (!vm.count("no-password")) {
+  if (vm.count("no-password") == 0u) {
     password = getpass("Please enter password:", false);
     std::string repass = getpass("Please enter password again: ", false);
     if (password != repass) {
@@ -61,19 +63,19 @@ int gen_key(ypc::terminus::crypto_pack *crypto,
     }
   }
   auto private_key = crypto->gen_ecc_private_key();
-  if (private_key.size() == 0) {
+  if (private_key.empty()) {
     std::cerr << "failed to generate private key" << std::endl;
     return -1;
   }
   auto public_key = crypto->gen_ecc_public_key_from_private_key(private_key);
-  if (public_key.size() == 0) {
+  if (public_key.empty()) {
     std::cerr << "failed to generate public key " << std::endl;
     return -1;
   }
   ypc_key_t k;
   k.set<ntt::pkey, ntt::private_key>(public_key, private_key);
 
-  if (!vm.count("output")) {
+  if (vm.count("output") == 0u) {
     std::cout << ypc::ntjson::to_json(k) << std::endl;
   } else {
 

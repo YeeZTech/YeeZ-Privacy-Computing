@@ -5,7 +5,7 @@ int main(int argc, char *argv[]) {
 
   boost::program_options::variables_map vm = std::get<0>(tp);
   std::string crypto_type = "stdeth";
-  if (vm.count("crypto")) {
+  if (vm.count("crypto") != 0u) {
     crypto_type = vm["crypto"].as<std::string>();
   }
 

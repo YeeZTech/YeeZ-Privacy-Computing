@@ -7,7 +7,7 @@ data_sample_too_large::data_sample_too_large(const std::string &plugin,
     : m_plugin(plugin), m_extra(extra) {}
 
 const char *data_sample_too_large::what() throw() {
-  if (m_res.size() > 0) {
+  if (!m_res.empty()) {
     return m_res.c_str();
   }
   std::stringstream ss;
@@ -21,7 +21,7 @@ data_format_too_large::data_format_too_large(const std::string &plugin,
     : m_plugin(plugin), m_extra(extra) {}
 
 const char *data_format_too_large::what() throw() {
-  if (m_res.size() > 0) {
+  if (!m_res.empty()) {
     return m_res.c_str();
   }
   std::stringstream ss;
@@ -35,7 +35,7 @@ file_not_found::file_not_found(const std::string &path,
     : m_path(path), m_extra(extra) {}
 
 const char *file_not_found::what() throw() {
-  if (m_res.size() > 0) {
+  if (!m_res.empty()) {
     return m_res.c_str();
   }
   std::stringstream ss;
@@ -49,7 +49,7 @@ file_open_failure::file_open_failure(const std::string &path,
     : m_path(path), m_extra(extra) {}
 
 const char *file_open_failure::what() throw() {
-  if (m_res.size() > 0) {
+  if (!m_res.empty()) {
     return m_res.c_str();
   }
   std::stringstream ss;

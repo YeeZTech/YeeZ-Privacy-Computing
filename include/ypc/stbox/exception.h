@@ -6,7 +6,7 @@
 namespace stbox {
 class st_error {
 public:
-  st_error(sgx_status_t s);
+  explicit st_error(sgx_status_t s);
 
   virtual const char *what();
 

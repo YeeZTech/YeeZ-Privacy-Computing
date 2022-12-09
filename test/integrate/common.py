@@ -3,6 +3,7 @@ import os
 import sys
 import subprocess
 import json
+import project
 
 current_file = os.path.abspath(__file__)
 current_dir = os.path.dirname(current_file)
@@ -24,6 +25,12 @@ def execute_cmd(cmd):
     if p.returncode != 0:
         raise RuntimeError('Failed to execute cmd {}'.format(cmd))
     return p.stdout.read().decode('utf-8', errors='ignore')
+
+
+def debug_postfix():
+    cmd = 'ldd {}/keymgr_tool | grep libsgx_urts'.format(bin_dir)
+    output = execute_cmd(cmd)
+    return project.debug_postfix() if 'sim' in output else str()
 
 
 def fid_keymgr_create(user_id, crypto="stdeth"):
@@ -58,7 +65,7 @@ def fid_keymgr_list(crypto="stdeth"):
     return keys
 
 
-def get_keymgr_private_key(keyid, crypto_type = "stdeth"):
+def get_keymgr_private_key(keyid, crypto_type="stdeth"):
     cmd = os.path.join(bin_dir, "./keymgr_tool")
     cmd = cmd + " --crypto {}".format(crypto_type)
     output = execute_cmd("{} --list".format(cmd))

@@ -33,7 +33,7 @@ int gen_relay_result_proof(ypc::terminus::crypto_pack *crypto,
   f.set<ntt::pkey>(target_tee_pkey);
   f.set<ntt::encrypted_sig>(allowance);
 
-  if (vm.count("output")) {
+  if (vm.count("output") != 0u) {
     std::string output_path =
         ypc::complete_path(vm["output"].as<std::string>());
     ypc::ntjson::to_json_file(f, output_path);

@@ -7,7 +7,7 @@ namespace crypto {
 uint32_t secp256k1::gen_private_key(uint32_t skey_size, uint8_t *skey) {
   secp256k1_context *ctx = init_secp256k1_context();
 
-  if (!ctx) {
+  if (ctx == nullptr) {
     LOG(ERROR) << "Context or Secret key or Public key is null";
     return stbox::stx_status::ecc_invalid_ctx_or_skey;
   }
@@ -22,7 +22,7 @@ uint32_t secp256k1::gen_private_key(uint32_t skey_size, uint8_t *skey) {
       throw std::runtime_error(
           "secp256k1::gen_private_key too many times, you may retry");
     }
-  } while (!secp256k1_ec_seckey_verify(ctx, skey));
+  } while (secp256k1_ec_seckey_verify(ctx, skey) == 0);
   return stbox::stx_status::success;
 }
 } // namespace crypto

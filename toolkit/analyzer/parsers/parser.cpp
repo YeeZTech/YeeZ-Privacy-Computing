@@ -9,7 +9,7 @@
 
 parser::parser(const input_param_t &param) : m_param(param) {}
 
-parser::~parser() {}
+parser::~parser() = default;
 
 ypc::bytes construct_access_control_policy() {
   using ntt = ypc::nt<ypc::bytes>;
@@ -43,13 +43,13 @@ uint32_t parser::parse() {
       m_param.get<shu_info>().get<ntt::shu_forward_signature>();
 
   uint32_t ret = 0;
-  if (shu_skey.size() > 0) {
+  if (!shu_skey.empty()) {
     LOG(INFO) << "keymgr_enclave_path: " << keymgr_enclave_path;
     ret = m_keymgr->forward_private_key(
         shu_skey.data(), shu_skey.size(), epkey.data(), epkey.size(),
         ehash.data(), ehash.size(), shu_forward_sig.data(),
         shu_forward_sig.size());
-    if (ret) {
+    if (ret != 0u) {
       LOG(ERROR) << "forward_message got error " << ypc::status_string(ret);
       return ret;
     }
@@ -57,7 +57,7 @@ uint32_t parser::parse() {
   m_ptype.value = m_parser->get_parser_type();
   ypc::bytes actual_hash;
   ret = m_parser->get_enclave_hash(actual_hash);
-  if (ret) {
+  if (ret != 0u) {
     LOG(ERROR) << "get_enclave_hash got error " << ypc::status_string(ret);
     return ret;
   }
@@ -68,13 +68,13 @@ uint32_t parser::parse() {
   }
 
   ret = feed_datasource();
-  if (ret) {
+  if (ret != 0u) {
     LOG(ERROR) << "feed_datasource got error " << ypc::status_string(ret);
     return ret;
   }
 
   ret = feed_model();
-  if (ret) {
+  if (ret != 0u) {
     LOG(ERROR) << "feed_model got error " << ypc::status_string(ret);
     return ret;
   }
@@ -93,7 +93,7 @@ uint32_t parser::parse() {
   typename ypc::cast_obj_to_package<ntt::param_t>::type param_pkg = param_var;
   auto param_bytes = ypc::make_bytes<ypc::bytes>::for_package(param_pkg);
   ret = m_parser->parse_data_item(param_bytes.data(), param_bytes.size());
-  if (ret) {
+  if (ret != 0u) {
     LOG(ERROR) << "parse_data_item, got error: " << ypc::status_string(ret);
     return ret;
   }
@@ -102,7 +102,7 @@ uint32_t parser::parse() {
 
   ypc::bytes res;
   ret = m_parser->get_analyze_result(res);
-  if (ret) {
+  if (ret != 0u) {
     LOG(ERROR) << "get_analyze_result got error " << ypc::status_string(ret);
     return ret;
   }
@@ -113,7 +113,7 @@ uint32_t parser::parse() {
   }
 
   ret = dump_result(res);
-  if (ret) {
+  if (ret != 0u) {
     LOG(ERROR) << "dump_result got error " << ypc::status_string(ret);
     return ret;
   }
@@ -156,15 +156,15 @@ uint32_t parser::feed_datasource() {
   }
 
   if (m_ptype.d.data_source_type == ypc::utc::single_sealed_datasource_parser) {
-    if (input_data_var.size() < 1) {
+    if (input_data_var.empty()) {
       LOG(ERROR) << "missing input, require one input data source";
       return ypc::parser_missing_input;
-    } else if (input_data_var.size() > 1) {
+    } if (input_data_var.size() > 1) {
       LOG(WARNING) << "only need 1 input, ignore other inputs";
     }
   }
   if (m_ptype.d.data_source_type == ypc::utc::multi_sealed_datasource_parser) {
-    if (input_data_var.size() == 0) {
+    if (input_data_var.empty()) {
       LOG(ERROR) << "missing input, require at least one input data source";
       return ypc::parser_missing_input;
     }
@@ -187,7 +187,7 @@ uint32_t parser::feed_datasource() {
         shu_skey.data(), shu_skey.size(), epkey.data(), epkey.size(),
         target_enclave_hash.data(), target_enclave_hash.size(),
         shu_forward_sig.data(), shu_forward_sig.size());
-    if (ret) {
+    if (ret != 0u) {
       LOG(ERROR) << "forward_message got error " << ypc::status_string(ret);
       return ret;
     }
@@ -219,7 +219,7 @@ uint32_t parser::feed_datasource() {
     data_info_bytes = all_data_info[0].get<ntt::data_hash>();
   }
   auto ret = m_parser->init_data_source(data_info_bytes);
-  if (ret) {
+  if (ret != 0u) {
     LOG(ERROR) << "init_data_source got error " << ypc::status_string(ret);
     return ret;
   }
@@ -236,7 +236,7 @@ uint32_t parser::feed_model() {
 
   auto model_bytes = ypc::make_bytes<ypc::bytes>::for_package(pkg);
   uint32_t ret = m_parser->init_model(model_bytes);
-  if (ret) {
+  if (ret != 0u) {
     LOG(ERROR) << "init_model got error: " << ypc::status_string(ret);
     return ret;
   }
@@ -259,9 +259,8 @@ uint32_t parser::next_data_batch(const uint8_t *data_hash, uint32_t hash_size,
     *data = b.data();
     *len = b.size();
     return stbox::stx_status::success;
-  } else {
-    return stbox::stx_status::sealed_file_reach_end;
-  }
+  }     return stbox::stx_status::sealed_file_reach_end;
+
 }
 
 void parser::free_data_batch(uint8_t *data) { delete[] data; }

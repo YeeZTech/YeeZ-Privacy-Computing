@@ -16,7 +16,8 @@ if __name__ == "__main__":
     crypto = "stdeth"
     data = "person_list"
     parser = os.path.join(common.lib_dir, "person_first_match.signed.so")
-    plugin = os.path.join(common.lib_dir, "libperson_reader.so")
+    plugin = os.path.join(
+        common.lib_dir, "libperson_reader{}.so".format(common.debug_postfix()))
     # input_param = "421003198607270527"
     input_param = "\"[{\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"421003198607262936\\\"}]\""
     cj = classic_job(crypto, name, data, parser, plugin, input_param, {

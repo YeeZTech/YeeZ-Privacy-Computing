@@ -1,6 +1,6 @@
 # FindPackage cmake file for Intel SGX SDK
 
-cmake_minimum_required(VERSION 2.8.8)
+cmake_minimum_required(VERSION 3.12)
 include(CMakeParseArguments)
 
 set(SGX_FOUND "NO")
@@ -53,8 +53,8 @@ if(SGX_INCLUDE_DIR AND SGX_LIBRARY_DIR)
 endif()
 
 if(SGX_FOUND)
-    set(SGX_HW ON CACHE BOOL "Run SGX on hardware, OFF for simulation.")
-    set(SGX_MODE PreRelease CACHE STRING "SGX build mode: Debug; PreRelease; Release.")
+    #set(SGX_HW ON CACHE BOOL "Run SGX on hardware, OFF for simulation.")
+    #set(SGX_MODE PreRelease CACHE STRING "SGX build mode: Debug; PreRelease; Release.")
 
     if(SGX_HW)
         set(SGX_URTS_LIB sgx_urts)
@@ -196,7 +196,18 @@ if(SGX_FOUND)
         endif()
 
         add_library(${target} STATIC ${SGX_SRCS})
-        set_target_properties(${target} PROPERTIES COMPILE_FLAGS ${ENCLAVE_CXX_FLAGS})
+
+        foreach(s IN LISTS SGX_SRCS)
+          get_filename_component(target_language "${s}" EXT)
+        endforeach()
+
+        if("${target_language}" STREQUAL ".c" OR "${target_language}" STREQUAL ".cc")
+          message(STATUS "use c for " ${target} " since lan is " ${target_language})
+          set_target_properties(${target} PROPERTIES COMPILE_FLAGS "${ENCLAVE_C_FLAGS}")
+        else()
+          set_target_properties(${target} PROPERTIES COMPILE_FLAGS "${ENCLAVE_CXX_FLAGS}")
+        endif()
+
         target_include_directories(${target} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
               #-Wl,--whole-archive -l${SGX_TRTS_LIB} -Wl,--no-whole-archive \

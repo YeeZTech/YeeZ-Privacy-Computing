@@ -8,7 +8,6 @@ namespace ypc {
 
 parser_sgx_module::parser_sgx_module(const char *mod_path)
     : ::stbox::sgx_module(mod_path) {}
-parser_sgx_module::~parser_sgx_module() {}
 
 uint32_t parser_sgx_module::init() {
   auto retval = ecall<uint32_t>(::init);

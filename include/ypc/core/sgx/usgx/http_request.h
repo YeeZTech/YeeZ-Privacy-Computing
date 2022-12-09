@@ -1,6 +1,6 @@
 #pragma once
 
-#include <stdint.h>
+#include <cstdint>
 
 extern "C" {
 uint32_t ocall_http_request(const char *service, uint32_t service_size,

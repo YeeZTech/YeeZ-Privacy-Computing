@@ -1,3 +1,4 @@
 add_subdirectory(generator)
 add_subdirectory(first_match/enclave)
+add_subdirectory(first_match/enclave_for_offchain)
 add_subdirectory(first_match/normal)

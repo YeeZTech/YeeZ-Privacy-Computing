@@ -29,7 +29,11 @@ public:
       : m_file(), m_file_path(), m_header(), m_is_header_valid(false),
         m_is_block_info_valid(false), m_block_infos() {}
 
-  virtual ~blockfile(){};
+  blockfile(const blockfile &) = delete;
+  blockfile(blockfile &&) = delete;
+  blockfile &operator=(const blockfile &) = delete;
+  blockfile &operator=(blockfile &&) = delete;
+  virtual ~blockfile() = default;
 
   void open_for_read(const char *file_path) {
     if (m_file.is_open()) {
@@ -65,7 +69,7 @@ public:
     read_header();
     read_all_block_info();
     m_file.clear();
-    block_info bi;
+    block_info bi{};
 
     m_header.item_number++;
     m_header.magic_number = MagicNumber;
@@ -115,14 +119,15 @@ public:
   }
 
   bool next_item(memref &s) {
-    if (m_file.eof())
+    if (m_file.eof()) {
       return false;
+    }
     size_t len;
     m_file.read((char *)&len, sizeof(len));
     if (m_file.eof()) {
       return false;
     }
-    if (!s.data()) {
+    if (s.data() == nullptr) {
       s.alloc(len);
     }
     if (s.size() < len) {
@@ -151,8 +156,9 @@ public:
 
 protected:
   void read_header() {
-    if (m_is_header_valid)
+    if (m_is_header_valid) {
       return;
+    }
     auto prev = m_file.tellg();
 
     m_file.seekg(0, m_file.beg);
@@ -170,7 +176,7 @@ protected:
     }
     m_file.seekg(sizeof(header), m_file.beg);
     for (size_t i = 0; i < m_header.block_number; ++i) {
-      block_info bi;
+      block_info bi{};
       m_file.read((char *)&bi, sizeof(bi));
       m_block_infos.push_back(bi);
     }
@@ -186,6 +192,7 @@ protected:
   };
   struct block_info {
     //[start_item_index, end_item_index)
+    block_info() = default;
     uint64_t start_item_index;
     uint64_t end_item_index; // not included
     long int start_file_pos;

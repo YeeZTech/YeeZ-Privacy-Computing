@@ -11,7 +11,15 @@ namespace stbox {
 namespace internal {
 class sgx_module_base {
 public:
-  virtual ~sgx_module_base();
+  explicit inline sgx_module_base(const char *mod_path)
+      : m_mod_path(mod_path), m_sgx_eid() {}
+
+  sgx_module_base(const sgx_module_base &) = delete;
+  sgx_module_base(sgx_module_base &&) = delete;
+  sgx_module_base &operator=(const sgx_module_base &) = delete;
+  sgx_module_base &operator=(sgx_module_base &&) = delete;
+
+  virtual ~sgx_module_base() = default;
 
   inline sgx_enclave_id_t sgx_eid() const { return m_sgx_eid; }
 
@@ -73,6 +81,10 @@ struct buffer_length_traits {
   inline ~buffer_length_traits() {
     delete m_func;
   }
+  buffer_length_traits(const buffer_length_traits &) = delete;
+  buffer_length_traits(buffer_length_traits &&) = delete;
+  buffer_length_traits &operator=(buffer_length_traits &&) = delete;
+  buffer_length_traits &operator=(const buffer_length_traits &) = delete;
 
   void call(sgx_module_base &m);
   uint32_t *m_len;
@@ -81,29 +93,29 @@ struct buffer_length_traits {
 };
 
 struct xmem {
-  inline xmem(buffer_length_traits &m) : mm(m) {}
+  explicit inline xmem(buffer_length_traits &m) : mm(m) {}
   buffer_length_traits &mm;
 };
 
 struct xlen {
-  inline xlen(buffer_length_traits &m) : mm(m) {}
+  explicit inline xlen(buffer_length_traits &m) : mm(m) {}
   buffer_length_traits &mm;
 };
 
 template <typename T> struct param_extractor {
-  param_extractor(const T &t) : value(t) {}
-  typedef T type;
+  explicit param_extractor(const T &t) : value(t) {}
+  using type = T;
   T value;
 };
 
 template <> struct param_extractor<xmem> {
-  param_extractor(const xmem &t) : value(*t.mm.m_mem) {}
-  typedef uint8_t *type;
+  explicit param_extractor(const xmem &t) : value(*t.mm.m_mem) {}
+  using type = uint8_t *;
   uint8_t *value;
 };
 template <> struct param_extractor<xlen> {
-  param_extractor(const xlen &t) : value(*t.mm.m_len) {}
-  typedef uint32_t type;
+  explicit param_extractor(const xlen &t) : value(*t.mm.m_len) {}
+  using type = uint32_t;
   uint32_t value;
 };
 
@@ -130,7 +142,12 @@ template <typename T> int mem_init(sgx_module_base &m, T &t) {
 
 class sgx_module : public internal::sgx_module_base {
 public:
-  sgx_module(const char *mod_path);
+  explicit sgx_module(const char *mod_path);
+
+  sgx_module(const sgx_module &) = delete;
+  sgx_module(sgx_module &&) = delete;
+  sgx_module &operator=(sgx_module &&) = delete;
+  sgx_module &operator=(const sgx_module &) = delete;
 
   virtual ~sgx_module();
 

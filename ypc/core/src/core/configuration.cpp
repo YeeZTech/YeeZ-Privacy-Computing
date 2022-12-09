@@ -2,11 +2,11 @@
 #include "ypc/core/filesystem.h"
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
-#include <stdlib.h>
+#include <cstdlib>
 
 namespace ypc {
 
-std::string configuration::create_logdir_if_not_exist() {
+std::string configuration::create_logdir_if_not_exist() { // NOLINT
   boost::filesystem::path h(ypc::home_directory());
   h = h / boost::filesystem::path(".yeez.log/");
   if (!boost::filesystem::exists(h)) {
@@ -24,6 +24,7 @@ std::string configuration::create_logdir_if_not_exist() {
   return h.generic_string();
 }
 
+// NOLINTNEXTLINE
 std::string configuration::find_db_config_file(const std::string &filename) {
   boost::filesystem::path full_path(boost::filesystem::current_path());
   // Search filename in the following directories
@@ -48,11 +49,12 @@ std::string configuration::find_db_config_file(const std::string &filename) {
   throw std::runtime_error("not found any mysql db configure");
 }
 
+// NOLINTNEXTLINE
 db_info_t configuration::read_db_config_file(const std::string &filename) {
   std::string fp = find_db_config_file(filename);
   namespace bp = boost::program_options;
 
-  bp::options_description conf("DB Config");
+  bp::options_description conf("DB Config"); // NOLINT
   // clang-format off
   conf.add_options()
     ("mysql.url", bp::value<std::string>(), "MySQL connection url")
@@ -62,24 +64,24 @@ db_info_t configuration::read_db_config_file(const std::string &filename) {
   // clang-format on
 
   bp::variables_map vm;
-  std::ifstream ifs{fp};
+  std::ifstream ifs{fp, std::ios_base::in}; // NOLINT
   if (!ifs) {
     std::stringstream ss;
     ss << "cannot open file " << fp;
     throw std::runtime_error(ss.str());
   }
-  bp::store(bp::parse_config_file(ifs, conf, true), vm);
+  bp::store(bp::parse_config_file(ifs, conf, true), vm); // NOLINT
 
-  if (!vm.count("mysql.url")) {
+  if (vm.count("mysql.url") == 0U) {
     throw std::runtime_error("no mysql.url in config file");
   }
-  if (!vm.count("mysql.usr-name")) {
+  if (vm.count("mysql.usr-name") == 0U) {
     throw std::runtime_error("no mysql.usr-name in config file");
   }
-  if (!vm.count("mysql.usr-password")) {
+  if (vm.count("mysql.usr-password") == 0U) {
     throw std::runtime_error("no mysql.usr-password in config file");
   }
-  if (!vm.count("mysql.database")) {
+  if (vm.count("mysql.database") == 0U) {
     throw std::runtime_error("no mysql.database in config file");
   }
   db_info_t info;
@@ -89,6 +91,7 @@ db_info_t configuration::read_db_config_file(const std::string &filename) {
   info.set<db_dbname>(vm["mysql.database"].as<std::string>());
   return info;
 }
+// NOLINTNEXTLINE
 net_info_t
 configuration::read_net_info_from_file(const std::string &conf_file) {
   std::string fp = find_db_config_file(conf_file);
@@ -110,7 +113,7 @@ configuration::read_net_info_from_file(const std::string &conf_file) {
 
   bp::store(bp::parse_config_file(ifs, conf, true), vm);
 
-  if (!vm.count("net.control-port")) {
+  if (vm.count("net.control-port") == 0U) {
     throw std::runtime_error("no net.control-port in config file");
   }
   net_info_t info;

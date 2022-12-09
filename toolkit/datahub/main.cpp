@@ -18,7 +18,7 @@
 
 using stx_status = stbox::stx_status;
 using namespace ypc;
-typedef ypc::nt<ypc::bytes> ntt;
+using ntt = ypc::nt<ypc::bytes>;
 
 class crypto_base {
 public:
@@ -28,10 +28,10 @@ public:
                                                ypc::bytes &cipher) = 0;
   virtual uint32_t hash_256(const ypc::bytes &msg, ypc::bytes &hash) = 0;
 };
-typedef std::shared_ptr<crypto_base> crypto_ptr_t;
+using crypto_ptr_t = std::shared_ptr<crypto_base>;
 template <typename Crypto> class crypto_tool : public crypto_base {
 public:
-  typedef Crypto crypto_t;
+  using crypto_t = Crypto;
   virtual uint32_t encrypt_message_with_prefix(const ypc::bytes &public_key,
                                                const ypc::bytes &data,
                                                uint32_t prefix,
@@ -54,7 +54,7 @@ void write_batch(const crypto_ptr_t &crypto_ptr, simple_sealed_file &sf,
                                                ntt::batch_data>(batch);
   uint32_t status = crypto_ptr->encrypt_message_with_prefix(
       public_key, batch_str, ypc::utc::crypto_prefix_arbitrary, s);
-  if (status) {
+  if (status != 0u) {
     std::stringstream ss;
     ss << "encrypt "
        << " data fail: " << stbox::status_string(status);
@@ -110,7 +110,7 @@ uint32_t seal_file(const crypto_ptr_t &crypto_ptr, const std::string &plugin,
     ++pd;
     ++counter;
   }
-  if (batch.size() != 0) {
+  if (!batch.empty()) {
     write_batch(crypto_ptr, sf, batch, public_key);
     batch.clear();
     batch_size = 0;
@@ -151,11 +151,11 @@ boost::program_options::variables_map parse_command_line(int argc,
   boost::program_options::store(
       boost::program_options::parse_command_line(argc, argv, all), vm);
 
-  if (vm.count("help")) {
+  if (vm.count("help") != 0u) {
     std::cout << all << std::endl;
     exit(-1);
   }
-  if (vm.count("version")) {
+  if (vm.count("version") != 0u) {
     std::cout << ypc::get_ypc_version() << std::endl;
     exit(-1);
   }
@@ -171,38 +171,38 @@ int main(int argc, char *argv[]) {
     std::cerr << "invalid cmd line parameters!" << std::endl;
     return -1;
   }
-  if (!vm.count("data-url")) {
+  if (vm.count("data-url") == 0u) {
     std::cerr << "data not specified!" << std::endl;
     return -1;
     }
-  if (!vm.count("sealed-data-url")) {
+  if (vm.count("sealed-data-url") == 0u) {
     std::cerr << "sealed data url not specified" << std::endl;
     return -1;
   }
-  if (!vm.count("output")) {
+  if (vm.count("output") == 0u) {
     std::cerr << "output not specified" << std::endl;
     return -1;
   }
-  if (!vm.count("plugin-path")) {
+  if (vm.count("plugin-path") == 0u) {
     std::cerr << "library not specified" << std::endl;
     return -1;
   }
-  if (!vm.count("use-publickey-hex") && !vm.count("use-publickey-file")) {
+  if ((vm.count("use-publickey-hex") == 0u) && (vm.count("use-publickey-file") == 0u)) {
     std::cerr << "missing public key, use 'use-publickey-file' or "
                  "'use-publickey-hex'"
               << std::endl;
     return -1;
   }
-  if (!vm.count("crypto")) {
+  if (vm.count("crypto") == 0u) {
     std::cerr << "crypto not specified" << std::endl;
     return -1;
   }
 
   ypc::bytes public_key;
-  if (vm.count("use-publickey-hex")) {
+  if (vm.count("use-publickey-hex") != 0u) {
     public_key = ypc::hex_bytes(vm["use-publickey-hex"].as<std::string>())
                      .as<ypc::bytes>();
-  } else if (vm.count("use-publickey-file")) {
+  } else if (vm.count("use-publickey-file") != 0u) {
     boost::property_tree::ptree pt;
     boost::property_tree::json_parser::read_json(
         vm["use-publickey-file"].as<std::string>(), pt);
@@ -235,7 +235,7 @@ int main(int argc, char *argv[]) {
 
   auto status = seal_file(crypto_ptr, plugin, data_file, sealed_data_file,
                           public_key, data_hash);
-  if (status) {
+  if (status != 0u) {
     return -1;
   }
 
@@ -259,12 +259,12 @@ int main(int argc, char *argv[]) {
 
   // sample and format are optional
   bytes sample = reader.get_sample_data();
-  if (sample.size() > 0) {
+  if (!sample.empty()) {
     ofs << "sample_data"
         << " = " << sample << "\n";
   }
   std::string format = reader.get_data_format();
-  if (format.size() > 0) {
+  if (!format.empty()) {
     ofs << " data_fromat"
         << " = " << format << "\n";
   }

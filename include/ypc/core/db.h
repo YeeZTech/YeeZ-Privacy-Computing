@@ -16,8 +16,8 @@ public:
   ::ff::sql::mysql<::ff::sql::cppconn> *db_engine_ptr();
 
 protected:
-  virtual void init_db(const std::string &url, const std::string &usrname,
-                       const std::string &passwd, const std::string &dbname);
+  void init_db(const std::string &url, const std::string &usrname,
+               const std::string &passwd, const std::string &dbname);
 
 protected:
   std::shared_ptr<::ff::sql::mysql<::ff::sql::cppconn>> m_db_engine;

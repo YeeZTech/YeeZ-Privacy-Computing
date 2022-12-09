@@ -1,4 +1,5 @@
 #include <boost/lexical_cast.hpp>
+#include <glog/logging.h>
 #include <hpda/extractor/internal/https_request.h>
 #include <iostream>
 

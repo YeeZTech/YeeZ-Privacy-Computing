@@ -20,8 +20,10 @@ public:
 
   dh_session();
   dh_session(const dh_session &) = delete;
+  dh_session(dh_session &&) = delete;
   dh_session &operator=(const dh_session &) = delete;
-  virtual ~dh_session();
+  dh_session &operator=(dh_session &&) = delete;
+  virtual ~dh_session() = default;
 
   typedef ocall<uint32_t(uint32_t session_id, secure_message_t *req_message,
                          size_t req_message_len, size_t max_out_buff_size,

@@ -12,7 +12,7 @@ bytes single_data_onchain_result::generate_request(const bytes &param,
   ypc::bytes encrypted_param =
       m_crypto->ecc_encrypt(param, pubkey, ypc::utc::crypto_prefix_arbitrary);
 
-  if (encrypted_param.size() == 0) {
+  if (encrypted_param.empty()) {
     LOG(ERROR) << "encrypt param failed";
     return ypc::bytes();
   }

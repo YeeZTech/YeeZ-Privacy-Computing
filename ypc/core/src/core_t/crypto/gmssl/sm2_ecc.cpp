@@ -66,7 +66,8 @@ uint32_t sm2_ecc::verify_signature(const uint8_t *data, uint32_t data_size,
   int verify_res = sm2_do_verify(&key, data, &sm2_sig);
   if (verify_res == -1) {
     return stbox::stx_status::sm2_verify_error;
-  } else if (verify_res == 0) {
+  }
+  if (verify_res == 0) {
     return stbox::stx_status::sm2_get_false_sign;
   }
   return stbox::stx_status::success;

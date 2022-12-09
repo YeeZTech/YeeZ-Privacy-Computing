@@ -15,8 +15,8 @@ int command_executor_helper::execute_command(const std::string &command,
   cmd.append(" 2>&1");
 
   stream = popen(cmd.c_str(), "r");
-  if (stream) {
-    while (!feof(stream)) {
+  if (stream != nullptr) {
+    while (!feof(stream)) { // NOLINT
       if (fgets(buffer, max_buffer, stream) != NULL) {
         output.append(buffer);
       }

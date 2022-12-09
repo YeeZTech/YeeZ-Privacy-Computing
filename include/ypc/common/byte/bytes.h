@@ -12,18 +12,41 @@ namespace utc {
 namespace internal {
 template <typename ByteType> class bytes_base {
 public:
-  typedef ByteType byte_t;
+  using byte_t = ByteType;
 
   static_assert(sizeof(ByteType) == 1,
                 "cannot use ByteType that with larger size than 1");
 
   bytes_base() : m_value(nullptr), m_size(0) {}
-  bytes_base(size_t len)
+  explicit bytes_base(size_t len)
       : m_value(std::unique_ptr<byte_t[]>(new byte_t[len])), m_size(len) {}
 
   bytes_base(const bytes_base<ByteType> &v) : bytes_base(v.size()) {
     memcpy(m_value.get(), v.m_value.get(), v.size());
     m_size = v.size();
+  }
+  bytes_base<ByteType> &operator=(const bytes_base<ByteType> &v) {
+    if (this == &v) {
+      return *this;
+    }
+    if (v.m_value.size() == 0) {
+      return *this;
+    }
+
+    if (m_size < v.size() || m_size > 2 * v.size()) {
+      m_value.reset(new byte_t[v.size()]);
+    }
+    memcpy(m_value.get(), v.m_value.get(), v.size());
+    m_size = v.size();
+    return *this;
+  }
+  bytes_base<ByteType> &operator=(bytes_base<ByteType> &&v) {
+    if (this == &v) {
+      return *this;
+    }
+    m_value = std::move(v.m_value);
+    m_size = v.size();
+    return *this;
   }
 
   bytes_base(bytes_base<ByteType> &&v)
@@ -44,6 +67,7 @@ public:
       memcpy(m_value.get(), v, len);
     }
   }
+  virtual ~bytes_base() = default;
 
   const byte_t &operator[](size_t index) const { return m_value.get()[index]; }
   byte_t &operator[](size_t index) { return m_value.get()[index]; }
@@ -52,16 +76,14 @@ public:
   inline const byte_t *data() const {
     if (nullptr != m_value) {
       return m_value.get();
-    } else {
-      return nullptr;
     }
+    return nullptr;
   }
   inline byte_t *data() {
     if (nullptr != m_value) {
       return m_value.get();
-    } else {
-      return nullptr;
     }
+    return nullptr;
   }
 
   inline bool empty() const { return m_size == 0; }
@@ -113,12 +135,12 @@ protected:
 template <typename ByteType, byte_encode Format = byte_encode::raw_bytes>
 class bytes : public internal::bytes_base<ByteType> {
 public:
-  typedef ByteType byte_t;
+  using byte_t = ByteType;
   const static byte_encode format = Format;
-  typedef bytes<ByteType, byte_encode::raw_bytes> raw_bytes_t;
-  typedef bytes<ByteType, byte_encode::hex_bytes> hex_bytes_t;
-  typedef bytes<ByteType, byte_encode::base58_bytes> base58_bytes_t;
-  typedef bytes<ByteType, byte_encode::base64_bytes> base64_bytes_t;
+  using raw_bytes_t = bytes<ByteType, byte_encode::raw_bytes>;
+  using hex_bytes_t = bytes<ByteType, byte_encode::hex_bytes>;
+  using base58_bytes_t = bytes<ByteType, byte_encode::base58_bytes>;
+  using base64_bytes_t = bytes<ByteType, byte_encode::base64_bytes>;
 
   bytes() : internal::bytes_base<ByteType>() {}
   explicit bytes(size_t len) : internal::bytes_base<ByteType>(len) {}
@@ -133,6 +155,7 @@ public:
       : internal::bytes_base<ByteType>(str, strlen(str)) {}
   explicit bytes(const std::string &str)
       : internal::bytes_base<ByteType>(str.data(), str.size()){};
+  virtual ~bytes() = default;
 
   template <typename BytesType>
   auto as() const -> typename std::enable_if<
@@ -221,8 +244,9 @@ public:
   }
 
   bytes<ByteType, Format> &operator=(const bytes<ByteType, Format> &v) {
-    if (&v == this)
+    if (&v == this) {
       return *this;
+    }
     if (v.data()) {
       internal::bytes_base<ByteType>::m_value =
           std::unique_ptr<ByteType[]>(new ByteType[v.size()]);
@@ -239,8 +263,9 @@ public:
   }
 
   bool operator==(const bytes<ByteType, Format> &v) const {
-    if (v.size() != internal::bytes_base<ByteType>::size())
+    if (v.size() != internal::bytes_base<ByteType>::size()) {
       return false;
+    }
     return memcmp(v.data(), internal::bytes_base<ByteType>::data(),
                   internal::bytes_base<ByteType>::size()) == 0;
   }
@@ -264,7 +289,7 @@ public:
   }
 
   bytes<ByteType, Format> operator+(const char *s) const {
-    if (!s) {
+    if (s == nullptr) {
       return *this;
     }
 
@@ -279,7 +304,7 @@ public:
   }
 
   bytes<ByteType, Format> operator+(const std::string &s) const {
-    if (s.size() == 0) {
+    if (s.empty()) {
       return *this;
     }
     bytes<ByteType, Format> ret(internal::bytes_base<ByteType>::size() +

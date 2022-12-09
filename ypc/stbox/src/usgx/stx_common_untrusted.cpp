@@ -1,7 +1,7 @@
 #include <cstdarg>
+#include <cstring>
 #include <glog/logging.h>
 #include <iostream>
-#include <string.h>
 
 namespace stbox {
 int printf(const char *fmt, ...) {
@@ -20,13 +20,14 @@ void ocall_print_string(const char *buf);
 void ocall_log_string(uint32_t rank, const char *buf);
 }
 namespace stbox {
-typedef enum log_rank {
+enum log_rank {
   INFO,
   WARNING,
   ERROR,
   FATAL
 
-} log_rank_t;
+};
+using log_rank_t = log_rank;
 }
 void ocall_print_string(const char *buf) { std::cout << buf << std::flush; }
 void ocall_log_string(uint32_t rank, const char *buf) {

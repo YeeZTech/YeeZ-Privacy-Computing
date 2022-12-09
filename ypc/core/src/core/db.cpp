@@ -13,7 +13,7 @@ void db_base::init_db(const std::string &url, const std::string &usrname,
       url, usrname, passwd, dbname);
 }
 
-::ff::sql::mysql<::ff::sql::cppconn> *db_base::db_engine_ptr() {
+::ff::sql::mysql<::ff::sql::cppconn> *db_base::db_engine_ptr() { // NOLINT
   return m_db_engine.get();
 }
 } // namespace ypc

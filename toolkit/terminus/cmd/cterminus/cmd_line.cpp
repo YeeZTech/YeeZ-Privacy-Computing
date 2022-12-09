@@ -118,11 +118,10 @@ parse_command_line(int argc, char *argv[]) {
                            .run();
   bp::store(parsedOptions, vm);
   bp::notify(vm);
-  typedef std::tuple<
+  using next_desc_item = std::tuple<
       std::string, bp::options_description,
       std::function<int(ypc::terminus::crypto_pack *,
-                        const boost::program_options::variables_map &)>>
-      next_desc_item;
+                        const boost::program_options::variables_map &)>>;
 
   std::vector<next_desc_item> nds;
   nds.push_back({"gen-key", key, gen_key});
@@ -136,7 +135,7 @@ parse_command_line(int argc, char *argv[]) {
   nds.push_back({"sign", sign, sign_message});
 
   for (auto it : nds) {
-    if (vm.count(std::get<0>(it))) {
+    if (vm.count(std::get<0>(it)) != 0u) {
       auto unregistered = bp::collect_unrecognized(parsedOptions.options,
                                                    bp::include_positional);
       auto parsed_options =
@@ -149,11 +148,11 @@ parse_command_line(int argc, char *argv[]) {
     }
   }
 
-  if (vm.count("help")) {
+  if (vm.count("help") != 0u) {
     std::cout << all << std::endl;
     exit(-1);
   }
-  if (vm.count("version")) {
+  if (vm.count("version") != 0u) {
     std::cout << ypc::get_ypc_version() << std::endl;
   }
   std::cerr << "no options specified" << std::endl;
