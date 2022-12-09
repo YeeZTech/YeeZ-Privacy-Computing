@@ -12,5 +12,3 @@ else()
     CONFIG enclave.config.xml)
 endif()
 
-
-install(FILES ${PROJECT_SOURCE_DIR}/lib/iris_classifier.signed.so DESTINATION lib)

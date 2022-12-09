@@ -14,4 +14,3 @@ else()
   enclave_sign(iris_parser KEY enclave_private.pem
     CONFIG enclave.config.xml)
 endif()
-install(FILES ${PROJECT_SOURCE_DIR}/lib/iris_parser.signed.so DESTINATION lib COMPONENT c_example_iris OPTIONAL)
