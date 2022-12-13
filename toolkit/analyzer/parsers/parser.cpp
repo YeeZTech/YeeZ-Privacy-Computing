@@ -282,7 +282,6 @@ uint32_t parser::read_from_storage(const uint8_t *key, uint8_t *val,
     }
     memcpy(val, it->second.data(), val_len);
     return stbox::stx_status::success;
-  } else {
-    return stbox::stx_status::storage_key_not_found;
-  }
+  }     return stbox::stx_status::storage_key_not_found;
+ 
 }
