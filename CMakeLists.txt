@@ -8,6 +8,11 @@ project(YPC VERSION 0.2.0)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
+if(CMAKE_BUILD_TYPE STREQUAL "")
+  message(STATUS "CMAKE_BUILD_TYPE not defined, use Debug as default")
+  set(CMAKE_BUILD_TYPE "Debug")
+endif()
+
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   set(SGX_MODE "Debug")
   set(SGX_HW OFF)
@@ -125,3 +130,8 @@ install(
 if (UNIX)
   #install(CODE "execute_process(COMMAND ldconfig)")
 endif()
+
+set(CPACK_PACKAGE_VENDOR "YeeZTech")
+set(CPACK_PACKAGE_CONTACT "fidelius@yeez.tech")
+set(CPACK_PACKAGE_DESCRIPTION "Fidelius: YeeZ Privacy Computing")
+include(CPack)
