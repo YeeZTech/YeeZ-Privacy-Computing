@@ -23,7 +23,7 @@ target_include_directories(core PUBLIC
   "$<BUILD_INTERFACE:${FF_INCLUDE_DIR}>"
   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
 
-target_link_libraries(core
+target_link_libraries(core PUBLIC
   mysqlcppconn
   boost_program_options
   boost_filesystem
@@ -32,6 +32,7 @@ target_link_libraries(core
   ${CMAKE_THREAD_LIBS_INIT}
   common
   )
+target_link_libraries(core INTERFACE stbox_common)
 
 install(TARGETS core EXPORT mod_core
   DESTINATION lib)

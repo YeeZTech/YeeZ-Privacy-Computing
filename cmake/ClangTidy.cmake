@@ -6,7 +6,7 @@ function(AddClangTidy target)
   else()
   set_target_properties(${target}
     PROPERTIES CXX_CLANG_TIDY
-    "${CLANG-TIDY_PATH};--fix;--config="
+    "${CLANG-TIDY_PATH};--config="
     )
   endif()
 endfunction()
