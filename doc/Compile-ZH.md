@@ -62,7 +62,15 @@ TODO: 需要进一步定期生成测试报告
 可以同时安装`Debug`版本和`Release`版本，安装文件不会冲突。
 
 ## 打包
-使用CPack进行打包，由于可以在SGX和非SGX环境下运行，因此打包时会生成两个不同的安装包
+使用CPack进行打包，
+```
+cd ./build_debug && cpack -G "DEB;7Z;ZIP"
+```
+注意，该命令为打包debug版本。
+
+由于可以在SGX和非SGX环境下运行，因此打包时需要生成两个不同的安装包。
+
+TODO: 需要设置`CPACK_DEBIAN_PACKAGE_DEPENDS`，否则不能自动安装依赖项。
 
 ## FAQ
 
