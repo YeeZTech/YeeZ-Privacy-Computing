@@ -37,6 +37,8 @@ endif()
 
 include(vendor)
 include(Version)
+include(Coverage)
+include(Dart)
 
 find_package(SGX)
 if(SGX_FOUND)

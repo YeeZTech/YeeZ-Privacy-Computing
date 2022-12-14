@@ -34,6 +34,7 @@ add_test(NAME test-core
 add_executable(gen_input_param gen_input_param.cpp)
 target_link_libraries(gen_input_param core pthread)
 gtest_discover_tests(gtest_core)
+AddCoverage(gtest_core)
 
 if(SGX_FOUND)
 add_subdirectory(enclave)
@@ -45,10 +46,8 @@ add_untrusted_library(test_ypc_lib SHARED
 target_link_libraries(test_ypc_lib core_stdeth stbox_common)
 
 add_executable(gen_sign_for_ypc gen_sign_for_ypc.cpp)
-if(SGX_FOUND)
-  target_include_directories(gen_sign_for_ypc PRIVATE "${SGX_INCLUDE_DIR}")
-  target_link_directories(gen_sign_for_ypc PRIVATE "${SGX_LIBRARY_DIR}")
-endif()
+target_include_directories(gen_sign_for_ypc PRIVATE "${SGX_INCLUDE_DIR}")
+target_link_directories(gen_sign_for_ypc PRIVATE "${SGX_LIBRARY_DIR}")
 target_link_libraries(gen_sign_for_ypc test_ypc_lib core stbox_common)
 
 add_dependencies(gen_sign_for_ypc test_ypc_enclave-sign)

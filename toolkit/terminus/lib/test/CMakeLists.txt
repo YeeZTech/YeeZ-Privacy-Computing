@@ -15,3 +15,4 @@ target_link_libraries(gtest_terminus gtest terminus
   )
 
 gtest_discover_tests(gtest_terminus)
+AddCoverage(gtest_terminus)

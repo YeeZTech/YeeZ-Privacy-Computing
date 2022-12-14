@@ -24,4 +24,5 @@ install(EXPORT mod_core_stdeth
   )
 
 AddClangTidy(core_stdeth)
+EnableCoverage(core_stdeth)
 add_version(core_stdeth)

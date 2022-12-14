@@ -42,5 +42,6 @@ install(EXPORT mod_core
   NAMESPACE "${namespace}"
   )
 AddClangTidy(core)
+EnableCoverage(core)
 add_version(core)
 

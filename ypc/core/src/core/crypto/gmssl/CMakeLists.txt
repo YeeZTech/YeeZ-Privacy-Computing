@@ -24,4 +24,5 @@ install(EXPORT mod_core_gmssl
   )
 
 AddClangTidy(core_gmssl)
+EnableCoverage(core_gmssl)
 add_version(core_gmssl)
