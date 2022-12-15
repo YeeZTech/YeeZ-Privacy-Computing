@@ -16,3 +16,4 @@ target_include_directories(yterminus PUBLIC
   )
 install(TARGETS yterminus DESTINATION bin)
 AddClangTidy(yterminus)
+EnableCoverage(yterminus)

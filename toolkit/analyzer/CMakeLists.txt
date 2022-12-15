@@ -19,3 +19,4 @@ target_include_directories(fid_analyzer PRIVATE
 
 install(TARGETS fid_analyzer DESTINATION bin)
 AddClangTidy(fid_analyzer)
+EnableCoverage(fid_analyzer)
