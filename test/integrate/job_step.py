@@ -178,6 +178,19 @@ class job_step:
         with open(output, 'r') as of:
             return of.readlines()[0]
 
+    def sign(crypto, data, param_format, private_key_file, output_url):
+        param = {
+                "crypto":crypto,
+                "sign": "",
+                "use-param": data,
+                "param-format" : param_format,
+                "output":output_url,
+                "use-privatekey-file":private_key_file
+                }
+        r = common.fid_terminus(**param)
+        with open(output_url, 'r') as of:
+            return json.load(of)
+
     def hash_256(crypto, data, param_format, param_hash_output_url, config):
         param = {
             "crypto": crypto,

@@ -58,6 +58,9 @@ public:
 
     auto cost_msg =
         m_encrypted_param + m_data_hash + m_enclave_hash + cost_gas_str;
+#ifdef DEBUG
+    LOG(INFO) << "cost message to sign: " << cost_msg;
+#endif
     status =
         crypto::sign_message(m_private_key, cost_msg, m_cost_signature_str);
     if (status != stbox::stx_status::success) {
@@ -67,6 +70,12 @@ public:
 
     auto msg = m_encrypted_c + hash_m + m_encrypted_param + m_data_hash +
                cost_gas_str + m_enclave_hash;
+#ifdef DEBUG
+    LOG(INFO) << "result message to sign: " << msg;
+#endif
+#ifdef DEBUG
+    LOG(INFO) << "sign with private key: " << m_private_key;
+#endif
     status = crypto::sign_message(m_private_key, msg, m_result_signature_str);
 
     return static_cast<uint32_t>(status);

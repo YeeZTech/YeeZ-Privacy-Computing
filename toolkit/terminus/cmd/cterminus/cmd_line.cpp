@@ -97,7 +97,8 @@ parse_command_line(int argc, char *argv[]) {
     ("use-param", bp::value<std::string>(), "message need to be signed")
     ("param-format", bp::value<std::string>()->default_value("hex"), "param format, [ hex | text ]")
     ("use-privatekey-file", bp::value<std::string>(), "local (Shu) private key file")
-    ("use-privatekey-hex", bp::value<std::string>(), "local (Shu) private key hex");
+    ("use-privatekey-hex", bp::value<std::string>(), "local (Shu) private key hex")
+    ("output", bp::value<std::string>(), "output result to file with JSON format");
 
   // clang-format on
 

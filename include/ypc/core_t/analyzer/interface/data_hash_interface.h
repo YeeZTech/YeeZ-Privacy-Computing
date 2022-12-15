@@ -31,6 +31,9 @@ protected:
     }
 
     Crypto::hash_256(joint_bytes, data_hash_var::m_data_hash);
+#ifdef DEBUG
+    LOG(INFO) << "final data hash: " << data_hash_var::m_data_hash;
+#endif
   }
 };
 
