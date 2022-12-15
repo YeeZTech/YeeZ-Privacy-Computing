@@ -9,7 +9,7 @@ add_sgx_library(stbox_channel_t
   SRCS "${t_channel_src}"
 )
 
-target_link_libraries(stbox_channel_t stbox_common_t)
+target_link_libraries(stbox_channel_t PUBLIC stbox_common_t)
 
 target_include_directories(stbox_channel_t PUBLIC
   "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"

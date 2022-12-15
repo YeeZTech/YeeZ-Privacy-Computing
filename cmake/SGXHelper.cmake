@@ -24,7 +24,7 @@ function(add_ypc_applet target)
     "$<BUILD_INTERFACE:${FF_INCLUDE_DIR}>"
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
     )
-  target_link_libraries(${target}
+  target_link_libraries(${target} PRIVATE
     stbox_common_t
     stbox_channel_t
     analyzer_t ${ADD_YPC_APPLET_CRYPTO}_t)

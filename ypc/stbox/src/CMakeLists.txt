@@ -51,6 +51,7 @@ target_include_directories(stbox_common PUBLIC
   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/ypc/stbox>"
 )
+target_link_libraries(stbox_common PRIVATE glog)
 
 install(TARGETS stbox_common EXPORT mod_stbox_common
   DESTINATION lib)

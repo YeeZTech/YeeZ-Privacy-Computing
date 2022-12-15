@@ -43,7 +43,7 @@ add_untrusted_library(test_ypc_lib SHARED
   EDL ./enclave/enclave.edl
   EDL_SEARCH_PATHS ${PROJECT_SOURCE_DIR}/include/ypc/edl/:${PROJECT_SOURCE_DIR}/include/ypc/stbox)
 
-target_link_libraries(test_ypc_lib core_stdeth stbox_common)
+target_link_libraries(test_ypc_lib PRIVATE core_stdeth stbox_common)
 
 add_executable(gen_sign_for_ypc gen_sign_for_ypc.cpp)
 target_include_directories(gen_sign_for_ypc PRIVATE "${SGX_INCLUDE_DIR}")

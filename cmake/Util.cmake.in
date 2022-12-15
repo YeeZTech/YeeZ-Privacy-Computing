@@ -62,7 +62,7 @@ function(add_ypc_applet target)
   target_include_directories(${target} PUBLIC
     "${YPC_INCLUDE_DIR}"
     )
-  target_link_libraries(${target}
+  target_link_libraries(${target} PRIVATE
     @PROJECT_NAME@::stbox_common_t
     @PROJECT_NAME@::stbox_channel_t
     @PROJECT_NAME@::analyzer_t @PROJECT_NAME@::${ADD_YPC_APPLET_CRYPTO}_t)

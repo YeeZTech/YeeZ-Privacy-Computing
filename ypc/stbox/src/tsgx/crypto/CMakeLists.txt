@@ -8,7 +8,7 @@ set(crypto_src
 
 add_sgx_library(stbox_crypto_t
   SRCS "${crypto_src}")
-target_link_libraries(stbox_crypto_t stbox_common_t)
+target_link_libraries(stbox_crypto_t PUBLIC stbox_common_t)
 
 target_include_directories(stbox_crypto_t PUBLIC
   "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"

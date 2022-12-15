@@ -31,19 +31,19 @@ add_component(stdeth_t
   COMP_TARGETS "stbox/mod_stbox_common_t.cmake stbox/mod_secp256k1_t.cmake stbox/mod_keccak_t.cmake core/mod_stdeth_t.cmake")
 
 add_component(core
-  COMP_TARGETS "common/mod_common.cmake stbox/mod_stbox_common.cmake core/mod_core.cmake")
+  COMP_TARGETS "common/mod_common.cmake stbox/mod_stbox_common.cmake core/mod_core.cmake core/mod_core_parser_module.cmake")
 
 add_component(core_t
   COMP_TARGETS "stbox/mod_stbox_common_t.cmake stbox/mod_channel_t.cmake stbox/mod_crypto_t.cmake core/mod_analyzer_t.cmake")
 
-add_component(core_parser_module
-  COMP_TARGETS core/mod_core_parser_module.cmake)
+#add_component(core_parser_module
+  #COMP_TARGETS core/mod_core_parser_module.cmake)
 
 add_component(keymgr
   COMP_TARGETS "common/mod_common.cmake stbox/mod_stbox_common.cmake core/mod_core.cmake keymgr/mod_keymgr_utils.cmake")
 
 
-set(_supported_comp common stbox gmssl stdeth core core_parser_module keymgr)
+set(_supported_comp common stbox gmssl stdeth core keymgr)
 
 if(CMAKE_BUILD_TYPE STREQUAL "")
   message(STATUS "CMAKE_BUILD_TYPE not defined, use Debug as default")
