@@ -22,7 +22,7 @@ target_include_directories(keymgr_gmssl PUBLIC
   "$<BUILD_INTERFACE:${FF_INCLUDE_DIR}>"
   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
 
-target_link_libraries(keymgr_gmssl stbox_channel_t stbox_crypto_t gmssl_ecc_t gmssl_t)
+target_link_libraries(keymgr_gmssl PRIVATE stbox_channel_t stbox_crypto_t gmssl_ecc_t gmssl_t)
 
 enclave_sign(keymgr_gmssl KEY ${PROJECT_SOURCE_DIR}/ypc/keymgr/default/enclave/ekeymgr_private.pem
   CONFIG ${PROJECT_SOURCE_DIR}/ypc/keymgr/default/enclave/ekeymgr.config.xml)

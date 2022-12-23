@@ -22,3 +22,4 @@ install(EXPORT mod_terminus
   )
 
 AddClangTidy(terminus)
+EnableCoverage(terminus)

@@ -10,5 +10,19 @@ int sign_message(ypc::terminus::crypto_pack *crypto,
   std::cout << "message " << message << std::endl;
   std::cout << "signature " << signature << std::endl;
 
+  std::unordered_map<std::string, ypc::bytes> result;
+  result["message"] = message;
+  result["signature"] = signature;
+  if (vm.count("output") != 0u) {
+    std::string output_path =
+        ypc::complete_path(vm["output"].as<std::string>());
+
+    boost::property_tree::ptree pt;
+    for (auto &it : result) {
+      pt.put(it.first, it.second);
+    }
+    boost::property_tree::json_parser::write_json(output_path, pt);
+  }
+
   return 0;
 }

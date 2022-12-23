@@ -11,7 +11,7 @@ target_include_directories(stdeth_t PUBLIC
   "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
   "$<BUILD_INTERFACE:${FF_INCLUDE_DIR}>"
   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
-target_link_libraries(stdeth_t stbox_common_t stbox_secp256k1_t stbox_keccak_t)
+target_link_libraries(stdeth_t PUBLIC stbox_common_t stbox_secp256k1_t stbox_keccak_t)
 install(TARGETS stdeth_t EXPORT mod_stdeth_t
   DESTINATION lib
   )

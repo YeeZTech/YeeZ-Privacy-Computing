@@ -22,7 +22,7 @@ target_include_directories(keymgr PUBLIC
   "$<BUILD_INTERFACE:${FF_INCLUDE_DIR}>"
   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
 
-target_link_libraries(keymgr stbox_channel_t stbox_crypto_t stdeth_ecc_t stdeth_t)
+target_link_libraries(keymgr PRIVATE stbox_channel_t stbox_crypto_t stdeth_ecc_t stdeth_t)
 
 if(SGX_MODE STREQUAL "Debug")
   enclave_sign(keymgr KEY ekeymgr_private.pem

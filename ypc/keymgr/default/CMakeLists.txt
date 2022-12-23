@@ -10,13 +10,13 @@ add_untrusted_library(keymgr_module SHARED
 target_include_directories(keymgr_module INTERFACE
   ${SGX_INCLUDE_DIR}
   )
-target_link_libraries(keymgr_module stbox_common keymgr_utils)
+target_link_libraries(keymgr_module PUBLIC stbox_common keymgr_utils)
 install(TARGETS keymgr_module DESTINATION lib)
 
 add_sgx_executable(keymgr_tool
   SRCS main.cpp no_use_extra_data_bridge.cpp)
 add_dependencies(keymgr_tool keymgr-sign)
-target_link_libraries(keymgr_tool keymgr_module common)
+target_link_libraries(keymgr_tool PUBLIC keymgr_module common)
 install(TARGETS keymgr_tool DESTINATION bin )
 
 AddClangTidy(keymgr_module)

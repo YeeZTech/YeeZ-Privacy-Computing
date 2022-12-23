@@ -18,6 +18,9 @@
 #include "eckey_impl.h"
 #include "hash_impl.h"
 #include "scratch_impl.h"
+#ifndef YPC_SGX
+#include <stdio.h>
+#endif
 
 #define ARG_CHECK(cond) do { \
     if (EXPECT(!(cond), 0)) { \
@@ -27,8 +30,10 @@
 } while(0)
 
 
-extern int printf_std(const char *fmt, ...);
+int printf_std(const char *fmt, ...);
+#ifdef YPC_SGX
 extern int ocall_print_string(const char *fmt);
+#endif
 
 static void default_illegal_callback_fn(const char* str, void* data) {
     (void)data;
@@ -613,15 +618,16 @@ int secp256k1_ec_pubkey_combine(const secp256k1_context* ctx, secp256k1_pubkey *
 
 
 int printf_std(const char *fmt, ...) {
-#ifdef YPC_SGX
   va_list ap;
   char buf[BUFSIZ] = {'\0'};
   /*va_start(ap, fmt);*/
   vsnprintf(buf, BUFSIZ, fmt, ap);
   /*va_end(ap);*/
+#ifdef YPC_SGX
   ocall_print_string(buf);
-  return (int)strnlen(buf, BUFSIZ - 1) + 1;
 #else
+  printf("%s", buf);
   return 0;
 #endif
+  return (int)strnlen(buf, BUFSIZ - 1) + 1;
 }

@@ -25,32 +25,32 @@ add_component(gmssl_t
   COMP_TARGETS "stbox/mod_stbox_common_t.cmake stbox/mod_gmssl_t.cmake core/mod_gmssl_t.cmake")
 
 add_component(stdeth
-  COMP_TARGETS "stbox/mod_keccak.cmake core/mod_core_stdeth.cmake")
+  COMP_TARGETS "stbox/mod_keccak.cmake core/mod_core_stdeth.cmake stbox/mod_secp256k1.cmake")
 
 add_component(stdeth_t
   COMP_TARGETS "stbox/mod_stbox_common_t.cmake stbox/mod_secp256k1_t.cmake stbox/mod_keccak_t.cmake core/mod_stdeth_t.cmake")
 
 add_component(core
-  COMP_TARGETS "common/mod_common.cmake stbox/mod_stbox_common.cmake core/mod_core.cmake")
+  COMP_TARGETS "common/mod_common.cmake stbox/mod_stbox_common.cmake core/mod_core.cmake core/mod_core_parser_module.cmake")
 
 add_component(core_t
   COMP_TARGETS "stbox/mod_stbox_common_t.cmake stbox/mod_channel_t.cmake stbox/mod_crypto_t.cmake core/mod_analyzer_t.cmake")
 
-add_component(core_parser_module
-  COMP_TARGETS core/mod_core_parser_module.cmake)
+#add_component(core_parser_module
+  #COMP_TARGETS core/mod_core_parser_module.cmake)
 
 add_component(keymgr
   COMP_TARGETS "common/mod_common.cmake stbox/mod_stbox_common.cmake core/mod_core.cmake keymgr/mod_keymgr_utils.cmake")
 
 
-set(_supported_comp common stbox gmssl stdeth core core_parser_module keymgr)
+set(_supported_comp common stbox gmssl stdeth core keymgr)
 
-if(NOT DEFINED CMAKE_BUILD_TYPE)
-  message(STATUS "build type not define, use Debug as CMAKE_BUILD_TYPE")
+if(CMAKE_BUILD_TYPE STREQUAL "")
+  message(STATUS "CMAKE_BUILD_TYPE not defined, use Debug as default")
   set(CMAKE_BUILD_TYPE "Debug")
 endif()
 
-if(NOT DEFINED SGX_MODE)
+#if(NOT DEFINED SGX_MODE)
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   set(SGX_MODE "Debug")
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
@@ -58,9 +58,9 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "MinSize
 elseif(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
   set(SGX_MODE "PreRelease")
 endif()
-endif()
+#endif()
 
-if(NOT DEFINED SGX_HW)
+#if(NOT DEFINED SGX_HW)
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   set(SGX_HW OFF)
 elseif(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
@@ -68,10 +68,10 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "MinSize
 elseif(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
   set(SGX_HW ON)
 endif()
-endif()
+#endif()
 
 find_package(SGX)
-set(_supported_sgx_comp common_t stbox_t gmssl_t stdeth_t core_t keymgr)
+set(_supported_sgx_comp common_t stbox_t gmssl_t stdeth_t core_t)
 if(SGX_FOUND)
   set(_supported_comp ${_supported_comp} ${_supported_sgx_comp})
 endif()

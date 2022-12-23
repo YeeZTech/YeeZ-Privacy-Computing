@@ -8,6 +8,11 @@ project(YPC VERSION 0.2.0)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
+if(CMAKE_BUILD_TYPE STREQUAL "")
+  message(STATUS "CMAKE_BUILD_TYPE not defined, use Debug as default")
+  set(CMAKE_BUILD_TYPE "Debug")
+endif()
+
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   set(SGX_MODE "Debug")
   set(SGX_HW OFF)
@@ -32,6 +37,8 @@ endif()
 
 include(vendor)
 include(Version)
+include(Coverage)
+include(Dart)
 
 find_package(SGX)
 if(SGX_FOUND)
@@ -53,6 +60,13 @@ else()
   add_definitions(-O2)
   add_definitions(-DNDEBUG)
 endif()
+
+set(CPACK_PACKAGE_VENDOR "YeeZTech")
+set(CPACK_PACKAGE_CONTACT "fidelius@yeez.tech")
+set(CPACK_PACKAGE_DESCRIPTION "Fidelius: YeeZ Privacy Computing")
+set(CPACK_COMPONENTS_GROUPING ONE_PER_GROUP)
+
+include(CPack)
 
 configure_file("${PROJECT_SOURCE_DIR}/cmake/version.h.in" "${PROJECT_SOURCE_DIR}/include/ypc/version.h")
 configure_file("${PROJECT_SOURCE_DIR}/cmake/project_path.h.in" "${PROJECT_SOURCE_DIR}/test/project_path.h")
@@ -94,7 +108,7 @@ configure_package_config_file("cmake/Config.cmake.in"
 
 install(DIRECTORY include/
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/"
-  MESSAGE_NEVER)
+  MESSAGE_NEVER COMPONENT headers)
 
 message(STATUS "--------SGX_MODE: " ${SGX_MODE})
 message(STATUS "--------SGX_HW: " ${SGX_HW})
@@ -116,12 +130,16 @@ add_subdirectory(toolkit)
 install(
   FILES "${project_config}" "${version_config}" "${util_config}"
   DESTINATION "${config_install_dir}"
+  COMPONENT cmake
 )
 install(
   FILES "${PROJECT_SOURCE_DIR}/cmake/FindSGX.cmake"
   DESTINATION "${config_install_dir}"
-  )
+  COMPONENT sgxcmake
+)
+
 
 if (UNIX)
   #install(CODE "execute_process(COMMAND ldconfig)")
 endif()
+
