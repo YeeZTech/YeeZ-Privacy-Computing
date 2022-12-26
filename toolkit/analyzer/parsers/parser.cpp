@@ -268,4 +268,3 @@ uint32_t parser::next_data_batch(const uint8_t *hash_and_pkey,
 }
 
 void parser::free_data_batch(uint8_t *data) { delete[] data; }
-
