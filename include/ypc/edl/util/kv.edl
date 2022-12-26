@@ -1,0 +1,17 @@
+
+enclave {
+  include "sgx_eid.h"
+
+  untrusted {
+
+    uint8_t has_key_ocall([in, size=32] const uint8_t * key);
+
+    uint32_t remove_key_ocall([in, size=32] const uint8_t * key);
+
+    uint32_t write_to_storage_ocall([in, size=32] const uint8_t * key,
+                [in, size=len] const uint8_t * val, size_t len);
+
+    uint32_t read_from_storage_ocall([in, size=32] const uint8_t * key,
+                [out, size=data_size] uint8_t * val, size_t data_size);
+  };
+};

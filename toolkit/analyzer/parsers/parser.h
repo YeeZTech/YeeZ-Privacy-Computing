@@ -23,12 +23,6 @@ public:
 
   inline const std::string &get_result_str() const { return m_result_str; }
 
-  virtual uint32_t write_to_storage(const uint8_t *key, const uint8_t *val,
-                                    size_t val_len);
-
-  virtual uint32_t read_from_storage(const uint8_t *key, uint8_t *val,
-                                     size_t val_len);
-
 protected:
   uint32_t feed_datasource();
   uint32_t feed_model();
@@ -45,5 +39,4 @@ protected:
       m_data_sources;
   std::string m_result_str;
 
-  std::unordered_map<ypc::bytes, ypc::bytes> m_storage;
 };

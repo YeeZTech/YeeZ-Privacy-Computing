@@ -19,9 +19,6 @@ uint32_t next_data_batch(const uint8_t *data_hash, uint32_t hash_size,
                          uint8_t **data, uint32_t *len);
 void free_data_batch(uint8_t *data);
 
-uint32_t write_to_storage(const uint8_t *key, const uint8_t *val,
-                          size_t val_len);
-uint32_t read_from_storage(const uint8_t *key, uint8_t *val, size_t val_len);
 }
 
 uint32_t km_session_request_ocall(sgx_dh_msg1_t *dh_msg1,
@@ -51,11 +48,3 @@ uint32_t next_data_batch(const uint8_t *data_hash, uint32_t hash_size,
 }
 void free_data_batch(uint8_t *data) { g_parser->free_data_batch(data); }
 
-uint32_t write_to_storage(const uint8_t *key, const uint8_t *val,
-                          size_t val_len) {
-  return g_parser->write_to_storage(key, val, val_len);
-}
-
-uint32_t read_from_storage(const uint8_t *key, uint8_t *val, size_t val_len) {
-  return g_parser->read_from_storage(key, val, val_len);
-}

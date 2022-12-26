@@ -11,7 +11,7 @@ function(add_ypc_applet target)
 
   add_enclave_library(${target} SRCS ${ADD_YPC_APPLET_SRCS}
     EDL ${PROJECT_SOURCE_DIR}/include/ypc/edl/eparser.edl
-    EDL_SEARCH_PATHS ${PROJECT_SOURCE_DIR}/include/ypc/edl/:${PROJECT_SOURCE_DIR}/include/ypc/stbox/
+    EDL_SEARCH_PATHS "${PROJECT_SOURCE_DIR}/include/ypc/edl/util:${PROJECT_SOURCE_DIR}/include/ypc/edl/:${PROJECT_SOURCE_DIR}/include/ypc/stbox/"
   )
   target_include_directories(${target}-edlobj PUBLIC
     "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"

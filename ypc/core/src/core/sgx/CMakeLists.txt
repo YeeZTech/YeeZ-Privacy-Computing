@@ -1,11 +1,14 @@
 #add_subdirectory(usgx)
 
 set(srcs parser_sgx_module.cpp
-  ./usgx/http_request.cpp)
+  ./usgx/http_request.cpp
+  ./util/cxxfile_bridge.cpp
+  ./util/kv_bridge.cpp
+  ./util/util.cpp)
 add_untrusted_library(core_parser_module SHARED
   SRCS ${srcs}
   EDL ${PROJECT_SOURCE_DIR}/include/ypc/edl/eparser.edl
-  EDL_SEARCH_PATHS ${PROJECT_SOURCE_DIR}/include/ypc/edl/:${PROJECT_SOURCE_DIR}/include/ypc/stbox/)
+  EDL_SEARCH_PATHS "${PROJECT_SOURCE_DIR}/include/ypc/edl/:${PROJECT_SOURCE_DIR}/include/ypc/stbox/:${PROJECT_SOURCE_DIR}/include/ypc/edl/util")
 
 #if (${ENABLE_DIANSHU})
   #set(ypc_usgx dshttp_request)
