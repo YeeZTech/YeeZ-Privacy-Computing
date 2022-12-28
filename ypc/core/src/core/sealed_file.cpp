@@ -20,8 +20,11 @@ simple_sealed_file::simple_sealed_file(const std::string &file_path, bool read)
     : sealed_file_base(file_path, read) {}
 
 void simple_sealed_file::reset_read() { m_file.reset_read_item(); }
-bool simple_sealed_file::next_item(memref &s) { return m_file.next_item(s); }
+int simple_sealed_file::next_item(char *buf, size_t in_size, size_t &out_size) {
+  return m_file.next_item(buf, in_size, out_size);
+}
 
+#if 0
 sealed_file_with_cache_opt::sealed_file_with_cache_opt(
     const std::string &file_path, bool read)
     : sealed_file_base(file_path, read), m_reach_end(false), m_to_close(false),
@@ -82,7 +85,8 @@ void sealed_file_with_cache_opt::reset_read() {
     m_cond_full.notify_all();
   }
 }
-bool sealed_file_with_cache_opt::next_item(memref &s) {
+int sealed_file_with_cache_opt::next_item(char *buf, size_t in_size,
+                                          size_t &out_size) {
   std::unique_lock<std::mutex> l(m_mutex);
   while (!m_to_close && !m_reach_end && m_cached.empty()) {
     m_cond_empty.wait(l);
@@ -102,4 +106,5 @@ bool sealed_file_with_cache_opt::next_item(memref &s) {
   }
   return true;
 }
+#endif
 } // namespace ypc

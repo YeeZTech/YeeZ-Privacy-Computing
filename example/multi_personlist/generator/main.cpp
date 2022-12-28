@@ -69,12 +69,13 @@ void check_file(const std::string &path) {
 
   file_t f;
   f.open_for_read(path.c_str());
-  ypc::memref r;
+  std::unique_ptr<char[]> r(new char[file_t::BlockSizeLimit]);
+  size_t s;
+  uint64_t id = 421003198607262336;
   int i = 0;
-  while (f.next_item(r)) {
+  while (f.next_item(r.get(), file_t::BlockSizeLimit, s) == file_t::succ) {
     typedef typename ypc::cast_obj_to_package<row_t>::type pkg_t;
-    auto pkg =
-        ypc::make_package<pkg_t>::from_bytes(ypc::bytes(r.data(), r.size()));
+    auto pkg = ypc::make_package<pkg_t>::from_bytes(ypc::bytes(r.get(), s));
 
     // std::cout << t.get<ZJHM>() << std::endl;
     i++;

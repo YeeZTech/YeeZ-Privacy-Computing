@@ -26,17 +26,25 @@ void cxxfile::close() {
   m_stream_id = 0;
 }
 
-cxxfile &cxxfile::seekg(const fpos &pos, ios_base::seekdir dir) {
+cxxfile &cxxfile::seekg(int64_t pos, ios_base::seekdir dir) {
   CHECK_OPEN;
 
-  stbox::ocall_cast<void>(fseek_ocall)(m_stream_id, pos.data(), dir);
+  stbox::ocall_cast<void>(fseekg_ocall)(m_stream_id, pos, dir);
   return *this;
 }
-fpos cxxfile::tellg() {
+int64_t cxxfile::tellg() {
   CHECK_OPEN;
-  fpos ret;
-  stbox::ocall_cast<void>(ftell_ocall)(m_stream_id, ret.data());
-  return ret;
+  return stbox::ocall_cast<int64_t>(ftellg_ocall)(m_stream_id);
+}
+cxxfile &cxxfile::seekp(int64_t pos, ios_base::seekdir dir) {
+  CHECK_OPEN;
+
+  stbox::ocall_cast<void>(fseekp_ocall)(m_stream_id, pos, dir);
+  return *this;
+}
+int64_t cxxfile::tellp() {
+  CHECK_OPEN;
+  return stbox::ocall_cast<int64_t>(ftellp_ocall)(m_stream_id);
 }
 cxxfile &cxxfile::flush() {
   CHECK_OPEN;

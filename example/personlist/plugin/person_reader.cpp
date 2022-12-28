@@ -23,6 +23,9 @@ int reset_for_read(void *handle) {
   return 0;
 }
 
+std::unique_ptr<char[]> g_buf;
+size_t g_buf_size;
+
 int read_item_data(void *handle, char *buf, int *len) {
   if (!handle) {
     return -1;
@@ -32,12 +35,14 @@ int read_item_data(void *handle, char *buf, int *len) {
   }
   file_t *f = (file_t *)handle;
 
-  ypc::memref r;
-  bool t = f->next_item(r);
+  if (g_buf_size == 0) {
+    g_buf_size = file_t::BlockSizeLimit;
+    g_buf.reset(new char[g_buf_size]);
+  }
+  size_t s;
+  bool t = f->next_item(buf, *len, s) == file_t::succ;
   if (t) {
-    memcpy(buf, r.data(), r.size());
-    *len = r.size();
-    r.dealloc();
+    *len = s;
     return 0;
   } else {
     *len = 0;

@@ -36,8 +36,10 @@ ypc::bytes test_m_data(FT &f, const char *name, size_t item_num,
   ypc::bytes kdata_hash;
   ypc::crypto::eth_sgx_crypto::hash_256(ypc::bytes("test"), kdata_hash);
 
-  while (f.next_item(r)) {
-    ypc::bytes item(r.data(), r.size());
+  std::unique_ptr<char[]> buf(new char[FT::BlockSizeLimit]);
+  size_t buf_size;
+  while (f.next_item(buf.get(), FT::BlockSizeLimit, buf_size) == FT::succ) {
+    ypc::bytes item(buf.get(), buf_size);
     read_items.push_back(item);
     ypc::crypto::eth_sgx_crypto::hash_256(kdata_hash + item, kdata_hash);
     r.dealloc();
