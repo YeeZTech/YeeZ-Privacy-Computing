@@ -17,9 +17,13 @@ enclave {
     void fwrite_ocall([in, size=size]const void * ptr, size_t size,
       uint32_t stream);
 
-    void fseek_ocall(uint32_t stream, [in, size=16]const uint8_t *offset, uint8_t dir);
+    void fseekg_ocall(uint32_t stream, int64_t offset, uint8_t dir);
 
-    void ftell_ocall(uint32_t stream, [out, size=16] uint8_t *offset);
+    int64_t ftellg_ocall(uint32_t stream);
+
+    void fseekp_ocall(uint32_t stream, int64_t offset, uint8_t dir);
+
+    int64_t ftellp_ocall(uint32_t stream);
 
     uint8_t feof_ocall(uint32_t stream);
     uint8_t fgood_ocall(uint32_t stream);

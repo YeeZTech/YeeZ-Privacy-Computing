@@ -38,4 +38,6 @@ protected:
   std::unordered_map<ypc::bytes, std::shared_ptr<ypc::simple_sealed_file>>
       m_data_sources;
   std::string m_result_str;
+  std::unique_ptr<char[]> m_mem_buf;
+  size_t m_mem_buf_size;
 };

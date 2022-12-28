@@ -2,7 +2,6 @@
 #include "ypc/common/limits.h"
 #include "ypc/core/blockfile.h"
 #include "ypc/core/byte.h"
-#include "ypc/core/memref.h"
 #include "ypc/core/ntobject_file.h"
 #include <atomic>
 #include <condition_variable>
@@ -26,7 +25,7 @@ public:
 
   virtual void reset_read() = 0;
 
-  virtual bool next_item(memref &s) = 0;
+  virtual int next_item(char *buf, size_t in_size, size_t &out_size) = 0;
 
 public:
   sealed_file_base(const sealed_file_base &) = delete;
@@ -43,10 +42,11 @@ class simple_sealed_file : public internal::sealed_file_base {
 public:
   simple_sealed_file(const std::string &file_path, bool read);
   virtual void reset_read();
-  virtual bool next_item(memref &s);
+  virtual int next_item(char *buf, size_t in_size, size_t &out_size);
 };
 
 // We use cache to improve read performance
+#if 0
 class sealed_file_with_cache_opt : public internal::sealed_file_base {
 public:
   sealed_file_with_cache_opt(const std::string &file_path, bool read);
@@ -55,7 +55,7 @@ public:
 
   virtual void reset_read();
 
-  virtual bool next_item(memref &s);
+  virtual int next_item(char *buf, size_t in_size, size_t &out_size);
 
   sealed_file_with_cache_opt(const sealed_file_with_cache_opt &) = delete;
   sealed_file_with_cache_opt(sealed_file_with_cache_opt &&) = delete;
@@ -65,7 +65,7 @@ public:
 
 protected:
   std::unique_ptr<std::thread> m_io_thread;
-  std::queue<memref> m_cached;
+  std::queue<std::unique_ptr<char[]>> m_cached;
   bool m_reach_end;
   std::mutex m_mutex;
   std::condition_variable m_cond_full;
@@ -73,6 +73,7 @@ protected:
   uint32_t m_max_queue_size;
   std::atomic_bool m_to_close;
 };
+#endif
 } // namespace ypc
 
 define_nt(sfm_path, std::string);

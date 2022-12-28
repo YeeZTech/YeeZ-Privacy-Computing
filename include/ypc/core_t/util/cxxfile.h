@@ -12,8 +12,11 @@ public:
 
   void close();
 
-  cxxfile &seekg(const fpos &pos, ios_base::seekdir dir);
-  fpos tellg();
+  cxxfile &seekg(int64_t pos, ios_base::seekdir dir = ios_base::beg);
+  int64_t tellg();
+
+  cxxfile &seekp(int64_t pos, ios_base::seekdir dir = ios_base::beg);
+  int64_t tellp();
   bool is_open() const;
 
   cxxfile &flush();

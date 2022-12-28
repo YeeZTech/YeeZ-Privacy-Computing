@@ -18,14 +18,20 @@ void test_1_data(const ypc::bytes &k) {
   f.append_item(k.data(), k.size());
   f.close();
   f.open_for_read("tf1");
-  ypc::memref r;
-  bool t = f.next_item(r);
+  std::unique_ptr<char[]> buf(new char[bft::BlockSizeLimit]);
+  size_t buf_size;
+  auto ret = f.next_item(buf.get(), bft::BlockSizeLimit, buf_size);
+  if (ret == bft::small_buf) {
+    buf.reset(new char[buf_size]);
+    ret = f.next_item(buf.get(), buf_size, buf_size);
+  }
+  bool t = ret == bft::succ;
   EXPECT_EQ(t, true);
-  EXPECT_EQ(r.size(), k.size());
-  ypc::bytes k_prime(r.data(), r.size());
+  EXPECT_EQ(buf_size, k.size());
+  ypc::bytes k_prime(buf.get(), buf_size);
   EXPECT_TRUE(k == k_prime);
 
-  t = f.next_item(r);
+  t = f.next_item(buf.get(), bft::BlockSizeLimit, buf_size) == bft::succ;
   EXPECT_EQ(t, false);
   f.close();
 }

@@ -1,8 +1,9 @@
 #pragma once
-#include <array>
+#include <cstddef>
+#include <cstdint>
 
 namespace ypc {
-using fpos = std::array<uint8_t, 16>;
+// using fpos = std::array<uint8_t, 16>;
 
 namespace ios_base {
 typedef uint8_t seekdir;

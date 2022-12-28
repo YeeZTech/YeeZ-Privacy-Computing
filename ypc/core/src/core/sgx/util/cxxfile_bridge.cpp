@@ -1,13 +1,39 @@
 #include "ypc/core/sgx/util/cxxfile_bridge.h"
-
 #include "ypc/core_t/util/file_openmode.h"
 #include "ypc/core_t/util/fpos.h"
+#include <cstdint>
 #include <fstream>
 
 #include <cstring>
 #include <glog/logging.h>
 #include <memory>
 #include <unordered_map>
+
+extern "C" {
+
+uint32_t fopen_ocall(const char *filename, std::size_t len, uint32_t mode);
+
+void fclose_ocall(uint32_t stream);
+
+void fflush_ocall(uint32_t stream);
+
+void fread_ocall(void *ptr, std::size_t size, uint32_t stream);
+
+void fwrite_ocall(const void *ptr, std::size_t size, uint32_t stream);
+
+void fseekg_ocall(uint32_t stream, int64_t offset, uint8_t dir);
+
+int64_t ftellg_ocall(uint32_t stream);
+
+void fseekp_ocall(uint32_t stream, int64_t offset, uint8_t dir);
+
+int64_t ftellp_ocall(uint32_t stream);
+
+uint8_t feof_ocall(uint32_t stream);
+uint8_t fgood_ocall(uint32_t stream);
+uint8_t ffail_ocall(uint32_t stream);
+uint8_t fbad_ocall(uint32_t stream);
+}
 
 namespace ypc {
 uint32_t g_cxxfile_stream_id = 1;
@@ -98,11 +124,8 @@ void fwrite_ocall(const void *ptr, size_t size, uint32_t stream) {
   }
   it->second->write((const char *)ptr, size);
 }
-
-void fseek_ocall(uint32_t stream, const uint8_t *offset, uint8_t dir) {
-  std::fstream::pos_type pos;
-  static_assert(sizeof(pos) == 16, "invalid fpos type");
-  memcpy((void *)&pos, offset, 16);
+void fseekg_ocall(uint32_t stream, int64_t offset, uint8_t dir) {
+  std::fstream::pos_type pos = offset;
 
   auto it = ypc::g_cxx_files.find(stream);
   if (it == ypc::g_cxx_files.end()) {
@@ -122,14 +145,43 @@ void fseek_ocall(uint32_t stream, const uint8_t *offset, uint8_t dir) {
   it->second->seekg(pos, d);
 }
 
-void ftell_ocall(uint32_t stream, uint8_t *offset) {
+int64_t ftellg_ocall(uint32_t stream) {
+  auto it = ypc::g_cxx_files.find(stream);
+  if (it == ypc::g_cxx_files.end()) {
+    return 0;
+  }
+  auto p = it->second->tellg();
+  return p;
+}
+
+void fseekp_ocall(uint32_t stream, int64_t offset, uint8_t dir) {
+  std::fstream::pos_type pos = offset;
+
   auto it = ypc::g_cxx_files.find(stream);
   if (it == ypc::g_cxx_files.end()) {
     return;
   }
-  auto p = it->second->tellg();
-  static_assert(sizeof(p) == 16, "invalid fpos type");
-  memcpy(offset, (void *)&p, 16);
+  std::ios_base::seekdir d;
+  if (dir == ypc::ios_base::beg) {
+    d = std::ios_base::beg;
+  } else if (dir == ypc::ios_base::end) {
+    d = std::ios_base::end;
+  } else if (dir == ypc::ios_base::cur) {
+    d = std::ios_base::cur;
+  } else {
+    LOG(ERROR) << "invalid ypc::ios_base_dir " << dir;
+  }
+
+  it->second->seekp(pos, d);
+}
+
+int64_t ftellp_ocall(uint32_t stream) {
+  auto it = ypc::g_cxx_files.find(stream);
+  if (it == ypc::g_cxx_files.end()) {
+    return 0;
+  }
+  auto p = it->second->tellp();
+  return p;
 }
 
 uint8_t feof_ocall(uint32_t stream) {

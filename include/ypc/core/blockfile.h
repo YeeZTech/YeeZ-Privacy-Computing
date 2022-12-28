@@ -1,6 +1,5 @@
 #pragma once
 #include "ypc/core/exceptions.h"
-#include "ypc/core/memref.h"
 #include <cassert>
 #include <cstdint>
 #include <fstream>
@@ -24,6 +23,7 @@ public:
   const static uint64_t MagicNumber = MagicNumber_t;
   const static uint64_t BlockSizeLimit = BlockSizeLimit_t;
   const static uint64_t BlockNumLimit = BlockNumLimit_t;
+  enum { succ = 0, eof = 1, invalid_buf = 2, small_buf = 3 };
 
   blockfile()
       : m_file(), m_file_path(), m_header(), m_is_header_valid(false),
@@ -118,26 +118,28 @@ public:
     m_file.seekg(block_start_offset, m_file.beg);
   }
 
-  bool next_item(memref &s) {
+
+  int next_item(char *buf, size_t in_size, size_t &out_size) {
     if (m_file.eof()) {
-      return false;
+      return eof;
     }
     size_t len;
     m_file.read((char *)&len, sizeof(len));
     if (m_file.eof()) {
-      return false;
+      return eof;
     }
-    if (s.data() == nullptr) {
-      s.alloc(len);
+    if (buf == nullptr) {
+      m_file.seekp(-sizeof(len), std::ios::cur);
+      return invalid_buf;
     }
-    if (s.size() < len) {
-      s.dealloc();
-      s.alloc(len);
+    out_size = len;
+    if (in_size < len) {
+      m_file.seekp(-sizeof(len), std::ios::cur);
+      return small_buf;
     }
 
-    m_file.read((char *)s.data(), len);
-    s.size() = len;
-    return true;
+    m_file.read(buf, len);
+    return succ;
   }
 
   uint64_t item_number() {

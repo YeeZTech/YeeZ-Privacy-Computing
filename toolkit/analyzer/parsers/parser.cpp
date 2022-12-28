@@ -7,7 +7,11 @@
 #include "ypc/corecommon/package.h"
 #include <glog/logging.h>
 
-parser::parser(const input_param_t &param) : m_param(param) {}
+parser::parser(const input_param_t &param) : m_param(param) {
+  size_t s = ypc::simple_sealed_file::blockfile_t::BlockSizeLimit;
+  m_mem_buf.reset(new char[s]);
+  m_mem_buf_size = s;
+}
 
 parser::~parser() = default;
 
@@ -256,15 +260,16 @@ uint32_t parser::next_data_batch(const uint8_t *hash_and_pkey,
                << " not found";
     return stbox::stx_status::data_source_not_found;
   }
-  auto ssf = m_data_sources[all];
-  ypc::memref b;
-  bool ret = ssf->next_item(b);
+  auto ssf = m_data_sources[hash];
+  size_t s;
+  bool ret = ssf->next_item(m_mem_buf.get(), m_mem_buf_size, s) ==
+             ypc::simple_sealed_file::blockfile_t::succ;
   if (ret) {
-    *data = b.data();
-    *len = b.size();
+    *data = (uint8_t *)m_mem_buf.get();
+    *len = s;
     return stbox::stx_status::success;
   }
   return stbox::stx_status::sealed_file_reach_end;
 }
 
-void parser::free_data_batch(uint8_t *data) { delete[] data; }
+void parser::free_data_batch(uint8_t *) {}
