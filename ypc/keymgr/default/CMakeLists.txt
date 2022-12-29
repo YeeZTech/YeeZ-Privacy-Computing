@@ -11,7 +11,13 @@ target_include_directories(keymgr_module INTERFACE
   ${SGX_INCLUDE_DIR}
   )
 target_link_libraries(keymgr_module PUBLIC stbox_common keymgr_utils)
-install(TARGETS keymgr_module DESTINATION lib)
+
+install(TARGETS keymgr_module EXPORT mod_keymgr_module DESTINATION lib)
+
+install(EXPORT mod_keymgr_module
+  DESTINATION "${config_install_dir}/keymgr"
+  NAMESPACE "${namespace}"
+  )
 
 add_sgx_executable(keymgr_tool
   SRCS main.cpp no_use_extra_data_bridge.cpp)
@@ -21,3 +27,4 @@ install(TARGETS keymgr_tool DESTINATION bin )
 
 AddClangTidy(keymgr_module)
 AddClangTidy(keymgr_tool)
+add_version(keymgr)
