@@ -17,7 +17,6 @@ uint32_t km_end_session_ocall(uint32_t session_id);
 
 uint32_t next_data_batch(const uint8_t *data_hash, uint32_t hash_size,
                          uint8_t **data, uint32_t *len);
-void free_data_batch(uint8_t *data);
 
 }
 
@@ -46,5 +45,4 @@ uint32_t next_data_batch(const uint8_t *data_hash, uint32_t hash_size,
                          uint8_t **data, uint32_t *len) {
   return g_parser->next_data_batch(data_hash, hash_size, data, len);
 }
-void free_data_batch(uint8_t *data) { g_parser->free_data_batch(data); }
 

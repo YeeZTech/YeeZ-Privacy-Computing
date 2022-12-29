@@ -48,9 +48,6 @@ public:
       // We need move the sealed data from untrusted memory to trusted memory
       stbox::bytes sealed_data(t_sealed_data_len);
       memcpy(sealed_data.data(), t_sealed_data, t_sealed_data_len);
-      //! this memory is allocated in next_sealed_item_data, so we need to
-      //! deallocate it
-      stbox::ocall_cast<void>(free_data_batch)(t_sealed_data);
 
       typedef nt<stbox::bytes> ntt;
       try {
