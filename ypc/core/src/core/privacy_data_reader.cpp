@@ -1,7 +1,7 @@
 #include "ypc/core/privacy_data_reader.h"
 #include "ypc/common/limits.h"
-#include "ypc/core/exceptions.h"
 #include "ypc/core/filesystem.h"
+#include "ypc/corecommon/exceptions.h"
 #include <boost/format.hpp>
 #include <iostream>
 

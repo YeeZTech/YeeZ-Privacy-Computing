@@ -20,6 +20,13 @@ public:
   bool is_open() const;
 
   cxxfile &flush();
+  inline cxxfile &read(char *s, size_t size) {
+    return read((uint8_t *)s, size);
+  }
+
+  inline cxxfile &write(const char *s, size_t size) {
+    return write((const uint8_t *)s, size);
+  }
   cxxfile &read(uint8_t *s, size_t size);
   cxxfile &write(const uint8_t *s, size_t size);
 
@@ -27,6 +34,7 @@ public:
   bool eof() const;
   bool fail() const;
   bool bad() const;
+  void clear();
 
 protected:
   uint32_t m_stream_id;

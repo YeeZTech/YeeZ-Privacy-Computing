@@ -1,14 +1,19 @@
 #pragma once
-#include "ypc/core/exceptions.h"
 #include "ypc/corecommon/blockfile/blockfile_interface.h"
 #include "ypc/corecommon/blockfile/traits.h"
+#include "ypc/corecommon/exceptions.h"
 #include <cassert>
 #include <cstdint>
-#include <fstream>
 #include <string>
 #include <vector>
 #ifdef HPDA_DEBUG
 #include <glog/logging.h>
+#endif
+#ifdef YPC_SGX
+#include "ypc/stbox/tsgx/log.h"
+#else
+#include <glog/logging.h>
+
 #endif
 
 namespace ypc {
@@ -153,6 +158,9 @@ public:
     m_file.close();
   }
 
+  const File_t &file() const { return m_file; }
+  File_t &file() { return m_file; }
+
 protected:
   void read_header() {
     if (m_is_header_valid) {
@@ -200,7 +208,7 @@ protected:
   const static long int block_start_offset =
       sizeof(Header_t) + sizeof(block_info) * BlockNumLimit;
 
-  std::fstream m_file;
+  File_t m_file;
   std::string m_file_path;
   Header_t m_header;
   bool m_is_header_valid;

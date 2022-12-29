@@ -15,7 +15,8 @@ set(srcs
   )
 
 if(SGX_FOUND)
-  set(srcs ${srcs} gtest_core.cpp)
+  set(srcs ${srcs} gtest_core.cpp
+    gtest_sgx_blockfile.cpp)
 endif()
 
 add_executable(gtest_core
@@ -24,6 +25,7 @@ ${srcs}
 if(SGX_FOUND)
   target_include_directories(gtest_core PRIVATE "${SGX_INCLUDE_DIR}")
   target_link_directories(gtest_core PRIVATE "${SGX_LIBRARY_DIR}")
+  target_link_libraries(gtest_core keymgr_module)
 endif()
 
 target_link_libraries(gtest_core common gtest core core_stdeth)
@@ -38,6 +40,7 @@ AddCoverage(gtest_core)
 
 if(SGX_FOUND)
 add_subdirectory(enclave)
+add_subdirectory(file_enclave)
 add_untrusted_library(test_ypc_lib SHARED
   SRCS "test_ypc_module.cpp"
   EDL ./enclave/enclave.edl

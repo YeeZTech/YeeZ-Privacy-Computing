@@ -1,7 +1,7 @@
 #pragma once
 #include "ypc/core/byte.h"
-#include "ypc/core/exceptions.h"
 #include "ypc/core/filesystem.h"
+#include "ypc/corecommon/exceptions.h"
 #include "ypc/corecommon/package.h"
 #include <ff/net/middleware/ntpackage.h>
 #include <fstream>

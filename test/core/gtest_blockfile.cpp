@@ -4,36 +4,36 @@
 #include <gtest/gtest.h>
 #include <random>
 
-// typedef ypc::blockfile<0x4788d13e7fefe21f, 1024 * 1024,
-// 256 * ypc::max_item_size>
-// bft;
-typedef ypc::blockfile<0x29384792, 16, 1024> bft;
+    // typedef ypc::blockfile<0x4788d13e7fefe21f, 1024 * 1024,
+    // 256 * ypc::max_item_size>
+    // bft;
+    typedef ypc::blockfile<0x29384792, 16, 1024> bft;
 
-TEST(test_blockfile, simple) { ypc::blockfile<0x29384792, 16, 1024> t; }
+    TEST(test_blockfile, simple) { ypc::blockfile<0x29384792, 16, 1024> t; }
 
-void test_1_data(const ypc::bytes &k) {
-  bft f;
-  f.open_for_write("tf1");
+    void test_1_data(const ypc::bytes &k) {
+      bft f;
+      f.open_for_write("tf1");
 
-  f.append_item(k.data(), k.size());
-  f.close();
-  f.open_for_read("tf1");
-  std::unique_ptr<char[]> buf(new char[bft::BlockSizeLimit]);
-  size_t buf_size;
-  auto ret = f.next_item(buf.get(), bft::BlockSizeLimit, buf_size);
-  if (ret == bft::small_buf) {
-    buf.reset(new char[buf_size]);
-    ret = f.next_item(buf.get(), buf_size, buf_size);
-  }
-  bool t = ret == bft::succ;
-  EXPECT_EQ(t, true);
-  EXPECT_EQ(buf_size, k.size());
-  ypc::bytes k_prime(buf.get(), buf_size);
-  EXPECT_TRUE(k == k_prime);
+      f.append_item(k.data(), k.size());
+      f.close();
+      f.open_for_read("tf1");
+      std::unique_ptr<char[]> buf(new char[bft::BlockSizeLimit]);
+      size_t buf_size;
+      auto ret = f.next_item(buf.get(), bft::BlockSizeLimit, buf_size);
+      if (ret == bft::small_buf) {
+        buf.reset(new char[buf_size]);
+        ret = f.next_item(buf.get(), buf_size, buf_size);
+      }
+      bool t = ret == bft::succ;
+      EXPECT_EQ(t, true);
+      EXPECT_EQ(buf_size, k.size());
+      ypc::bytes k_prime(buf.get(), buf_size);
+      EXPECT_TRUE(k == k_prime);
 
-  t = f.next_item(buf.get(), bft::BlockSizeLimit, buf_size) == bft::succ;
-  EXPECT_EQ(t, false);
-  f.close();
+      t = f.next_item(buf.get(), bft::BlockSizeLimit, buf_size) == bft::succ;
+      EXPECT_EQ(t, false);
+      f.close();
 }
 
 

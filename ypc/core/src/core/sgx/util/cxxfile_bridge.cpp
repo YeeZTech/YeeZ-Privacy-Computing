@@ -1,4 +1,5 @@
 #include "ypc/core/sgx/util/cxxfile_bridge.h"
+#include "ypc/core/byte.h"
 #include "ypc/core_t/util/file_openmode.h"
 #include "ypc/core_t/util/fpos.h"
 #include <cstdint>
@@ -33,6 +34,7 @@ uint8_t feof_ocall(uint32_t stream);
 uint8_t fgood_ocall(uint32_t stream);
 uint8_t ffail_ocall(uint32_t stream);
 uint8_t fbad_ocall(uint32_t stream);
+void clear_ocall(uint32_t stream);
 }
 
 namespace ypc {
@@ -56,6 +58,8 @@ void shutdown_sgx_cxxfile() {
 } // namespace ypc
 
 uint32_t fopen_ocall(const char *filename, size_t len, uint32_t mode) {
+
+  std::string fname(filename, len);
 
   std::ios_base::openmode m;
 
@@ -83,9 +87,14 @@ uint32_t fopen_ocall(const char *filename, size_t len, uint32_t mode) {
 
   // TODO we need put the file into sgx_file_dir
   try {
-    p->open(filename, m);
+    p->open(fname, m);
   } catch (const std::exception &e) {
-    LOG(ERROR) << "failed to open file " << filename << ", " << e.what();
+    LOG(ERROR) << "failed to open file " << fname << ", " << e.what();
+    return 0;
+  }
+
+  if (!p->is_open()) {
+    LOG(ERROR) << "open " << fname << " failed: " << strerror(errno);
     return 0;
   }
 
@@ -141,7 +150,6 @@ void fseekg_ocall(uint32_t stream, int64_t offset, uint8_t dir) {
   } else {
     LOG(ERROR) << "invalid ypc::ios_base_dir " << dir;
   }
-
   it->second->seekg(pos, d);
 }
 
@@ -214,4 +222,11 @@ uint8_t fbad_ocall(uint32_t stream) {
     return 1;
   }
   return static_cast<uint8_t>(it->second->bad());
+}
+void clear_ocall(uint32_t stream) {
+  auto it = ypc::g_cxx_files.find(stream);
+  if (it == ypc::g_cxx_files.end()) {
+    return;
+  }
+  it->second->clear();
 }
