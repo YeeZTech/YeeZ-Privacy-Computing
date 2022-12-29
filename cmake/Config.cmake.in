@@ -40,7 +40,7 @@ add_component(core_t
   #COMP_TARGETS core/mod_core_parser_module.cmake)
 
 add_component(keymgr
-  COMP_TARGETS "common/mod_common.cmake stbox/mod_stbox_common.cmake core/mod_core.cmake keymgr/mod_keymgr_utils.cmake")
+  COMP_TARGETS "common/mod_common.cmake stbox/mod_stbox_common.cmake core/mod_core.cmake keymgr/mod_keymgr_utils.cmake keymgr/mod_keymgr_module.cmake")
 
 
 set(_supported_comp common stbox gmssl stdeth core keymgr)
