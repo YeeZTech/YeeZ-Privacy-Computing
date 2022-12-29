@@ -30,5 +30,7 @@ enclave {
     uint8_t ffail_ocall(uint32_t stream);
     uint8_t fbad_ocall(uint32_t stream);
 
+    void clear_ocall(uint32_t stream);
+
   };
 };

@@ -1,5 +1,4 @@
 #include "sgx_bridge.h"
-#include "ypc/core/memref.h"
 
 using stx_status = stbox::stx_status;
 std::shared_ptr<parser> g_parser;

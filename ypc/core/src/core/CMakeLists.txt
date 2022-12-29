@@ -13,7 +13,6 @@ add_library(core SHARED
   command_executor.cpp
   filesystem.cpp
   privacy_data_reader.cpp
-  exceptions.cpp
   status.cpp
   version.cpp
   ${FF_PATH}/src/net/common/archive.cpp)

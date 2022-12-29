@@ -28,7 +28,7 @@ target_include_directories(analyzer_t PUBLIC
   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/ypc/stbox>"
   )
 
-target_link_libraries(analyzer_t PUBLIC stbox_channel_t stbox_crypto_t)
+target_link_libraries(analyzer_t PUBLIC stbox_channel_t stbox_crypto_t core_util_t)
 
 install(TARGETS analyzer_t
   EXPORT mod_analyzer_t

@@ -16,6 +16,7 @@ ypc::bytes test_m_data(FT &f, const char *name, size_t item_num,
                        size_t item_len) {
   ypc::bytes data_hash;
   ypc::crypto::eth_sgx_crypto::hash_256(ypc::bytes("test"), data_hash);
+  std::cout << "init hash: " << data_hash;
 
   std::vector<ypc::bytes> write_items;
   std::vector<ypc::bytes> read_items;

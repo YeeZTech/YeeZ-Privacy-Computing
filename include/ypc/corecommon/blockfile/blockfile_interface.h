@@ -1,5 +1,5 @@
 #pragma once
-#include "ypc/core/exceptions.h"
+#include "ypc/corecommon/exceptions.h"
 
 namespace ypc {
 class invalid_blockfile : public std::exception {

@@ -86,4 +86,10 @@ bool cxxfile::bad() const {
   }
   return stbox::ocall_cast<uint8_t>(fbad_ocall)(m_stream_id) != 0;
 }
+void cxxfile::clear() {
+  if (!is_open()) {
+    return;
+  }
+  return stbox::ocall_cast<void>(clear_ocall)(m_stream_id);
+}
 } // namespace ypc
