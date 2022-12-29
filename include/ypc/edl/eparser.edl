@@ -41,7 +41,5 @@ enclave {
     /* define OCALLs here. */
     uint32_t next_data_batch([in, size=hash_size] const uint8_t * data_hash, uint32_t hash_size,
                              [out] uint8_t ** data, [out] uint32_t *len);
-
-    void free_data_batch([user_check] uint8_t *data);
   };
 };

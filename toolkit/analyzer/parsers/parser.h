@@ -17,7 +17,6 @@ public:
 
   virtual uint32_t next_data_batch(const uint8_t *data_hash, uint32_t hash_size,
                                    uint8_t **data, uint32_t *len);
-  virtual void free_data_batch(uint8_t *data);
 
   inline std::shared_ptr<keymgr_sgx_module> keymgr() const { return m_keymgr; }
 

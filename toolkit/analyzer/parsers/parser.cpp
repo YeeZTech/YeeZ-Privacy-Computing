@@ -271,5 +271,3 @@ uint32_t parser::next_data_batch(const uint8_t *hash_and_pkey,
   }
   return stbox::stx_status::sealed_file_reach_end;
 }
-
-void parser::free_data_batch(uint8_t *) {}
