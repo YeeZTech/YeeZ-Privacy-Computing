@@ -27,28 +27,38 @@ public:
   }
 
   bool has_difference() {
-    if (!m_upper_streams[1]->has_value()) {
-      m_filler[0](m_upper_streams[0], m_data);
-      m_upper_streams[0]->reset_done_value();
-      return true;
+    CT val_0 = m_traits[0](m_upper_streams[0]);
+    CT val_min = val_0;
+    for (size_t i = 1; i < m_upper_streams.size(); i++) {
+      if (m_upper_streams[i]->has_value()) {
+        CT val_i = m_traits[i](m_upper_streams[i]);
+        val_min = std::min(val_min, val_i);
+      }
     }
-    CT val0 = m_traits[0](m_upper_streams[0]);
-    CT val1 = m_traits[1](m_upper_streams[1]);
-    if (val0 < val1) {
-      m_filler[0](m_upper_streams[0], m_data);
-      m_upper_streams[0]->reset_done_value();
-      return true;
-    } else if (val0 > val1) {
-      m_upper_streams[1]->reset_done_value();
+    bool flag_min = false;
+    for (size_t i = 1; i < m_upper_streams.size(); i++) {
+      if (m_upper_streams[i]->has_value()) {
+        CT val_i = m_traits[i](m_upper_streams[i]);
+        if (val_i == val_min) {
+          flag_min = true;
+          m_upper_streams[i]->reset_done_value();
+        }
+      }
+    }
+    if (flag_min) {
+      if (val_0 == val_min) {
+        m_upper_streams[0]->reset_done_value();
+      }
       return false;
     }
+
+    m_filler[0](m_upper_streams[0], m_data);
     m_upper_streams[0]->reset_done_value();
-    m_upper_streams[1]->reset_done_value();
-    return false;
+    return true;
   }
 
   virtual bool process() {
-    if (m_upper_streams.size() != 2) {
+    if (m_upper_streams.size() < 2) {
       return false;
     }
     if (!m_upper_streams[0]->has_value()) {

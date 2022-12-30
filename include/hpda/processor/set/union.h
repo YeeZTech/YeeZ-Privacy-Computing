@@ -64,16 +64,6 @@ public:
     if (m_upper_streams.size() < 2) {
       return false;
     }
-    size_t has_value_cnt = 0;
-    for (auto &s : m_upper_streams) {
-      if (!s->has_value()) {
-        has_value_cnt++;
-      }
-    }
-    if (has_value_cnt == m_upper_streams.size()) {
-      return false;
-    }
-
     return has_union();
   }
 

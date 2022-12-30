@@ -59,12 +59,12 @@ TEST(intersection, ordered) {
   }
 
   hpda::processor::ordered_intersection<std::string, key1, key2, key3, value>
-      psi;
-  psi.add_upper_stream<key1>(&rd1);
-  psi.add_upper_stream<key2>(&rd2);
-  psi.add_upper_stream<key3>(&rd3);
+      oi;
+  oi.add_upper_stream<key1>(&rd1);
+  oi.add_upper_stream<key2>(&rd2);
+  oi.add_upper_stream<key3>(&rd3);
 
-  hpda::output::memory_output<key1, key2, key3, value> mo(&psi);
+  hpda::output::memory_output<key1, key2, key3, value> mo(&oi);
 
   engine.run();
 
@@ -125,12 +125,12 @@ TEST(unionset, ordered) {
     rd3.add_data(d3);
   }
 
-  hpda::processor::ordered_union<std::string, key1, key2, key3, value> psi;
-  psi.add_upper_stream<key1>(&rd1);
-  psi.add_upper_stream<key2>(&rd2);
-  psi.add_upper_stream<key3>(&rd3);
+  hpda::processor::ordered_union<std::string, key1, key2, key3, value> ou;
+  ou.add_upper_stream<key1>(&rd1);
+  ou.add_upper_stream<key2>(&rd2);
+  ou.add_upper_stream<key3>(&rd3);
 
-  hpda::output::memory_output<key1, key2, key3, value> mo(&psi);
+  hpda::output::memory_output<key1, key2, key3, value> mo(&ou);
 
   engine.run();
 
@@ -153,13 +153,15 @@ TEST(unionset, ordered) {
 TEST(difference, ordered) {
   hpda::extractor::raw_data<key1, value> rd1;
   hpda::extractor::raw_data<key2, value> rd2;
+  hpda::extractor::raw_data<key3, value> rd3;
 
   hpda::engine engine;
   rd1.set_engine(&engine);
   rd2.set_engine(&engine);
+  rd3.set_engine(&engine);
 
   std::vector<std::string> vk1;
-  for (int i = 0; i < 100; i++) {
+  for (int i = 0; i < 5; i++) {
     vk1.push_back(std::to_string(i));
   }
   std::sort(
@@ -172,7 +174,7 @@ TEST(difference, ordered) {
   }
 
   std::vector<std::string> vk2;
-  for (int i = 10; i < 110; i++) {
+  for (int i = 3; i < 8; i++) {
     vk2.push_back(std::to_string(i));
   }
   std::sort(
@@ -184,11 +186,25 @@ TEST(difference, ordered) {
     rd2.add_data(d2);
   }
 
-  hpda::processor::ordered_difference<std::string, key1, key2, value> psi;
-  psi.add_upper_stream<key1>(&rd1);
-  psi.add_upper_stream<key2>(&rd2);
+  std::vector<std::string> vk3;
+  for (int i = 4; i < 9; i++) {
+    vk3.push_back(std::to_string(i));
+  }
+  std::sort(
+      vk3.begin(), vk3.end(),
+      [](const std::string &s1, const std::string &s2) { return s1 < s2; });
+  for (auto &k : vk3) {
+    data3_item_t d3;
+    d3.set<key3, value>(k, std::stoi(k));
+    rd3.add_data(d3);
+  }
 
-  hpda::output::memory_output<key1, key2, value> mo(&psi);
+  hpda::processor::ordered_difference<std::string, key1, key2, key3, value> od;
+  od.add_upper_stream<key1>(&rd1);
+  od.add_upper_stream<key2>(&rd2);
+  od.add_upper_stream<key3>(&rd3);
+
+  hpda::output::memory_output<key1, key2, key3, value> mo(&od);
 
   engine.run();
 
@@ -196,5 +212,5 @@ TEST(difference, ordered) {
   for (auto &it : mo.values()) {
     EXPECT_EQ(count++, it.template get<value>());
   }
-  EXPECT_EQ(count, 10);
+  EXPECT_EQ(count, 3);
 }
