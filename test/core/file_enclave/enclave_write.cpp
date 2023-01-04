@@ -81,33 +81,6 @@ stbox::bytes test_m_data(FT &f, const char *name, size_t item_num,
 
 typedef ypc::blockfile<0x29384792, 16, 1024> bft;
 
-void test_1_data(const stbox::bytes &k) {
-  bft f;
-  f.open_for_write("tf1_in_sgx");
-
-  f.append_item(k.data(), k.size());
-  f.close();
-  f.open_for_read("tf1_in_sgx");
-  std::unique_ptr<char[]> buf(new char[bft::BlockSizeLimit]);
-  size_t buf_size;
-  auto ret = f.next_item(buf.get(), bft::BlockSizeLimit, buf_size);
-  if (ret == bft::small_buf) {
-    LOG(INFO) << "try bigger ";
-    buf.reset(new char[buf_size]);
-    ret = f.next_item(buf.get(), buf_size, buf_size);
-  }
-  bool t = ret == bft::succ;
-  EXPECT_EQ(t, true);
-  LOG(INFO) << "bufsize: " << buf_size << ", k.size()" << k.size();
-  EXPECT_EQ(buf_size, k.size());
-  stbox::bytes k_prime(buf.get(), buf_size);
-  EXPECT_TRUE(k == k_prime);
-
-  t = f.next_item(buf.get(), bft::BlockSizeLimit, buf_size) == bft::succ;
-  EXPECT_EQ(t, false);
-  f.close();
-}
-
 class hello {
 public:
   inline stbox::bytes do_parse(const stbox::bytes &param) {
@@ -119,7 +92,6 @@ public:
 };
 
 using Crypto = ypc::crypto::eth_sgx_crypto;
-// using Crypto = ypc::crypto::gmssl_sgx_crypto;
 
 ypc::algo_wrapper<Crypto, ypc::noinput_data_stream, hello,
 

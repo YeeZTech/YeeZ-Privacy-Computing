@@ -22,15 +22,6 @@
     throw std::runtime_error("test failed");                                   \
   }
 
-stbox::bytes random_string(size_t len) {
-  std::string ret(len, '0');
-
-  for (size_t i = 0; i < len; i++) {
-    ret[i] = int('a') + i % 26;
-  }
-  return stbox::bytes(ret.data(), ret.size());
-}
-
 template <typename FT> stbox::bytes read_data(FT &f, const char *name) {
 
   f.open_for_read(name);
