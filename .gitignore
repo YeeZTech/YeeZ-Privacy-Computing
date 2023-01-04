@@ -40,6 +40,6 @@ bin
 *.env
 generate
 
-test/integrate
+#test/integrate
 test/project_path.h
 .vscode/
