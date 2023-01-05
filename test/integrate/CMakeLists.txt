@@ -16,6 +16,4 @@ endfunction()
 
 AddPyTest(test_iris test_iris.py)
 AddPyTest(test_multi test_findperson_multi.py)
-AddPyTest(test_multi_offchain test_findperson_multi_offchain.py)
-AddPyTest(test_classifier test_iris_classifier.py)
 

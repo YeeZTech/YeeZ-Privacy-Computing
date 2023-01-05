@@ -39,6 +39,9 @@ include(vendor)
 include(Version)
 include(Coverage)
 include(Dart)
+include(Doxygen)
+
+Doxygen(${PROJECT_SOURCE_DIR})
 
 find_package(SGX)
 if(SGX_FOUND)
