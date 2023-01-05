@@ -5,4 +5,5 @@
 
 namespace stbox {
 stbox::bytes get_enclave_signer();
+stbox::bytes get_enclave_hash();
 }

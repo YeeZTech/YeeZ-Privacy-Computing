@@ -1,5 +1,6 @@
 #include "sgx_utils.h"
 #include "ypc/core_t/analyzer/helper/ecall_impl_helper.h"
+#include "ypc/stbox/tsgx/util.h"
 #include "ypc/version.h"
 
 #define COMMON_PARSER_IMPL(pw)                                                 \
@@ -15,16 +16,9 @@
                                                                                \
   uint32_t get_enclave_hash_size() { return SGX_HASH_SIZE; }                   \
   uint32_t get_enclave_hash(uint8_t *hash, uint32_t hash_size) {               \
-    sgx_report_data_t data;                                                    \
-    uint32_t ret = 0;                                                          \
-    memset(&data.d, 0xff, sizeof data.d);                                      \
-    sgx_report_t report;                                                       \
-    ret = sgx_create_report(NULL, &data, &report);                             \
-    if (ret != SGX_SUCCESS) {                                                  \
-      return ret;                                                              \
-    }                                                                          \
-    memcpy(hash, report.body.mr_enclave.m, hash_size);                         \
-    return ret;                                                                \
+    auto enclave_hash = stbox::get_enclave_hash();                             \
+    memcpy(hash, enclave_hash.data(), hash_size);                              \
+    return SGX_SUCCESS;                                                        \
   }                                                                            \
                                                                                \
   uint32_t get_analyze_result_size() { return pw.get_analyze_result_size(); }  \
