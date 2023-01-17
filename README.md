@@ -1,5 +1,3 @@
-! \mainpage
-
 English / [中文](doc/README_ZH.md)
 
 # Fidelius - YeeZ Privacy Computing

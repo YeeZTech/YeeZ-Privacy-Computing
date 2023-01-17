@@ -19,6 +19,7 @@ function(Doxygen input)
     */vendor/*
     */build_debug/*
     */stbox/*)
+  set(USE_MDFILE_AS_MAINPAGE README.md)
   doxygen_add_docs(doxygen
     ${input}
     COMMENT "Generate HTML documentation")
