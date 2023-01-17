@@ -4,16 +4,16 @@
 namespace stbox {
 
 stbox::bytes get_enclave_signer() {
-  sgx_report_data_t data;
-  uint32_t ret = 0;
-  memset(&data.d, 0xff, sizeof data.d);
-  sgx_report_t report;
-  ret = sgx_create_report(NULL, &data, &report);
-  if (ret != SGX_SUCCESS) {
-    return stbox::bytes();
-  }
   stbox::bytes signer(sizeof(sgx_measurement_t));
-  memcpy(signer.data(), report.body.mr_signer.m, sizeof(sgx_measurement_t));
+  memcpy(signer.data(), sgx_self_report()->body.mr_signer.m,
+         sizeof(sgx_measurement_t));
   return signer;
+}
+
+stbox::bytes get_enclave_hash() {
+  stbox::bytes hash(sizeof(sgx_measurement_t));
+  memcpy(hash.data(), sgx_self_report()->body.mr_enclave.m,
+         sizeof(sgx_measurement_t));
+  return hash;
 }
 } // namespace stbox

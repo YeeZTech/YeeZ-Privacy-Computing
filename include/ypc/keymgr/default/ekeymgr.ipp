@@ -1,3 +1,42 @@
+#include "ekeymgr_t.h" /* print_string */
+#include "ypc/common/crypto_prefix.h"
+#include "ypc/core_t/ecommon/signer_verify.h"
+#include "ypc/keymgr/default/enclave/common.h"
+#include "ypc/stbox/ebyte.h"
+#include "ypc/stbox/scope_guard.h"
+#include "ypc/stbox/stx_common.h"
+
+#include "ypc/stbox/tsgx/channel/dh_session_responder.h"
+#include "ypc/stbox/tsgx/crypto/seal_sgx.h"
+#include "ypc/stbox/tsgx/crypto/seal.h"
+#include "ypc/stbox/tsgx/log.h"
+#include "ypc/stbox/tsgx/util.h"
+#include "ypc/version.h"
+
+#include <sgx_report.h>
+#include <sgx_utils.h>
+
+#include <stdarg.h>
+#include <stdio.h> /* vsnprintf */
+#include <stdlib.h>
+#include <string.h>
+#include <unordered_map>
+
+#define SECP256K1_PRIVATE_KEY_SIZE 32
+#define INITIALIZATION_VECTOR_SIZE 12
+#define SGX_AES_GCM_128BIT_TAG_T_SIZE sizeof(sgx_aes_gcm_128bit_tag_t)
+
+extern "C" {
+#include "ypc/stbox/keccak/keccak.h"
+}
+
+using stx_status = stbox::stx_status;
+using scope_guard = stbox::scope_guard;
+using intel_sgx = stbox::crypto::intel_sgx;
+
+std::shared_ptr<stbox::dh_session_responder> dh_resp_session(nullptr);
+std::shared_ptr<ypc::nt<stbox::bytes>::access_list_package_t>
+    access_control_policy;
 
 uint64_t get_keymgr_version(){
   return YPC_KEYMGR_T_VERSION.data();
@@ -111,17 +150,7 @@ uint32_t load_and_check_key_pair(const uint8_t *pkey, uint32_t pkey_size,
     return 1;
   }
   if (memcmp(expect_pkey.data(), pkey, expect_pkey.size()) != 0) {
-#if 0
-    for (int i = 0; i < 64; i++) {
-      printf("%02x", *(expect_pkey.data() + i));
-    }
-    printf("\n");
-    for (int i = 0; i < 64; i++) {
-      printf("%02x", *(pkey + i));
-    }
-#endif
     return stbox::stx_status::kmgr_pkey_skey_mismatch;
-    //status equal 177
   }
   return stbox::stx_status::success;
 }
@@ -280,7 +309,6 @@ uint32_t create_report_for_pkey(const sgx_target_info_t *p_qe3_target,
                                 sgx_report_t *p_report) {
   stbox::bytes skey;
   auto se_ret = load_and_check_key_pair(pkey, pkey_size, skey);
-  LOG(INFO) << "start create report";
   if (se_ret) {
     LOG(ERROR) << "load and check key pair error: " << se_ret;
     return se_ret;
@@ -289,7 +317,8 @@ uint32_t create_report_for_pkey(const sgx_target_info_t *p_qe3_target,
   sgx_report_data_t report_data = {0};
   // TODO we may add more info here, like version
   stbox::bytes hash;
-  ecc::hash_256(stbox::bytes(pkey, pkey_size), hash);
+  auto all = stbox::bytes(pkey, pkey_size) + stbox::get_enclave_hash();
+  ecc::hash_256(all, hash);
   memcpy(report_data.d, hash.data(), hash.size());
 
   sgx_status_t sgx_error =
