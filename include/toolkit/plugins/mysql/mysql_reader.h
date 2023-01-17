@@ -1,3 +1,11 @@
+/**@file mysql_reader.h
+ * @brief serialize mysql data to package
+ * @details serialize data by index from the whole table and then cast to
+ * package
+ * @author YeeZTech
+ * @date 2022-10-19
+ * @version 2.0
+ */
 #pragma once
 #include "ypc/corecommon/package.h"
 #include <boost/property_tree/json_parser.hpp>

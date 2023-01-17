@@ -41,8 +41,6 @@ include(Coverage)
 include(Dart)
 include(Doxygen)
 
-Doxygen(${PROJECT_SOURCE_DIR})
-
 find_package(SGX)
 if(SGX_FOUND)
   message(STATUS "found SGX, build full support")
@@ -128,6 +126,9 @@ if(SGX_MODE STREQUAL "Debug")
   enable_testing()
   add_subdirectory(test)
 endif()
+
+Doxygen(${PROJECT_SOURCE_DIR})
+
 add_subdirectory(toolkit)
 
 install(
