@@ -92,7 +92,7 @@ cd build_debug && ctest --dashboard Experimental
 `YeeZ-Privacy-Computing`二进制文件(即`toolkit`目录下的所有代码) 根据 [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.en.html) 获得授权，同时也包括我们存储库中的`COPYING`文件。
 
 ## 贡献
-如果您想参与 Fidelius 项目，可以在 Issue 页面随意开启一个新的话题，比如文档、创意、Bug等。
+如果您想参与 Fidelius 项目，可以在 [Issue](https://github.com/YeeZTech/YeeZ-Privacy-Computing/issues) 页面随意开启一个新的话题，比如文档、创意、Bug等。
 我们是一个开放共建的开源项目，欢迎参与到我们的项目中～
 
 ### 贡献者
