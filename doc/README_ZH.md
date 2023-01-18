@@ -101,7 +101,7 @@ cd build_debug && ctest --dashboard Experimental
 </a>
 
 ## 社区
-* 微信助手：
+* 微信：
 
 ![wechat_helper](./wechat_image.JPG)
 
