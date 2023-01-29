@@ -1,3 +1,11 @@
+/**@file byte.h
+ * @brief
+ * @details
+ * business scenarios
+ * @author YeeZTech
+ * @date 2022-12-05
+ * @version 2.0
+ */
 #pragma once
 #include "ypc/common/byte.h"
 #include <boost/endian/conversion.hpp>

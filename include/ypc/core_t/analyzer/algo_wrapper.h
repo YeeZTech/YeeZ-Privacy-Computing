@@ -1,3 +1,11 @@
+/**@file algo_wrapper.h
+ * @brief A class to represent the computing task
+ * @details Developers can modify algorithms using templates to satisfy certain
+ * business scenarios
+ * @author YeeZTech
+ * @date 2022-10-19
+ * @version 2.0
+ */
 #pragma once
 #include "ypc/core_t/analyzer/helper/parser_type_traits.h"
 #include "ypc/core_t/analyzer/interface/algo_interface.h"

@@ -1,3 +1,10 @@
+/**@file bytes.h
+ * @brief process most common data types
+ * @details
+ * @author YeeZTech
+ * @date 2022-12-05
+ * @version 2.0
+ */
 #pragma once
 #include "ypc/common/byte/base58.h"
 #include "ypc/common/byte/base64.h"

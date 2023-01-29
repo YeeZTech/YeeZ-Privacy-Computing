@@ -1,4 +1,4 @@
-//! No use for now, so don't use this for now.
+// No use for now, so don't use this for now.
 #pragma once
 #include <cstdint>
 #include <utility>

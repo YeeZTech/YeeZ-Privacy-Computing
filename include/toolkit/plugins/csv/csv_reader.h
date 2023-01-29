@@ -1,3 +1,10 @@
+/**@file csv_reader.h
+ * @brief serialize csv file to package
+ * @details serialize csv file line by line to m_stream and the cast to package
+ * @author YeeZTech
+ * @date 2022-10-19
+ * @version 2.0
+ */
 #pragma once
 #include "csv.h"
 #include "csv_read_assign_helper.h"
