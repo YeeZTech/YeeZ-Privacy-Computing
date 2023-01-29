@@ -110,4 +110,5 @@ class classic_job:
         self.result = job_step.decrypt_result(
             self.crypto, encrypted_result, key_file, decrypted_result)
         self.all_outputs.append(decrypted_result)
-        job_step.remove_files(self.all_outputs)
+        if 'remove-files' in self.config and self.config['remove-files']:
+            job_step.remove_files(self.all_outputs)

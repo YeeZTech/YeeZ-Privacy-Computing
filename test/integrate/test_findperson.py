@@ -1,6 +1,7 @@
 from classic_job import classic_job
 import os
 import common
+import sys
 
 
 def gen_personlist(**kwargs):
@@ -22,6 +23,7 @@ if __name__ == "__main__":
     input_param = "\"[{\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"421003198607262936\\\"}]\""
     cj = classic_job(crypto, name, data, parser, plugin, input_param, {
         'request-use-js': True,
+        'remove-files': True if len(sys.argv) < 2 else False,
     })
     cj.run()
 
