@@ -89,18 +89,31 @@ compile_project() {
 
   if [[ "$build_type" == "Release" ]]; then
     hash_dir=${ypc_home}/hash_hex
-    rm -rf $hash_dir
-    mkdir -p $hash_dir
+    rm -rf $hash_dir && mkdir -p $hash_dir
     cp ./lib/*_hash.hex $hash_dir
   fi
 }
 
-package_ypc_deb() {
+package_ypc() {
   ypc_home=`pwd`
-  mode=$2
-  build_path=${ypc_home}/build/${mode}
-  cd $build_path
-  cpack -G "DEB"
+  mode=$1
+  case "$mode" in
+    "DEBUG" | "Debug" | "debug")
+      build_path=${ypc_home}/build/debug
+      ;;
+    "PRERELEASE" | "PreRelease" | "Prerelease" | "prerelease" | "pre_release")
+      build_path=${ypc_home}/build/prerelease
+      ;;
+    "RELEASE" | "Release" | "release")
+      build_path=${ypc_home}/build/release
+      ;;
+    *)
+      echo "Please specify build type \"Debug\" | \"PreRelease\" | \"Release\" !"
+      echo "Usage -- \"./build.sh package-ypc \${BUILD_TYPE}\""
+      exit
+      ;;
+  esac
+  cd $build_path && cpack -G "DEB"
 }
 
 case "$1" in
@@ -113,8 +126,7 @@ case "$1" in
   create-signed-so)
     create_signed_so $2
     ;;
-  package-ypc-deb)
-    package_ypc_deb $2
+  package-ypc)
+    package_ypc $2
     ;;
 esac
-
