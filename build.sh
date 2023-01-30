@@ -106,3 +106,5 @@ case "$1" in
     create_signed_so $2
     ;;
 esac
+
+cpack -G "DEB"

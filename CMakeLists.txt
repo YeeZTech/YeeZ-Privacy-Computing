@@ -4,7 +4,7 @@
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 cmake_minimum_required(VERSION 3.12)
-project(YPC VERSION 0.2.0)
+project(YPC VERSION 0.5.0)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
@@ -62,12 +62,6 @@ else()
   add_definitions(-DNDEBUG)
 endif()
 
-install(DIRECTORY lib/
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/")
-
-install(DIRECTORY bin/
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/")
-
 set(CPACK_PACKAGE_NAME "YPCpackage")
 set(CPACK_PACKAGE_VENDOR "YeeZTech")
 set(CPACK_PACKAGE_CONTACT "fidelius@yeez.tech")
@@ -113,10 +107,8 @@ configure_package_config_file("cmake/Config.cmake.in"
   INSTALL_DESTINATION "${config_install_dir}"
   PATH_VARS LIB_INSTALL_DIR INCLUDE_INSTALL_DIR PROJECT_NAME)
 
-
-install(DIRECTORY include/
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/"
-  MESSAGE_NEVER COMPONENT headers)
+install(DIRECTORY include/hpda include/toolkit include/ypc
+  DESTINATION "${CAMKE_INSTALL_INCLUDEDIR}/include")
 
 message(STATUS "--------SGX_MODE: " ${SGX_MODE})
 message(STATUS "--------SGX_HW: " ${SGX_HW})
