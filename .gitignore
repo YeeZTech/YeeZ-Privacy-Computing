@@ -43,3 +43,4 @@ generate
 test/integrate
 test/project_path.h
 .vscode/
+hash_hex/
