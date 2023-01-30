@@ -62,6 +62,13 @@ else()
   add_definitions(-DNDEBUG)
 endif()
 
+install(DIRECTORY lib/
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/")
+
+install(DIRECTORY bin/
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/")
+
+set(CPACK_PACKAGE_NAME "YPCpackage")
 set(CPACK_PACKAGE_VENDOR "YeeZTech")
 set(CPACK_PACKAGE_CONTACT "fidelius@yeez.tech")
 set(CPACK_PACKAGE_DESCRIPTION "Fidelius: YeeZ Privacy Computing")
