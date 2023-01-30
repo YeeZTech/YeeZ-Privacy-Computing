@@ -96,8 +96,10 @@ compile_project() {
 }
 
 package_ypc_deb() {
-  build_path=$2
-  cd build_path
+  ypc_home=`pwd`
+  mode=$2
+  build_path=${ypc_home}/build/${mode}
+  cd $build_path
   cpack -G "DEB"
 }
 
