@@ -95,6 +95,12 @@ compile_project() {
   fi
 }
 
+package_ypc_deb() {
+  build_path=$2
+  cd build_path
+  cpack -G "DEB"
+}
+
 case "$1" in
   compile-project)
     compile_project $2
@@ -105,6 +111,8 @@ case "$1" in
   create-signed-so)
     create_signed_so $2
     ;;
+  package-ypc-deb)
+    package_ypc_deb $2
+    ;;
 esac
 
-cpack -G "DEB"
