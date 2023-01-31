@@ -6,7 +6,7 @@ target_include_directories(keymgr_utils PUBLIC
   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
   )
 
-target_link_libraries(keymgr_utils core)
+target_link_libraries(keymgr_utils PUBLIC core)
 
 install(TARGETS keymgr_utils
   EXPORT mod_keymgr_utils

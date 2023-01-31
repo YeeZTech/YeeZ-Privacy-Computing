@@ -23,7 +23,7 @@ add_sgx_executable(keymgr_tool
   SRCS main.cpp no_use_extra_data_bridge.cpp)
 add_dependencies(keymgr_tool keymgr-sign)
 target_link_libraries(keymgr_tool PUBLIC keymgr_module common)
-install(TARGETS keymgr_tool DESTINATION bin )
+install(TARGETS keymgr_tool DESTINATION bin)
 
 AddClangTidy(keymgr_module)
 AddClangTidy(keymgr_tool)

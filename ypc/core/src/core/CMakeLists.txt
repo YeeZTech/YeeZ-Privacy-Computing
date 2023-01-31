@@ -32,8 +32,8 @@ target_link_libraries(core PUBLIC
   ${CMAKE_THREAD_LIBS_INIT}
   common
   )
-target_link_libraries(core INTERFACE stbox_common)
-target_link_libraries(core INTERFACE core_parser_module)
+#target_link_libraries(core INTERFACE stbox_common)
+#target_link_libraries(core INTERFACE core_parser_module)
 
 install(TARGETS core EXPORT mod_core
   DESTINATION lib)
