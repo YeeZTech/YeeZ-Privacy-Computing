@@ -62,7 +62,7 @@ else()
   add_definitions(-DNDEBUG)
 endif()
 
-set(CPACK_PACKAGE_NAME "YPCpackage")
+set(CPACK_PACKAGE_NAME "ypc")
 set(CPACK_PACKAGE_VENDOR "YeeZTech")
 set(CPACK_PACKAGE_CONTACT "fidelius@yeez.tech")
 set(CPACK_PACKAGE_DESCRIPTION "Fidelius: YeeZ Privacy Computing")

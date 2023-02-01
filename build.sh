@@ -113,7 +113,15 @@ package_ypc() {
       exit
       ;;
   esac
-  cd $build_path && cpack -G "DEB"
+  case "$2" in
+    "RPM" | "rpm")
+      file_type=RPM
+      ;;
+    "DEB" | "deb")
+      file_type=DEB
+      ;;
+  esac
+  cd $build_path && cpack -G "$file_type"
 }
 
 case "$1" in
@@ -127,6 +135,6 @@ case "$1" in
     create_signed_so $2
     ;;
   package-ypc)
-    package_ypc $2
+    package_ypc $2 $3
     ;;
 esac
