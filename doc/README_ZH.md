@@ -19,9 +19,9 @@ Fidelius 基于“数据可用不可见”思想，推出了面向数据合作�
 ## 快速开始
 Fidelius 基于 Intel SGX 运行，需确认硬件环境配备了支持的中央处理器（CPU），对 BIOS 进行设置，并安装驱动和相关软件。即使不具备该硬件环境，仍能在安装了 Intel SGX SDK 之后运行 Debug 版本。
 
-具备相关硬件，运行 Fidelius Release 版本请参考[这里](../Release_ZH.md)。
+具备相关硬件，运行 Fidelius Release 版本请参考[这里](./Release_ZH.md)。
 
-不具备相关硬件，运行 Fidelius Debug 版本请参考[这里](../Debug_ZH.md)。
+不具备相关硬件，运行 Fidelius Debug 版本请参考[这里](./Debug_ZH.md)。
 
 ## 进阶使用
 - Fidelius 的 doxygen 文档：https://doc-fidelius.yeez.tech/index.html
@@ -29,7 +29,7 @@ Fidelius 基于 Intel SGX 运行，需确认硬件环境配备了支持的中央
 ### 测试
 如果开发者想在修改之后测试，可以使用如下命令生成一份测试报告 [CDash](https://my.cdash.org/index.php?project=Fidelius)
 ```
-cd build_debug && ctest --dashboard Experimental
+$ cd build_debug && ctest --dashboard Experimental
 ```
 
 ## 授权
