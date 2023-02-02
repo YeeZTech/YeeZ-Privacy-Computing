@@ -7,7 +7,7 @@ In order to empower data collaboration between enterprises and help enterprises 
 The following figure describes the abstract flow of data collaboration based on Fidelius. Similar to the traditional data collaboration model, the participants include data providers and data consumers. Fidelius runs on both sides of data provider and data consumer, and the two parties interact with Fidelius to realize data collaboration operation. There is no direct data interaction between the data provider and the data consumer, and the raw/plaintext data will not leave the data provider, which fundamentally avoids the problem of private data leakage.
 
 <p align="center">
-  <img src="Fidelius-Infr.png" alt="drawing" width="61.8%"/>
+  <img src="doc/Fidelius-Infr.png" alt="drawing" width="61.8%"/>
 </p>
 
 It is worth noting that, compared to the traditional data collaboration model, Fidelius has introduced blockchain. Because blockchain itself has the characteristics of a decentralized network, public and verifiable, Fidelius uses it as a trusted transmission channel and data calculation verification platform.
