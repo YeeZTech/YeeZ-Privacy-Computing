@@ -108,7 +108,7 @@ configure_package_config_file("cmake/Config.cmake.in"
   PATH_VARS LIB_INSTALL_DIR INCLUDE_INSTALL_DIR PROJECT_NAME)
 
 install(DIRECTORY include/hpda include/toolkit include/ypc
-  DESTINATION "${CAMKE_INSTALL_INCLUDEDIR}/include")
+  DESTINATION "${CMAKE_INSTALL_PREFIX}/include")
 
 message(STATUS "--------SGX_MODE: " ${SGX_MODE})
 message(STATUS "--------SGX_HW: " ${SGX_HW})
