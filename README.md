@@ -49,3 +49,20 @@ Please refer to [INSTALL.md](INSTALL.md).
 The `YeeZ-Privacy-Computing` library (i.e. all code outside of the `toolkit` directory) is licensed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0), also included in our repository in the `COPYING.APACHE` file.
 
 The `YeeZ-Privacy-Computing` binaries (i.e. all code inside of the `toolkit` directory) is licensed under the [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.en.html), also included in our repository in the `COPYING` file.
+
+## How to contribute
+If you want to contribute to this project, feel free to create an issue at our Issue page (e.g., documentation, new idea and proposal).
+
+This is an active open source project for everyone, and we are open to everyone who want to use this system or contribute to it.
+## Contributors
+<a href="https://github.com/YeeZTech/YeeZ-Privacy-Computing/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=YeeZTech/YeeZ-Privacy-Computing" />
+</a>
+
+Made with [contrib.rocks](https://contrib.rocks).
+
+## Community
+
+- Wechat Official Account:
+- <img width="213" alt="CleanShot 2023-02-02 at 14 21 19@2x" src="https://user-images.githubusercontent.com/5715598/216247527-d60fbcc1-0de8-4a6c-88ba-9a1f51f903fc.png">
+
