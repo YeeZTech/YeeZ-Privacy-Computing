@@ -16,6 +16,7 @@ parse_command_line(int argc, char *argv[]) {
   bp::options_description decrypt("Decrypt message");
   bp::options_description sha3("Sha3 message");
   bp::options_description sign("Sign message");
+  bp::options_description verify("Verify signature");
 
   // clang-format off
   general.add_options()
@@ -29,6 +30,7 @@ parse_command_line(int argc, char *argv[]) {
     ("sha3", "to SHA3-256 message ")
     ("relay", "generate relay info")
     ("sign", "to sign message")
+    ("verify", "verify signature")
     ("help", "help message")
     ("version", "show version");
 
@@ -100,6 +102,14 @@ parse_command_line(int argc, char *argv[]) {
     ("use-privatekey-hex", bp::value<std::string>(), "local (Shu) private key hex")
     ("output", bp::value<std::string>(), "output result to file with JSON format");
 
+  verify.add_options()
+    ("use-param", bp::value<std::string>(), "message need to be verified")
+    ("param-format", bp::value<std::string>()->default_value("hex"), "param format, [ hex | text ]")
+    ("use-publickey-file", bp::value<std::string>(), "local (Shu) public key file")
+    ("use-publickey-hex", bp::value<std::string>(), "local (Shu) public key hex")
+    ("use-signature", bp::value<std::string>(), "message signature")
+    ("output", bp::value<std::string>(), "output result to file with JSON format");
+
   // clang-format on
 
   all.add(general)
@@ -111,7 +121,8 @@ parse_command_line(int argc, char *argv[]) {
       .add(decrypt)
       .add(sha3)
       .add(request)
-      .add(sign);
+      .add(sign)
+      .add(verify);
   bp::variables_map vm;
   auto parsedOptions = bp::command_line_parser(argc, argv)
                            .options(general)
@@ -134,6 +145,7 @@ parse_command_line(int argc, char *argv[]) {
   nds.push_back({"sha3", sha3, sha3_message});
   nds.push_back({"relay", relay, gen_relay_result_proof});
   nds.push_back({"sign", sign, sign_message});
+  nds.push_back({"verify", verify, verify_signature});
 
   for (auto it : nds) {
     if (vm.count(std::get<0>(it)) != 0u) {
