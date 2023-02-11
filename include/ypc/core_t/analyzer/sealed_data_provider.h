@@ -1,8 +1,8 @@
 #pragma once
-#include "eparser_t.h"
 #include "hpda/extractor/extractor_base.h"
 #include "ypc/common/limits.h"
 #include "ypc/core_t/analyzer/data_source.h"
+#include "ypc/core_t/analyzer/eparser_t_interface.h"
 #include "ypc/core_t/ecommon/package.h"
 #include "ypc/corecommon/package.h"
 #include "ypc/stbox/ebyte.h"

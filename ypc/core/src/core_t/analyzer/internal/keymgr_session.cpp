@@ -1,5 +1,5 @@
 #include "ypc/core_t/analyzer/internal/keymgr_session.h"
-#include "yaenclave_t.h"
+#include "ypc/core_t/analyzer/yaenclave_t_interface.h"
 #include "ypc/core_t/ecommon/signer_verify.h"
 
 namespace ypc {
