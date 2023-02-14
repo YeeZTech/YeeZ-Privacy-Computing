@@ -1,0 +1,27 @@
+#!/bin/bash
+if [ $# -ne 3 ]; then
+  echo "Invalid number of parameters!"
+  echo "Usage: dian_pubkey_verifier \$DIAN_PKEY \$YPC_INSTALL_DIR \$DCAP_SERVICE_URL"
+  exit
+fi
+
+dian_pkey=$1
+ypc_install_dir=$2
+dcap_url=$3
+
+# 1. generate quote
+dianshu_key_verify=${ypc_install_dir}/bin/dianshu_key_verify
+if [ ! -f "$dianshu_key_verify" ]; then
+  echo "Invalid directory of \"$YPC_INSTALL_DIR\"!"
+  echo "${dianshu_key_verify}: no such file!"
+  exit
+fi
+export LD_LIBRARY_PATH=$ypc_install_dir/lib:$LD_LIBRARY_PATH
+echo ""
+echo "Generate quote..."
+$dianshu_key_verify --pkey $dian_pkey --output quote.output
+
+# 2. verify quote
+echo ""
+echo "Verify quote..."
+curl -s -X POST -H "Content-Type:multipart/form-data" -F "quote=@quote.output" $dcap_url

@@ -1,0 +1,3 @@
+install(FILES dian_pubkey_verifier
+  PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
+  DESTINATION bin)
