@@ -15,7 +15,8 @@ target_include_directories(hpda PUBLIC
   "$<BUILD_INTERFACE:${FF_INCLUDE_DIR}>"
   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
   )
-install(TARGETS hpda EXPORT mod_hpda DESTINATION lib)
+install(TARGETS hpda EXPORT mod_hpda
+  DESTINATION "${lib_install_dir}")
 install(EXPORT mod_hpda
   DESTINATION "${config_install_dir}/hpda"
   NAMESPACE "${namespace}")

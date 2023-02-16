@@ -15,7 +15,7 @@ target_include_directories(terminus PUBLIC
   )
 
 install(TARGETS terminus EXPORT mod_terminus
-  DESTINATION lib)
+  DESTINATION "${lib_install_dir}")
 install(EXPORT mod_terminus
   DESTINATION "${config_install_dir}/toolkit"
   NAMESPACE "${namespace}"

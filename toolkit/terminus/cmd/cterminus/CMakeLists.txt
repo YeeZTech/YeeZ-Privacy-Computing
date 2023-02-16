@@ -14,6 +14,7 @@ target_include_directories(yterminus PUBLIC
   "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
   )
-install(TARGETS yterminus DESTINATION bin)
+install(TARGETS yterminus
+  DESTINATION "${bin_install_dir}")
 AddClangTidy(yterminus)
 EnableCoverage(yterminus)

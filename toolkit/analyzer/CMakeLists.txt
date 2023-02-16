@@ -17,6 +17,7 @@ target_include_directories(fid_analyzer PRIVATE
   "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
   )
 
-install(TARGETS fid_analyzer DESTINATION bin)
+install(TARGETS fid_analyzer
+  DESTINATION "${bin_install_dir}")
 AddClangTidy(fid_analyzer)
 EnableCoverage(fid_analyzer)

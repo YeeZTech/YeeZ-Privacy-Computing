@@ -8,8 +8,7 @@ target_include_directories(stbox_keccak PUBLIC
 )
 
 install(TARGETS stbox_keccak EXPORT mod_keccak
-  DESTINATION lib
-)
+  DESTINATION "${lib_install_dir}")
 
 install(EXPORT mod_keccak
   DESTINATION "${config_install_dir}/stbox"
@@ -26,8 +25,7 @@ target_include_directories(stbox_keccak_t PUBLIC
 )
 
 install(TARGETS stbox_keccak_t EXPORT mod_keccak_t
-  DESTINATION lib
-)
+  DESTINATION "${lib_install_dir}")
 
 install(EXPORT mod_keccak_t
   DESTINATION "${config_install_dir}/stbox"

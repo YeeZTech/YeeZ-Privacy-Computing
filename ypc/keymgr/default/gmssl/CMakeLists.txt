@@ -27,4 +27,5 @@ target_link_libraries(keymgr_gmssl PRIVATE stbox_channel_t stbox_crypto_t gmssl_
 enclave_sign(keymgr_gmssl KEY ${PROJECT_SOURCE_DIR}/ypc/keymgr/default/enclave/ekeymgr_private.pem
   CONFIG ${PROJECT_SOURCE_DIR}/ypc/keymgr/default/enclave/ekeymgr.config.xml)
 
-install(FILES ${PROJECT_SOURCE_DIR}/lib/keymgr_gmssl.signed.so DESTINATION lib)
+install(FILES ${PROJECT_SOURCE_DIR}/lib/keymgr_gmssl.signed.so
+  DESTINATION "${lib_install_dir}")

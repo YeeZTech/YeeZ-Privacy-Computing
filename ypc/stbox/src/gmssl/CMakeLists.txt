@@ -29,8 +29,8 @@ target_include_directories(stbox_gmssl PUBLIC
 )
 
 install(TARGETS stbox_gmssl EXPORT mod_gmssl
-  DESTINATION lib
-)
+  DESTINATION "${lib_install_dir}")
+
 install(EXPORT mod_gmssl
   DESTINATION "${config_install_dir}/stbox"
   NAMESPACE "${namespace}")
@@ -50,7 +50,8 @@ target_include_directories(stbox_gmssl_t PUBLIC
 )
 
 install(TARGETS stbox_gmssl_t EXPORT mod_gmssl_t
-  DESTINATION lib COMPONENT c_stbox_common OPTIONAL)
+  DESTINATION "${lib_install_dir}"
+  COMPONENT c_stbox_common OPTIONAL)
 
 install(EXPORT mod_gmssl_t
   DESTINATION "${config_install_dir}/stbox"

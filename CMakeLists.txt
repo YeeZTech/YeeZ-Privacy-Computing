@@ -82,7 +82,10 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/)
 
 include(ClangTidy)
 include(GNUInstallDirs)
-set(config_install_dir "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
+set(config_install_dir "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
+set(include_install_dir "${CMAKE_INSTALL_PREFIX}/include")
+set(lib_install_dir "${CMAKE_INSTALL_PREFIX}/lib")
+set(bin_install_dir "${CMAKE_INSTALL_PREFIX}/bin")
 
 set(generated_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
 
@@ -108,7 +111,7 @@ configure_package_config_file("cmake/Config.cmake.in"
   PATH_VARS LIB_INSTALL_DIR INCLUDE_INSTALL_DIR PROJECT_NAME)
 
 install(DIRECTORY include/hpda include/toolkit include/ypc
-  DESTINATION "${CMAKE_INSTALL_PREFIX}/include")
+  DESTINATION "${include_install_dir}")
 
 message(STATUS "--------SGX_MODE: " ${SGX_MODE})
 message(STATUS "--------SGX_HW: " ${SGX_HW})

@@ -19,7 +19,7 @@ target_include_directories(stbox_channel_t PUBLIC
 )
 
 install(TARGETS stbox_channel_t EXPORT mod_channel_t
-  DESTINATION lib)
+  DESTINATION "${lib_install_dir}")
 
 install(EXPORT mod_channel_t
   DESTINATION "${config_install_dir}/stbox"

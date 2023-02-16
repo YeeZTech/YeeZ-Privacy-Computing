@@ -10,8 +10,7 @@ target_include_directories(common_t PUBLIC
   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
 
 install(TARGETS common_t EXPORT mod_common_t
-  DESTINATION lib
-  )
+  DESTINATION "${lib_install_dir}")
 
 install(EXPORT mod_common_t
   DESTINATION "${config_install_dir}/common"
@@ -26,8 +25,7 @@ target_include_directories(common PUBLIC
   )
 
 install(TARGETS common EXPORT mod_common
-  DESTINATION lib
-  )
+  DESTINATION "${lib_install_dir}")
 
 install(EXPORT mod_common
   DESTINATION "${config_install_dir}/common"

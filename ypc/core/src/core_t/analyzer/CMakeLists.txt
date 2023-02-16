@@ -32,7 +32,7 @@ target_link_libraries(analyzer_t PUBLIC stbox_channel_t stbox_crypto_t)
 
 install(TARGETS analyzer_t
   EXPORT mod_analyzer_t
-  DESTINATION lib)
+  DESTINATION "${lib_install_dir}")
 
 install(EXPORT mod_analyzer_t
   DESTINATION "${config_install_dir}/core"

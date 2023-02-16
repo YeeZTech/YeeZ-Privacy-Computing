@@ -13,8 +13,7 @@ target_include_directories(gmssl_t PUBLIC
   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
 target_link_libraries(gmssl_t PUBLIC stbox_common_t stbox_gmssl_t)
 install(TARGETS gmssl_t EXPORT mod_gmssl_t
-  DESTINATION lib
-  )
+  DESTINATION "${lib_install_dir}")
 
 install(EXPORT mod_gmssl_t
   DESTINATION "${config_install_dir}/core"

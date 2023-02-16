@@ -18,7 +18,7 @@ target_include_directories(stbox_crypto_t PUBLIC
 )
 
 install(TARGETS stbox_crypto_t EXPORT mod_crypto_t
-  DESTINATION lib)
+  DESTINATION "${lib_install_dir}")
 
 install(EXPORT mod_crypto_t
   DESTINATION "${config_install_dir}/stbox"

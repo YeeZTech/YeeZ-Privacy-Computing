@@ -10,7 +10,7 @@ target_link_libraries(keymgr_utils PUBLIC core)
 
 install(TARGETS keymgr_utils
   EXPORT mod_keymgr_utils
-  DESTINATION lib )
+  DESTINATION "${lib_install_dir}")
 
 install(EXPORT mod_keymgr_utils
   DESTINATION "${config_install_dir}/keymgr"

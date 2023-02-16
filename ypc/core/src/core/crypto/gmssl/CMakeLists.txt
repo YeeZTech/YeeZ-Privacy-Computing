@@ -16,7 +16,7 @@ target_link_directories(core_gmssl PUBLIC ${OPENSSL_LIB})
 target_link_libraries(core_gmssl PUBLIC ${OPENSSL_CRYPTO_LIBRARY} stbox_gmssl)
 
 install(TARGETS core_gmssl EXPORT mod_core_gmssl
-  DESTINATION lib)
+  DESTINATION "${lib_install_dir}")
 
 install(EXPORT mod_core_gmssl
   DESTINATION "${config_install_dir}/core"

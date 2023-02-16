@@ -16,7 +16,7 @@ target_include_directories(core_stdeth PUBLIC
 target_link_libraries(core_stdeth PUBLIC ${OPENSSL_CRYPTO_LIBRARY} stbox_keccak stbox_secp256k1)
 
 install(TARGETS core_stdeth EXPORT mod_core_stdeth
-  DESTINATION lib)
+  DESTINATION "${lib_install_dir}")
 
 install(EXPORT mod_core_stdeth
   DESTINATION "${config_install_dir}/core"

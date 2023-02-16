@@ -21,7 +21,7 @@ target_include_directories(stbox_common_t PUBLIC
 
 AddClangTidy(stbox_common_t)
 install(TARGETS stbox_common_t EXPORT mod_stbox_common_t
-  DESTINATION lib)
+  DESTINATION "${lib_install_dir}")
 
 install(EXPORT mod_stbox_common_t
   DESTINATION "${config_install_dir}/stbox"
@@ -54,7 +54,7 @@ target_include_directories(stbox_common PUBLIC
 target_link_libraries(stbox_common PRIVATE glog)
 
 install(TARGETS stbox_common EXPORT mod_stbox_common
-  DESTINATION lib)
+  DESTINATION "${lib_install_dir}")
 
 install(EXPORT mod_stbox_common
   DESTINATION "${config_install_dir}/stbox"

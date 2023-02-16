@@ -32,4 +32,4 @@ else()
     CONFIG ekeymgr.config.xml)
 endif()
 install(FILES ${PROJECT_SOURCE_DIR}/lib/keymgr.signed.so
-  DESTINATION lib)
+  DESTINATION "${lib_install_dir}")

@@ -6,7 +6,9 @@ add_sgx_library(stbox_secp256k1_t
   stbox_secp256k1_t
   SRCS "${secp256k1_src}")
 
-install(TARGETS stbox_secp256k1_t DESTINATION lib COMPONENT c_stbox_common OPTIONAL)
+install(TARGETS stbox_secp256k1_t
+  DESTINATION "${lib_install_dir}"
+  COMPONENT c_stbox_common OPTIONAL)
 
 target_include_directories(stbox_secp256k1_t PUBLIC
   "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
@@ -25,7 +27,7 @@ target_compile_definitions(stbox_secp256k1_t PUBLIC
   USE_LOW_HEAP)
 
 install(TARGETS stbox_secp256k1_t EXPORT mod_secp256k1_t
-  DESTINATION lib)
+  DESTINATION "${lib_install_dir}")
 
 install(EXPORT mod_secp256k1_t
   DESTINATION "${config_install_dir}/stbox"
@@ -51,8 +53,7 @@ target_compile_definitions(stbox_secp256k1 PUBLIC
 )
 
 install(TARGETS stbox_secp256k1 EXPORT mod_secp256k1
-  DESTINATION lib
-)
+  DESTINATION "${lib_install_dir}")
 
 install(EXPORT mod_secp256k1
   DESTINATION "${config_install_dir}/stbox"
