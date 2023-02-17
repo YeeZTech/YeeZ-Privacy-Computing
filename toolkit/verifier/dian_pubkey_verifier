@@ -2,6 +2,7 @@
 if [ $# -ne 3 ]; then
   echo "Invalid number of parameters!"
   echo "Usage: dian_pubkey_verifier \$DIAN_PKEY \$YPC_INSTALL_DIR \$DCAP_SERVICE_URL"
+  echo "The default value of \$YPC_INSTALL_DIR is: /usr/local"
   exit
 fi
 
