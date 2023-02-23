@@ -13,11 +13,13 @@ target_include_directories(keymgr_module INTERFACE
 target_link_libraries(keymgr_module PUBLIC stbox_common keymgr_utils)
 
 install(TARGETS keymgr_module EXPORT mod_keymgr_module
-  DESTINATION "${lib_install_dir}")
+  DESTINATION "${lib_install_dir}"
+  COMPONENT keymgr)
 
 install(EXPORT mod_keymgr_module
   DESTINATION "${config_install_dir}/keymgr"
   NAMESPACE "${namespace}"
+  COMPONENT keymgr
   )
 
 add_sgx_executable(keymgr_tool

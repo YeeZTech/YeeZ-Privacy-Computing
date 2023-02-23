@@ -19,10 +19,12 @@ target_link_directories(core_parser_module INTERFACE
   "$<INSTALL_INTERFACE:${SGX_LIBRARY_DIR}>")
 
 install(TARGETS core_parser_module EXPORT mod_core_parser_module
-  DESTINATION "${lib_install_dir}")
+  DESTINATION "${lib_install_dir}"
+  COMPONENT core)
 install(EXPORT mod_core_parser_module
   DESTINATION "${config_install_dir}/core"
   NAMESPACE "${namespace}"
+  COMPONENT core
   )
 
 AddClangTidy(core_parser_module)

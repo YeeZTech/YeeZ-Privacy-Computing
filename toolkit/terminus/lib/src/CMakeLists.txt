@@ -15,10 +15,12 @@ target_include_directories(terminus PUBLIC
   )
 
 install(TARGETS terminus EXPORT mod_terminus
-  DESTINATION "${lib_install_dir}")
+  DESTINATION "${lib_install_dir}"
+  COMPONENT terminus)
 install(EXPORT mod_terminus
   DESTINATION "${config_install_dir}/toolkit"
   NAMESPACE "${namespace}"
+  COMPONENT terminus
   )
 
 AddClangTidy(terminus)

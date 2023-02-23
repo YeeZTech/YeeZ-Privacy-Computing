@@ -10,11 +10,13 @@ target_include_directories(common_t PUBLIC
   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
 
 install(TARGETS common_t EXPORT mod_common_t
-  DESTINATION "${lib_install_dir}")
+  DESTINATION "${lib_install_dir}"
+  COMPONENT common_t)
 
 install(EXPORT mod_common_t
   DESTINATION "${config_install_dir}/common"
-  NAMESPACE "${namespace}")
+  NAMESPACE "${namespace}"
+  COMPONENT common_t)
 endif()
 
 add_library(common SHARED ${src})
@@ -25,11 +27,13 @@ target_include_directories(common PUBLIC
   )
 
 install(TARGETS common EXPORT mod_common
-  DESTINATION "${lib_install_dir}")
+  DESTINATION "${lib_install_dir}"
+  COMPONENT common)
 
 install(EXPORT mod_common
   DESTINATION "${config_install_dir}/common"
-  NAMESPACE "${namespace}")
+  NAMESPACE "${namespace}"
+  COMPONENT common)
 
 add_version(common)
 

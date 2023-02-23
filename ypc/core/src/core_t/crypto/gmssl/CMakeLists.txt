@@ -13,10 +13,12 @@ target_include_directories(gmssl_t PUBLIC
   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
 target_link_libraries(gmssl_t PUBLIC stbox_common_t stbox_gmssl_t)
 install(TARGETS gmssl_t EXPORT mod_gmssl_t
-  DESTINATION "${lib_install_dir}")
+  DESTINATION "${lib_install_dir}"
+  COMPONENT gmssl_t)
 
 install(EXPORT mod_gmssl_t
   DESTINATION "${config_install_dir}/core"
-  NAMESPACE "${namespace}")
+  NAMESPACE "${namespace}"
+  COMPONENT gmssl_t)
 
 AddClangTidy(gmssl_t)

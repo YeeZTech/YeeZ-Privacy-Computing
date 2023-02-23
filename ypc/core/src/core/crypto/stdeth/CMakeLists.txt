@@ -16,11 +16,13 @@ target_include_directories(core_stdeth PUBLIC
 target_link_libraries(core_stdeth PUBLIC ${OPENSSL_CRYPTO_LIBRARY} stbox_keccak stbox_secp256k1)
 
 install(TARGETS core_stdeth EXPORT mod_core_stdeth
-  DESTINATION "${lib_install_dir}")
+  DESTINATION "${lib_install_dir}"
+  COMPONENT stdeth)
 
 install(EXPORT mod_core_stdeth
   DESTINATION "${config_install_dir}/core"
   NAMESPACE "${namespace}"
+  COMPONENT stdeth
   )
 
 AddClangTidy(core_stdeth)

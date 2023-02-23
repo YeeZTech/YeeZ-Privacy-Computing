@@ -21,11 +21,13 @@ target_include_directories(stbox_common_t PUBLIC
 
 AddClangTidy(stbox_common_t)
 install(TARGETS stbox_common_t EXPORT mod_stbox_common_t
-  DESTINATION "${lib_install_dir}")
+  DESTINATION "${lib_install_dir}"
+  COMPONENT stbox_t)
 
 install(EXPORT mod_stbox_common_t
   DESTINATION "${config_install_dir}/stbox"
-  NAMESPACE "${namespace}")
+  NAMESPACE "${namespace}"
+  COMPONENT stbox_t)
 
 set(stbox_core_src ${stbox_src} usgx/error_message.cpp
   usgx/sgx_module.cpp
@@ -54,11 +56,13 @@ target_include_directories(stbox_common PUBLIC
 target_link_libraries(stbox_common PRIVATE glog)
 
 install(TARGETS stbox_common EXPORT mod_stbox_common
-  DESTINATION "${lib_install_dir}")
+  DESTINATION "${lib_install_dir}"
+  COMPONENT stbox)
 
 install(EXPORT mod_stbox_common
   DESTINATION "${config_install_dir}/stbox"
-  NAMESPACE "${namespace}")
+  NAMESPACE "${namespace}"
+  COMPONENT stbox)
 
 AddClangTidy(stbox_common)
 

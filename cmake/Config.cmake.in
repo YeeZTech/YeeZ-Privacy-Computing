@@ -11,7 +11,6 @@ add_component(common
 add_component(common_t
   COMP_TARGETS common/mod_common_t.cmake)
 
-
 add_component(stbox
   COMP_TARGETS stbox/mod_stbox_common.cmake)
 add_component(stbox_t
@@ -22,13 +21,13 @@ add_component(gmssl
   COMP_TARGETS "stbox/mod_gmssl.cmake core/mod_core_gmssl.cmake"
   )
 add_component(gmssl_t
-  COMP_TARGETS "stbox/mod_stbox_common_t.cmake stbox/mod_gmssl_t.cmake core/mod_gmssl_t.cmake")
+  COMP_TARGETS "stbox/mod_stbox_common_t.cmake stbox/mod_gmssl_t.cmake core/mod_gmssl_t.cmake core/mod_gmssl_ecc_t.cmake")
 
 add_component(stdeth
   COMP_TARGETS "stbox/mod_keccak.cmake core/mod_core_stdeth.cmake stbox/mod_secp256k1.cmake")
 
 add_component(stdeth_t
-  COMP_TARGETS "stbox/mod_stbox_common_t.cmake stbox/mod_secp256k1_t.cmake stbox/mod_keccak_t.cmake core/mod_stdeth_t.cmake")
+  COMP_TARGETS "stbox/mod_stbox_common_t.cmake stbox/mod_secp256k1_t.cmake stbox/mod_keccak_t.cmake core/mod_stdeth_t.cmake core/mod_stdeth_ecc_t.cmake")
 
 add_component(core
   COMP_TARGETS "common/mod_common.cmake stbox/mod_stbox_common.cmake core/mod_core.cmake core/mod_core_parser_module.cmake")
@@ -40,10 +39,12 @@ add_component(core_t
   #COMP_TARGETS core/mod_core_parser_module.cmake)
 
 add_component(keymgr
-  COMP_TARGETS "common/mod_common.cmake stbox/mod_stbox_common.cmake core/mod_core.cmake keymgr/mod_keymgr_utils.cmake keymgr/mod_keymgr_module.cmake")
+  COMP_TARGETS "keymgr/mod_keymgr_utils.cmake keymgr/mod_keymgr_module.cmake")
 
+add_component(terminus
+  COMP_TARGETS "toolkit/mod_terminus.cmake")
 
-set(_supported_comp common stbox gmssl stdeth core keymgr)
+set(_supported_comp common stbox gmssl stdeth core keymgr terminus)
 
 if(CMAKE_BUILD_TYPE STREQUAL "")
   message(STATUS "CMAKE_BUILD_TYPE not defined, use Debug as default")

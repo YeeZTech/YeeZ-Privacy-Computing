@@ -36,11 +36,13 @@ target_link_libraries(core PUBLIC
 #target_link_libraries(core INTERFACE core_parser_module)
 
 install(TARGETS core EXPORT mod_core
-  DESTINATION "${lib_install_dir}")
+  DESTINATION "${lib_install_dir}"
+  COMPONENT core)
 
 install(EXPORT mod_core
   DESTINATION "${config_install_dir}/core"
   NAMESPACE "${namespace}"
+  COMPONENT core
   )
 AddClangTidy(core)
 EnableCoverage(core)

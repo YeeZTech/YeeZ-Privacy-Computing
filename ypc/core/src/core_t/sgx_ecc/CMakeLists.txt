@@ -17,11 +17,13 @@ target_include_directories(gmssl_ecc_t PUBLIC
   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
 target_link_libraries(gmssl_ecc_t PUBLIC stbox_common_t stbox_crypto_t stbox_secp256k1_t stbox_keccak_t)
 install(TARGETS gmssl_ecc_t EXPORT mod_gmssl_ecc_t
-  DESTINATION "${lib_install_dir}")
+  DESTINATION "${lib_install_dir}"
+  COMPONENT gmssl_t)
 
 install(EXPORT mod_gmssl_ecc_t
   DESTINATION "${config_install_dir}/core"
-  NAMESPACE "${namespace}")
+  NAMESPACE "${namespace}"
+  COMPONENT gmssl_t)
 
 target_include_directories(stdeth_ecc_t PUBLIC
   "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
@@ -29,11 +31,13 @@ target_include_directories(stdeth_ecc_t PUBLIC
   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
 target_link_libraries(stdeth_ecc_t PUBLIC stbox_common_t stbox_crypto_t stbox_secp256k1_t stbox_keccak_t)
 install(TARGETS stdeth_ecc_t EXPORT mod_stdeth_ecc_t
-  DESTINATION "${lib_install_dir}")
+  DESTINATION "${lib_install_dir}"
+  COMPONENT stdeth_t)
 
 install(EXPORT mod_stdeth_ecc_t
   DESTINATION "${config_install_dir}/core"
-  NAMESPACE "${namespace}")
+  NAMESPACE "${namespace}"
+  COMPONENT stdeth_t)
 
 AddClangTidy(stdeth_ecc_t)
 AddClangTidy(gmssl_ecc_t)

@@ -32,10 +32,12 @@ target_link_libraries(analyzer_t PUBLIC stbox_channel_t stbox_crypto_t)
 
 install(TARGETS analyzer_t
   EXPORT mod_analyzer_t
-  DESTINATION "${lib_install_dir}")
+  DESTINATION "${lib_install_dir}"
+  COMPONENT core_t)
 
 install(EXPORT mod_analyzer_t
   DESTINATION "${config_install_dir}/core"
-  NAMESPACE "${namespace}")
+  NAMESPACE "${namespace}"
+  COMPONENT core_t)
 
 AddClangTidy(analyzer_t)

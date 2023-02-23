@@ -16,11 +16,13 @@ target_link_directories(core_gmssl PUBLIC ${OPENSSL_LIB})
 target_link_libraries(core_gmssl PUBLIC ${OPENSSL_CRYPTO_LIBRARY} stbox_gmssl)
 
 install(TARGETS core_gmssl EXPORT mod_core_gmssl
-  DESTINATION "${lib_install_dir}")
+  DESTINATION "${lib_install_dir}"
+  COMPONENT gmssl)
 
 install(EXPORT mod_core_gmssl
   DESTINATION "${config_install_dir}/core"
   NAMESPACE "${namespace}"
+  COMPONENT gmssl
   )
 
 AddClangTidy(core_gmssl)

@@ -27,11 +27,13 @@ target_compile_definitions(stbox_secp256k1_t PUBLIC
   USE_LOW_HEAP)
 
 install(TARGETS stbox_secp256k1_t EXPORT mod_secp256k1_t
-  DESTINATION "${lib_install_dir}")
+  DESTINATION "${lib_install_dir}"
+  COMPONENT stdeth_t)
 
 install(EXPORT mod_secp256k1_t
   DESTINATION "${config_install_dir}/stbox"
-  NAMESPACE "${namespace}")
+  NAMESPACE "${namespace}"
+  COMPONENT stdeth_t)
 endif()
 
 add_library(stbox_secp256k1 SHARED ${secp256k1_src})
@@ -53,10 +55,12 @@ target_compile_definitions(stbox_secp256k1 PUBLIC
 )
 
 install(TARGETS stbox_secp256k1 EXPORT mod_secp256k1
-  DESTINATION "${lib_install_dir}")
+  DESTINATION "${lib_install_dir}"
+  COMPONENT stdeth)
 
 install(EXPORT mod_secp256k1
   DESTINATION "${config_install_dir}/stbox"
-  NAMESPACE "${namespace}")
+  NAMESPACE "${namespace}"
+  COMPONENT stdeth)
 
 add_version(stbox_secp256k1)
