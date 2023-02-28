@@ -8,7 +8,9 @@ add_executable(yterminus main.cpp
   relay.cpp
   request.cpp
   sign.cpp)
-target_link_libraries(yterminus terminus glog boost_program_options boost_system core)
+target_link_libraries(yterminus
+  PUBLIC core terminus
+  PRIVATE glog boost_program_options boost_system core)
 
 target_include_directories(yterminus PUBLIC
   "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"

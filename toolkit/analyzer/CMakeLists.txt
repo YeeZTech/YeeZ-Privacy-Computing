@@ -5,12 +5,8 @@ add_executable(fid_analyzer main.cpp
   )
 
 target_link_libraries(fid_analyzer
-  stbox_common
-  core
-  core_parser_module
-  keymgr_module
-  keymgr_utils
-  glog
+  PUBLIC core core_parser_module keymgr_module
+  PRIVATE stbox_common keymgr_utils glog
   )
 target_include_directories(fid_analyzer PRIVATE
   "${PROJECT_SOURCE_DIR}/toolkit/analyzer/"
