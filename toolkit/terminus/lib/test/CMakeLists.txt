@@ -9,9 +9,9 @@ target_include_directories(gtest_terminus PUBLIC
   "$<BUILD_INTERFACE:${FF_INCLUDE_DIR}>"
   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
   )
-target_link_libraries(gtest_terminus
-  PUBLIC terminus
-  PRIVATE gtest terminus ${CMAKE_THREAD_LIBS_INIT} boost_system
+target_link_libraries(gtest_terminus gtest terminus
+  ${CMAKE_THREAD_LIBS_INIT}
+  boost_system
   )
 
 gtest_discover_tests(gtest_terminus)

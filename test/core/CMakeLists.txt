@@ -26,9 +26,7 @@ if(SGX_FOUND)
   target_link_directories(gtest_core PRIVATE "${SGX_LIBRARY_DIR}")
 endif()
 
-target_link_libraries(gtest_core
-  PUBLIC common core
-  PRIVATE gtest core_stdeth)
+target_link_libraries(gtest_core common gtest core core_stdeth)
 
 add_test(NAME test-core
   COMMAND gtest_core)
@@ -45,20 +43,14 @@ add_untrusted_library(test_ypc_lib SHARED
   EDL ./enclave/enclave.edl
   EDL_SEARCH_PATHS ${PROJECT_SOURCE_DIR}/include/ypc/edl/:${PROJECT_SOURCE_DIR}/include/ypc/stbox)
 
-target_link_libraries(test_ypc_lib
-  PUBLIC stboc_common
-  PRIVATE core_stdeth)
+target_link_libraries(test_ypc_lib PRIVATE core_stdeth stbox_common)
 
 add_executable(gen_sign_for_ypc gen_sign_for_ypc.cpp)
 target_include_directories(gen_sign_for_ypc PRIVATE "${SGX_INCLUDE_DIR}")
 target_link_directories(gen_sign_for_ypc PRIVATE "${SGX_LIBRARY_DIR}")
-target_link_libraries(gen_sign_for_ypc
-  PUBLIC test_ypc_lib
-  PRIVATE core stbox_common)
+target_link_libraries(gen_sign_for_ypc test_ypc_lib core stbox_common)
 
 add_dependencies(gen_sign_for_ypc test_ypc_enclave-sign)
-target_link_libraries(gtest_core
-  PUBLIC core
-  PRIVATE gtest stbox_common test_ypc_lib)
+target_link_libraries(gtest_core gtest core stbox_common test_ypc_lib)
 endif()
 
