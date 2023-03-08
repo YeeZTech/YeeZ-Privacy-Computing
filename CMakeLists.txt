@@ -132,6 +132,7 @@ endif()
 Doxygen(${PROJECT_SOURCE_DIR})
 
 add_subdirectory(toolkit)
+add_subdirectory(test/integrate)
 
 install(
   FILES "${project_config}" "${version_config}" "${util_config}"
