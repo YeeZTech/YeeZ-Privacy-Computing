@@ -7,7 +7,7 @@ Fidelius has launched an all-in-one privacy protection solution for data collabo
 The following figure describes the abstract process of data collaboration based on Fidelius. The participants include the data provider and the data user. Fidelius middleware runs on both the data provider and the data user, and the two parties interact with Fidelius to achieve data collaboration. The original data will not leave the Fidelius middleware of the data provider, fundamentally avoiding the problem of privacy data leakage.
 
 <p align="center">
-  <img src="Fidelius-Infr.png" alt="drawing" width="61.8%"/>
+  <img src="doc/Fidelius-Infr.png" alt="drawing" width="61.8%"/>
 </p>
 
 In the figure, the trusted third party can choose to be a blockchain network. As the blockchain itself has characteristics such as a decentralized network and public verifiability, Fidelius can use it as a trusted transmission channel and data computing verification platform.
@@ -18,9 +18,9 @@ In the figure, the trusted third party can choose to be a blockchain network. As
 ## Quick Start
 Fidelius runs on Intel SGX and requires confirmation that the hardware environment is equipped with a supported central processing unit (CPU), BIOS settings, and the installation of drivers and related software. Even without the required hardware environment, the debug version can still run after installing the Intel SGX SDK.
 
-If you have the relevant hardware, please refer to the [documentation](./Release_ZH.md) and run the Fidelius release version.
+If you have the relevant hardware, please refer to the [documentation](./doc/Release_ZH.md) and run the Fidelius release version.
 
-If you do not have the relevant hardware, please refer to the [documentation](./Debug_ZH.md) and run the Fidelius debug version.
+If you do not have the relevant hardware, please refer to the [documentation](./doc/Debug_ZH.md) and run the Fidelius debug version.
 
 ## Advanced Use
 - [doxygen documentation](https://doc-fidelius.yeez.tech/index.html)
