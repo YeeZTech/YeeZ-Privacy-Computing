@@ -18,9 +18,9 @@ In the figure, the trusted third party can choose to be a blockchain network. As
 ## Quick Start
 Fidelius runs on Intel SGX and requires confirmation that the hardware environment is equipped with a supported central processing unit (CPU), BIOS settings, and the installation of drivers and related software. Even without the required hardware environment, the debug version can still run after installing the Intel SGX SDK.
 
-If you have the relevant hardware, please refer to the [documentation](./doc/Release_ZH.md) and run the Fidelius release version.
+If you have the relevant hardware, please refer to the [documentation](./doc/Release_EN.md) and run the Fidelius release version.
 
-If you do not have the relevant hardware, please refer to the [documentation](./doc/Debug_ZH.md) and run the Fidelius debug version.
+If you do not have the relevant hardware, please refer to the [documentation](./doc/Debug_EN.md) and run the Fidelius debug version.
 
 ## Advanced Use
 - [doxygen documentation](https://doc-fidelius.yeez.tech/index.html)
