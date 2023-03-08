@@ -6,8 +6,7 @@ Fidelius Debug 版本不对硬件有特殊要求，但需要安装软件依赖�
 - 确保拥有如下操作系统：
   * Ubuntu 18.04+ LTS Server 64bits
 
-- 根据具体操作系统，安装 [SGX
-  SDK](https://download.01.org/intel-sgx/latest/linux-latest/distro/)。
+- 根据具体操作系统，安装 [SGX SDK](https://download.01.org/intel-sgx/latest/linux-latest/distro/)。
 
 - 安装依赖工具（protobuf，glog，boost，cppconn等）：
 ```
