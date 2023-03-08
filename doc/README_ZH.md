@@ -11,7 +11,7 @@ Fidelius 基于“数据可用不可见”思想，推出了面向数据合作�
   <img src="Fidelius-Infr.png" alt="drawing" width="61.8%"/>
 </p>
 
-相比传统的数据合作模式，Fidelius 可选择引入区块链网络。由于区块链本身具有去中心化网络、公开可验证等特性，Fidelius 将其作为可信的传输通道和数据计算验证平台。
+其中，图中的可信第三方可以选择为区块链网络。由于区块链本身具有去中心化网络、公开可验证等特性，Fidelius 可将其作为可信的传输通道和数据计算验证平台。
 
 ## 文档
 - [Fidelius：面向数据合作的隐私保护区块链解决方案](https://download.yeez.tech/doc/Fidelius_Introduction.pdf)
