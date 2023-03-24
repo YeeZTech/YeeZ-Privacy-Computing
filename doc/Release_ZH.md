@@ -74,7 +74,7 @@ $ cd YPC-algo-example && mkdir -p build && cd build
 $ cmake -DCMAKE_PREFIX_PATH=$YPC_INSTALL_DIR/lib/cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
 $ make -j8
 ```
-**注意**:`$YPC_INSTALL_DIR`为 Fidelius 组件安装路径，默认情况下为系统路径`/usr/local`。
+**注意**:`$YPC_INSTALL_DIR`为 Fidelius 组件安装路径，默认情况下为系统路径`/opt/ypc`。
 
 - 运行示例代码：
 ```

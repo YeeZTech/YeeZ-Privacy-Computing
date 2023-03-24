@@ -71,7 +71,7 @@ $ cd YPC-algo-example && mkdir -p build && cd build
 $ cmake -DCMAKE_PREFIX_PATH=$YPC_INSTALL_DIR/lib/cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
 $ make -j8
 ```
-**Note**:`$YPC_INSTALL_DIR` is the installation path, which by default is `/usr/local`.
+**Note**:`$YPC_INSTALL_DIR` is the installation path, which by default is `/opt/ypc`.
 
 - Run example code:
 ```
