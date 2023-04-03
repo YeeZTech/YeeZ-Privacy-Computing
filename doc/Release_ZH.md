@@ -6,7 +6,7 @@
 
   * Ubuntu 20.04 LTS Server 64bits
 
-- 确保 BIOS 和 CPU 启用 SGX，请遵循 [SGX-hardware](https://github.com/ayeks/SGX-hardware) 中的 [README.md](https://github.com/ayeks/SGX-hardware/blob/master/README.md) 。或直接使用如下方式进行确认：
+- 确保 BIOS 和 CPU 启用 SGX，请遵循 [SGX-hardware](https://github.com/ayeks/SGX-hardware) 中的 [README](https://github.com/ayeks/SGX-hardware/blob/master/README.md) 。或直接使用如下方式进行确认：
 ```
  $ git clone https://github.com/ayeks/SGX-hardware.git
  $ cd SGX-hardware
@@ -26,7 +26,7 @@ sgx 2 supported: 0
 ```
 若 sgx available 字段为 0，则 CPU 本身不支持 Intel SGX；若 sgx 1 supported 字段为0，则说明 BIOS 不支持或未开启 Intel SGX 功能。为了能够执行 Intel SGX 的程序，还需要按照下一步正确安装 Intel SGX SDK。
 
-- 按照 [linux-sgx](https://github.com/intel/linux-sgx) 项目中 [README.md](https://github.com/intel/linux-sgx/blob/master/README.md) 文档进行编译并安装`Intel(R) SGX`驱动`SDK`和`PSW`。注意：硬件环境不支持 SGX 的情况下无法安装`PSW`。
+- 按照 linux-sgx 项目中 [README](https://github.com/intel/linux-sgx/blob/master/README.md) 文档进行编译并安装`Intel(R) SGX`驱动`SDK`和`PSW`。注意：硬件环境不支持 SGX 的情况下无法安装`PSW`。
 
 
 - 安装依赖工具（protobuf，glog，boost，cppconn等）：
@@ -55,7 +55,7 @@ $ echo -e "deb https://repo.yeez.tech/ release main" | sudo tee -a /etc/apt/sour
 - 更新系统软件源并安装 Fidelius 组件：
 ```
 $ sudo apt update
-$ sudo apt install ypc=0.5.0 fflib=0.1.1
+$ sudo apt install ypc fflib
 ```
 
 
@@ -65,16 +65,16 @@ $ sudo apt install ypc=0.5.0 fflib=0.1.1
 基于 Iris 数据集的 K-Means 聚类是机器学习中一个非常经典的学习示例。
 - 下载示例代码：
 ```
-$ git clone --depth 1 --branch v0.5.0 https://github.com/YeeZTech/YPC-algo-example.git
+$ git clone --depth 1 --branch v0.5.1 https://github.com/YeeZTech/YPC-algo-example.git
 ```
 
 - 编译示例代码：
 ```
-$ cd YPC-algo-example && mkdir build && cd build
-$ cmake -DYPC_INSTALL_DIR=$PATH_TO_YPC_INSTALL_DIR -DSGX_MODE=PreRelease -DSGX_HW=ON ..
-$ make -j4
+$ cd YPC-algo-example && mkdir -p build && cd build
+$ cmake -DCMAKE_PREFIX_PATH=$YPC_INSTALL_DIR/lib/cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
+$ make -j8
 ```
-**注意**:`$PATH_TO_YPC_INSTALL_DIR`为 Fidelius 组件安装路径，默认情况下为系统路径`/usr/`。
+**注意**:`$YPC_INSTALL_DIR`为 Fidelius 组件安装路径，默认情况下为系统路径`/opt/ypc`。
 
 - 运行示例代码：
 ```
