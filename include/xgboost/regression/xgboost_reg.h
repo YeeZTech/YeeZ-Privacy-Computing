@@ -11,6 +11,7 @@
 #include "xgboost/utils/xgboost_utils.h"
 #include "xgboost_reg_data.h"
 #include "xgboost_reg_eval.h"
+
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
@@ -167,7 +168,7 @@ public:
     for (size_t i = 0; i < evals_.size(); ++i) {
       std::vector<float> &preds = this->eval_preds_[i];
       this->PredictBuffer(preds, *evals_[i], buffer_offset);
-      // evaluator_.Eval(fo, evname_[i].c_str(), preds, (*evals_[i]).labels);
+      evaluator_.Eval(evname_[i].c_str(), preds, (*evals_[i]).labels);
       buffer_offset += static_cast<int>(evals_[i]->Size());
     }
     // fprintf(fo, "\n");

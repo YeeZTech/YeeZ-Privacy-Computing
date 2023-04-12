@@ -10,6 +10,8 @@
 #include <vector>
 #include "xgboost_tree_model.h"
 
+#define MAX_CAPACITY 4
+
 namespace xgboost{
 namespace booster {
 class BaseTreeMaker {

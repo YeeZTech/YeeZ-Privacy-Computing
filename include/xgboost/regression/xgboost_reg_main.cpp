@@ -5,6 +5,7 @@
 #include "xgboost/utils/xgboost_fmap.h"
 #include "xgboost/utils/xgboost_random.h"
 #include "xgboost_reg.h"
+
 #include <cstring>
 #include <ctime>
 #include <string>

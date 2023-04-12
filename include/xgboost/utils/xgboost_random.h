@@ -38,7 +38,7 @@ inline double NextDouble() {
     LOG(ERROR) << "Failed to generate rand number\n";
     return -1.0;
   }
-  return static_cast<double>(1.0 * val / 0x7fffffff);
+  return static_cast<double>(1.0 * val / 0xffffffff);
   // return static_cast<double>(rand()) / (static_cast<double>(RAND_MAX) + 1.0);
 }
 /*! \brief return a real numer uniform in (0,1) */

@@ -7,12 +7,13 @@
  * \author Tianqi Chen: tianqi.tchen@gmail.com
  */
 // use openmp
-#include <vector>
-#include "xgboost_tree_model.h"
+#include "xgboost/utils/xgboost_fmap.h"
 #include "xgboost/utils/xgboost_omp.h"
 #include "xgboost/utils/xgboost_random.h"
-#include "xgboost/utils/xgboost_fmap.h"
 #include "xgboost_base_treemaker.hpp"
+#include "xgboost_tree_model.h"
+#include "ypc/stbox/tsgx/log.h"
+#include <vector>
 
 namespace xgboost{
 namespace booster {
@@ -50,6 +51,7 @@ public:
       const int nid = qexpand[i];
       tree[nid].set_leaf(snode[nid].weight * param.learning_rate);
     }
+
     // start prunning the tree
     stat_num_pruned = this->DoPrune();
   }
@@ -318,13 +320,13 @@ private:
       // reserve a small space
       stemp.resize(this->nthread, std::vector<ThreadEntry>());
       for (size_t i = 0; i < stemp.size(); ++i) {
-        stemp[i].reserve(256);
+        stemp[i].reserve(MAX_CAPACITY);
       }
-      snode.reserve(256);
+      snode.reserve(MAX_CAPACITY);
     }
 
     { // expand query
-      qexpand.reserve(256);
+      qexpand.reserve(MAX_CAPACITY);
       qexpand.clear();
       for (int i = 0; i < tree.param.num_roots; ++i) {
         qexpand.push_back(i);

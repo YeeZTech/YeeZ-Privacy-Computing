@@ -4,18 +4,18 @@ export CFLAGS = -Wall -O3 -msse2  -Wno-unknown-pragmas -fopenmp
 
 # specify tensor path
 BIN = xgboost
-OBJ = 
+OBJ =
 .PHONY: clean all
 
 all: $(BIN) $(OBJ)
-export LDFLAGS= -pthread -lm 
+export LDFLAGS= -pthread -lm
 
 xgboost: regression/xgboost_reg_main.cpp regression/*.h booster/*.h booster/*/*.hpp booster/*.hpp
 
-$(BIN) : 
+$(BIN) :
 	$(CXX) $(CFLAGS) $(LDFLAGS) -o $@ $(filter %.cpp %.o %.c, $^)
 
-$(OBJ) : 
+$(OBJ) :
 	$(CXX) -c $(CFLAGS) -o $@ $(firstword $(filter %.cpp %.c, $^) )
 
 install:

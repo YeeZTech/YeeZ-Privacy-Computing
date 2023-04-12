@@ -2,6 +2,7 @@
 #define XGBOOST_STREAM_H
 
 //#include <cstdio>
+#include <string>
 /*!
  * \file xgboost_stream.h
  * \brief general stream interface for serialization
@@ -35,20 +36,29 @@ public:
 class FileStream : public IStream {
 private:
   // FILE *fp;
-  void *fp;
+  // void *fp;
+  std::string m_mem;
+  size_t m_offset;
 
 public:
-  FileStream(void *fp) { this->fp = fp; }
   virtual size_t Read(void *ptr, size_t size) {
+    if (m_offset + size > m_mem.size()) {
+      return 0;
+    }
+    memcpy(ptr, &m_mem[0] + m_offset, size);
+    m_offset += size;
+    return size;
     // return fread(ptr, size, 1, fp);
-    return 0;
   }
   virtual void Write(const void *ptr, size_t size) {
+    if (size == 0) {
+      return;
+    }
+    m_mem += std::string((const char *)ptr, size);
     // fwrite(ptr, size, 1, fp);
   }
-  inline void Close(void) {
-    // fclose(fp);
-  }
+  inline const std::string &get() const { return m_mem; }
+  inline void set(const std::string &mem) { m_mem = mem; }
 };
 }; // namespace utils
 }; // namespace xgboost

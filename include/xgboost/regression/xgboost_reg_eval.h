@@ -8,6 +8,7 @@
 
 #include "xgboost/utils/xgboost_omp.h"
 #include "xgboost/utils/xgboost_utils.h"
+
 #include <algorithm>
 #include <cmath>
 #include <vector>
@@ -98,14 +99,14 @@ public:
     std::sort(evals_.begin(), evals_.end());
     evals_.resize(std::unique(evals_.begin(), evals_.end()) - evals_.begin());
   }
-  // inline void Eval(FILE *fo, const char *evname,
-  // const std::vector<float> &preds,
-  // const std::vector<float> &labels) const {
-  // for (size_t i = 0; i < evals_.size(); ++i) {
-  // float res = evals_[i]->Eval(preds, labels);
-  // fprintf(fo, "\t%s-%s:%f", evname, evals_[i]->Name(), res);
-  //}
-  //}
+  inline void Eval(const char *evname, const std::vector<float> &preds,
+                   const std::vector<float> &labels) const {
+    for (size_t i = 0; i < evals_.size(); ++i) {
+      float res = evals_[i]->Eval(preds, labels);
+      LOG(INFO) << evname << "-" << evals_[i]->Name() << ":" << res;
+      // fprintf(fo, "\t%s-%s:%f", evname, evals_[i]->Name(), res);
+    }
+  }
 
 private:
   EvalRMSE rmse_;

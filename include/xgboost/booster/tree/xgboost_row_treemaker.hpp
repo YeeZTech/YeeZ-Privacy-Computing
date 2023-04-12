@@ -35,7 +35,7 @@ public:
 #pragma omp parallel
       { this->nthread = omp_get_num_threads(); }
       tmp_rptr.resize(this->nthread, std::vector<size_t>());
-      snode.reserve(256);
+      snode.reserve(MAX_CAPACITY);
     }
   }
   inline void Make(int &stat_max_depth, int &stat_num_pruned) {
@@ -375,7 +375,7 @@ private:
     }
 
     { // expand query
-      qexpand.reserve(256);
+      qexpand.reserve(MAX_CAPACITY);
       qexpand.clear();
       for (int i = 0; i < tree.param.num_roots; ++i) {
         qexpand.push_back(i);

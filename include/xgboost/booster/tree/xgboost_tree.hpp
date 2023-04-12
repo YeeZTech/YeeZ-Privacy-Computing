@@ -89,7 +89,7 @@ public:
     }
 
     if (!silent) {
-      LOG(INFO) << "\nbuild GBRT with " << grad.size() << " instances\n";
+      LOG(INFO) << "build GBRT with " << grad.size() << " instances";
       // printf( "\nbuild GBRT with %u instances\n",
       // (unsigned)grad.size() );
     }

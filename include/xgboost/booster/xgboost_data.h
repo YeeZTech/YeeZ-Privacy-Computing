@@ -10,6 +10,7 @@
 #include "xgboost/utils/xgboost_matrix_csr.h"
 #include "xgboost/utils/xgboost_stream.h"
 #include "xgboost/utils/xgboost_utils.h"
+
 #include <climits>
 #include <vector>
 
@@ -296,28 +297,28 @@ public:
    *              the function is not consistent between 64bit and 32bit machine
    * \param fo output stream
    */
-  inline void SaveBinary(utils::IStream &fo) const {
-    FMatrixS::SaveBinary(fo, row_ptr_, row_data_);
-    int col_access = this->HaveColAccess() ? 1 : 0;
-    fo.Write(&col_access, sizeof(int));
-    if (col_access != 0) {
-      FMatrixS::SaveBinary(fo, col_ptr_, col_data_);
-    }
-  }
+  // inline void SaveBinary(utils::IStream &fo) const {
+  // FMatrixS::SaveBinary(fo, row_ptr_, row_data_);
+  // int col_access = this->HaveColAccess() ? 1 : 0;
+  // fo.Write(&col_access, sizeof(int));
+  // if (col_access != 0) {
+  // FMatrixS::SaveBinary(fo, col_ptr_, col_data_);
+  //}
+  //}
   /*!
    * \brief load data from binary stream
    *        note: since we have size_t in ptr,
    *              the function is not consistent between 64bit and 32bit machin
    * \param fi input stream
    */
-  inline void LoadBinary(utils::IStream &fi) {
-    FMatrixS::LoadBinary(fi, row_ptr_, row_data_);
-    int col_access;
-    fi.Read(&col_access, sizeof(int));
-    if (col_access != 0) {
-      FMatrixS::LoadBinary(fi, col_ptr_, col_data_);
-    }
-  }
+  // inline void LoadBinary(utils::IStream &fi) {
+  // FMatrixS::LoadBinary(fi, row_ptr_, row_data_);
+  // int col_access;
+  // fi.Read(&col_access, sizeof(int));
+  // if (col_access != 0) {
+  // FMatrixS::LoadBinary(fi, col_ptr_, col_data_);
+  //}
+  //}
   /*!
    * \brief load from text file
    * \param fi input file pointer
@@ -348,36 +349,36 @@ private:
    * \param ptr pointer data
    * \param data data content
    */
-  inline static void SaveBinary(utils::IStream &fo,
-                                const std::vector<size_t> &ptr,
-                                const std::vector<REntry> &data) {
-    size_t nrow = ptr.size() - 1;
-    fo.Write(&nrow, sizeof(size_t));
-    fo.Write(&ptr[0], ptr.size() * sizeof(size_t));
-    if (data.size() != 0) {
-      fo.Write(&data[0], data.size() * sizeof(REntry));
-    }
-  }
+  // inline static void SaveBinary(utils::IStream &fo,
+  // const std::vector<size_t> &ptr,
+  // const std::vector<REntry> &data) {
+  // size_t nrow = ptr.size() - 1;
+  // fo.Write(&nrow, sizeof(size_t));
+  // fo.Write(&ptr[0], ptr.size() * sizeof(size_t));
+  // if (data.size() != 0) {
+  // fo.Write(&data[0], data.size() * sizeof(REntry));
+  //}
+  //}
   /*!
    * \brief load data from binary stream
    * \param fi input stream
    * \param ptr pointer data
    * \param data data content
    */
-  inline static void LoadBinary(utils::IStream &fi, std::vector<size_t> &ptr,
-                                std::vector<REntry> &data) {
-    size_t nrow;
-    utils::Assert(fi.Read(&nrow, sizeof(size_t)) != 0, "Load FMatrixS");
-    ptr.resize(nrow + 1);
-    utils::Assert(fi.Read(&ptr[0], ptr.size() * sizeof(size_t)),
-                  "Load FMatrixS");
+  // inline static void LoadBinary(utils::IStream &fi, std::vector<size_t> &ptr,
+  // std::vector<REntry> &data) {
+  // size_t nrow;
+  // utils::Assert(fi.Read(&nrow, sizeof(size_t)) != 0, "Load FMatrixS");
+  // ptr.resize(nrow + 1);
+  // utils::Assert(fi.Read(&ptr[0], ptr.size() * sizeof(size_t)),
+  //"Load FMatrixS");
 
-    data.resize(ptr.back());
-    if (data.size() != 0) {
-      utils::Assert(fi.Read(&data[0], data.size() * sizeof(REntry)),
-                    "Load FMatrixS");
-    }
-  }
+  // data.resize(ptr.back());
+  // if (data.size() != 0) {
+  // utils::Assert(fi.Read(&data[0], data.size() * sizeof(REntry)),
+  //"Load FMatrixS");
+  //}
+  //}
 
 protected:
   /*! \brief row pointer of CSR sparse storage */

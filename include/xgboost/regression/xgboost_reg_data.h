@@ -13,7 +13,6 @@
 #include "xgboost/booster/xgboost_data.h"
 #include "xgboost/utils/xgboost_stream.h"
 #include "xgboost/utils/xgboost_utils.h"
-#include <cstdio>
 #include <vector>
 
 namespace xgboost{
@@ -39,41 +38,46 @@ public:
    * \param fname name of text data
    * \param silent whether print information or not
    */
-  // inline void LoadText( const char* fname, bool silent = false ){
-  // data.Clear();
-  // FILE* file = utils::FopenCheck( fname, "r" );
-  // float label; bool init = true;
-  // char tmp[ 1024 ];
-  // std::vector<booster::bst_uint> findex;
-  // std::vector<booster::bst_float> fvalue;
+  inline void
+  LoadText(const std::vector<std::vector<std::pair<int, float>>> &rows,
+           bool silent = false) {
+    data.Clear();
+    float label;
+    bool init = true;
+    char tmp[1024];
+    std::vector<booster::bst_uint> findex;
+    std::vector<booster::bst_float> fvalue;
 
-  // while( fscanf( file, "%s", tmp ) == 1 ){
-  // unsigned index; float value;
-  // if( sscanf( tmp, "%u:%f", &index, &value ) == 2 ){
-  // findex.push_back( index ); fvalue.push_back( value );
-  //}else{
-  // if( !init ){
-  // labels.push_back( label );
-  // data.AddRow( findex, fvalue );
-  //}
-  // findex.clear(); fvalue.clear();
-  // utils::Assert( sscanf( tmp, "%f", &label ) == 1, "invalid format"
-  // ); init = false;
-  //}
-  //}
+    for (auto &r : rows) {
+      for (auto c = 0; c < r.size(); c++) {
+        auto idx = r[c].first;
+        auto val = r[c].second;
+        if (c == 0) {
+          if (!init) {
+            labels.push_back(label);
+            data.AddRow(findex, fvalue);
+          }
+          findex.clear();
+          fvalue.clear();
+          label = val;
+          init = false;
+        } else {
+          findex.push_back(idx);
+          fvalue.push_back(val);
+        }
+      }
+    }
 
-  // labels.push_back( label );
-  // data.AddRow( findex, fvalue );
-  //// initialize column support as well
-  // data.InitData();
+    labels.push_back(label);
+    data.AddRow(findex, fvalue);
+    // initialize column support as well
+    data.InitData();
 
-  // if( !silent ){
-  // printf("%ux%u matrix with %lu entries is loaded from %s\n",
-  //(unsigned)data.NumRow(), (unsigned)data.NumCol(), (unsigned
-  // long)data.NumEntry(), fname );
-  //}
-  // fclose(file);
-  //}
+    if (!silent) {
+      LOG(INFO) << data.NumRow() << "x" << data.NumCol() << " matrix with "
+                << data.NumEntry() << " entries";
+    }
+  }
   /*!
    * \brief load from binary file
    * \param fname name of binary data
@@ -126,9 +130,9 @@ public:
    * data \param silent whether print information or not \param
    * savebuffer whether do save binary buffer if it is text
    */
-  inline void LoadTextFromMemory(const char *fname, bool silent = false) {}
-  inline void CacheLoad(const char *fname, bool silent = false,
-                        bool savebuffer = true) {
+  inline void
+  CacheLoad(const std::vector<std::vector<std::pair<int, float>>> &rows,
+            bool silent = false, bool savebuffer = true) {
     // int len = strlen(fname);
     // if (len > 8 && !strcmp(fname + len - 7, ".buffer")) {
     // this->LoadBinary(fname, silent);
@@ -136,9 +140,8 @@ public:
     //}
     // char bname[1024];
     // sprintf(bname, "%s.buffer", fname);
-    this->LoadTextFromMemory(fname, silent);
     // if (!this->LoadBinary(bname, silent)) {
-    // this->LoadText(fname, silent);
+    this->LoadText(rows, silent);
     // if (savebuffer)
     // this->SaveBinary(bname, silent);
     //}
