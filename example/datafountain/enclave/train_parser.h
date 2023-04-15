@@ -93,10 +93,12 @@ public:
     }
   }
 
-  auto get_libsvm_rows() const
-      -> std::vector<std::vector<std::pair<int, float>>> {
+  const std::vector<std::vector<std::pair<int, float>>> &
+  get_libsvm_rows() const {
     return m_libsvm_rows;
   }
+
+  const std::vector<std::string> &get_ids() const { return m_ids; }
 
   void convert_to_libsvm() {
     // handle one-hot columns, key: column, val: all values of one column
@@ -150,7 +152,11 @@ public:
     for (auto &r : m_rows) {
       std::vector<std::pair<int, float>> v;
       for (int c = 0; c < r.size(); c++) {
-        if (r[c].empty() || c == 1) {
+        if (r[c].empty()) {
+          continue;
+        }
+        if (c == 1) {
+          m_ids.push_back(r[c]);
           continue;
         }
         bool flag = false;
@@ -210,6 +216,7 @@ protected:
 
 protected:
   std::vector<std::vector<std::string>> m_rows;
+  std::vector<std::string> m_ids;
   std::vector<std::vector<std::pair<int, float>>> m_libsvm_rows;
 };
 
@@ -245,26 +252,35 @@ public:
       result = stbox::bytes("not found!");
     }
     LOG(INFO) << "mo.values size: " << mo.values().size();
-    for (auto &it : mo.values()) {
-      result += it.get<::id>();
-      result += ",";
-    }
 
     // convert to libsvm format
     libsvm ls(mo.values());
     ls.ignore_one_hot_for_some_columns();
     ls.convert_to_libsvm();
-    auto rows = ls.get_libsvm_rows();
+    const auto &rows = ls.get_libsvm_rows();
+    const auto &ids = ls.get_ids();
 
     // train
-    xgboost::regression::RegBoostTask train("train", rows);
-    train.Run();
+    xgboost::regression::RegBoostTask train("train", rows, ids);
+    train.run();
     const std::string &model = train.get_model();
     LOG(INFO) << "model size: " << model.size();
     // pred
-    xgboost::regression::RegBoostTask pred("pred", rows);
+    xgboost::regression::RegBoostTask pred("pred", rows, ids);
     pred.set_model(model);
-    pred.Run();
+    pred.run();
+
+    const auto &preds = pred.get_preds();
+    const auto &pred_ids = pred.get_pred_ids();
+    for (int i = 0; i < std::min(size_t(100), preds.size()); i++) {
+      result += pred_ids[i];
+      result += ",";
+      if (preds[i] < 0.5f) {
+        result += "0\n";
+      } else {
+        result += "1\n";
+      }
+    }
     return result;
   }
 
