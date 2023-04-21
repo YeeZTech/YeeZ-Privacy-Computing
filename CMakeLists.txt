@@ -4,7 +4,7 @@
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 cmake_minimum_required(VERSION 3.12)
-project(YPC VERSION 0.5.1)
+project(YPC VERSION 0.5.2)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
