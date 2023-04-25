@@ -5,6 +5,7 @@ enclave {
   from "sgx_tstdc.edl" import *;
   from "yaenclave.edl" import *;
   from "stbox.edl" import *;
+  from "sgx_pthread.edl" import *;
 
   trusted {
     public uint32_t begin_parse_data_item();
