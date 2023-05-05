@@ -258,8 +258,8 @@ uint32_t parser::next_data_batch(const uint8_t *data_hash, uint32_t hash_size,
     *data = b.data();
     *len = b.size();
     return stbox::stx_status::success;
-  }     return stbox::stx_status::sealed_file_reach_end;
- 
+  }
+  return stbox::stx_status::sealed_file_reach_end;
 }
 
 void parser::free_data_batch(uint8_t *data) { delete[] data; }

@@ -120,6 +120,14 @@ def fid_analyzer(**kwargs):
     return [cmd, output]
 
 
+def gen_param(**kwargs):
+    cmd = os.path.join(bin_dir, "./gen_param")
+    for k, v in kwargs.items():
+        cmd = cmd + " --{} {}".format(k, v)
+    output = execute_cmd(cmd)
+    return [cmd, output]
+
+
 def iris_data(**kwargs):
     cmd = os.path.join(bin_dir, "./iris_gen_classify_input")
     for k, v in kwargs.items():

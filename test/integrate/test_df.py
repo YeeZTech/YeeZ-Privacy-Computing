@@ -217,6 +217,17 @@ class job_step:
         with open(allowance_output, 'r') as of:
             return json.load(of)
 
+    def gen_param(crypto, dian_pkey, shu_pkey, param_output):
+        param = {
+            'dian_pkey': dian_pkey,
+            'shu_pkey': shu_pkey,
+            'output': param_output,
+        }
+        r = common.gen_param(**param)
+        print("done generate param with cmd: {}".format(r[0]))
+        with open(param_output, 'r') as of:
+            return json.load(of)
+
     def remove_files(file_list):
         [common.execute_cmd('rm -rf {}'.format(f)) for f in file_list]
 
@@ -322,6 +333,12 @@ class multistream_job:
         rq_forward_json = job_step.forward_message(
             self.crypto, key_file, pkey, enclave_hash, param_key_forward_result)
         self.all_outputs.append(param_key_forward_result)
+
+        # gen param
+        param_pkg_result = self.name + ".param.package.json"
+        self.input = job_step.gen_param(
+            self.crypto, pkey, shukey_json['public-key'], param_pkg_result)['package']
+        self.all_outputs.append(param_pkg_result)
 
         # 2.1 call terminus to generate request
         param_output_url = self.name + "_param.json"

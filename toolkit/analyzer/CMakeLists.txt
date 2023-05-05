@@ -21,3 +21,11 @@ install(TARGETS fid_analyzer
   DESTINATION "${bin_install_dir}")
 AddClangTidy(fid_analyzer)
 EnableCoverage(fid_analyzer)
+
+add_executable(gen_param gen_param.cpp
+  )
+
+target_link_libraries(gen_param
+  core
+  )
+
