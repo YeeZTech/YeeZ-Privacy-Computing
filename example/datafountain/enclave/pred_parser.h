@@ -1,10 +1,6 @@
 #include "libsvm.h"
-//#include "train_parser_t.h"
 #include "type.h"
-#include "ypc/common/crypto_prefix.h"
-#include "ypc/core_t/analyzer/analyzer_context.h"
 #include "ypc/core_t/analyzer/data_source.h"
-#include "ypc/corecommon/crypto/stdeth.h"
 #include "ypc/corecommon/data_source.h"
 #include "ypc/corecommon/package.h"
 #include "ypc/corecommon/to_type.h"
@@ -20,34 +16,13 @@
 
 #include "xgboost/regression/xgboost_reg_task.h"
 
-using ecc = ypc::crypto::eth_sgx_crypto;
-define_nt(shu_pkey, stbox::bytes);
-define_nt(dian_pkey, stbox::bytes);
-typedef ::ff::net::ntpackage<0x3b549098, shu_pkey, dian_pkey> pkeys_pkg_t;
-
-class train_parser {
+class pred_parser {
 public:
-  train_parser() {}
-  train_parser(
-      std::vector<std::shared_ptr<ypc::data_source_with_dhash>> &source)
-      : m_datasources(source) {
-  };
+  pred_parser() {}
+  pred_parser(std::vector<std::shared_ptr<ypc::data_source_with_dhash>> &source)
+      : m_datasources(source){};
 
   inline stbox::bytes do_parse(const stbox::bytes &param) {
-    stbox::bytes result;
-    auto pkg = ypc::make_package<pkeys_pkg_t>::from_bytes(param);
-    auto shu_pkey = pkg.get<::shu_pkey>();
-    auto dian_pkey = pkg.get<::dian_pkey>();
-    stbox::bytes shu_skey;
-    auto ret = m_ctx->request_private_key_for_public_key(shu_pkey, shu_skey,
-                                                         dian_pkey);
-    if (ret) {
-      std::string err = "request_private_key_for_public_key failed!";
-      LOG(ERROR) << "request_private_key_for_public_key failed, code: " << ret;
-      result = stbox::bytes(err);
-      return result;
-    }
-
     LOG(INFO) << "do parse";
     if (m_datasources.size() != 2) {
       return stbox::bytes("Should include two data sources");
@@ -66,6 +41,7 @@ public:
     mo.get_engine()->run();
     LOG(INFO) << "do parse done";
 
+    stbox::bytes result;
     if (mo.values().empty()) {
       result = stbox::bytes("not found!");
     }
@@ -89,36 +65,25 @@ public:
     train.run();
     const std::string &model = train.get_model();
     LOG(INFO) << "model size: " << model.size();
+    // pred
+    xgboost::regression::RegBoostTask pred("pred", rows, ids);
+    pred.set_model(model);
+    pred.run();
 
-    // encrypt model
-    stbox::bytes pkey;
-    auto se_ret = (sgx_status_t)ecc::generate_pkey_from_skey(shu_skey, pkey);
-    if (se_ret) {
-      std::string err = "generate_pkey_from_skey returns ";
-      err += stbox::status_string(se_ret);
-      LOG(ERROR) << err;
-      result = stbox::bytes(err);
-      return result;
+    const auto &preds = pred.get_preds();
+    const auto &pred_ids = pred.get_pred_ids();
+    for (int i = 0; i < std::min(size_t(100), preds.size()); i++) {
+      result += pred_ids[i];
+      result += ",";
+      if (preds[i] < 0.5f) {
+        result += "0\n";
+      } else {
+        result += "1\n";
+      }
     }
-    stbox::bytes enc_model;
-    se_ret = (sgx_status_t)ecc::encrypt_message_with_prefix(
-        pkey, stbox::bytes(model), ypc::utc::crypto_prefix_arbitrary,
-        enc_model);
-    if (se_ret) {
-      std::string err = "encrypt_message_with_prefix returns ";
-      err += stbox::status_string(se_ret);
-      LOG(ERROR) << err;
-      result = stbox::bytes(err);
-      return result;
-    }
-    // dump encrypted model
-    // stbox::ocall_cast<uint32_t>(ocall_dump_model)(nullptr, 0, nullptr, 0, 0);
-    return stbox::bytes("model size: " + std::to_string(model.size()));
+    return result;
   }
-
-  void set_context(ypc::analyzer_context *ctx) { m_ctx = ctx; }
 
 protected:
   std::vector<std::shared_ptr<ypc::data_source_with_dhash>> m_datasources;
-  ypc::analyzer_context *m_ctx;
 };

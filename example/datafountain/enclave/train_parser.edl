@@ -1,0 +1,9 @@
+
+enclave {
+  from "eparser.edl" import *;
+
+  untrusted {
+    uint32_t ocall_dump_model([in, size=fp_size] const uint8_t * fp, uint32_t fp_size,
+                              [in, size=data_size] uint8_t * data, uint32_t data_size, uint32_t offset);
+  };
+};
