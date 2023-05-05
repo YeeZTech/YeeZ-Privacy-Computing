@@ -18,8 +18,8 @@ public:
     this->set_param("loss_type", "2");
     this->set_param("bst:eta", "0.3");
     this->set_param("bst:gamma", "1.0");
-    this->set_param("bst:min_child_weight", "1");
-    this->set_param("bst:max_depth", "8");
+    this->set_param("bst:min_child_weight", "2");
+    this->set_param("bst:max_depth", "6");
     this->set_param("num_round", "10");
     this->set_param("data", "normal_train_merge.train");
     this->set_param("test:data", "normal_train_merge.train");
