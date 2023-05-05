@@ -22,8 +22,8 @@ template <uint64_t MagicNumber_t, uint64_t BlockNumLimit_t,
 class blockfile {
 public:
   const static uint64_t MagicNumber = MagicNumber_t;
-  const static uint64_t BlockSizeLimit = BlockSizeLimit_t;
   const static uint64_t BlockNumLimit = BlockNumLimit_t;
+  const static uint64_t BlockSizeLimit = BlockSizeLimit_t;
 
   blockfile()
       : m_file(), m_file_path(), m_header(), m_is_header_valid(false),
@@ -74,30 +74,31 @@ public:
     m_header.item_number++;
     m_header.magic_number = MagicNumber;
 
+    auto create_new_block =
+        [](block_info &bi, header &header, std::vector<block_info> &block_infos,
+           uint64_t start_item_index, long int start_file_pos, size_t len) {
+          bi.start_item_index = start_item_index;
+          bi.end_item_index = bi.start_item_index + 1;
+          bi.start_file_pos = start_file_pos;
+          bi.end_file_pos = bi.start_file_pos + sizeof(len) + len;
+          block_infos.push_back(bi);
+          header.block_number++;
+        };
+
     if (m_block_infos.empty()) {
-      bi.start_item_index = 0;
-      bi.end_item_index = 1;
-      bi.start_file_pos = block_start_offset;
-      bi.end_file_pos = bi.start_file_pos + len + sizeof(len);
-      m_block_infos.push_back(bi);
-      m_header.block_number++;
+      create_new_block(bi, m_header, m_block_infos, 0, block_start_offset, len);
     } else {
       bi = m_block_infos.back();
-      if (bi.end_item_index - bi.start_item_index >= BlockSizeLimit) {
-        auto back = m_block_infos.back();
-        bi.start_item_index = back.end_item_index;
-        bi.end_item_index = bi.start_item_index++;
-        bi.start_file_pos = back.end_file_pos;
-        bi.end_file_pos = bi.end_file_pos + len + sizeof(len);
-        m_block_infos.push_back(bi);
-        m_header.block_number++;
+      if (bi.end_file_pos - bi.start_file_pos >= BlockSizeLimit) {
+        create_new_block(bi, m_header, m_block_infos, bi.end_item_index,
+                         bi.end_file_pos, len);
       } else {
-        block_info &back = m_block_infos.back();
+        auto &back = m_block_infos.back();
         back.end_item_index++;
-        back.end_file_pos = back.end_file_pos + len + sizeof(len);
+        back.end_file_pos = back.end_file_pos + sizeof(len) + len;
       }
     }
-    block_info &back = m_block_infos.back();
+    auto &back = m_block_infos.back();
     auto offset =
         sizeof(header) + (m_block_infos.size() - 1) * sizeof(block_info);
     m_file.seekp(offset, m_file.beg);
