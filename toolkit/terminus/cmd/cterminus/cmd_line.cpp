@@ -61,14 +61,16 @@ parse_command_line(int argc, char *argv[]) {
   encrypt.add_options()
     ("use-publickey-file", bp::value<std::string>(), "local (Shu) public key file")
     ("use-publickey-hex", bp::value<std::string>(), "local (Shu) public key hex")
-    ("use-param", bp::value<std::string>()->required(), "message to encrypt")
+    ("use-param", bp::value<std::string>(), "message to encrypt")
+    ("use-param-file", bp::value<std::string>(), "message file to encrypt")
     ("param-format", bp::value<std::string>()->default_value("hex"), "param format, [ hex | text ]")
     ("output", bp::value<std::string>(), "output result to file with JSON format");
 
   decrypt.add_options()
     ("use-privatekey-file", bp::value<std::string>(), "local (Shu) private key file")
     ("use-privatekey-hex", bp::value<std::string>(), "local (Shu) private key hex")
-    ("use-param", bp::value<std::string>()->required(), "message to decrypt")
+    ("use-param", bp::value<std::string>(), "message to decrypt")
+    ("use-param-file", bp::value<std::string>(), "message file to decrypt")
     ("param-format", bp::value<std::string>()->default_value("hex"), "param format, [ hex | text ]")
     ("output", bp::value<std::string>()->multitoken(), "output result to file with JSON format");
 

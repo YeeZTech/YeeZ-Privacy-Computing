@@ -50,6 +50,20 @@ ypc::bytes
 get_param_use_param(const boost::program_options::variables_map &vm) {
   std::string format = "hex";
   ypc::bytes param;
+  if (vm.count("use-param-file") != 0u) {
+    std::fstream fs;
+    auto filename = vm["use-param-file"].as<std::string>();
+    fs.open(filename, std::ios::in | std::ios::binary);
+    if (!fs.is_open()) {
+      throw std::runtime_error("open file " + filename + " failed!");
+    }
+    fs.seekg(0, fs.end);
+    param = ypc::bytes(fs.tellg());
+    fs.seekg(0, fs.beg);
+    fs.read((char *)param.data(), param.size());
+    fs.close();
+    return param;
+  }
   if (vm.count("param-format") != 0u) {
     format = vm["param-format"].as<std::string>();
   }
