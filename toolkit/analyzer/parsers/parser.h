@@ -19,6 +19,13 @@ public:
                                    uint8_t **data, uint32_t *len);
   virtual void free_data_batch(uint8_t *data);
 
+  virtual uint32_t dump_model(const uint8_t *fp, uint32_t fp_size,
+                              const uint8_t *data, uint32_t data_size);
+  virtual uint32_t get_model_size(const uint8_t *fp, uint32_t fp_size,
+                                  uint32_t *data_size);
+  virtual uint32_t load_model(const uint8_t *fp, uint32_t fp_size,
+                              uint8_t *data, uint32_t data_size);
+
   inline std::shared_ptr<keymgr_sgx_module> keymgr() const { return m_keymgr; }
 
   inline const std::string &get_result_str() const { return m_result_str; }

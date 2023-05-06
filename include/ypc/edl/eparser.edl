@@ -42,5 +42,12 @@ enclave {
                              [out] uint8_t ** data, [out] uint32_t *len);
 
     void free_data_batch([user_check] uint8_t *data);
+
+    uint32_t ocall_dump_model([in, size=fp_size] const uint8_t * fp, uint32_t fp_size,
+                              [in, size=data_size] const uint8_t * data, uint32_t data_size);
+    uint32_t ocall_get_model_size([in, size=fp_size] const uint8_t * fp, uint32_t fp_size,
+                              [out] uint32_t *data_size);
+    uint32_t ocall_load_model([in, size=fp_size] const uint8_t * fp, uint32_t fp_size,
+                              [out, size=data_size] uint8_t * data, uint32_t data_size);
   };
 };

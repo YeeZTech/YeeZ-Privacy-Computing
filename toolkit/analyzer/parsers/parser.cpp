@@ -264,3 +264,40 @@ uint32_t parser::next_data_batch(const uint8_t *data_hash, uint32_t hash_size,
 
 void parser::free_data_batch(uint8_t *data) { delete[] data; }
 
+uint32_t parser::dump_model(const uint8_t *fp, uint32_t fp_size,
+                            const uint8_t *data, uint32_t data_size) {
+  std::string filename((const char *)fp, fp_size);
+  std::fstream fs;
+  fs.open(filename, std::ios::out | std::ios::binary);
+  if (!fs.is_open()) {
+    throw std::runtime_error("open file " + filename + " failed!");
+  }
+  fs.write((const char *)data, data_size);
+  fs.close();
+  return 0;
+}
+uint32_t parser::get_model_size(const uint8_t *fp, uint32_t fp_size,
+                                uint32_t *data_size) {
+  std::string filename((const char *)fp, fp_size);
+  std::fstream fs;
+  fs.open(filename, std::ios::in | std::ios::binary);
+  if (!fs.is_open()) {
+    throw std::runtime_error("open file " + filename + " failed!");
+  }
+  fs.seekg(0, fs.end);
+  *data_size = fs.tellg();
+  fs.close();
+  return 0;
+}
+uint32_t parser::load_model(const uint8_t *fp, uint32_t fp_size, uint8_t *data,
+                            uint32_t data_size) {
+  std::string filename((const char *)fp, fp_size);
+  std::fstream fs;
+  fs.open(filename, std::ios::in | std::ios::binary);
+  if (!fs.is_open()) {
+    throw std::runtime_error("open file " + filename + " failed!");
+  }
+  fs.read((char *)data, data_size);
+  fs.close();
+  return 0;
+}

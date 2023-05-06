@@ -1,6 +1,7 @@
 import json
 import os
 import common
+import sys
 
 
 class job_step:
@@ -319,8 +320,10 @@ class multistream_job:
         summary = {}
         # 1. generate key
         key_file = self.name + ".key.json"
-        shukey_json = job_step.gen_key(self.crypto, key_file)
-        self.all_outputs.append(key_file)
+        with open(key_file, 'r') as fp:
+            shukey_json = json.load(fp)
+        # shukey_json = job_step.gen_key(self.crypto, key_file)
+        # self.all_outputs.append(key_file)
 
         # use first pkey
         key = job_step.get_first_key(self.crypto)
@@ -387,7 +390,7 @@ class multistream_job:
         job_step.remove_files(self.all_outputs)
 
 
-if __name__ == "__main__":
+def train():
     name = "datafountain"
     crypto = "stdeth"
     data_a = "/home/chmwang/dianshu-example/dataset/ordered_train_a.txt"
@@ -398,8 +401,34 @@ if __name__ == "__main__":
         data_a: os.path.join(common.lib_dir, "libtrain_a_reader.so"),
         data_b: os.path.join(common.lib_dir, "libtrain_b_reader.so"),
     }
-
     cj = multistream_job(crypto, name, data, parser, plugin, '00aa', {})
     cj.run()
-
     print("result is : ", cj.result)
+
+
+def pred():
+    name = "datafountain"
+    crypto = "stdeth"
+    data_a = "/home/chmwang/dianshu-example/dataset/ordered_test_a.txt"
+    data_b = "/home/chmwang/dianshu-example/dataset/ordered_test_b.txt"
+    data = [data_a, data_b]
+    parser = os.path.join(common.lib_dir, "pred_parser.signed.so")
+    plugin = {
+        data_a: os.path.join(common.lib_dir, "libpred_a_reader.so"),
+        data_b: os.path.join(common.lib_dir, "libpred_b_reader.so"),
+    }
+    cj = multistream_job(crypto, name, data, parser, plugin, '00aa', {})
+    cj.run()
+    print("result is : ", cj.result)
+
+
+def main():
+    print(sys.argv)
+    if sys.argv[1] == 'train':
+        train()
+    elif sys.argv[1] == 'pred':
+        pred()
+
+
+if __name__ == "__main__":
+    main()

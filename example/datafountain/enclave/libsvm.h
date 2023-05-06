@@ -124,12 +124,25 @@ public:
     }
   }
 
-  void show() {
-    for (auto &r : m_rows) {
+  void show_raw_rows() {
+    for (const auto &r : m_rows) {
       std::string s;
-      for (auto &ele : r) {
+      for (const auto &ele : r) {
         s += ele;
         s += ',';
+      }
+      LOG(INFO) << s;
+    }
+  }
+
+  void show_libsvm_rows() {
+    for (const auto &r : m_libsvm_rows) {
+      std::string s;
+      for (const auto &ele : r) {
+        s += std::to_string(ele.first);
+        s += ":";
+        s += std::to_string(ele.second);
+        s += " ";
       }
       LOG(INFO) << s;
     }
@@ -142,7 +155,7 @@ public:
 
   const std::vector<std::string> &get_ids() const { return m_ids; }
 
-  void convert_to_libsvm(const std::vector<int> &columns) {
+  void convert_to_libsvm(const std::vector<int> &columns, int offset) {
     // handle one-hot columns, key: column, val: all values of one column
     // std::vector<int> columns{8,  9,  12, 13, 15, 16, 18, 20,
     // 28, 31, 32, 33, 34, 36, 37, 39};
@@ -173,7 +186,7 @@ public:
     int s = 0;
     std::unordered_map<int, int> idx_s;
     for (int i = 0; i < m_rows[0].size(); i++) {
-      if (i < 2) {
+      if (i < 2 + offset) {
         continue;
       }
       idx_s.insert(std::make_pair(i, s));
@@ -197,7 +210,7 @@ public:
         if (r[c].empty()) {
           continue;
         }
-        if (c == 1) {
+        if (c == 1 + offset) {
           m_ids.push_back(r[c]);
           continue;
         }

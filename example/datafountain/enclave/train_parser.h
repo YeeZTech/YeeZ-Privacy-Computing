@@ -1,5 +1,5 @@
+#include "eparser_t.h"
 #include "libsvm.h"
-//#include "train_parser_t.h"
 #include "type.h"
 #include "ypc/common/crypto_prefix.h"
 #include "ypc/core_t/analyzer/analyzer_context.h"
@@ -69,7 +69,7 @@ public:
     if (mo.values().empty()) {
       result = stbox::bytes("not found!");
     }
-    LOG(INFO) << "mo.values size: " << mo.values().size();
+    LOG(INFO) << "train mo.values size: " << mo.values().size();
     // for (auto &it : mo.values()) {
     // result += it.get<::id>();
     // result += ",";
@@ -77,10 +77,13 @@ public:
 
     // convert to libsvm format
     libsvm ls(mo.values());
-    ls.ignore_one_hot_for_some_columns(
-        {10, 11, 14, 17, 19, 29, 30, 35, 38, 40});
-    ls.convert_to_libsvm(
+    std::vector<int> ignore_c({10, 11, 14, 17, 19, 29, 30, 35, 38, 40});
+    ls.ignore_one_hot_for_some_columns(ignore_c);
+    std::vector<int> one_hot_c(
         {8, 9, 12, 13, 15, 16, 18, 20, 28, 31, 32, 33, 34, 36, 37, 39});
+    ls.convert_to_libsvm(one_hot_c, 0);
+    // ls.show_raw_rows();
+    // ls.show_libsvm_rows();
     const auto &rows = ls.get_libsvm_rows();
     const auto &ids = ls.get_ids();
 
@@ -112,8 +115,14 @@ public:
       return result;
     }
     // dump encrypted model
-    // stbox::ocall_cast<uint32_t>(ocall_dump_model)(nullptr, 0, nullptr, 0, 0);
-    return stbox::bytes("model size: " + std::to_string(model.size()));
+    std::string filename("train.model");
+    stbox::ocall_cast<uint32_t>(ocall_dump_model)(
+        (uint8_t *)&filename[0], filename.size(), enc_model.data(),
+        enc_model.size());
+    std::string msg;
+    msg += ("model size: " + std::to_string(model.size()));
+    msg += ("\nencrypted model size: " + std::to_string(enc_model.size()));
+    return stbox::bytes(msg);
   }
 
   void set_context(ypc::analyzer_context *ctx) { m_ctx = ctx; }

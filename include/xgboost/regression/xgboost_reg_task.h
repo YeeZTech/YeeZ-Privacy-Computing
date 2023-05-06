@@ -124,9 +124,9 @@ protected:
       LOG(INFO) << "start prediction...";
     }
     m_learner.Predict(m_preds, m_data);
-    if (!m_silent) {
-      LOG(INFO) << "accuracy: " << 100 * eval_pred() << "%";
-    }
+    // if (!m_silent) {
+    // LOG(INFO) << "accuracy: " << 100 * eval_pred() << "%";
+    //}
   }
 
   inline float eval_pred() {
@@ -134,7 +134,7 @@ protected:
         m_preds.size() == m_libsvm_test_rows.size(),
         "the number of prediction results should be equal to test rows");
     int cnt = 0;
-    int total = std::min(size_t(100), m_preds.size());
+    int total = m_preds.size();
     for (int i = 0; i < total; i++) {
       int idx = random::NextDouble() * total;
       float val = m_libsvm_test_rows[idx][0].second;
