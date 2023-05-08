@@ -59,10 +59,13 @@ public:
         oi;
     ypc::to_type<stbox::bytes, train_a_item_t> conv_a(m_datasources[0].get());
     oi.add_upper_stream<::id>(&conv_a);
+    LOG(INFO) << "add datastream train_a";
     ypc::to_type<stbox::bytes, train_b_item_t> conv_b(m_datasources[1].get());
     oi.add_upper_stream<::id>(&conv_b);
+    LOG(INFO) << "add datastream train_b";
 
     hpda::output::internal::memory_output_impl<train_merge_item_t> mo(&oi);
+    LOG(INFO) << "merge datastreams";
     mo.get_engine()->run();
     LOG(INFO) << "do parse done";
 
@@ -114,11 +117,13 @@ public:
       result = stbox::bytes(err);
       return result;
     }
+    LOG(INFO) << "encrypt model done!";
     // dump encrypted model
     std::string filename("train.model");
     stbox::ocall_cast<uint32_t>(ocall_dump_model)(
         (uint8_t *)&filename[0], filename.size(), enc_model.data(),
         enc_model.size());
+    LOG(INFO) << "dump model done!";
     std::string msg;
     msg += ("model size: " + std::to_string(model.size()));
     msg += ("\nencrypted model size: " + std::to_string(enc_model.size()));

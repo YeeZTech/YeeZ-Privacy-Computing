@@ -24,8 +24,12 @@ enclave_interaction::forward_private_key(const bytes &private_key,
                                          const bytes &enclave_hash) {
   bytes encrypted_skey = m_crypto->ecc_encrypt(private_key, dian_pkey,
                                                ypc::utc::crypto_prefix_forward);
+  LOG(INFO) << "encrypted skey: " << encrypted_skey;
+  LOG(INFO) << "dian_pkey: " << dian_pkey;
+  LOG(INFO) << "enclave_hash: " << enclave_hash;
   bytes to_sign_msg = dian_pkey + enclave_hash;
   bytes sig = m_crypto->sign_message(to_sign_msg, private_key);
+  LOG(INFO) << "signature: " << sig;
   return forward_info(encrypted_skey, sig);
 }
 } // namespace terminus

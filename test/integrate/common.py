@@ -89,6 +89,7 @@ def fid_keymgr(**kwargs):
 
 def fid_data_provider(**kwargs):
     cmd = os.path.join(bin_dir, "./data_provider")
+    cmd = "GLOG_logtostderr=1 " + cmd
     for k, v in kwargs.items():
         cmd = cmd + " --{} {}".format(k, v)
     output = execute_cmd(cmd)

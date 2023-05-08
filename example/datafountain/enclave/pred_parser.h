@@ -101,6 +101,7 @@ public:
     stbox::ocall_cast<uint32_t>(ocall_load_model)(
         (uint8_t *)&filename[0], filename.size(), enc_model.data(),
         enc_model.size());
+    LOG(INFO) << "load encrypted model, size: " << enc_model_size;
 
     // decrypt model
     uint32_t model_size =
@@ -123,7 +124,6 @@ public:
     pred.run();
     LOG(INFO) << "pred done";
 
-    // encrypt pred results
     const auto &preds = pred.get_preds();
     const auto &pred_ids = pred.get_pred_ids();
     stbox::bytes pred_result;
@@ -136,6 +136,8 @@ public:
         pred_result += "1\n";
       }
     }
+    LOG(INFO) << "generate result done";
+    // encrypt pred results
     stbox::bytes pkey;
     se_ret = (sgx_status_t)ecc::generate_pkey_from_skey(shu_skey, pkey);
     if (se_ret) {
@@ -155,11 +157,13 @@ public:
       result = stbox::bytes(err);
       return result;
     }
+    LOG(INFO) << "encrypt result done";
     // dump pred results
     std::string filepred("pred.result");
     stbox::ocall_cast<uint32_t>(ocall_dump_model)(
         (uint8_t *)&filepred[0], filepred.size(), enc_result.data(),
         enc_result.size());
+    LOG(INFO) << "dump result done";
     std::string msg;
     msg += ("pred result size: " + std::to_string(preds.size()));
     return stbox::bytes(msg);

@@ -84,7 +84,7 @@ uint32_t seal_file(const crypto_ptr_t &crypto_ptr, const std::string &plugin,
   }
   uint64_t item_number = reader.get_item_number();
 
-  std::cout << "Reading " << item_number << " items ..." << std::endl;
+  LOG(INFO) << "Reading " << item_number << " items ...";
   boost::progress_display pd(item_number);
   uint counter = 0;
   std::vector<ypc::bytes> batch;
@@ -116,8 +116,8 @@ uint32_t seal_file(const crypto_ptr_t &crypto_ptr, const std::string &plugin,
     batch_size = 0;
   }
 
-  std::cout << "data hash: " << data_hash << std::endl;
-  std::cout << "\nDone read data count: " << pd.count() << std::endl;
+  LOG(INFO) << "data hash: " << data_hash;
+  LOG(INFO) << "Done read data count: " << pd.count();
   return 0;
 }
 
@@ -270,6 +270,6 @@ int main(int argc, char *argv[]) {
   }
   ofs.close();
 
-  std::cout << "done sealing" << std::endl;
+  LOG(INFO) << "done sealing";
   return 0;
 }

@@ -243,6 +243,7 @@ class multistream_job:
         self.input = input_param
         self.config = config
         self.all_outputs = list()
+        self.dian_pkey = str()
 
     def handle_input_data(self, data_url, param_hash):
         '''
@@ -270,15 +271,18 @@ class multistream_job:
         r = job_step.seal_data(self.crypto, data_url, self.plugin_url[data_url],
                                sealed_data_url, sealed_output, data_key_file)
         data_hash = job_step.read_data_hash(sealed_output)
+        print('加密数据：{0}，数据哈希为：{1}\n'.format(data_url, data_hash))
         summary['data-hash'] = data_hash
         print("done seal data with hash: {}, cmd: {}".format(data_hash, r[0]))
         self.all_outputs.append(sealed_data_url)
         self.all_outputs.append(sealed_output)
 
         # use first pkey
-        key = job_step.get_first_key(self.crypto)
-        pkey = key['public-key']
-        summary['tee-pkey'] = key['public-key']
+        # key = job_step.get_first_key(self.crypto)
+        # pkey = key['public-key']
+        # summary['tee-pkey'] = key['public-key']
+        pkey = self.dian_pkey
+        summary['tee-pkey'] = self.dian_pkey
 
         # 3. call terminusto generate forward message
         enclave_hash = job_step.read_parser_hash(self.parser_url)
@@ -286,6 +290,7 @@ class multistream_job:
         data_forward_json = job_step.forward_message(
             self.crypto, data_key_file, pkey, "", forward_result)
         self.all_outputs.append(forward_result)
+        print('生成数据授权，计算方的公钥为：{0}，Enclave哈希为：{1}\n'.format(pkey, enclave_hash))
 
         input_obj = {
             "input_data_url": sealed_data_url,
@@ -322,14 +327,18 @@ class multistream_job:
         key_file = self.name + ".key.json"
         with open(key_file, 'r') as fp:
             shukey_json = json.load(fp)
+        print('生成任务发起方的密钥，公钥为：{}\n'.format(shukey_json['public-key']))
         # shukey_json = job_step.gen_key(self.crypto, key_file)
         # self.all_outputs.append(key_file)
 
         # use first pkey
         key = job_step.get_first_key(self.crypto)
         pkey = key['public-key']
+        self.dian_pkey = pkey
+        print('获取计算方的密钥，公钥为：{}\n'.format(pkey))
         summary['tee-pkey'] = key['public-key']
         enclave_hash = job_step.read_parser_hash(self.parser_url)
+        print('获取Enclave哈希：{}\n'.format(enclave_hash))
 
         # 2.0 call terminus to generate forward message
         param_key_forward_result = self.name + ".request.shukey.foward.json"
