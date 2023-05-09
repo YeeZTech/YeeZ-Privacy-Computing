@@ -244,6 +244,7 @@ class multistream_job:
         self.config = config
         self.all_outputs = list()
         self.dian_pkey = str()
+        self.enclave_hash = str()
 
     def handle_input_data(self, data_url, param_hash):
         '''
@@ -285,12 +286,13 @@ class multistream_job:
         summary['tee-pkey'] = self.dian_pkey
 
         # 3. call terminusto generate forward message
-        enclave_hash = job_step.read_parser_hash(self.parser_url)
+        # enclave_hash = job_step.read_parser_hash(self.parser_url)
         forward_result = data_url + ".shukey.foward.json"
         data_forward_json = job_step.forward_message(
             self.crypto, data_key_file, pkey, "", forward_result)
         self.all_outputs.append(forward_result)
-        print('生成数据授权，计算方的公钥为：{0}，Enclave哈希为：{1}\n'.format(pkey, enclave_hash))
+        print('生成数据授权，计算方的公钥为：{0}，Enclave哈希为：{1}\n'.format(
+            pkey, self.enclave_hash))
 
         input_obj = {
             "input_data_url": sealed_data_url,
@@ -308,7 +310,7 @@ class multistream_job:
         # 4. call terminus to generate allowance
         allowance_result = data_url + ".allowance.json"
         allowance_json = job_step.generate_allowance(
-            self.crypto, param_hash, data_key_file, enclave_hash, pkey, data_hash, allowance_result)
+            self.crypto, param_hash, data_key_file, self.enclave_hash, pkey, data_hash, allowance_result)
         self.all_outputs.append(allowance_result)
 
         return input_obj, allowance_json
@@ -325,10 +327,11 @@ class multistream_job:
         summary = {}
         # 1. generate key
         key_file = self.name + ".key.json"
+        if not os.path.exists(key_file):
+            shukey_json = job_step.gen_key(self.crypto, key_file)
         with open(key_file, 'r') as fp:
             shukey_json = json.load(fp)
         print('生成任务发起方的密钥，公钥为：{}\n'.format(shukey_json['public-key']))
-        # shukey_json = job_step.gen_key(self.crypto, key_file)
         # self.all_outputs.append(key_file)
 
         # use first pkey
@@ -337,13 +340,13 @@ class multistream_job:
         self.dian_pkey = pkey
         print('获取计算方的密钥，公钥为：{}\n'.format(pkey))
         summary['tee-pkey'] = key['public-key']
-        enclave_hash = job_step.read_parser_hash(self.parser_url)
-        print('获取Enclave哈希：{}\n'.format(enclave_hash))
+        self.enclave_hash = job_step.read_parser_hash(self.parser_url)
+        print('获取Enclave哈希：{}\n'.format(self.enclave_hash))
 
         # 2.0 call terminus to generate forward message
         param_key_forward_result = self.name + ".request.shukey.foward.json"
         rq_forward_json = job_step.forward_message(
-            self.crypto, key_file, pkey, enclave_hash, param_key_forward_result)
+            self.crypto, key_file, pkey, self.enclave_hash, param_key_forward_result)
         self.all_outputs.append(param_key_forward_result)
 
         # gen param
@@ -377,7 +380,7 @@ class multistream_job:
         # 4. call fid_analyzer
         parser_input_file = self.name + "parser_input.json"
         parser_output_file = self.name + "parser_output.json"
-        result_json = job_step.fid_analyzer(shukey_json, rq_forward_json, enclave_hash, input_data,
+        result_json = job_step.fid_analyzer(shukey_json, rq_forward_json, self.enclave_hash, input_data,
                                             self.parser_url, pkey, {}, self.crypto, param_json, allowances, parser_input_file, parser_output_file)
 
         summary['encrypted-result'] = result_json["encrypted_result"]
