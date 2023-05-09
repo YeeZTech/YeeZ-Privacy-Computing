@@ -65,12 +65,20 @@ protected:
   inline void
   split_dataset(const std::vector<std::vector<std::pair<int, float>>> &rows,
                 const std::vector<std::string> &ids) {
-    for (int i = 0; i < rows.size(); i++) {
-      if (random::NextDouble() < 0.2f) {
+    if (m_task == "train") {
+      for (int i = 0; i < rows.size(); i++) {
+        if (random::NextDouble() < 0.2f) {
+          m_ids.push_back(ids[i]);
+          m_libsvm_test_rows.push_back(rows[i]);
+        } else {
+          m_libsvm_train_rows.push_back(rows[i]);
+        }
+      }
+    }
+    if (m_task == "pred") {
+      for (int i = 0; i < rows.size(); i++) {
         m_ids.push_back(ids[i]);
         m_libsvm_test_rows.push_back(rows[i]);
-      } else {
-        m_libsvm_train_rows.push_back(rows[i]);
       }
     }
   }
