@@ -173,6 +173,7 @@ public:
         }
       }
     }
+    LOG(INFO) << "idx_val_set";
     std::unordered_map<int, std::vector<std::string>> idx_val_v;
     for (auto it = idx_val_set.begin(); it != idx_val_set.end(); it++) {
       std::vector<std::string> v;
@@ -181,6 +182,7 @@ public:
       }
       idx_val_v.insert(std::make_pair(it->first, v));
     }
+    LOG(INFO) << "idx_val_v";
 
     // record starting index if extending columns
     int s = 0;
@@ -202,9 +204,15 @@ public:
         s += 1;
       }
     }
+    LOG(INFO) << "idx_s";
 
+    int count = 0;
     // output libsvm format
     for (auto &r : m_rows) {
+      count++;
+      if (count % 10000 == 0) {
+        LOG(INFO) << "rows: " << count;
+      }
       std::vector<std::pair<int, float>> v;
       for (int c = 0; c < r.size(); c++) {
         if (r[c].empty()) {

@@ -79,14 +79,20 @@ public:
       }
     };
     // convert to libsvm format
+    LOG(INFO) << "construct libsvm";
     libsvm ls(mo.values());
+    LOG(INFO) << "construct libsvm done";
     std::vector<int> ignore_c({10, 11, 14, 17, 19, 29, 30, 35, 38, 40});
     handle_c(ignore_c, -1);
+    LOG(INFO) << "ignore_one_hot_for_some_columns";
     ls.ignore_one_hot_for_some_columns(ignore_c);
+    LOG(INFO) << "ignore_one_hot_for_some_columns done";
     std::vector<int> one_hot_c(
         {8, 9, 12, 13, 15, 16, 18, 20, 28, 31, 32, 33, 34, 36, 37, 39});
     handle_c(one_hot_c, -1);
+    LOG(INFO) << "convert_to_libsvm";
     ls.convert_to_libsvm(one_hot_c, -1);
+    LOG(INFO) << "convert_to_libsvm done";
     // ls.show_raw_rows();
     // ls.show_libsvm_rows();
     const auto &rows = ls.get_libsvm_rows();
@@ -126,16 +132,21 @@ public:
 
     const auto &preds = pred.get_preds();
     const auto &pred_ids = pred.get_pred_ids();
-    stbox::bytes pred_result;
+    std::string pred_result_s;
     for (int i = 0; i < preds.size(); i++) {
-      pred_result += pred_ids[i];
-      pred_result += ",";
+      if (i % 10000 == 0 ) {
+        LOG(INFO) << "pred_result rows: " << i;
+      }
+      pred_result_s += pred_ids[i];
+      pred_result_s += ",";
       if (preds[i] < 0.5f) {
-        pred_result += "0\n";
+        pred_result_s += "0\n";
       } else {
-        pred_result += "1\n";
+        pred_result_s += "1\n";
       }
     }
+    LOG(INFO) << "pred result size: " << pred_result_s.size();
+    stbox::bytes pred_result(pred_result_s);
     LOG(INFO) << "generate result done";
     // encrypt pred results
     stbox::bytes pkey;
@@ -165,7 +176,7 @@ public:
         enc_result.size());
     LOG(INFO) << "dump result done";
     std::string msg;
-    msg += ("pred result size: " + std::to_string(preds.size()));
+    msg += ("pred result nums: " + std::to_string(preds.size()));
     return stbox::bytes(msg);
   }
 
