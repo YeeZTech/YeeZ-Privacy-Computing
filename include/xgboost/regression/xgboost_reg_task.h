@@ -20,7 +20,7 @@ public:
     this->set_param("bst:gamma", "1.0");
     this->set_param("bst:min_child_weight", "2");
     this->set_param("bst:max_depth", "6");
-    this->set_param("num_round", "10");
+    this->set_param("num_round", "5");
     this->set_param("data", "normal_train_merge.train");
     this->set_param("test:data", "normal_train_merge.train");
   }

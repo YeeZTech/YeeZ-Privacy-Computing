@@ -79,12 +79,18 @@ public:
     //}
 
     // convert to libsvm format
+    LOG(INFO) << "construct libsvm";
     libsvm ls(mo.values());
+    LOG(INFO) << "construct libsvm done";
     std::vector<int> ignore_c({10, 11, 14, 17, 19, 29, 30, 35, 38, 40});
+    LOG(INFO) << "ignore_one_hot_for_some_columns";
     ls.ignore_one_hot_for_some_columns(ignore_c);
+    LOG(INFO) << "ignore_one_hot_for_some_columns done";
     std::vector<int> one_hot_c(
         {8, 9, 12, 13, 15, 16, 18, 20, 28, 31, 32, 33, 34, 36, 37, 39});
+    LOG(INFO) << "convert_to_libsvm";
     ls.convert_to_libsvm(one_hot_c, 0);
+    LOG(INFO) << "convert_to_libsvm done";
     // ls.show_raw_rows();
     // ls.show_libsvm_rows();
     const auto &rows = ls.get_libsvm_rows();

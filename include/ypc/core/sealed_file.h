@@ -16,7 +16,7 @@ namespace ypc {
 namespace internal {
 class sealed_file_base {
 public:
-  using blockfile_t = blockfile<0x4788d13e7fefe21f, 1024 * 1024,
+  using blockfile_t = blockfile<0x4788d13e7fefe21f, 4 * 1024,
                                 256 * ::ypc::utc::max_item_size>;
 
   sealed_file_base(const std::string &file_path, bool read);

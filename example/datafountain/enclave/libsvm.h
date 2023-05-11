@@ -210,7 +210,7 @@ public:
     // output libsvm format
     for (auto &r : m_rows) {
       count++;
-      if (count % 10000 == 0) {
+      if (count % 100000 == 0) {
         LOG(INFO) << "rows: " << count;
       }
       std::vector<std::pair<int, float>> v;

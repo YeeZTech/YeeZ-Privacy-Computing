@@ -134,7 +134,7 @@ public:
     const auto &pred_ids = pred.get_pred_ids();
     std::string pred_result_s;
     for (int i = 0; i < preds.size(); i++) {
-      if (i % 10000 == 0 ) {
+      if (i % 100000 == 0 ) {
         LOG(INFO) << "pred_result rows: " << i;
       }
       pred_result_s += pred_ids[i];
