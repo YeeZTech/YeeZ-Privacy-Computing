@@ -59,6 +59,10 @@ public:
       rs.push_back(r.get<::D12>());
       rs.push_back(r.get<::D13>());
       m_rows.push_back(rs);
+
+      if (m_rows.size() >= 10000000) {
+        break;
+      }
     }
   }
 
@@ -110,6 +114,10 @@ public:
       rs.push_back(r.get<::D12>());
       rs.push_back(r.get<::D13>());
       m_rows.push_back(rs);
+
+      if (m_rows.size() >= 1500000) {
+        break;
+      }
     }
   }
 
@@ -184,6 +192,11 @@ public:
     }
     LOG(INFO) << "idx_val_v";
 
+    std::unordered_set<int> s_columns;
+    for (auto &col : columns) {
+      s_columns.insert(col);
+    }
+
     // record starting index if extending columns
     int s = 0;
     std::unordered_map<int, int> idx_s;
@@ -193,13 +206,18 @@ public:
       }
       idx_s.insert(std::make_pair(i, s));
       bool flag = false;
-      for (auto c : columns) {
-        if (c == i) {
-          s += idx_val_v[i].size();
-          flag = true;
-          break;
-        }
+      auto it = s_columns.find(i);
+      if (it != s_columns.end()) {
+        s += idx_val_v[i].size();
+        flag = true;
       }
+      //for (auto c : columns) {
+        //if (c == i) {
+          //s += idx_val_v[i].size();
+          //flag = true;
+          //break;
+        //}
+      //}
       if (!flag) {
         s += 1;
       }
@@ -223,19 +241,32 @@ public:
           continue;
         }
         bool flag = false;
-        for (auto &col : columns) {
-          if (c == col) {
-            int offset = 0;
-            for (auto &ele : idx_val_v[c]) {
-              if (ele == r[c]) {
-                break;
-              }
-              offset++;
+        //for (auto &col : columns) {
+          //if (c == col) {
+            //int offset = 0;
+            //for (auto &ele : idx_val_v[c]) {
+              //if (ele == r[c]) {
+                //break;
+              //}
+              //offset++;
+            //}
+            //v.push_back(std::make_pair(idx_s[c] + offset, 1));
+            //flag = true;
+            //break;
+          //}
+        //}
+        // opt
+        auto it = s_columns.find(c);
+        if (it != s_columns.end()) {
+          int offset_c = 0;
+          for (auto &ele : idx_val_v[c]) {
+            if (ele == r[c]) {
+              break;
             }
-            v.push_back(std::make_pair(idx_s[c] + offset, 1));
-            flag = true;
-            break;
+            offset_c++;
           }
+          v.push_back(std::make_pair(idx_s[c] + offset_c, 1));
+          flag = true;
         }
         if (!flag) {
           v.push_back(std::make_pair(idx_s[c], std::stof(r[c])));

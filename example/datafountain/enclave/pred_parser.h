@@ -57,10 +57,13 @@ public:
         oi;
     ypc::to_type<stbox::bytes, pred_a_item_t> conv_a(m_datasources[0].get());
     oi.add_upper_stream<::id>(&conv_a);
+    LOG(INFO) << "add datastream test_a";
     ypc::to_type<stbox::bytes, pred_b_item_t> conv_b(m_datasources[1].get());
     oi.add_upper_stream<::id>(&conv_b);
+    LOG(INFO) << "add datastream test_b";
 
     hpda::output::internal::memory_output_impl<pred_merge_item_t> mo(&oi);
+    LOG(INFO) << "merge datastreams";
     mo.get_engine()->run();
     LOG(INFO) << "do parse done";
 
@@ -141,9 +144,6 @@ public:
     const auto &pred_ids = pred.get_pred_ids();
     std::string pred_result_s;
     for (int i = 0; i < preds.size(); i++) {
-      if (i % 100000 == 0 ) {
-        LOG(INFO) << "pred_result rows: " << i;
-      }
       pred_result_s += pred_ids[i];
       pred_result_s += ",";
       if (preds[i] < 0.5f) {
@@ -152,7 +152,6 @@ public:
         pred_result_s += "1\n";
       }
     }
-    LOG(INFO) << "pred result size: " << pred_result_s.size();
     stbox::bytes pred_result(pred_result_s);
     LOG(INFO) << "generate result done";
     // encrypt pred results

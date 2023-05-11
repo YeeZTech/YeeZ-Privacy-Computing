@@ -81,7 +81,8 @@ public:
 
     // convert to libsvm format
     LOG(INFO) << "construct libsvm";
-    libsvm ls(mo.values());
+    const auto &mo_values = mo.values();
+    libsvm ls(mo_values);
     LOG(INFO) << "construct libsvm done";
     std::vector<int> ignore_c({10, 11, 14, 17, 19, 29, 30, 35, 38, 40});
     LOG(INFO) << "ignore_one_hot_for_some_columns";
