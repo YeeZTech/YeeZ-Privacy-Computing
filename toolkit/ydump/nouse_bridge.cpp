@@ -21,11 +21,12 @@ uint32_t next_data_batch(const uint8_t *data_hash, uint32_t hash_size,
                          uint8_t **data, uint32_t *len);
 void free_data_batch(uint8_t *data);
 uint32_t ocall_dump_model(const uint8_t *fp, uint32_t fp_size,
-                          const uint8_t *data, uint32_t data_size);
+                          const uint8_t *data, uint32_t data_size,
+                          uint32_t offset);
 uint32_t ocall_get_model_size(const uint8_t *fp, uint32_t fp_size,
                               uint32_t *data_size);
 uint32_t ocall_load_model(const uint8_t *fp, uint32_t fp_size, uint8_t *data,
-                          uint32_t data_size);
+                          uint32_t data_size, uint32_t offset);
 }
 
 
@@ -52,7 +53,8 @@ uint32_t next_data_batch(const uint8_t *data_hash, uint32_t hash_size,
 }
 void free_data_batch(uint8_t *data) { return; }
 uint32_t ocall_dump_model(const uint8_t *fp, uint32_t fp_size,
-                          const uint8_t *data, uint32_t data_size) {
+                          const uint8_t *data, uint32_t data_size,
+                          uint32_t offset) {
   return 0;
 }
 uint32_t ocall_get_model_size(const uint8_t *fp, uint32_t fp_size,
@@ -60,6 +62,6 @@ uint32_t ocall_get_model_size(const uint8_t *fp, uint32_t fp_size,
   return 0;
 }
 uint32_t ocall_load_model(const uint8_t *fp, uint32_t fp_size, uint8_t *data,
-                          uint32_t data_size) {
+                          uint32_t data_size, uint32_t offset) {
   return 0;
 }
