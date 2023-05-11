@@ -2,6 +2,7 @@
 #include "libsvm.h"
 #include "type.h"
 #include "ypc/common/crypto_prefix.h"
+#include "ypc/common/limits.h"
 #include "ypc/core_t/analyzer/analyzer_context.h"
 #include "ypc/core_t/analyzer/data_source.h"
 #include "ypc/corecommon/crypto/stdeth.h"
@@ -120,9 +121,16 @@ public:
     LOG(INFO) << "encrypt model done!";
     // dump encrypted model
     std::string filename("train.model");
+    uint32_t offset = 0;
+    while (offset + ypc::utc::max_item_size < enc_model.size()) {
+      stbox::ocall_cast<uint32_t>(ocall_dump_model)(
+          (uint8_t *)&filename[0], filename.size(), enc_model.data() + offset,
+          ypc::utc::max_item_size, offset);
+      offset += ypc::utc::max_item_size;
+    }
     stbox::ocall_cast<uint32_t>(ocall_dump_model)(
-        (uint8_t *)&filename[0], filename.size(), enc_model.data(),
-        enc_model.size());
+        (uint8_t *)&filename[0], filename.size(), enc_model.data() + offset,
+        enc_model.size() - offset, offset);
     LOG(INFO) << "dump model done!";
     std::string msg;
     msg += ("model size: " + std::to_string(model.size()));

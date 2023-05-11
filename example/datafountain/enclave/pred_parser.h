@@ -104,9 +104,16 @@ public:
     stbox::ocall_cast<uint32_t>(ocall_get_model_size)(
         (uint8_t *)&filename[0], filename.size(), &enc_model_size);
     stbox::bytes enc_model(enc_model_size);
+    uint32_t offset = 0;
+    while (offset + ypc::utc::max_item_size < enc_model.size()) {
+      stbox::ocall_cast<uint32_t>(ocall_load_model)(
+          (uint8_t *)&filename[0], filename.size(), enc_model.data() + offset,
+          ypc::utc::max_item_size, offset);
+      offset += ypc::utc::max_item_size;
+    }
     stbox::ocall_cast<uint32_t>(ocall_load_model)(
-        (uint8_t *)&filename[0], filename.size(), enc_model.data(),
-        enc_model.size());
+        (uint8_t *)&filename[0], filename.size(), enc_model.data() + offset,
+        enc_model.size() - offset, offset);
     LOG(INFO) << "load encrypted model, size: " << enc_model_size;
 
     // decrypt model
@@ -171,9 +178,16 @@ public:
     LOG(INFO) << "encrypt result done";
     // dump pred results
     std::string filepred("pred.result");
+    offset = 0;
+    while (offset + ypc::utc::max_item_size < enc_result.size()) {
+      stbox::ocall_cast<uint32_t>(ocall_dump_model)(
+          (uint8_t *)&filepred[0], filepred.size(), enc_result.data() + offset,
+          ypc::utc::max_item_size, offset);
+      offset += ypc::utc::max_item_size;
+    }
     stbox::ocall_cast<uint32_t>(ocall_dump_model)(
-        (uint8_t *)&filepred[0], filepred.size(), enc_result.data(),
-        enc_result.size());
+        (uint8_t *)&filepred[0], filepred.size(), enc_result.data() + offset,
+        enc_result.size() - offset, offset);
     LOG(INFO) << "dump result done";
     std::string msg;
     msg += ("pred result nums: " + std::to_string(preds.size()));
