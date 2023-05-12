@@ -59,10 +59,6 @@ public:
       rs.push_back(r.get<::D12>());
       rs.push_back(r.get<::D13>());
       m_rows.push_back(rs);
-
-      if (m_rows.size() >= 10000000) {
-        break;
-      }
     }
   }
 
@@ -114,10 +110,6 @@ public:
       rs.push_back(r.get<::D12>());
       rs.push_back(r.get<::D13>());
       m_rows.push_back(rs);
-
-      if (m_rows.size() >= 1500000) {
-        break;
-      }
     }
   }
 
