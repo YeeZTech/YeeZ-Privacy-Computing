@@ -34,7 +34,7 @@ struct EvalRMSE : public IEvaluator {
                      const std::vector<float> &labels) const {
     const unsigned ndata = static_cast<unsigned>(preds.size());
     float sum = 0.0;
-#pragma omp parallel for reduction(+ : sum) schedule(static)
+#pragma omp parallel for reduction(+ : sum)
     for (unsigned i = 0; i < ndata; ++i) {
       float diff = preds[i] - labels[i];
       sum += diff * diff;
@@ -50,7 +50,7 @@ struct EvalError : public IEvaluator {
                      const std::vector<float> &labels) const {
     const unsigned ndata = static_cast<unsigned>(preds.size());
     unsigned nerr = 0;
-#pragma omp parallel for reduction(+ : nerr) schedule(static)
+#pragma omp parallel for reduction(+ : nerr)
     for (unsigned i = 0; i < ndata; ++i) {
       if (preds[i] > 0.5f) {
         if (labels[i] < 0.5f)
@@ -71,7 +71,7 @@ struct EvalLogLoss : public IEvaluator {
                      const std::vector<float> &labels) const {
     const unsigned ndata = static_cast<unsigned>(preds.size());
     unsigned nerr = 0;
-#pragma omp parallel for reduction(+ : nerr) schedule(static)
+#pragma omp parallel for reduction(+ : nerr)
     for (unsigned i = 0; i < ndata; ++i) {
       const float y = labels[i];
       const float py = preds[i];

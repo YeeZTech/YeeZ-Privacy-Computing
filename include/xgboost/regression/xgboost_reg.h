@@ -178,7 +178,7 @@ public:
     preds.resize(data.Size());
 
     const unsigned ndata = static_cast<unsigned>(data.Size());
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for
     for (unsigned j = 0; j < ndata; ++j) {
       preds[j] = mparam.PredTransform(mparam.base_score +
                                       base_gbm.Predict(data.data, j, -1));
@@ -223,7 +223,7 @@ private:
                               unsigned buffer_offset) {
     preds.resize(data.Size());
     const unsigned ndata = static_cast<unsigned>(data.Size());
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for
     for (unsigned j = 0; j < ndata; ++j) {
       preds[j] = mparam.PredTransform(
           mparam.base_score +
@@ -233,7 +233,7 @@ private:
   /*! \brief repredict trial */
   inline void InteractRePredict(const DMatrix &data, unsigned buffer_offset) {
     const unsigned ndata = static_cast<unsigned>(data.Size());
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for
     for (unsigned j = 0; j < ndata; ++j) {
       base_gbm.InteractRePredict(data.data, j, buffer_offset + j);
     }
@@ -246,7 +246,7 @@ private:
     preds.resize(data.Size());
 
     const unsigned ndata = static_cast<unsigned>(data.Size());
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for
     for (unsigned j = 0; j < ndata; ++j) {
       preds[j] = mparam.PredTransform(
           mparam.base_score +
@@ -263,7 +263,7 @@ private:
     hess.resize(preds.size());
 
     const unsigned ndata = static_cast<unsigned>(preds.size());
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for
     for (unsigned j = 0; j < ndata; ++j) {
       grad[j] = mparam.FirstOrderGradient(preds[j], labels[j]);
       hess[j] = mparam.SecondOrderGradient(preds[j], labels[j]);
