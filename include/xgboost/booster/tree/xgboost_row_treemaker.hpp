@@ -199,7 +199,7 @@ private:
       }
     } else {
 // if get to enough depth, parallelize over node
-#pragma omp parallel for schedule(dynamic, 1)
+#pragma omp parallel for
       for (int i = 0; i < nexpand; ++i) {
         const int tid = omp_get_thread_num();
         utils::Assert(tid < (int)tmp_rptr.size(),
@@ -294,7 +294,7 @@ private:
       SplitEntry nbest, tbest;
 #pragma omp parallel private(tbest)
       {
-#pragma omp for schedule(dynamic, 1)
+#pragma omp for
         for (int j = 0; j < naclist; ++j) {
           bst_uint findex = static_cast<bst_uint>(aclist[j]);
           // local sort can be faster when the features are sparse

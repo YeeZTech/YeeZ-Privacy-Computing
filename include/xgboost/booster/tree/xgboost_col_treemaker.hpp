@@ -85,7 +85,7 @@ private:
 
     const unsigned ndata = static_cast<unsigned>(position.size());
 
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for
     for (unsigned i = 0; i < ndata; ++i) {
       const int tid = omp_get_thread_num();
       if (position[i] < 0)
@@ -186,7 +186,7 @@ private:
   inline void FindSplit(int depth) {
     const unsigned nsize = static_cast<unsigned>(feat_index.size());
 
-#pragma omp parallel for schedule(dynamic, 1)
+#pragma omp parallel for
     for (unsigned i = 0; i < nsize; ++i) {
       const unsigned fid = feat_index[i];
       const int tid = omp_get_thread_num();
@@ -221,7 +221,7 @@ private:
     { // reset position
       // step 1, set default direct nodes to default, and leaf nodes to -1,
       const unsigned ndata = static_cast<unsigned>(position.size());
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for
       for (unsigned i = 0; i < ndata; ++i) {
         const int nid = position[i];
         if (nid >= 0) {
@@ -248,7 +248,7 @@ private:
                      fsplits.begin());
 
       const unsigned nfeats = static_cast<unsigned>(fsplits.size());
-#pragma omp parallel for schedule(dynamic, 1)
+#pragma omp parallel for
       for (unsigned i = 0; i < nfeats; ++i) {
         const unsigned fid = fsplits[i];
         for (typename FMatrix::ColIter it = smat.GetSortedCol(fid);
