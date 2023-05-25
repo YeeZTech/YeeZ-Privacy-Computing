@@ -1042,6 +1042,19 @@ int sm2_point_from_xy(SM2_POINT *P, const uint8_t x[32], const uint8_t y[32])
 	return sm2_point_is_on_curve(P);
 }
 
+int sm2_point_add(SM2_POINT *R, const SM2_POINT *P, const SM2_POINT *Q)
+{
+	SM2_JACOBIAN_POINT P_;
+	SM2_JACOBIAN_POINT Q_;
+
+	sm2_jacobian_point_from_bytes(&P_, (uint8_t *)P);
+	sm2_jacobian_point_from_bytes(&Q_, (uint8_t *)Q);
+	sm2_jacobian_point_add(&P_, &P_, &Q_);
+	sm2_jacobian_point_to_bytes(&P_, (uint8_t *)R);
+
+	return 1;
+}
+
 int sm2_point_mul(SM2_POINT *R, const uint8_t k[32], const SM2_POINT *P)
 {
 	SM2_BN _k;

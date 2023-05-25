@@ -194,6 +194,7 @@ int sm2_point_from_octets(SM2_POINT *P, const uint8_t *in, size_t inlen);
 int sm2_point_from_x(SM2_POINT *P, const uint8_t x[32], int y);
 int sm2_point_from_xy(SM2_POINT *P, const uint8_t x[32], const uint8_t y[32]);
 int sm2_point_is_on_curve(const SM2_POINT *P);
+int sm2_point_add(SM2_POINT *R, const SM2_POINT *P, const SM2_POINT *Q);
 int sm2_point_mul(SM2_POINT *R, const uint8_t k[32], const SM2_POINT *P);
 int sm2_point_mul_generator(SM2_POINT *R, const uint8_t k[32]);
 int sm2_point_mul_sum(SM2_POINT *R, const uint8_t k[32], const SM2_POINT *P,
