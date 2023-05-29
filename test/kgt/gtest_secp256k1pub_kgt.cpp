@@ -19,8 +19,8 @@
 #include <limits.h>
 #include <stddef.h>
 
-#include "ypc/core/group.h"
-#include "ypc/core/kgt.h"
+#include "ypc/corecommon/crypto/group.h"
+#include "ypc/corecommon/kgt.h"
 #include <assert.h>
 #include <gtest/gtest.h>
 
@@ -64,14 +64,15 @@ TEST(test_secp256k1pub_kgt, create_kgt_no_child) {
                                                     SECP256K1_CONTEXT_SIGN);
   EXPECT_EQ(fill_random(skey1, sizeof(skey1)), 1);
   return_val = secp256k1_ec_pubkey_create(ctx, &pkey1, skey1);
-  key_node<secp256k1_pkey_group> pkey1_node(pkey1);
-  std::vector<std::shared_ptr<key_node<secp256k1_pkey_group>>> children;
-  kgt<secp256k1_pkey_group> k(
-      std::make_shared<key_node<secp256k1_pkey_group>>(pkey1_node), children);
-  std::string res = k.to_string();
-  kgt<secp256k1_pkey_group> k2(res);
-  std::string res2 = k2.to_string();
-  EXPECT_EQ(res, res2);
+  ypc::key_node<secp256k1_pkey_group> pkey1_node(pkey1);
+  std::vector<std::shared_ptr<ypc::key_node<secp256k1_pkey_group>>> children;
+  ypc::kgt<secp256k1_pkey_group> k(
+      std::make_shared<ypc::key_node<secp256k1_pkey_group>>(pkey1_node),
+      children);
+  stbox::bytes res = k.to_bytes();
+  ypc::kgt<secp256k1_pkey_group> k2(res);
+  stbox::bytes res2 = k2.to_bytes();
+  EXPECT_EQ(memcmp(res.data(), res2.data(), res.size()), 0);
 }
 
 TEST(test_secp256k1pub_kgt, create_kgt_using_node) {
@@ -89,24 +90,26 @@ TEST(test_secp256k1pub_kgt, create_kgt_using_node) {
   return_val = secp256k1_ec_pubkey_create(ctx, &pkey3, skey3);
   return_val = secp256k1_ec_pubkey_create(ctx, &pkey4, skey4);
 
-  key_node<secp256k1_pkey_group> pkey1_node(pkey1);
-  key_node<secp256k1_pkey_group> pkey2_node(pkey2);
-  key_node<secp256k1_pkey_group> pkey3_node(pkey3);
-  key_node<secp256k1_pkey_group> pkey4_node(pkey4);
-  std::vector<std::shared_ptr<key_node<secp256k1_pkey_group>>> children = {
-      std::make_shared<key_node<secp256k1_pkey_group>>(pkey2_node),
-      std::make_shared<key_node<secp256k1_pkey_group>>(pkey3_node)};
-  kgt<secp256k1_pkey_group> k1(
-      std::make_shared<key_node<secp256k1_pkey_group>>(pkey1_node), children);
+  ypc::key_node<secp256k1_pkey_group> pkey1_node(pkey1);
+  ypc::key_node<secp256k1_pkey_group> pkey2_node(pkey2);
+  ypc::key_node<secp256k1_pkey_group> pkey3_node(pkey3);
+  ypc::key_node<secp256k1_pkey_group> pkey4_node(pkey4);
+  std::vector<std::shared_ptr<ypc::key_node<secp256k1_pkey_group>>> children = {
+      std::make_shared<ypc::key_node<secp256k1_pkey_group>>(pkey2_node),
+      std::make_shared<ypc::key_node<secp256k1_pkey_group>>(pkey3_node)};
+  ypc::kgt<secp256k1_pkey_group> k1(
+      std::make_shared<ypc::key_node<secp256k1_pkey_group>>(pkey1_node),
+      children);
 
   children.clear();
   children.push_back(k1.root());
-  kgt<secp256k1_pkey_group> k4(
-      std::make_shared<key_node<secp256k1_pkey_group>>(pkey4_node), children);
-  std::string res = k4.to_string();
-  kgt<secp256k1_pkey_group> k2(res);
-  std::string res2 = k2.to_string();
-  EXPECT_EQ(res, res2);
+  ypc::kgt<secp256k1_pkey_group> k4(
+      std::make_shared<ypc::key_node<secp256k1_pkey_group>>(pkey4_node),
+      children);
+  stbox::bytes res = k4.to_bytes();
+  ypc::kgt<secp256k1_pkey_group> k2(res);
+  stbox::bytes res2 = k2.to_bytes();
+  EXPECT_EQ(memcmp(res.data(), res2.data(), res.size()), 0);
 }
 
 TEST(test_secp256k1pub_kgt, calculate_sum_no_child) {
@@ -120,10 +123,11 @@ TEST(test_secp256k1pub_kgt, calculate_sum_no_child) {
   EXPECT_EQ(return_val, 1);
 
   return_val = secp256k1_ec_pubkey_create(ctx, &pkey1, skey1);
-  key_node<secp256k1_pkey_group> pkey1_node(pkey1);
-  std::vector<std::shared_ptr<key_node<secp256k1_pkey_group>>> children;
-  kgt<secp256k1_pkey_group> k(
-      std::make_shared<key_node<secp256k1_pkey_group>>(pkey1_node), children);
+  ypc::key_node<secp256k1_pkey_group> pkey1_node(pkey1);
+  std::vector<std::shared_ptr<ypc::key_node<secp256k1_pkey_group>>> children;
+  ypc::kgt<secp256k1_pkey_group> k(
+      std::make_shared<ypc::key_node<secp256k1_pkey_group>>(pkey1_node),
+      children);
   return_val = k.calculate_kgt_sum();
   EXPECT_TRUE(memcmp(&pkey1, &k.sum(), sizeof(secp256k1_pubkey)) == 0);
 }
@@ -139,12 +143,13 @@ TEST(test_secp256k1pub_kgt, calculate_sum_one_child) {
   return_val = fill_random(skey2, sizeof(skey2));
   return_val = secp256k1_ec_pubkey_create(ctx, &pkey2, skey2);
 
-  key_node<secp256k1_pkey_group> pkey1_node(pkey1);
-  key_node<secp256k1_pkey_group> pkey2_node(pkey2);
-  std::vector<std::shared_ptr<key_node<secp256k1_pkey_group>>> children = {
-      std::make_shared<key_node<secp256k1_pkey_group>>(pkey2_node)};
-  kgt<secp256k1_pkey_group> k(
-      std::make_shared<key_node<secp256k1_pkey_group>>(pkey1_node), children);
+  ypc::key_node<secp256k1_pkey_group> pkey1_node(pkey1);
+  ypc::key_node<secp256k1_pkey_group> pkey2_node(pkey2);
+  std::vector<std::shared_ptr<ypc::key_node<secp256k1_pkey_group>>> children = {
+      std::make_shared<ypc::key_node<secp256k1_pkey_group>>(pkey2_node)};
+  ypc::kgt<secp256k1_pkey_group> k(
+      std::make_shared<ypc::key_node<secp256k1_pkey_group>>(pkey1_node),
+      children);
   return_val = k.calculate_kgt_sum();
   secp256k1_pubkey res;
   EXPECT_TRUE(memcmp(&k.sum(), &pkey2, sizeof(secp256k1_pubkey)) == 0);
@@ -167,14 +172,15 @@ TEST(test_secp256k1pub_kgt, calculate_sum_multi_children) {
   return_val = secp256k1_ec_pubkey_create(ctx, &pkey2, skey2);
   return_val = secp256k1_ec_pubkey_create(ctx, &pkey3, skey3);
 
-  key_node<secp256k1_pkey_group> pkey1_node(pkey1);
-  key_node<secp256k1_pkey_group> pkey2_node(pkey2);
-  key_node<secp256k1_pkey_group> pkey3_node(pkey3);
-  std::vector<std::shared_ptr<key_node<secp256k1_pkey_group>>> children = {
-      std::make_shared<key_node<secp256k1_pkey_group>>(pkey2_node),
-      std::make_shared<key_node<secp256k1_pkey_group>>(pkey3_node)};
-  kgt<secp256k1_pkey_group> k(
-      std::make_shared<key_node<secp256k1_pkey_group>>(pkey1_node), children);
+  ypc::key_node<secp256k1_pkey_group> pkey1_node(pkey1);
+  ypc::key_node<secp256k1_pkey_group> pkey2_node(pkey2);
+  ypc::key_node<secp256k1_pkey_group> pkey3_node(pkey3);
+  std::vector<std::shared_ptr<ypc::key_node<secp256k1_pkey_group>>> children = {
+      std::make_shared<ypc::key_node<secp256k1_pkey_group>>(pkey2_node),
+      std::make_shared<ypc::key_node<secp256k1_pkey_group>>(pkey3_node)};
+  ypc::kgt<secp256k1_pkey_group> k(
+      std::make_shared<ypc::key_node<secp256k1_pkey_group>>(pkey1_node),
+      children);
   return_val = k.calculate_kgt_sum();
   secp256k1_pubkey res;
   return_val = secp256k1_pkey_group::add(res, pkey2, pkey3);
@@ -186,7 +192,7 @@ TEST(test_secp256k1pub_kgt, complex_kgt) {
   std::vector<skey_t> skey_vec;
   skey_t tmp_skey;
   std::vector<secp256k1_pubkey> pkey_vec;
-  std::vector<key_node<secp256k1_pkey_group>> key_nodes;
+  std::vector<ypc::key_node<secp256k1_pkey_group>> key_nodes;
   secp256k1_pubkey tmp_pkey;
   int return_val;
   secp256k1_context *ctx = secp256k1_context_create(SECP256K1_CONTEXT_VERIFY |
@@ -199,31 +205,31 @@ TEST(test_secp256k1pub_kgt, complex_kgt) {
     key_nodes.emplace_back(pkey_vec[i]);
   }
 
-  std::vector<std::shared_ptr<key_node<secp256k1_pkey_group>>> children1 = {
-      std::make_shared<key_node<secp256k1_pkey_group>>(key_nodes[0]),
-      std::make_shared<key_node<secp256k1_pkey_group>>(key_nodes[1]),
-      std::make_shared<key_node<secp256k1_pkey_group>>(key_nodes[2])};
-  auto sub_root1 = std::make_shared<key_node<secp256k1_pkey_group>>();
-  kgt<secp256k1_pkey_group> k1(sub_root1, children1);
+  std::vector<std::shared_ptr<ypc::key_node<secp256k1_pkey_group>>> children1 =
+      {std::make_shared<ypc::key_node<secp256k1_pkey_group>>(key_nodes[0]),
+       std::make_shared<ypc::key_node<secp256k1_pkey_group>>(key_nodes[1]),
+       std::make_shared<ypc::key_node<secp256k1_pkey_group>>(key_nodes[2])};
+  auto sub_root1 = std::make_shared<ypc::key_node<secp256k1_pkey_group>>();
+  ypc::kgt<secp256k1_pkey_group> k1(sub_root1, children1);
   return_val = k1.calculate_kgt_sum();
 
-  std::vector<std::shared_ptr<key_node<secp256k1_pkey_group>>> children2 = {
-      std::make_shared<key_node<secp256k1_pkey_group>>(key_nodes[3]),
-      std::make_shared<key_node<secp256k1_pkey_group>>(key_nodes[4]),
-      std::make_shared<key_node<secp256k1_pkey_group>>(key_nodes[5])};
-  auto sub_root2 = std::make_shared<key_node<secp256k1_pkey_group>>();
-  kgt<secp256k1_pkey_group> k2(sub_root2, children2);
+  std::vector<std::shared_ptr<ypc::key_node<secp256k1_pkey_group>>> children2 =
+      {std::make_shared<ypc::key_node<secp256k1_pkey_group>>(key_nodes[3]),
+       std::make_shared<ypc::key_node<secp256k1_pkey_group>>(key_nodes[4]),
+       std::make_shared<ypc::key_node<secp256k1_pkey_group>>(key_nodes[5])};
+  auto sub_root2 = std::make_shared<ypc::key_node<secp256k1_pkey_group>>();
+  ypc::kgt<secp256k1_pkey_group> k2(sub_root2, children2);
   return_val = k2.calculate_kgt_sum();
 
   children1.clear();
   children1.push_back(k1.root());
   children1.push_back(
-      std::make_shared<key_node<secp256k1_pkey_group>>(key_nodes[6]));
+      std::make_shared<ypc::key_node<secp256k1_pkey_group>>(key_nodes[6]));
   children1.push_back(
-      std::make_shared<key_node<secp256k1_pkey_group>>(key_nodes[7]));
+      std::make_shared<ypc::key_node<secp256k1_pkey_group>>(key_nodes[7]));
   children1.push_back(k2.root());
-  auto root = std::make_shared<key_node<secp256k1_pkey_group>>();
-  kgt<secp256k1_pkey_group> k3(root, children1);
+  auto root = std::make_shared<ypc::key_node<secp256k1_pkey_group>>();
+  ypc::kgt<secp256k1_pkey_group> k3(root, children1);
   return_val = k3.calculate_kgt_sum();
 
   secp256k1_pubkey root_sum;
@@ -232,8 +238,8 @@ TEST(test_secp256k1pub_kgt, complex_kgt) {
   return_val = secp256k1_pkey_group::add(root_sum, root_sum, k2.sum());
   EXPECT_TRUE(memcmp(&root_sum, &k3.sum(), sizeof(secp256k1_pubkey)) == 0);
 
-  std::string res = k3.to_string();
-  kgt<secp256k1_pkey_group> k4(res);
-  std::string res2 = k4.to_string();
-  EXPECT_EQ(res, res2);
+  stbox::bytes res = k3.to_bytes();
+  ypc::kgt<secp256k1_pkey_group> k4(res);
+  stbox::bytes res2 = k4.to_bytes();
+  EXPECT_EQ(memcmp(res.data(), res2.data(), res.size()), 0);
 }

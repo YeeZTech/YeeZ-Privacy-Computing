@@ -1,7 +1,6 @@
 #pragma once
 #include "ypc/stbox/tsgx/secp256k1/secp256k1.h"
 #include <gmssl/sm2.h>
-#include <iostream>
 #include <memory>
 #include <ypc/core/byte.h>
 

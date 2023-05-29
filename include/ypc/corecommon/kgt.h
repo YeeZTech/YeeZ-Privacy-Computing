@@ -1,9 +1,14 @@
 #pragma once
-#include "group.h"
-#include <boost/property_tree/json_parser.hpp>
-#include <boost/property_tree/ptree.hpp>
+#include "crypto/group.h"
+#include "package.h"
+#include "ypc/stbox/ebyte.h"
 #include <memory>
 #include <ypc/core/byte.h>
+
+namespace ypc {
+define_nt(kgt_value, stbox::bytes);
+define_nt(kgt_children, std::vector<stbox::bytes>);
+typedef ::ff::net::ntpackage<0x58823cf3, kgt_value, kgt_children> kgt_pkg_t;
 
 template <typename Group> struct key_node {
   typedef Group group_t;
@@ -29,20 +34,9 @@ public:
     }
   }
 
-  kgt(const std::string &json_kgt) {
-    boost::property_tree::ptree pt;
-    std::stringstream ss(json_kgt);
-    boost::property_tree::json_parser::read_json(ss, pt);
-    m_root = deserialize_node(pt);
-  }
+  kgt(const stbox::bytes &bytes_kgt) { m_root = b_deserialize_node(bytes_kgt); }
 
-  // m_root to json string
-  std::string to_string() {
-    std::stringstream ss;
-    auto pt = seriliaze_node(*m_root);
-    boost::property_tree::json_parser::write_json(ss, pt);
-    return ss.str();
-  }
+  stbox::bytes to_bytes() { return b_serialize_node(*m_root); }
 
   int calculate_kgt_sum() {
     m_sum = calculate_node_sum(*m_root);
@@ -67,28 +61,26 @@ protected:
     return sum;
   }
 
-  boost::property_tree::ptree seriliaze_node(const key_node<group_t> &node) {
-    std::stringstream ss;
-    ypc::bytes val((uint8_t *)&node.key_val, sizeof(group_key_t));
-    ss << val;
-    boost::property_tree::ptree pt;
-    pt.put("value", ss.str());
-    boost::property_tree::ptree arr;
+  stbox::bytes b_serialize_node(const key_node<group_t> &node) {
+    ypc::kgt_pkg_t pkg;
+    stbox::bytes val((uint8_t *)&node.key_val, sizeof(group_key_t));
+    pkg.set<ypc::kgt_value>(val);
+    std::vector<stbox::bytes> v;
     for (const auto &child : node.children) {
-      auto child_pt = seriliaze_node(*child);
-      arr.push_back(boost::property_tree::ptree::value_type("", child_pt));
+      auto b_child = b_serialize_node(*child);
+      v.push_back(b_child);
     }
-    pt.add_child("children", arr);
-    return pt;
+    pkg.set<ypc::kgt_children>(v);
+    return ypc::make_bytes<stbox::bytes>::for_package(pkg);
   }
 
-  std::shared_ptr<key_node<group_t>>
-  deserialize_node(const boost::property_tree::ptree &pt) {
+  std::shared_ptr<key_node<group_t>> b_deserialize_node(const stbox::bytes &b) {
     auto ptr = std::make_shared<key_node<group_t>>();
-    auto bval = ypc::hex_bytes(pt.get<std::string>("value")).as<ypc::bytes>();
-    memcpy(&ptr->key_val, bval.data(), sizeof(group_key_t));
-    for (const auto &ele : pt.get_child("children")) {
-      ptr->children.push_back(deserialize_node(ele.second));
+    auto pkg = ypc::make_package<ypc::kgt_pkg_t>::from_bytes(b);
+    auto val = pkg.get<ypc::kgt_value>();
+    memcpy(&ptr->key_val, val.data(), sizeof(group_key_t));
+    for (const auto &child : pkg.get<ypc::kgt_children>()) {
+      ptr->children.push_back(b_deserialize_node(child));
     }
     return ptr;
   }
@@ -96,4 +88,5 @@ protected:
   protected:
     group_key_t m_sum;
     std::shared_ptr<key_node<group_t>> m_root;
-  };
+};
+} // namespace ypc

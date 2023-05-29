@@ -19,8 +19,8 @@
 #include <limits.h>
 #include <stddef.h>
 
-#include "ypc/core/group.h"
-#include "ypc/core/kgt.h"
+#include "ypc/corecommon/crypto/group.h"
+#include "ypc/corecommon/kgt.h"
 #include <assert.h>
 #include <gtest/gtest.h>
 
@@ -62,16 +62,15 @@ TEST(test_secp256k1pri_kgt, create_kgt_no_child) {
   secp256k1_context *ctx = secp256k1_context_create(SECP256K1_CONTEXT_VERIFY |
                                                     SECP256K1_CONTEXT_SIGN);
   EXPECT_EQ(fill_random(skey1.data, sizeof(skey1)), 1);
-  key_node<secp256k1_skey_group> skey1_node(skey1);
-  std::vector<std::shared_ptr<key_node<secp256k1_skey_group>>> children;
-  kgt<secp256k1_skey_group> k(
-      std::make_shared<key_node<secp256k1_skey_group>>(skey1_node), children);
-  std::string res = k.to_string();
-  std::cout << res << std::endl;
-  kgt<secp256k1_skey_group> k2(res);
-  std::string res2 = k2.to_string();
-  std::cout << res2 << std::endl;
-  EXPECT_EQ(res, res2);
+  ypc::key_node<secp256k1_skey_group> skey1_node(skey1);
+  std::vector<std::shared_ptr<ypc::key_node<secp256k1_skey_group>>> children;
+  ypc::kgt<secp256k1_skey_group> k(
+      std::make_shared<ypc::key_node<secp256k1_skey_group>>(skey1_node),
+      children);
+  stbox::bytes res = k.to_bytes();
+  ypc::kgt<secp256k1_skey_group> k2(res);
+  stbox::bytes res2 = k2.to_bytes();
+  EXPECT_EQ(memcmp(res.data(), res2.data(), res.size()), 0);
 }
 
 TEST(test_secp256k1pri_kgt, create_kgt_using_node) {
@@ -85,26 +84,26 @@ TEST(test_secp256k1pri_kgt, create_kgt_using_node) {
   EXPECT_EQ(fill_random(skey3.data, sizeof(skey3)), 1);
   EXPECT_EQ(fill_random(skey4.data, sizeof(skey4)), 1);
 
-  key_node<secp256k1_skey_group> skey1_node(skey1);
-  key_node<secp256k1_skey_group> skey2_node(skey2);
-  key_node<secp256k1_skey_group> skey3_node(skey3);
-  key_node<secp256k1_skey_group> skey4_node(skey4);
-  std::vector<std::shared_ptr<key_node<secp256k1_skey_group>>> children = {
-      std::make_shared<key_node<secp256k1_skey_group>>(skey2_node),
-      std::make_shared<key_node<secp256k1_skey_group>>(skey3_node)};
-  kgt<secp256k1_skey_group> k1(
-      std::make_shared<key_node<secp256k1_skey_group>>(skey1_node), children);
+  ypc::key_node<secp256k1_skey_group> skey1_node(skey1);
+  ypc::key_node<secp256k1_skey_group> skey2_node(skey2);
+  ypc::key_node<secp256k1_skey_group> skey3_node(skey3);
+  ypc::key_node<secp256k1_skey_group> skey4_node(skey4);
+  std::vector<std::shared_ptr<ypc::key_node<secp256k1_skey_group>>> children = {
+      std::make_shared<ypc::key_node<secp256k1_skey_group>>(skey2_node),
+      std::make_shared<ypc::key_node<secp256k1_skey_group>>(skey3_node)};
+  ypc::kgt<secp256k1_skey_group> k1(
+      std::make_shared<ypc::key_node<secp256k1_skey_group>>(skey1_node),
+      children);
 
   children.clear();
   children.push_back(k1.root());
-  kgt<secp256k1_skey_group> k4(
-      std::make_shared<key_node<secp256k1_skey_group>>(skey4_node), children);
-  std::string res = k4.to_string();
-  std::cout << res << std::endl;
-  kgt<secp256k1_skey_group> k2(res);
-  std::string res2 = k2.to_string();
-  std::cout << res2 << std::endl;
-  EXPECT_EQ(res, res2);
+  ypc::kgt<secp256k1_skey_group> k4(
+      std::make_shared<ypc::key_node<secp256k1_skey_group>>(skey4_node),
+      children);
+  stbox::bytes res = k4.to_bytes();
+  ypc::kgt<secp256k1_skey_group> k2(res);
+  stbox::bytes res2 = k2.to_bytes();
+  EXPECT_EQ(memcmp(res.data(), res2.data(), res.size()), 0);
 }
 
 TEST(test_secp256k1pri_kgt, calculate_sum_no_child) {
@@ -116,10 +115,11 @@ TEST(test_secp256k1pri_kgt, calculate_sum_no_child) {
   return_val = fill_random(skey1.data, sizeof(skey1));
   EXPECT_EQ(return_val, 1);
 
-  key_node<secp256k1_skey_group> skey1_node(skey1);
-  std::vector<std::shared_ptr<key_node<secp256k1_skey_group>>> children;
-  kgt<secp256k1_skey_group> k(
-      std::make_shared<key_node<secp256k1_skey_group>>(skey1_node), children);
+  ypc::key_node<secp256k1_skey_group> skey1_node(skey1);
+  std::vector<std::shared_ptr<ypc::key_node<secp256k1_skey_group>>> children;
+  ypc::kgt<secp256k1_skey_group> k(
+      std::make_shared<ypc::key_node<secp256k1_skey_group>>(skey1_node),
+      children);
   return_val = k.calculate_kgt_sum();
   EXPECT_TRUE(memcmp(&skey1, &k.sum(), sizeof(secp256k1_skey_group::key_t)) ==
               0);
@@ -137,12 +137,13 @@ TEST(test_secp256k1pri_kgt, calculate_sum_one_child) {
   return_val = fill_random(skey2.data, sizeof(skey2.data));
   EXPECT_EQ(return_val, 1);
 
-  key_node<secp256k1_skey_group> skey1_node(skey1);
-  key_node<secp256k1_skey_group> skey2_node(skey2);
-  std::vector<std::shared_ptr<key_node<secp256k1_skey_group>>> children = {
-      std::make_shared<key_node<secp256k1_skey_group>>(skey2_node)};
-  kgt<secp256k1_skey_group> k(
-      std::make_shared<key_node<secp256k1_skey_group>>(skey1_node), children);
+  ypc::key_node<secp256k1_skey_group> skey1_node(skey1);
+  ypc::key_node<secp256k1_skey_group> skey2_node(skey2);
+  std::vector<std::shared_ptr<ypc::key_node<secp256k1_skey_group>>> children = {
+      std::make_shared<ypc::key_node<secp256k1_skey_group>>(skey2_node)};
+  ypc::kgt<secp256k1_skey_group> k(
+      std::make_shared<ypc::key_node<secp256k1_skey_group>>(skey1_node),
+      children);
   return_val = k.calculate_kgt_sum();
   EXPECT_TRUE(memcmp(&skey2, &k.sum(), sizeof(secp256k1_skey_group)) == 0);
 }
@@ -162,14 +163,15 @@ TEST(test_secp256k1pri_kgt, calculate_sum_multi_children) {
   return_val = fill_random(skey3.data, sizeof(skey3.data));
   EXPECT_EQ(return_val, 1);
 
-  key_node<secp256k1_skey_group> skey1_node(skey1);
-  key_node<secp256k1_skey_group> skey2_node(skey2);
-  key_node<secp256k1_skey_group> skey3_node(skey3);
-  std::vector<std::shared_ptr<key_node<secp256k1_skey_group>>> children = {
-      std::make_shared<key_node<secp256k1_skey_group>>(skey2_node),
-      std::make_shared<key_node<secp256k1_skey_group>>(skey3_node)};
-  kgt<secp256k1_skey_group> k(
-      std::make_shared<key_node<secp256k1_skey_group>>(skey1_node), children);
+  ypc::key_node<secp256k1_skey_group> skey1_node(skey1);
+  ypc::key_node<secp256k1_skey_group> skey2_node(skey2);
+  ypc::key_node<secp256k1_skey_group> skey3_node(skey3);
+  std::vector<std::shared_ptr<ypc::key_node<secp256k1_skey_group>>> children = {
+      std::make_shared<ypc::key_node<secp256k1_skey_group>>(skey2_node),
+      std::make_shared<ypc::key_node<secp256k1_skey_group>>(skey3_node)};
+  ypc::kgt<secp256k1_skey_group> k(
+      std::make_shared<ypc::key_node<secp256k1_skey_group>>(skey1_node),
+      children);
   return_val = k.calculate_kgt_sum();
   secp256k1_skey_group::key_t res;
   return_val = secp256k1_skey_group::add(res, skey2, skey3);
@@ -180,7 +182,7 @@ TEST(test_secp256k1pri_kgt, complex_kgt) {
   using skey_t = secp256k1_skey_group::key_t;
   std::vector<skey_t> skey_vec;
   skey_t tmp_skey;
-  std::vector<key_node<secp256k1_skey_group>> key_nodes;
+  std::vector<ypc::key_node<secp256k1_skey_group>> key_nodes;
   int return_val;
   secp256k1_context *ctx = secp256k1_context_create(SECP256K1_CONTEXT_VERIFY |
                                                     SECP256K1_CONTEXT_SIGN);
@@ -190,31 +192,31 @@ TEST(test_secp256k1pri_kgt, complex_kgt) {
     key_nodes.emplace_back(skey_vec[i]);
   }
 
-  std::vector<std::shared_ptr<key_node<secp256k1_skey_group>>> children1 = {
-      std::make_shared<key_node<secp256k1_skey_group>>(key_nodes[0]),
-      std::make_shared<key_node<secp256k1_skey_group>>(key_nodes[1]),
-      std::make_shared<key_node<secp256k1_skey_group>>(key_nodes[2])};
-  auto sub_root1 = std::make_shared<key_node<secp256k1_skey_group>>();
-  kgt<secp256k1_skey_group> k1(sub_root1, children1);
+  std::vector<std::shared_ptr<ypc::key_node<secp256k1_skey_group>>> children1 =
+      {std::make_shared<ypc::key_node<secp256k1_skey_group>>(key_nodes[0]),
+       std::make_shared<ypc::key_node<secp256k1_skey_group>>(key_nodes[1]),
+       std::make_shared<ypc::key_node<secp256k1_skey_group>>(key_nodes[2])};
+  auto sub_root1 = std::make_shared<ypc::key_node<secp256k1_skey_group>>();
+  ypc::kgt<secp256k1_skey_group> k1(sub_root1, children1);
   return_val = k1.calculate_kgt_sum();
 
-  std::vector<std::shared_ptr<key_node<secp256k1_skey_group>>> children2 = {
-      std::make_shared<key_node<secp256k1_skey_group>>(key_nodes[3]),
-      std::make_shared<key_node<secp256k1_skey_group>>(key_nodes[4]),
-      std::make_shared<key_node<secp256k1_skey_group>>(key_nodes[5])};
-  auto sub_root2 = std::make_shared<key_node<secp256k1_skey_group>>();
-  kgt<secp256k1_skey_group> k2(sub_root2, children2);
+  std::vector<std::shared_ptr<ypc::key_node<secp256k1_skey_group>>> children2 =
+      {std::make_shared<ypc::key_node<secp256k1_skey_group>>(key_nodes[3]),
+       std::make_shared<ypc::key_node<secp256k1_skey_group>>(key_nodes[4]),
+       std::make_shared<ypc::key_node<secp256k1_skey_group>>(key_nodes[5])};
+  auto sub_root2 = std::make_shared<ypc::key_node<secp256k1_skey_group>>();
+  ypc::kgt<secp256k1_skey_group> k2(sub_root2, children2);
   return_val = k2.calculate_kgt_sum();
 
   children1.clear();
   children1.push_back(k1.root());
   children1.push_back(
-      std::make_shared<key_node<secp256k1_skey_group>>(key_nodes[6]));
+      std::make_shared<ypc::key_node<secp256k1_skey_group>>(key_nodes[6]));
   children1.push_back(
-      std::make_shared<key_node<secp256k1_skey_group>>(key_nodes[7]));
+      std::make_shared<ypc::key_node<secp256k1_skey_group>>(key_nodes[7]));
   children1.push_back(k2.root());
-  auto root = std::make_shared<key_node<secp256k1_skey_group>>();
-  kgt<secp256k1_skey_group> k3(root, children1);
+  auto root = std::make_shared<ypc::key_node<secp256k1_skey_group>>();
+  ypc::kgt<secp256k1_skey_group> k3(root, children1);
   return_val = k3.calculate_kgt_sum();
 
   skey_t root_sum;
@@ -223,8 +225,8 @@ TEST(test_secp256k1pri_kgt, complex_kgt) {
   return_val = secp256k1_skey_group::add(root_sum, root_sum, k2.sum());
   EXPECT_TRUE(memcmp(&root_sum, &k3.sum(), 32) == 0);
 
-  std::string res = k3.to_string();
-  kgt<secp256k1_skey_group> k4(res);
-  std::string res2 = k4.to_string();
-  EXPECT_EQ(res, res2);
+  stbox::bytes res = k3.to_bytes();
+  ypc::kgt<secp256k1_skey_group> k4(res);
+  stbox::bytes res2 = k4.to_bytes();
+  EXPECT_EQ(memcmp(res.data(), res2.data(), res.size()), 0);
 }

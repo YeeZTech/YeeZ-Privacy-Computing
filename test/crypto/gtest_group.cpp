@@ -20,7 +20,7 @@
 #include <limits.h>
 #include <stddef.h>
 
-#include "ypc/core/group.h"
+#include "ypc/corecommon/crypto/group.h"
 #include <assert.h>
 #include <gtest/gtest.h>
 #include <stdio.h>
