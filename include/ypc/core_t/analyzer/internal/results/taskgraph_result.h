@@ -5,6 +5,7 @@
 #include "ypc/core_t/analyzer/var/encrypted_param_var.h"
 #include "ypc/core_t/analyzer/var/request_key_var.h"
 #include "ypc/core_t/analyzer/var/result_var.h"
+#include "ypc/corecommon/crypto/group.h"
 #include "ypc/stbox/stx_status.h"
 
 namespace ypc {
@@ -19,10 +20,24 @@ class taskgraph_result : virtual public request_key_var<true>,
   typedef request_key_var<true> request_key_var_t;
 
 public:
-  uint32_t generate_result() {}
+  uint32_t generate_result() {
+    stbox::bytes data_provider_skey, algo_provider_skey, mid_data_skey,
+        dian_key;
+    uint32_t return_val =
+        keymgr_interface_t::request_private_key_for_public_key(
+            m_data_provider_pkey, data_provider_skey, dian_key);
+    return_val = keymgr_interface_t::request_private_key_for_public_key(
+        m_algo_provider_pkey, algo_provider_skey, dian_key) return_val =
+        keymgr_interface_t::request_private_key_for_public_key(
+            m_mid_data_pkey, mid_data_skey, dian_key)
+  }
 
 protected:
   stbox::bytes m_target_dian_pkey;
+  stbox::bytes m_data_provider_pkey;
+  stbox::bytes m_algo_provider_pkey;
+  stbox::bytes m_mid_data_pkey;
+
 } // namespace internal
 template <typename Crypto>
 using taskgraph_result = internal::taskgraph_result<Crypto>;
