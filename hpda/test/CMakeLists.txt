@@ -10,6 +10,7 @@ add_executable(hpda_gtest gtest_main.cpp
   processor/test_concat.cpp
   processor/test_split.cpp
   processor/test_set.cpp
+  processor/test_trim.cpp
   kmeans/test_loyd_vector.cpp
   kmeans/test_loyd_tuple.cpp
   kmeans/test_kmeans_tuple.cpp
