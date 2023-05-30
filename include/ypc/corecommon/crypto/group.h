@@ -2,7 +2,6 @@
 #include "ypc/stbox/tsgx/secp256k1/secp256k1.h"
 #include <gmssl/sm2.h>
 #include <memory>
-#include <ypc/core/byte.h>
 
 struct secp256k1_pkey_group {
   typedef secp256k1_pubkey key_t;

@@ -58,6 +58,12 @@ template <typename BytesType> struct nt {
       ::ff::net::ntpackage<0xf13e1f40, encrypted_result, data_hash,
                            result_signature, cost_signature>;
 
+  define_nt(pkey_sum, BytesType);
+  define_nt(cost_gas, uint64_t);
+  using taskgraph_result_package_t =
+      ::ff::net::ntpackage<0, encrypted_result, data_hash, pkey_sum, cost_gas,
+                           result_signature>;
+
   using shu_info_t = ff::util::ntobject<pkey, encrypted_shu_skey,
                                         shu_forward_signature, enclave_hash>;
 

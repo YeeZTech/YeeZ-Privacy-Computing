@@ -3,7 +3,6 @@
 #include "package.h"
 #include "ypc/stbox/ebyte.h"
 #include <memory>
-#include <ypc/core/byte.h>
 
 namespace ypc {
 define_nt(kgt_value, stbox::bytes);
