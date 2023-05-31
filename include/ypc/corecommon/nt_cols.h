@@ -60,7 +60,7 @@ template <typename BytesType> struct nt {
 
   define_nt(pkey_sum, BytesType);
   define_nt(cost_gas, uint64_t);
-  using taskgraph_result_package_t =
+  using middata_result_package_t =
       ::ff::net::ntpackage<0, encrypted_result, data_hash, pkey_sum, cost_gas,
                            result_signature>;
 

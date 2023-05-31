@@ -3,7 +3,7 @@
 
 namespace ypc {
 namespace internal {
-class taskgraph_pkey_var {
+class middata_pkey_var {
 protected:
   stbox::bytes m_data_pkey;
   stbox::bytes m_algo_pkey;

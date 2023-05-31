@@ -1,9 +1,12 @@
 #pragma once
+#include "ypc/corecommon/crypto/group.h"
 #include <cstdint>
 
 namespace ypc {
 namespace crypto {
 struct sm2_ecc {
+  typedef sm2_pkey_group pkey_group_t;
+  typedef sm2_skey_group skey_group_t;
   inline static uint32_t get_private_key_size() { return 32; }
   inline static uint32_t get_public_key_size() { return 64; }
 

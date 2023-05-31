@@ -1,9 +1,13 @@
 #pragma once
+#include "ypc/corecommon/crypto/group.h"
 #include <cstdint>
 
 namespace ypc {
 namespace crypto {
 struct secp256k1 {
+  typedef secp256k1_pkey_group pkey_group_t;
+  typedef secp256k1_skey_group skey_group_t;
+
   inline static uint32_t get_private_key_size() { return 32; }
   inline static uint32_t get_public_key_size() { return 64; }
   static uint32_t gen_private_key(uint32_t skey_size, uint8_t *skey);
