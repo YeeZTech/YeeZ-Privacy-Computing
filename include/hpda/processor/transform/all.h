@@ -19,12 +19,12 @@ public:
     if (!base::has_input_value()) {
       return false;
     }
-    m_data.push_back(output_base<InputObjType>::input_value().make_copy());
+    m_data.push_back(base::input_value().make_copy());
     base::consume_input_value();
     return true;
   }
 
-  virtual OutputObjType output_value() { return m_data; }
+  virtual InputObjType output_value() { return m_data.back(); }
 
   std::vector<InputObjType> &values() { return m_data; }
   const std::vector<InputObjType> &values() const { return m_data; }
