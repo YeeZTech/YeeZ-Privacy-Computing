@@ -22,7 +22,7 @@ public:
   inline const bytes &expect_data_hash() const { return m_expect_data_hash; }
   virtual const bytes &data_hash() const = 0;
 
-  inline void reset_reach_end(){m_data_reach_end = false;}
+  inline void reset_reach_end() { m_data_reach_end = false; }
 
 protected:
   bytes m_expect_data_hash;
