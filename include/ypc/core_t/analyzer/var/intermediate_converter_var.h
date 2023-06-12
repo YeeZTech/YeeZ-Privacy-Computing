@@ -3,7 +3,7 @@
 
 namespace ypc {
 namespace internal {
-class middata_pkey_var {
+class intermediate_converter_var {
 protected:
   stbox::bytes m_data_pkey;
   stbox::bytes m_algo_pkey;
