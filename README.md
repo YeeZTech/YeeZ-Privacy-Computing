@@ -1,4 +1,4 @@
-                    ![image](https://github.com/YeeZTech/YeeZ-Privacy-Computing/assets/5715598/0a388380-381e-4a49-b679-eb9c5c60cf26)
+  ![image](https://github.com/YeeZTech/YeeZ-Privacy-Computing/assets/5715598/0a388380-381e-4a49-b679-eb9c5c60cf26)
 
 # Fidelius - 基于可信执行环境的熠智隐私计算中间件
 English / [中文](doc/README_ZH.md)
