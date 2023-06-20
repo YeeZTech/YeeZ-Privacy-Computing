@@ -25,7 +25,7 @@ constexpr static uint32_t has_model_parser = 1;
 union parser_type_t {
   uint32_t value;
   struct _data {
-    uint32_t result_type :5;
+    uint32_t result_type : 4;
     uint32_t data_source_type : 4;
     uint32_t has_model : 1;
   } d;

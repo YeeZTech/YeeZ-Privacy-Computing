@@ -38,13 +38,13 @@ uint32_t middata_parser::middata_parse() {
 
   auto epkey = m_param.get<dian_pkey>();
   auto ehash = m_param.get<parser_enclave_hash>();
+
+  // forward data user skey
   auto shu_skey = m_param.get<shu_info>().get<ntt::encrypted_shu_skey>();
   auto shu_forward_sig =
       m_param.get<shu_info>().get<ntt::shu_forward_signature>();
-
   uint32_t ret = 0;
   if (!shu_skey.empty()) {
-    LOG(INFO) << "keymgr_enclave_path: " << keymgr_enclave_path;
     ret = m_keymgr->forward_private_key(
         shu_skey.data(), shu_skey.size(), epkey.data(), epkey.size(),
         ehash.data(), ehash.size(), shu_forward_sig.data(),
@@ -54,6 +54,25 @@ uint32_t middata_parser::middata_parse() {
       return ret;
     }
   }
+  LOG(INFO) << "forward data user skey";
+
+  // forward developer skey
+  auto algo_shu_skey =
+      m_param.get<algo_shu_info>().get<ntt::encrypted_shu_skey>();
+  auto algo_shu_forward_sig =
+      m_param.get<algo_shu_info>().get<ntt::shu_forward_signature>();
+  if (!algo_shu_skey.empty()) {
+    ret = m_keymgr->forward_private_key(
+        algo_shu_skey.data(), algo_shu_skey.size(), epkey.data(), epkey.size(),
+        ehash.data(), ehash.size(), algo_shu_forward_sig.data(),
+        algo_shu_forward_sig.size());
+    if (ret != 0u) {
+      LOG(ERROR) << "forward_message got error " << ypc::status_string(ret);
+      return ret;
+    }
+  }
+  LOG(INFO) << "forward developer skey";
+
   m_ptype.value = m_parser->get_parser_type();
   ypc::bytes actual_hash;
   ret = m_parser->get_enclave_hash(actual_hash);
@@ -66,18 +85,21 @@ uint32_t middata_parser::middata_parse() {
     LOG(ERROR) << "parser hash is " << actual_hash << ", expect " << ehash;
     return ypc::parser_return_wrong_data_hash;
   }
+  LOG(INFO) << "check parser hash succ!";
 
   ret = feed_datasource();
   if (ret != 0u) {
     LOG(ERROR) << "feed_datasource got error " << ypc::status_string(ret);
     return ret;
   }
+  LOG(INFO) << "feed datasource done";
 
   ret = feed_model();
   if (ret != 0u) {
     LOG(ERROR) << "feed_model got error " << ypc::status_string(ret);
     return ret;
   }
+  LOG(INFO) << "feed model done";
 
   ret = m_parser->begin_parse_data_item();
   if (ret != stx_status::success) {
@@ -85,6 +107,7 @@ uint32_t middata_parser::middata_parse() {
                << ypc::status_string(ret);
     return ret;
   }
+  LOG(INFO) << "begin parse data item";
   auto param_var = m_param.get<ntt::param>();
   typename ypc::cast_obj_to_package<ntt::param_t>::type param_pkg = param_var;
   auto param_bytes = ypc::make_bytes<ypc::bytes>::for_package(param_pkg);
@@ -93,11 +116,13 @@ uint32_t middata_parser::middata_parse() {
     LOG(ERROR) << "parse_data_item, got error: " << ypc::status_string(ret);
     return ret;
   }
+  LOG(INFO) << "parse data item";
 
   ret = m_parser->end_parse_data_item();
   if (ret != stx_status::success) {
     LOG(ERROR) << "end_parse_data_item, got error: " << ypc::status_string(ret);
   }
+  LOG(INFO) << "end parse data item";
 
   if (ret != 0u) {
     LOG(ERROR) << "do_parse got error " << ypc::status_string(ret);
@@ -183,15 +208,20 @@ uint32_t middata_parser::feed_datasource() {
     auto ssf = std::make_shared<ypc::simple_sealed_file>(url, true);
     m_data_sources.insert(std::make_pair(data_hash, ssf));
     ssf->reset_read();
+    LOG(INFO) << "input data, input_data_url: " << url;
+    LOG(INFO) << "input data, data_hash: " << data_hash;
 
     auto shu = item.get<kgt_shu_info>();
     auto shu_skey = shu.get<ntt::encrypted_shu_skey>();
     auto shu_forward_sig = shu.get<ntt::shu_forward_signature>();
-    auto target_enclave_hash = shu.get<enclave_hash>();
+    auto ehash = shu.get<enclave_hash>();
+    LOG(INFO) << "kgt_shu_info, encrypted_shu_skey: " << shu_skey;
+    LOG(INFO) << "kgt_shu_info, shu_forward_signature: " << shu_forward_sig;
+    LOG(INFO) << "kgt_shu_info, enclave_hash: " << ehash;
     auto ret = m_keymgr->forward_private_key(
         shu_skey.data(), shu_skey.size(), epkey.data(), epkey.size(),
-        target_enclave_hash.data(), target_enclave_hash.size(),
-        shu_forward_sig.data(), shu_forward_sig.size());
+        ehash.data(), ehash.size(), shu_forward_sig.data(),
+        shu_forward_sig.size());
     if (ret != 0u) {
       LOG(ERROR) << "forward_message got error " << ypc::status_string(ret);
       return ret;

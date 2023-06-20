@@ -141,7 +141,7 @@ class job_step:
                 "shu_forward_signature": algo_forward_json["forward_sig"],
                 "enclave_hash": enclave_hash
             },
-            "input_data": input_data,
+            "input_middata": input_data,
             "parser_path": parser_url,
             "keymgr_path": common.kmgr_enclave[crypto],
             "parser_enclave_hash": enclave_hash,
@@ -223,13 +223,13 @@ class job_step:
 
     def sign(crypto, data, param_format, private_key_file, output_url):
         param = {
-                "crypto":crypto,
-                "sign": "",
-                "use-param": data,
-                "param-format" : param_format,
-                "output":output_url,
-                "use-privatekey-file":private_key_file
-                }
+            "crypto": crypto,
+            "sign": "",
+            "use-param": data,
+            "param-format": param_format,
+            "output": output_url,
+            "use-privatekey-file": private_key_file
+        }
         r = common.fid_terminus(**param)
         with open(output_url, 'r') as of:
             return json.load(of)

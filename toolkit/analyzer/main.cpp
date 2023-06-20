@@ -1,6 +1,5 @@
 #include "iodef.h"
 #include "ypc/core/version.h"
-//#include "parser.h"
 #include "sgx_bridge.h"
 #include "ypc/core/configuration.h"
 #include "ypc/core/ntobject_file.h"
@@ -27,8 +26,7 @@ boost::program_options::variables_map parse_command_line(int argc,
     ("help", "help message")
     ("version", "show version")
     ("input", bp::value<std::string>(), "input parameters JSON file")
-    ("output", bp::value<std::string>(), "output result JSON file")
-    ("gen-example-input", bp::value<std::string>(), "generate example input parameters JSON file");
+    ("output", bp::value<std::string>(), "output result JSON file");
   // clang-format on
 
   boost::program_options::variables_map vm;
@@ -41,12 +39,6 @@ boost::program_options::variables_map parse_command_line(int argc,
   }
   if (vm.count("version") != 0u) {
     std::cout << ypc::get_ypc_version() << std::endl;
-    exit(-1);
-  }
-  if (vm.count("gen-example-input") != 0u) {
-    middata_input_param_t example;
-    ypc::ntjson::to_json_file(example,
-                              vm["gen-example-input"].as<std::string>());
     exit(-1);
   }
   return vm;

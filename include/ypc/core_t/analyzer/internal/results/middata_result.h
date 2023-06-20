@@ -4,7 +4,6 @@
 #include "ypc/core_t/analyzer/var/data_hash_var.h"
 #include "ypc/core_t/analyzer/var/enclave_hash_var.h"
 #include "ypc/core_t/analyzer/var/encrypted_param_var.h"
-#include "ypc/core_t/analyzer/var/intermediate_converter_var.h"
 #include "ypc/core_t/analyzer/var/request_key_var.h"
 #include "ypc/core_t/analyzer/var/result_var.h"
 #include "ypc/corecommon/crypto/group.h"
@@ -17,32 +16,43 @@ class middata_result : virtual public request_key_var<true>,
                        virtual public enclave_hash_var,
                        virtual public result_var,
                        virtual public encrypted_param_var,
-                       virtual public intermediate_converter_var,
                        virtual public keymgr_interface<Crypto>,
                        virtual public data_hash_var {
   typedef Crypto ecc;
+  typedef request_key_var<true> request_key_var_t;
   typedef keymgr_interface<ecc> keymgr_interface_t;
 
 public:
   uint32_t generate_result() {
     stbox::bytes data_skey_b, algo_skey_b, mid_skey_b, dian_key, skey_sum_b;
     typename ecc::skey_group_t::key_t skey_sum, data_skey, algo_skey, mid_skey;
-    uint32_t ret = keymgr_interface_t::request_private_key_for_public_key(
-        m_data_pkey, data_skey_b, dian_key);
-    ret = keymgr_interface_t::request_private_key_for_public_key(
-        m_algo_pkey, algo_skey_b, dian_key);
-    ret = keymgr_interface_t::request_private_key_for_public_key(
-        m_mid_pkey, mid_skey_b, dian_key);
+
+    auto ret = keymgr_interface_t::request_private_key_for_public_key(
+        request_key_var_t::m_pkey4v, mid_skey_b, dian_key);
+    LOG(INFO) << "mid_skey_b: " << mid_skey_b;
+    LOG(INFO) << "dian_pkey: " << dian_key;
+
+    // TODO
+    data_skey_b = mid_skey_b;
+    algo_skey_b = mid_skey_b;
+    // ret = keymgr_interface_t::request_private_key_for_public_key(
+    // m_data_pkey, data_skey_b, dian_key);
+    // LOG(INFO) << "data_skey: " << data_skey_b;
+    // ret = keymgr_interface_t::request_private_key_for_public_key(
+    // m_algo_pkey, algo_skey_b, dian_key);
 
     memcpy(&data_skey, data_skey_b.data(), sizeof(data_skey));
     memcpy(&algo_skey, algo_skey_b.data(), sizeof(algo_skey));
     memcpy(&mid_skey, mid_skey_b.data(), sizeof(mid_skey));
+    LOG(INFO) << "memcpy to key group";
     int add_ret = ecc::skey_group_t::add(skey_sum, data_skey, algo_skey);
     add_ret = ecc::skey_group_t::add(skey_sum, skey_sum, mid_skey);
+    LOG(INFO) << "pkey sum";
 
-    memcpy(skey_sum_b.data(), &skey_sum, skey_sum_b.size());
+    skey_sum_b = stbox::bytes(skey_sum.data, sizeof(skey_sum));
     ret = ecc::generate_pkey_from_skey(skey_sum_b, m_pkey_sum);
 
+    LOG(INFO) << "m_result: " << m_result;
     ret = ecc::encrypt_message_with_prefix(m_pkey_sum, result_var::m_result,
                                            utc::crypto_prefix_arbitrary,
                                            m_encrypted_result_str);
@@ -50,6 +60,7 @@ public:
       LOG(ERROR) << "error for encrypt_message: " << stbox::status_string(ret);
       return ret;
     }
+    LOG(INFO) << "encrypted result: " << m_encrypted_result_str;
 
     stbox::bytes cost_gas_str(sizeof(m_cost_gas));
     memcpy((uint8_t *)&cost_gas_str[0], (uint8_t *)&m_cost_gas,

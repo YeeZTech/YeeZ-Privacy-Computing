@@ -3,7 +3,6 @@
 #include "ypc/core/ntjson.h"
 #include "ypc/corecommon/nt_cols.h"
 #include "ypc/corecommon/package.h"
-#include "ypc/corecommon/kgt.h"
 
 using ntt = ypc::nt<ypc::bytes>;
 
@@ -31,10 +30,10 @@ typedef ::ff::util::ntobject<shu_info, input_data, parser_path, keymgr_path,
                              ntt::param>
     input_param_t;
 
+// task graph input param
 define_nt(algo_shu_info, shu_info_t);
-
-//below is for task_graph
-define_nt(pkey_tree, stbox::bytes);
+define_nt(pkey_tree, ypc::bytes);
+// TODO
 typedef ::ff::util::ntobject<pkey_tree, ntt::encrypted_shu_skey,
                              ntt::shu_forward_signature, enclave_hash>
     kgt_shu_info_t;

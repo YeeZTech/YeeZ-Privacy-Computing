@@ -1,4 +1,4 @@
-from data_host import classic_job
+from taskgraph_job import classic_job
 import os
 import common
 # test jenkins
@@ -15,5 +15,3 @@ if __name__ == "__main__":
     input_param = "\"[{\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"12\\\"}]\""
     cj = classic_job(crypto, name, data, parser, plugin, input_param)
     cj.run()
-
-    print("result is : ", cj.result)

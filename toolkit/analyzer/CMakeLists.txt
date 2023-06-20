@@ -1,8 +1,8 @@
 #include_directories(${PROJECT_SOURCE_DIR}/toolkit/analyzer/)
 add_executable(fid_analyzer main.cpp
   sgx_bridge.cpp
+  #parsers/parser.cpp
   parsers/middata_parser.cpp
-  #parsers/middata_parser.cpp
   )
 
 target_link_libraries(fid_analyzer
