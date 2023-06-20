@@ -2,7 +2,7 @@
 #include "ypc/core/memref.h"
 
 using stx_status = stbox::stx_status;
-std::shared_ptr<parser> g_parser;
+std::shared_ptr<middata_parser> g_parser;
 
 extern "C" {
 uint32_t km_session_request_ocall(sgx_dh_msg1_t *dh_msg1, uint32_t *session_id);

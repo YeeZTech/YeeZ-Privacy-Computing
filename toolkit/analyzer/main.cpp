@@ -44,7 +44,7 @@ boost::program_options::variables_map parse_command_line(int argc,
     exit(-1);
   }
   if (vm.count("gen-example-input") != 0u) {
-    input_param_t example;
+    middata_input_param_t example;
     ypc::ntjson::to_json_file(example,
                               vm["gen-example-input"].as<std::string>());
     exit(-1);
@@ -74,12 +74,12 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
-  input_param_t input_param =
-      ypc::ntjson::from_json_file<input_param_t>(vm["input"].as<std::string>());
+  middata_input_param_t input_param =
+      ypc::ntjson::from_json_file<middata_input_param_t>(vm["input"].as<std::string>());
 
-  g_parser = std::make_shared<parser>(input_param);
+  g_parser = std::make_shared<middata_parser>(input_param);
   std::cout << "start to parse" << std::endl;
-  g_parser->parse();
+  g_parser->middata_parse();
 
   std::string output_fp = vm["output"].as<std::string>();
   try {

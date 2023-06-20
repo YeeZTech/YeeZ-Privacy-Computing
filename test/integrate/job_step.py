@@ -8,7 +8,6 @@ class job_step:
         param = {
             "crypto": crypto,
             "gen-key": "",
-            "gen-key": "",
             "no-password": "",
             "output": shukey_file
         }
@@ -96,6 +95,50 @@ class job_step:
                 "shu_pkey": shukey_json["public-key"],
                 "encrypted_shu_skey": rq_forward_json["encrypted_skey"],
                 "shu_forward_signature": rq_forward_json["forward_sig"],
+                "enclave_hash": enclave_hash
+            },
+            "input_data": input_data,
+            "parser_path": parser_url,
+            "keymgr_path": common.kmgr_enclave[crypto],
+            "parser_enclave_hash": enclave_hash,
+            "dian_pkey": dian_pkey,
+            "model": model,
+            "param": {
+                "crypto": crypto,
+                "param_data": param_json["encrypted-input"],
+                "public-key": shukey_json["public-key"],
+            }
+        }
+        if allowances:
+            parser_input['param']['allowances'] = allowances
+        with open(parser_input_file, "w") as of:
+            json.dump(parser_input, of)
+        param = {
+            "input": parser_input_file,
+            "output": parser_output_file
+        }
+        r = common.fid_analyzer(**param)
+        print("done fid_analyzer with cmd: {}".format(r[0]))
+        try:
+            with open(parser_output_file) as of:
+                return json.load(of)
+        except Exception as e:
+            # result is not json format
+            with open(parser_output_file) as of:
+                return of.readlines()
+
+    def fid_analyzer_graph(shukey_json, rq_forward_json, algo_shu_info, algo_forward_json, enclave_hash, input_data, parser_url, dian_pkey, model, crypto, param_json, allowances, parser_input_file, parser_output_file):
+        parser_input = {
+            "shu_info": {
+                "shu_pkey": shukey_json["public-key"],
+                "encrypted_shu_skey": rq_forward_json["encrypted_skey"],
+                "shu_forward_signature": rq_forward_json["forward_sig"],
+                "enclave_hash": enclave_hash
+            },
+            "algo_shu_info": {
+                "shu_pkey": algo_shu_info["public-key"],
+                "encrypted_shu_skey": algo_forward_json["encrypted_skey"],
+                "shu_forward_signature": algo_forward_json["forward_sig"],
                 "enclave_hash": enclave_hash
             },
             "input_data": input_data,
