@@ -23,7 +23,6 @@ template <typename BytesType> struct nt {
   define_nt(model_data, BytesType);
   define_nt(param_data, BytesType);
   define_nt(encrypted_sig, BytesType);
-  //define_nt(crypto, std::string);
 
   define_nt(msg, std::string);
   define_nt(succ, bool);
@@ -48,6 +47,12 @@ template <typename BytesType> struct nt {
 
   using batch_data_pkg_t = ::ff::net::ntpackage<0x82c4e8d8, batch_data>;
 
+  // shu info
+  using shu_info_t = ff::util::ntobject<pkey, encrypted_shu_skey,
+                                        shu_forward_signature, enclave_hash>;
+  define_nt(shu_info, shu_info_t);
+
+  // onchain result
   define_nt(encrypted_param, BytesType);
   define_nt(pkey4v, BytesType);
   define_nt(encrypted_result, BytesType);
@@ -58,20 +63,21 @@ template <typename BytesType> struct nt {
       ::ff::net::ntpackage<0xf13e1f40, encrypted_result, data_hash,
                            result_signature, cost_signature>;
 
+  // middata result
+  define_nt(kgt_value, BytesType);
+  define_nt(kgt_children, std::vector<BytesType>);
+  typedef ::ff::net::ntpackage<0x58823cf3, kgt_value, kgt_children> kgt_pkg_t;
+
   define_nt(pkey_sum, BytesType);
-  define_nt(cost_gas, uint64_t);
   using middata_result_package_t =
-      ::ff::net::ntpackage<0, encrypted_result, data_hash, pkey_sum, cost_gas,
+      ::ff::net::ntpackage<0x641b53c3, pkey_sum, encrypted_result, data_hash,
                            result_signature>;
 
-  using shu_info_t = ff::util::ntobject<pkey, encrypted_shu_skey,
-                                        shu_forward_signature, enclave_hash>;
-
-  define_nt(shu_info, shu_info_t);
-
+  // forward result
   using forward_result_t =
       ff::util::ntobject<shu_info, data_hash, encrypted_result>;
 
+  // offchain result
   using offchain_result_package_t =
       ::ff::net::ntpackage<0xf13e1f41, encrypted_result, data_hash,
                            result_signature, cost_signature,

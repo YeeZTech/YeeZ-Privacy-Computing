@@ -1,4 +1,4 @@
-from taskgraph_job import classic_job
+from classic_job import classic_job
 import os
 import common
 # test jenkins

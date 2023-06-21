@@ -84,7 +84,6 @@ public:
     pkg.set<ntt::data_hash>(data_hash_var::m_data_hash);
     pkg.set<ntt::encrypted_result>(m_encrypted_result_str);
     pkg.set<ntt::result_signature>(m_result_signature_str);
-    pkg.set<ntt::cost_gas>(result_var::m_cost_gas);
     pkg.set<ntt::pkey_sum>(m_pkey_sum);
     ff::net::marshaler lm(ff::net::marshaler::length_retriver);
     pkg.arch(lm);
@@ -97,7 +96,6 @@ public:
     pkg.set<ntt::encrypted_result>(m_encrypted_result_str);
     pkg.set<ntt::pkey_sum>(m_pkey_sum);
     pkg.set<ntt::result_signature>(m_result_signature_str);
-    pkg.set<ntt::cost_gas>(result_var::m_cost_gas);
     ff::net::marshaler lm(ff::net::marshaler::length_retriver);
     pkg.arch(lm);
     if (size != lm.get_length()) {

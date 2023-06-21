@@ -1,4 +1,4 @@
-from classic_job import classic_job
+from taskgraph_job import classic_job
 import os
 import common
 import sys
@@ -12,7 +12,7 @@ def gen_personlist(**kwargs):
 
 if __name__ == "__main__":
     name = "findperson"
-    gen_personlist()
+    # gen_personlist()
 
     crypto = "stdeth"
     data = "person_list"
@@ -26,5 +26,3 @@ if __name__ == "__main__":
         'remove-files': True if len(sys.argv) < 2 else False,
     })
     cj.run()
-
-    print("result is : ", cj.result)

@@ -1,6 +1,8 @@
 #include "../common.h"
 #include "ypc/core/byte.h"
+#include "ypc/core/kgt_json.h"
 #include "ypc/corecommon/package.h"
+#include <boost/program_options.hpp>
 #include <iostream>
 
 // typedef ff::sql::table<ff::sql::mysql<ff::sql::cppconn>, person_list_meta,
@@ -83,7 +85,54 @@ void check_file(const std::string &path) {
   std::cout << "checked " << i << " items" << std::endl;
 }
 
+boost::program_options::variables_map parse_command_line(int argc,
+                                                         char *argv[]) {
+  namespace bp = boost::program_options;
+  bp::options_description all("Personlist generator options");
+
+  // clang-format off
+  all.add_options()
+    ("help", "")
+    ("input", bp::value<std::string>(), "input kgt JSON file")
+    ("output", bp::value<std::string>(), "output kgt serialized bytes file");
+  // clang-format on
+
+  boost::program_options::variables_map vm;
+  boost::program_options::store(
+      boost::program_options::parse_command_line(argc, argv, all), vm);
+
+  if (vm.count("help") != 0u) {
+    std::cout << all << std::endl;
+    exit(-1);
+  }
+  if (vm.count("input") == 0u || vm.count("output") == 0u) {
+    std::cerr << "parameter `input` and `output` should be specified!"
+              << std::endl;
+    exit(-1);
+  }
+  return vm;
+}
+
 int main(int argc, char *argv[]) {
+  boost::program_options::variables_map vm;
+  try {
+    vm = parse_command_line(argc, argv);
+  } catch (...) {
+    std::cerr << "invalid cmd line parameters!" << std::endl;
+    return -1;
+  }
+  auto input_file = vm["input"].as<std::string>();
+  std::ifstream ifs(input_file);
+  if (!ifs.is_open()) {
+    throw std::runtime_error("open file failed!");
+  }
+  ifs.seekg(0, std::ios::end);
+  size_t size = ifs.tellg();
+  std::string buf(size, ' ');
+  ifs.seekg(0);
+  ifs.read(&buf[0], size);
+  ypc::kgt_json<ypc::secp256k1_pkey_group> kgt(buf);
+
   write_to_file("person_list", 1024);
   check_file("person_list");
   return 0;

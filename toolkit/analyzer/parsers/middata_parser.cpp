@@ -146,34 +146,26 @@ uint32_t middata_parser::middata_parse() {
 }
 
 uint32_t middata_parser::dump_result(const ypc::bytes &res) {
-  if (m_ptype.d.result_type == ypc::utc::middata_result_parser) {
+  if (m_ptype.d.result_type == ypc::utc::onchain_result_parser) {
     auto pkg =
         ypc::make_package<ntt::onchain_result_package_t>::from_bytes(res);
-    typename ypc::cast_package_to_obj<ntt::onchain_result_package_t>::type p =
-        pkg;
-    m_result_str = ypc::ntjson::to_json(p);
+    m_result_str = ypc::ntjson::to_json(pkg);
   } else if (m_ptype.d.result_type == ypc::utc::offchain_result_parser) {
     auto pkg =
         ypc::make_package<ntt::offchain_result_package_t>::from_bytes(res);
-    typename ypc::cast_package_to_obj<ntt::offchain_result_package_t>::type p =
-        pkg;
-    m_result_str = ypc::ntjson::to_json(p);
+    m_result_str = ypc::ntjson::to_json(pkg);
 
   } else if (m_ptype.d.result_type == ypc::utc::local_result_parser) {
     m_result_str = std::string((const char *)res.data(), res.size());
   } else if (m_ptype.d.result_type == ypc::utc::forward_result_parser) {
     auto pkg = ypc::make_package<typename ypc::cast_obj_to_package<
         ntt::forward_result_t>::type>::from_bytes(res);
-
-    typename ypc::cast_package_to_obj<ntt::forward_result_t>::type p = pkg;
-    m_result_str = ypc::ntjson::to_json(p);
-  } else if(m_ptype.d.result_type == ypc::utc::middata_result_parser){
-    auto pkg = ypc::make_package<typename ypc::cast_obj_to_package<
-        ntt::middata_result_package_t>::type>::from_bytes(res);
-    typename ypc::cast_package_to_obj<ntt::middata_result_package_t>::type p = pkg;
-    m_result_str = ypc::ntjson::to_json(p);
-  }
-  else {
+    m_result_str = ypc::ntjson::to_json(pkg);
+  } else if (m_ptype.d.result_type == ypc::utc::middata_result_parser) {
+    auto pkg =
+        ypc::make_package<ntt::middata_result_package_t>::from_bytes(res);
+    m_result_str = ypc::ntjson::to_json(pkg);
+  } else {
     return ypc::parser_unknown_result;
   }
   return ypc::success;

@@ -4,6 +4,12 @@ import json
 from job_step import job_step
 
 
+# construct task graph example
+# mid_data1 = data1 + algo1 + user1
+# mid_data2 = data2 + algo2 + user2
+# mid_data3 = mid_data1 + mid_data2 + algo3 + user3
+
+
 class classic_job:
     def __init__(self, crypto, name, data_url, parser_url, plugin_url, input_param, config={}):
         self.crypto = crypto
@@ -15,18 +21,54 @@ class classic_job:
         self.all_outputs = list()
         self.config = config
 
-    def run(self):
+    def __generate_keys(self, l, role, n):
+        for i in range(n):
+            key_file = self.name + ".{}_{}.key.json".format(role, i + 1)
+            shukey_json = job_step.gen_key(self.crypto, key_file)
+            l.append(shukey_json)
+            self.all_outputs.append(key_file)
 
+    def __construct_kgt(self, ldata, lalgo, luser):
+        kgt_data_1 = {"value": ldata[0], "children": []}
+        kgt_algo_1 = {"value": lalgo[0], "children": []}
+        kgt_user_1 = {"value": luser[0], "children": []}
+        kgt_middata_1 = {"value": "", "children": [
+            kgt_data_1, kgt_algo_1, kgt_user_1]}
+
+        kgt_data_2 = {"value": ldata[1], "children": []}
+        kgt_algo_2 = {"value": lalgo[1], "children": []}
+        kgt_user_2 = {"value": luser[1], "children": []}
+        kgt_middata_2 = {"value": "", "children": [
+            kgt_data_2, kgt_algo_2, kgt_user_2]}
+
+        kgt_algo_3 = {"value": lalgo[2], "children": []}
+        kgt_user_3 = {"value": luser[2], "children": []}
+        kgt_middata_3 = {"value": "", "children": [
+            kgt_middata_1, kgt_middata_2, kgt_algo_3, kgt_user_3]}
+        return kgt_middata_3
+
+    def run(self):
         # 1. generate keys
         # 1.1 generate key
+        data_shukey_json_list = list()
+        self.__generate_keys(data_shukey_json_list, "data", 2)
+        algo_shukey_json_list = list()
+        self.__generate_keys(algo_shukey_json_list, "algo", 3)
+        user_shukey_json_list = list()
+        self.__generate_keys(user_shukey_json_list, "user", 3)
+
+        kgt = self.__construct_kgt([item['public-key']for item in data_shukey_json_list], [item['public-key']
+                                   for item in algo_shukey_json_list], [item['public-key']for item in user_shukey_json_list])
+        with open("kgt.json", "w") as f:
+            json.dump(kgt, f)
+
         data_key_file = self.name + ".data.key.json"
         data_shukey_json = job_step.gen_key(self.crypto, data_key_file)
         self.all_outputs.append(data_key_file)
-
         # 1.2 generate key
         algo_key_file = self.name + ".algo.key.json"
         algo_shukey_json = job_step.gen_key(self.crypto, algo_key_file)
-        self.all_outputs.append(data_key_file)
+        self.all_outputs.append(algo_key_file)
 
         # 1.3 generate key
         key_file = self.name + ".key.json"
@@ -100,7 +142,6 @@ class classic_job:
 
         summary['encrypted-result'] = result_json["encrypted_result"]
         summary["result-signature"] = result_json["result_signature"]
-        summary["cost-signature"] = result_json["cost_signature"]
         with open(self.name + ".summary.json", "w") as of:
             json.dump(summary, of)
         self.all_outputs.append(parser_input_file)

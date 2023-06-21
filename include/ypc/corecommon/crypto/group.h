@@ -3,6 +3,8 @@
 #include <gmssl/sm2.h>
 #include <memory>
 
+namespace ypc {
+
 struct secp256k1_pkey_group {
   typedef secp256k1_pubkey key_t;
   static int add(key_t &r, const key_t &a, const key_t &b) {
@@ -51,3 +53,4 @@ struct sm2_skey_group {
     return 0;
   }
 };
+} // namespace ypc
