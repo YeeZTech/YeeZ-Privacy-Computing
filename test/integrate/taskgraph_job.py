@@ -100,7 +100,7 @@ class classic_job:
 
         summary['encrypted-result'] = result_json["encrypted_result"]
         summary["result-signature"] = result_json["result_signature"]
-        summary["cost-signature"] = result_json["cost_signature"]
+        # summary["cost-signature"] = result_json["cost_signature"]
         with open(self.name + ".summary.json", "w") as of:
             json.dump(summary, of)
         self.all_outputs.append(parser_input_file)

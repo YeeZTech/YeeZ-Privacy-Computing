@@ -146,7 +146,7 @@ uint32_t middata_parser::middata_parse() {
 }
 
 uint32_t middata_parser::dump_result(const ypc::bytes &res) {
-  if (m_ptype.d.result_type == ypc::utc::middata_result_parser) {
+  if (m_ptype.d.result_type == ypc::utc::onchain_result_parser) {
     auto pkg =
         ypc::make_package<ntt::onchain_result_package_t>::from_bytes(res);
     typename ypc::cast_package_to_obj<ntt::onchain_result_package_t>::type p =
@@ -168,9 +168,10 @@ uint32_t middata_parser::dump_result(const ypc::bytes &res) {
     typename ypc::cast_package_to_obj<ntt::forward_result_t>::type p = pkg;
     m_result_str = ypc::ntjson::to_json(p);
   } else if(m_ptype.d.result_type == ypc::utc::middata_result_parser){
-    auto pkg = ypc::make_package<typename ypc::cast_obj_to_package<
-        ntt::middata_result_package_t>::type>::from_bytes(res);
-    typename ypc::cast_package_to_obj<ntt::middata_result_package_t>::type p = pkg;
+    auto pkg =
+        ypc::make_package<ntt::middata_result_package_t>::from_bytes(res);
+    typename ypc::cast_package_to_obj<ntt::middata_result_package_t>::type p =
+        pkg;
     m_result_str = ypc::ntjson::to_json(p);
   }
   else {
