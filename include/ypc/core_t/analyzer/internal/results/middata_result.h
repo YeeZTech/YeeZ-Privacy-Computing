@@ -6,6 +6,7 @@
 #include "ypc/core_t/analyzer/var/encrypted_param_var.h"
 #include "ypc/core_t/analyzer/var/request_key_var.h"
 #include "ypc/core_t/analyzer/var/result_var.h"
+#include "ypc/core_t/analyzer/var/middata_var.h"
 #include "ypc/corecommon/crypto/group.h"
 #include "ypc/stbox/stx_status.h"
 
@@ -15,6 +16,7 @@ template <typename Crypto>
 class middata_result : virtual public request_key_var<true>,
                        virtual public enclave_hash_var,
                        virtual public result_var,
+                       virtual public middata_var,
                        virtual public encrypted_param_var,
                        virtual public keymgr_interface<Crypto>,
                        virtual public data_hash_var {
@@ -33,13 +35,13 @@ public:
     LOG(INFO) << "dian_pkey: " << dian_key;
 
     // TODO
-    data_skey_b = mid_skey_b;
-    algo_skey_b = mid_skey_b;
-    // ret = keymgr_interface_t::request_private_key_for_public_key(
-    // m_data_pkey, data_skey_b, dian_key);
-    // LOG(INFO) << "data_skey: " << data_skey_b;
-    // ret = keymgr_interface_t::request_private_key_for_public_key(
-    // m_algo_pkey, algo_skey_b, dian_key);
+    //data_skey_b = mid_skey_b;
+    //algo_skey_b = mid_skey_b;
+    ret = keymgr_interface_t::request_private_key_for_public_key(
+    m_data_pkey[0], data_skey_b, dian_key);
+    LOG(INFO) << "data_skey: " << data_skey_b;
+    ret = keymgr_interface_t::request_private_key_for_public_key(
+    m_algo_pkey, algo_skey_b, dian_key);
 
     memcpy(&data_skey, data_skey_b.data(), sizeof(data_skey));
     memcpy(&algo_skey, algo_skey_b.data(), sizeof(algo_skey));

@@ -151,6 +151,8 @@ class job_step:
                 "crypto": crypto,
                 "param_data": param_json["encrypted-input"],
                 "public-key": shukey_json["public-key"],
+                "algo-public-key": algo_shu_info["public-key"],
+                "data-public-key": [input_data[0]["kgt_shu_info"]["pkey_tree"]],
             }
         }
         if allowances:

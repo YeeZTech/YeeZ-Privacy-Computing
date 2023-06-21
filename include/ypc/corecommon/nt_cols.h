@@ -35,7 +35,9 @@ template <typename BytesType> struct nt {
   using forward_target_info_t =
       ff::util::ntobject<enclave_hash, pkey, encrypted_sig>;
   define_nt(forward, forward_target_info_t);
-  using param_t = ::ff::util::ntobject<param_data, pkey, allowances, forward>;
+  define_nt(data_pkey, std::vector<BytesType>, "data-public-key");
+  define_nt(algo_pkey, BytesType, "algo-public-key");
+  using param_t = ::ff::util::ntobject<param_data, pkey, data_pkey, algo_pkey, allowances, forward>;
   define_nt(param, param_t);
   using model_t = ::ff::util::ntobject<model_data, pkey>;
   define_nt(model, model_t);
