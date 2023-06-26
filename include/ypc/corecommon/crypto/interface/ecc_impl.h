@@ -8,8 +8,6 @@ template <typename EC> class ecc_impl {
   typedef EC ecc_t;
 
 public:
-  typedef typename ecc_t::pkey_group_t pkey_group_t;
-  typedef typename ecc_t::skey_group_t skey_group_t;
   static uint32_t get_private_key_size() {
     return ecc_t::get_private_key_size();
   }

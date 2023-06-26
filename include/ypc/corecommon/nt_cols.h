@@ -35,9 +35,10 @@ template <typename BytesType> struct nt {
   using forward_target_info_t =
       ff::util::ntobject<enclave_hash, pkey, encrypted_sig>;
   define_nt(forward, forward_target_info_t);
-  define_nt(data_pkey, std::vector<BytesType>, "data-public-key");
+  define_nt(data_kgt_pkey, BytesType, "data-kgt-public-key");
   define_nt(algo_pkey, BytesType, "algo-public-key");
-  using param_t = ::ff::util::ntobject<param_data, pkey, data_pkey, algo_pkey, allowances, forward>;
+  using param_t = ::ff::util::ntobject<param_data, pkey, data_kgt_pkey,
+                                       algo_pkey, allowances, forward>;
   define_nt(param, param_t);
   using model_t = ::ff::util::ntobject<model_data, pkey>;
   define_nt(model, model_t);
@@ -70,10 +71,9 @@ template <typename BytesType> struct nt {
   define_nt(kgt_children, std::vector<BytesType>);
   typedef ::ff::net::ntpackage<0x58823cf3, kgt_value, kgt_children> kgt_pkg_t;
 
-  define_nt(pkey_sum, BytesType);
   using middata_result_package_t =
-      ::ff::net::ntpackage<0x641b53c3, pkey_sum, encrypted_result, data_hash,
-                           result_signature>;
+      ::ff::net::ntpackage<0x641b53c3, data_kgt_pkey, encrypted_result,
+                           data_hash, result_signature>;
 
   // forward result
   using forward_result_t =

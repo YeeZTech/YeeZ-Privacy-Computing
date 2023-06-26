@@ -1,13 +1,20 @@
 #!/usr/bin/python3
-import common
 import json
+import os
+import common
 from job_step import job_step
 
 
+def gen_kgt():
+    cmd = os.path.join(common.bin_dir, "./kgt_gen --input kgt-skey.json")
+    output = common.execute_cmd(cmd)
+    return [cmd, output]
+
+
 # construct task graph example
+# mid_data0 = data0 + algo0 + user0
 # mid_data1 = data1 + algo1 + user1
-# mid_data2 = data2 + algo2 + user2
-# mid_data3 = mid_data1 + mid_data2 + algo3 + user3
+# mid_data2 = mid_data0 + mid_data1 + algo2 + user2
 
 
 class classic_job:
@@ -23,7 +30,7 @@ class classic_job:
 
     def __generate_keys(self, l, role, n):
         for i in range(n):
-            key_file = self.name + ".{}_{}.key.json".format(role, i + 1)
+            key_file = self.name + ".{}_{}.key.json".format(role, i)
             shukey_json = job_step.gen_key(self.crypto, key_file)
             l.append(shukey_json)
             self.all_outputs.append(key_file)
@@ -47,9 +54,7 @@ class classic_job:
             kgt_middata_1, kgt_middata_2, kgt_algo_3, kgt_user_3]}
         return kgt_middata_3
 
-    def run(self):
-        # 1. generate keys
-        # 1.1 generate key
+    def construct_kgt(self, key_type):
         data_shukey_json_list = list()
         self.__generate_keys(data_shukey_json_list, "data", 2)
         algo_shukey_json_list = list()
@@ -57,20 +62,35 @@ class classic_job:
         user_shukey_json_list = list()
         self.__generate_keys(user_shukey_json_list, "user", 3)
 
-        kgt = self.__construct_kgt([item['public-key']for item in data_shukey_json_list], [item['public-key']
-                                   for item in algo_shukey_json_list], [item['public-key']for item in user_shukey_json_list])
-        with open("kgt.json", "w") as f:
+        kgt = self.__construct_kgt([item[key_type]for item in data_shukey_json_list], [item[key_type]
+                                   for item in algo_shukey_json_list], [item[key_type]for item in user_shukey_json_list])
+        with open("kgt-skey.json".format(key_type), "w") as f:
             json.dump(kgt, f)
+        return data_shukey_json_list, algo_shukey_json_list, user_shukey_json_list
 
-        data_key_file = self.name + ".data.key.json"
-        data_shukey_json = job_step.gen_key(self.crypto, data_key_file)
+    def run(self):
+        # generate kgt
+        d_list, a_list, u_list = self.construct_kgt('private-key')
+        kgt_shukey_list = list()
+        kgt_shukey_list.extend(d_list)
+        kgt_shukey_list.extend(a_list)
+        kgt_shukey_list.extend(u_list)
+        gen_kgt()
+        with open('kgt-pkey.json', 'r') as f:
+            flat_kgt_pkey = json.load(f)['flat-kgt']
+        # 1. generate keys
+        # 1.1 generate data key
+        # TODO
+        data_key_file = "kgt-sum.json"
+        with open(data_key_file, 'r') as f:
+            data_shukey_json = json.load(f)
+        # data_shukey_json = job_step.gen_key(self.crypto, data_key_file)
         self.all_outputs.append(data_key_file)
-        # 1.2 generate key
+        # 1.2 generate algo key
         algo_key_file = self.name + ".algo.key.json"
         algo_shukey_json = job_step.gen_key(self.crypto, algo_key_file)
         self.all_outputs.append(algo_key_file)
-
-        # 1.3 generate key
+        # 1.3 generate user key
         key_file = self.name + ".key.json"
         shukey_json = job_step.gen_key(self.crypto, key_file)
         self.all_outputs.append(key_file)
@@ -100,10 +120,38 @@ class classic_job:
         enclave_hash = job_step.read_parser_hash(self.parser_url)
 
         # 3. call terminus to generate forward message
+        # TODO to simplify, we directly forward skey-sum
         data_forward_result = self.name + ".data.shukey.foward.json"
-        data_forward_json = job_step.forward_message(
+        d = job_step.forward_message(
             self.crypto, data_key_file, pkey, enclave_hash, data_forward_result)
+        data_forward_json = {
+            "shu_pkey": data_shukey_json['public-key'],
+            "encrypted_shu_skey": d['encrypted_skey'],
+            "shu_forward_signature": d['forward_sig'],
+            "enclave_hash": d['enclave_hash'],
+        }
         self.all_outputs.append(data_forward_result)
+
+        data_forward_json_list = [data_forward_json]
+        for i in range(len(kgt_shukey_list)):
+            kgt_shukey_json = kgt_shukey_list[i]
+            prefix = kgt_shukey_json['public-key'][:8]
+            data_forward_result = self.name + \
+                ".{}.data.shukey.foward.json".format(prefix)
+            tmp_key_file = self.name + ".{}.data.key.json".format(prefix)
+            self.all_outputs.append(tmp_key_file)
+            with open(tmp_key_file, 'w') as f:
+                json.dump(kgt_shukey_json, f)
+            d = job_step.forward_message(
+                self.crypto, tmp_key_file, pkey, enclave_hash, data_forward_result)
+            data_forward_json = {
+                "shu_pkey": kgt_shukey_json['public-key'],
+                "encrypted_shu_skey": d['encrypted_skey'],
+                "shu_forward_signature": d['forward_sig'],
+                "enclave_hash": d['enclave_hash'],
+            }
+            data_forward_json_list.append(data_forward_json)
+            self.all_outputs.append(data_forward_result)
 
         algo_forward_result = self.name + ".algo.shukey.foward.json"
         algo_forward_json = job_step.forward_message(
@@ -123,22 +171,21 @@ class classic_job:
         self.all_outputs.append(param_output_url)
 
         # 5. call fid_analyzer
-        input_obj = {
+        data_obj = {
             "input_data_url": sealed_data_url,
             "input_data_hash": data_hash,
             "kgt_shu_info": {
-                "pkey_tree": data_shukey_json["public-key"],
-                "encrypted_shu_skey": data_forward_json["encrypted_skey"],
-                "shu_forward_signature": data_forward_json["forward_sig"],
-                "enclave_hash": data_forward_json["enclave_hash"]
+                "kgt_pkey_sum": data_shukey_json["public-key"],
+                "data_shu_infos": data_forward_json_list,
             },
             "tag": "0"
         }
-        input_data = [input_obj]
+        input_data = [data_obj]
+
         parser_input_file = self.name + "parser_input.json"
         parser_output_file = self.name + "parser_output.json"
-        result_json = job_step.fid_analyzer_graph(shukey_json, rq_forward_json, algo_shukey_json, algo_forward_json, enclave_hash, input_data, self.parser_url, pkey, {
-        }, self.crypto, param_json, [], parser_input_file, parser_output_file)
+        result_json = job_step.fid_analyzer_tg(shukey_json, rq_forward_json, algo_shukey_json, algo_forward_json, enclave_hash, input_data, self.parser_url, pkey, dict(
+        ), self.crypto, param_json, flat_kgt_pkey, list(), parser_input_file, parser_output_file)
 
         summary['encrypted-result'] = result_json["encrypted_result"]
         summary["result-signature"] = result_json["result_signature"]
@@ -146,3 +193,4 @@ class classic_job:
             json.dump(summary, of)
         self.all_outputs.append(parser_input_file)
         self.all_outputs.append(parser_output_file)
+        job_step.remove_files(self.all_outputs)

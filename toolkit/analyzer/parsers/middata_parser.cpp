@@ -203,26 +203,26 @@ uint32_t middata_parser::feed_datasource() {
     LOG(INFO) << "input data, input_data_url: " << url;
     LOG(INFO) << "input data, data_hash: " << data_hash;
 
-    auto shu = item.get<kgt_shu_info>();
-    auto shu_skey = shu.get<ntt::encrypted_shu_skey>();
-    auto shu_forward_sig = shu.get<ntt::shu_forward_signature>();
-    auto ehash = shu.get<enclave_hash>();
-    LOG(INFO) << "kgt_shu_info, encrypted_shu_skey: " << shu_skey;
-    LOG(INFO) << "kgt_shu_info, shu_forward_signature: " << shu_forward_sig;
-    LOG(INFO) << "kgt_shu_info, enclave_hash: " << ehash;
-    auto ret = m_keymgr->forward_private_key(
-        shu_skey.data(), shu_skey.size(), epkey.data(), epkey.size(),
-        ehash.data(), ehash.size(), shu_forward_sig.data(),
-        shu_forward_sig.size());
-    if (ret != 0u) {
-      LOG(ERROR) << "forward_message got error " << ypc::status_string(ret);
-      return ret;
+    auto shu_info = item.get<kgt_shu_info>();
+    auto shus = shu_info.get<data_shu_infos>();
+    LOG(INFO) << "data shu infos size: " << shus.size();
+    for (auto &shu : shus) {
+      auto shu_skey = shu.get<ntt::encrypted_shu_skey>();
+      auto shu_forward_sig = shu.get<ntt::shu_forward_signature>();
+      auto ehash = shu.get<enclave_hash>();
+      auto ret = m_keymgr->forward_private_key(
+          shu_skey.data(), shu_skey.size(), epkey.data(), epkey.size(),
+          ehash.data(), ehash.size(), shu_forward_sig.data(),
+          shu_forward_sig.size());
+      if (ret != 0u) {
+        LOG(ERROR) << "forward_message got error " << ypc::status_string(ret);
+        return ret;
+      }
     }
     ntt::sealed_data_info_t data_info;
     data_info.set<ntt::data_hash, ntt::pkey, ntt::tag>(
-        data_hash, shu.get<pkey_tree>(), item.get<ntt::tag>());
+        data_hash, shu_info.get<kgt_pkey_sum>(), item.get<ntt::tag>());
     all_data_info.push_back(data_info.make_copy());
-
   }
 
   ypc::bytes data_info_bytes;

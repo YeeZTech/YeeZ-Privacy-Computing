@@ -17,12 +17,12 @@ class onchain_result : virtual public request_key_var<true>,
                        virtual public result_var,
                        virtual public encrypted_param_var,
                        virtual public data_hash_var {
-  typedef Crypto ecc;
+  typedef Crypto crypto_t;
   typedef request_key_var<true> request_key_var_t;
 
 public:
   uint32_t generate_result() {
-    auto status = ecc::encrypt_message_with_prefix(
+    auto status = crypto_t::encrypt_message_with_prefix(
         request_key_var_t::m_pkey4v, result_var::m_result,
         utc::crypto_prefix_arbitrary, m_encrypted_result_str);
 
@@ -38,7 +38,8 @@ public:
 
     auto cost_msg =
         m_encrypted_param + m_data_hash + m_enclave_hash + cost_gas_str;
-    status = ecc::sign_message(m_private_key, cost_msg, m_cost_signature_str);
+    status =
+        crypto_t::sign_message(m_private_key, cost_msg, m_cost_signature_str);
 
     if (status != stbox::stx_status::success) {
       LOG(ERROR) << "error for sign cost: " << status;
@@ -47,7 +48,7 @@ public:
 
     auto msg = m_encrypted_param + m_data_hash + m_enclave_hash + cost_gas_str +
                m_encrypted_result_str;
-    status = ecc::sign_message(m_private_key, msg, m_result_signature_str);
+    status = crypto_t::sign_message(m_private_key, msg, m_result_signature_str);
     return static_cast<uint32_t>(status);
   }
 

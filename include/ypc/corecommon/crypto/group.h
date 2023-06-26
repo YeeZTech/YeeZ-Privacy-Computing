@@ -1,9 +1,9 @@
 #pragma once
+#include "ypc/stbox/gmssl/sm2.h"
 #include "ypc/stbox/tsgx/secp256k1/secp256k1.h"
-#include <gmssl/sm2.h>
-#include <memory>
 
 namespace ypc {
+namespace crypto {
 
 struct secp256k1_pkey_group {
   typedef secp256k1_pubkey key_t;
@@ -53,4 +53,6 @@ struct sm2_skey_group {
     return 0;
   }
 };
+
+} // namespace crypto
 } // namespace ypc

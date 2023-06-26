@@ -16,20 +16,20 @@ class offchain_result : virtual public request_key_var<true>,
                         virtual public result_var,
                         virtual public encrypted_param_var,
                         virtual public data_hash_var {
-  typedef Crypto crypto;
+  typedef Crypto crypto_t;
   typedef request_key_var<true> request_key_var_t;
 
 public:
   uint32_t generate_result() {
     stbox::bytes skey;
 
-    crypto::gen_private_key(skey);
+    crypto_t::gen_private_key(skey);
     stbox::bytes pkey;
-    crypto::generate_pkey_from_skey(skey, pkey);
+    crypto_t::generate_pkey_from_skey(skey, pkey);
 
     auto rs = result_var::m_result;
 
-    auto status = crypto::encrypt_message_with_prefix(
+    auto status = crypto_t::encrypt_message_with_prefix(
         pkey, rs, utc::crypto_prefix_arbitrary, m_encrypted_result_str);
 
     if (status != stbox::stx_status::success) {
@@ -38,12 +38,12 @@ public:
     }
 
     stbox::bytes hash_m;
-    crypto::hash_256(m_encrypted_result_str, hash_m);
+    crypto_t::hash_256(m_encrypted_result_str, hash_m);
 
     stbox::bytes pkey_a;
-    status = crypto::generate_pkey_from_skey(m_private_key, pkey_a);
+    status = crypto_t::generate_pkey_from_skey(m_private_key, pkey_a);
 
-    status = crypto::encrypt_message_with_prefix(
+    status = crypto_t::encrypt_message_with_prefix(
         pkey_a, skey, utc::crypto_prefix_arbitrary, m_encrypted_c);
 
     if (status != stbox::stx_status::success) {
@@ -62,7 +62,7 @@ public:
     LOG(INFO) << "cost message to sign: " << cost_msg;
 #endif
     status =
-        crypto::sign_message(m_private_key, cost_msg, m_cost_signature_str);
+        crypto_t::sign_message(m_private_key, cost_msg, m_cost_signature_str);
     if (status != stbox::stx_status::success) {
       LOG(ERROR) << "error for sign cost: " << status;
       return status;
@@ -76,7 +76,7 @@ public:
 #ifdef DEBUG
     LOG(INFO) << "sign with private key: " << m_private_key;
 #endif
-    status = crypto::sign_message(m_private_key, msg, m_result_signature_str);
+    status = crypto_t::sign_message(m_private_key, msg, m_result_signature_str);
 
     return static_cast<uint32_t>(status);
   }

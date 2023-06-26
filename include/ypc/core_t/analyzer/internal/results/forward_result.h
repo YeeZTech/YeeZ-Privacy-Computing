@@ -17,7 +17,7 @@ class forward_result : virtual public request_key_var<true>,
                        virtual public result_var,
                        virtual public encrypted_param_var,
                        virtual public data_hash_var {
-  typedef Crypto ecc;
+  typedef Crypto crypto_t;
   typedef request_key_var<true> request_key_var_t;
 
 public:
@@ -30,13 +30,13 @@ public:
 
     // 1. gen private key
     stbox::bytes shu_skey;
-    auto ret = ecc::gen_private_key(shu_skey);
+    auto ret = crypto_t::gen_private_key(shu_skey);
     if (ret) {
       LOG(ERROR) << "gen_private_key failed: " << stbox::status_string(ret);
       return ret;
     }
     stbox::bytes shu_pkey;
-    ret = ecc::generate_pkey_from_skey(shu_skey, shu_pkey);
+    ret = crypto_t::generate_pkey_from_skey(shu_skey, shu_pkey);
     if (ret) {
       LOG(ERROR) << "generate_pkey_from_skey failed: "
                  << stbox::status_string(ret);
@@ -44,9 +44,9 @@ public:
     }
     // 2. gen forward for private key
     stbox::bytes encrypted_skey;
-    ret = ecc::encrypt_message_with_prefix(m_target_dian_pkey, shu_skey,
-                                           utc::crypto_prefix_forward,
-                                           encrypted_skey);
+    ret = crypto_t::encrypt_message_with_prefix(m_target_dian_pkey, shu_skey,
+                                                utc::crypto_prefix_forward,
+                                                encrypted_skey);
 
     if (ret != stbox::stx_status::success) {
       LOG(ERROR) << "error for encrypt_message: " << stbox::status_string(ret);
@@ -56,7 +56,7 @@ public:
     stbox::bytes to_sign_msg = m_target_dian_pkey + m_target_enclave_hash;
 
     stbox::bytes sig;
-    ret = ecc::sign_message(shu_skey, to_sign_msg, sig);
+    ret = crypto_t::sign_message(shu_skey, to_sign_msg, sig);
     if (ret) {
       LOG(ERROR) << "sign_message failed: " << stbox::status_string(ret);
       return ret;
@@ -68,7 +68,7 @@ public:
     auto pb = make_bytes<stbox::bytes>::for_package<ntt::batch_data_pkg_t,
                                                     ntt::batch_data>(batch);
 
-    ret = ecc::encrypt_message_with_prefix(
+    ret = crypto_t::encrypt_message_with_prefix(
         shu_pkey, pb, utc::crypto_prefix_arbitrary, m_encrypted_result_str);
 
     if (ret != stbox::stx_status::success) {
@@ -82,9 +82,9 @@ public:
     // 4. generate hash
 
     stbox::bytes data_hash;
-    ret = ecc::hash_256(stbox::bytes("Fidelius"), data_hash);
+    ret = crypto_t::hash_256(stbox::bytes("Fidelius"), data_hash);
     auto data_hash2 = data_hash + result_var::m_result;
-    ret = ecc::hash_256(data_hash2, data_hash);
+    ret = crypto_t::hash_256(data_hash2, data_hash);
 
     ///
     ntt::forward_result_t result;

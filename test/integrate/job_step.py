@@ -127,7 +127,7 @@ class job_step:
             with open(parser_output_file) as of:
                 return of.readlines()
 
-    def fid_analyzer_graph(shukey_json, rq_forward_json, algo_shu_info, algo_forward_json, enclave_hash, input_data, parser_url, dian_pkey, model, crypto, param_json, allowances, parser_input_file, parser_output_file):
+    def fid_analyzer_tg(shukey_json, rq_forward_json, algo_shu_info, algo_forward_json, enclave_hash, input_data, parser_url, dian_pkey, model, crypto, param_json, flat_kgt_pkey, allowances, parser_input_file, parser_output_file):
         parser_input = {
             "shu_info": {
                 "shu_pkey": shukey_json["public-key"],
@@ -152,7 +152,7 @@ class job_step:
                 "param_data": param_json["encrypted-input"],
                 "public-key": shukey_json["public-key"],
                 "algo-public-key": algo_shu_info["public-key"],
-                "data-public-key": [input_data[0]["kgt_shu_info"]["pkey_tree"]],
+                "data-kgt-public-key": flat_kgt_pkey,
             }
         }
         if allowances:
