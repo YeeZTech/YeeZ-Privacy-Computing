@@ -43,6 +43,8 @@ public:
   bytes get_sample_data();
   std::string get_data_format();
 
+  bytes get_item_index_field();
+
 protected:
   template <typename T> T get_func_with_name(const std::string &name) {
     T r = (T)dlsym(m_lib_handle, name.c_str());
@@ -65,6 +67,7 @@ protected:
   typedef uint64_t (*get_item_number_func_t)(void *);            // NOLINT
   typedef int (*get_sample_data_func_t)(void *, char *, int *);  // NOLINT
   typedef int (*get_data_format_func_t)(void *, char *, int *);  // NOLINT
+  typedef int (*get_item_index_field_func_t)(void *, char *, int *);   // NOLINT
   // NOLINTEND(modernize-use-using)
 
   const std::string m_plugin_path;
@@ -81,6 +84,8 @@ protected:
   get_item_number_func_t m_get_item_number;
   get_sample_data_func_t m_get_sample_data;
   get_data_format_func_t m_get_data_format;
+
+  get_item_index_field_func_t m_get_item_index_field;
 };
 
 } // namespace ypc

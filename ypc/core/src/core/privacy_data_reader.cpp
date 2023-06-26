@@ -112,4 +112,17 @@ bytes privacy_data_reader::read_item_data() {
   }
   return bytes(buf, len);
 }
+
+bytes privacy_data_reader::get_item_index_field() {
+  // We use static buf here to optimize memory usage.
+  // TODO:max_field_size 
+  char buf[::ypc::utc::max_item_size] = {0};
+
+  int len = ::ypc::utc::max_item_size;
+  auto status = m_get_item_index_field(m_handle, buf, &len);
+  if (status != 0) {
+    return bytes();
+  }
+  return bytes(buf, len);
+}
 } // namespace ypc
