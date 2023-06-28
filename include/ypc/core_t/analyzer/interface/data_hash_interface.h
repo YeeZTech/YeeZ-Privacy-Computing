@@ -25,7 +25,7 @@ protected:
     std::sort(
         rs.begin(), rs.end(),
         [](const stbox::bytes &a, const stbox::bytes &b) { return a > b; });
-    rs.erase(std::unique(rs.begin(), rs.end()), rs.end());
+    // rs.erase(std::unique(rs.begin(), rs.end()), rs.end());
 
     for (uint32_t i = 0; i < rs.size(); ++i) {
       joint_bytes += rs[i];

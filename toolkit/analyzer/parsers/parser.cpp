@@ -174,11 +174,13 @@ uint32_t parser::feed_datasource() {
   for (auto item : input_data_var) {
     auto url = item.get<input_data_url>();
     auto data_hash = item.get<input_data_hash>();
+    auto shu = item.get<shu_info>();
+    auto spkey = shu.get<shu_pkey>();
+
     auto ssf = std::make_shared<ypc::simple_sealed_file>(url, true);
-    m_data_sources.insert(std::make_pair(data_hash, ssf));
+    m_data_sources.insert(std::make_pair(data_hash + spkey, ssf));
     ssf->reset_read();
 
-    auto shu = item.get<shu_info>();
     auto shu_skey = shu.get<ntt::encrypted_shu_skey>();
     auto shu_forward_sig = shu.get<ntt::shu_forward_signature>();
     auto target_enclave_hash = shu.get<enclave_hash>();
@@ -191,10 +193,9 @@ uint32_t parser::feed_datasource() {
       return ret;
     }
     ntt::sealed_data_info_t data_info;
-    data_info.set<ntt::data_hash, ntt::pkey, ntt::tag>(
-        data_hash, shu.get<shu_pkey>(), item.get<ntt::tag>());
+    data_info.set<ntt::data_hash, ntt::pkey, ntt::tag>(data_hash, spkey,
+                                                       item.get<ntt::tag>());
     all_data_info.push_back(data_info.make_copy());
-
   }
 
   ypc::bytes data_info_bytes;
@@ -244,22 +245,26 @@ uint32_t parser::feed_model() {
 }
 uint32_t parser::feed_param() { return ypc::success; }
 
-uint32_t parser::next_data_batch(const uint8_t *data_hash, uint32_t hash_size,
-                                 uint8_t **data, uint32_t *len) {
-  auto hash = ypc::bytes(data_hash, hash_size);
-  if (m_data_sources.find(hash) == m_data_sources.end()) {
-    LOG(ERROR) << "data with hash: " << hash << " not found";
+uint32_t parser::next_data_batch(const uint8_t *hash_and_pkey,
+                                 uint32_t hash_and_pkey_size, uint8_t **data,
+                                 uint32_t *len) {
+  auto all = ypc::bytes(hash_and_pkey, hash_and_pkey_size);
+  if (m_data_sources.find(all) == m_data_sources.end()) {
+    auto hash = ypc::bytes(hash_and_pkey, 32);
+    auto pkey = ypc::bytes(hash_and_pkey + 32, hash_and_pkey_size - 32);
+    LOG(ERROR) << "data with hash: " << hash << ", pkey: " << pkey
+               << " not found";
     return stbox::stx_status::data_source_not_found;
   }
-  auto ssf = m_data_sources[hash];
+  auto ssf = m_data_sources[all];
   ypc::memref b;
   bool ret = ssf->next_item(b);
   if (ret) {
     *data = b.data();
     *len = b.size();
     return stbox::stx_status::success;
-  }     return stbox::stx_status::sealed_file_reach_end;
- 
+  }
+  return stbox::stx_status::sealed_file_reach_end;
 }
 
 void parser::free_data_batch(uint8_t *data) { delete[] data; }

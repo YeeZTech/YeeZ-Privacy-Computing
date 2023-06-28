@@ -108,7 +108,7 @@ public:
       return ret;
     }
     auto infos = pkg.get<ntt::sealed_data_info_vector>();
-    for (auto sdi : infos) {
+    for (auto &sdi : infos) {
       if (sdi.get<ntt::pkey>().size() != 0) {
         stbox::bytes private_key, dian_pkey;
         ret = keymgr_interface_t::request_private_key_for_public_key(

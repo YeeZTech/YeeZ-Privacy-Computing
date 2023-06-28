@@ -21,6 +21,7 @@ public:
       : data_source_with_dhash(data_hash), m_private_key(private_key) {
     // magic string here, Do Not Change!
     crypto::hash_256(stbox::bytes("Fidelius"), m_actual_data_hash);
+    crypto::generate_pkey_from_skey(m_private_key, m_public_key);
     m_data_reach_end = false;
   }
 
@@ -36,8 +37,9 @@ public:
     } else {
       uint8_t *t_sealed_data;
       uint32_t t_sealed_data_len;
+      auto hash_and_pkey = m_expect_data_hash + m_public_key;
       auto ret = stbox::ocall_cast<uint32_t>(next_data_batch)(
-          m_expect_data_hash.data(), m_expect_data_hash.size(), &t_sealed_data,
+          hash_and_pkey.data(), hash_and_pkey.size(), &t_sealed_data,
           &t_sealed_data_len);
 
       if (ret != stbox::stx_status::success) {
@@ -100,5 +102,6 @@ protected:
   std::vector<stbox::bytes> m_items;
   size_t m_item_index;
   bytes m_private_key;
+  bytes m_public_key;
 };
 } // namespace ypc
