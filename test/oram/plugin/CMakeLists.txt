@@ -1,0 +1,2 @@
+add_executable(test_privacy_data_reader main.cpp)
+target_link_libraries(test_privacy_data_reader core)

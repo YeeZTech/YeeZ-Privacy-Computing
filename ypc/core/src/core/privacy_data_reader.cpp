@@ -53,6 +53,8 @@ privacy_data_reader::privacy_data_reader(const std::string &plugin_path,
       get_opt_func_with_name<get_sample_data_func_t>("get_sample_data");
   m_get_data_format =
       get_opt_func_with_name<get_data_format_func_t>("get_data_format");
+  m_get_item_index_field =
+      get_opt_func_with_name<get_item_index_field_func_t>("get_item_index_field");
 
   m_handle = m_create_item_reader(m_extra_param.c_str(), m_extra_param.size());
   if (m_handle == nullptr) {

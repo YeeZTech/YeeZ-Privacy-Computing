@@ -105,9 +105,25 @@ uint32_t oram_seal_file(const crypto_ptr_t &crypto_ptr, const std::string &plugi
   // 需要一个结构去存储id_map
   uint64_t batch_id = 1;
   bytes item_index_field = reader.get_item_index_field();
+  
+
   while (!item_index_field.empty() && counter < item_number) {
     // item_data是一行数据
-    // TODO:每读一行，将建立id_map的一个键值对: 索引字段item_index_field和batch(oram中block)id的映射关系
+    // TODO:使用枢公钥加密索引字段item_index_field
+    ypc::bytes encrypted_item_index_field;
+    uint32_t status = crypto_ptr->encrypt_message_with_prefix(
+        public_key, item_index_field, ypc::utc::crypto_prefix_arbitrary, encrypted_item_index_field);
+    if (status != 0u) {
+      std::stringstream ss;
+      ss << "encrypt "
+        << " data fail: " << stbox::status_string(status);
+      LOG(ERROR) << ss.str();
+      std::cerr << ss.str();
+      exit(1);
+    }
+    // TODO:id map存储的是encrypted_item_index_field和batch(oram中block)id的映射关系
+    // encrypted_item_index_field和param中的param_data相同
+    // TODO:验证一下长度是否相等
 
     ++item_num_each_batch;
     if (item_num_each_batch >= item_num_array[batch_id-1]) {
@@ -129,6 +145,7 @@ uint32_t oram_seal_file(const crypto_ptr_t &crypto_ptr, const std::string &plugi
   // TODO:build_header
 
   // TODO:write header、id_map、position map
+  // 需要一个结构去存储position map
 
   // TODO:write_oram_tree
   reader.reset_for_read();

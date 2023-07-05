@@ -119,6 +119,11 @@ uint32_t oram_parser::oram_parse() {
   return ypc::success;
 }
 
+uint32_t oram_parser::get_block_id_OCALL(uint64_t content_id, uint32_t *block_id) {
+  auto param_var = m_param.get<ntt::param>();
+  auto param = param_var.get<ntt::param_data>();
+}
+
 uint32_t oram_parser::dump_result(const ypc::bytes &res) {
   if (m_ptype.d.result_type == ypc::utc::onchain_result_parser) {
     auto pkg =
@@ -178,7 +183,8 @@ uint32_t oram_parser::feed_datasource() {
   }
 
   auto epkey = m_param.get<dian_pkey>();
-  std::vector<ntt::sealed_data_info_t> all_data_info;
+  // TODO:需要定义一个oram_sealed_data_info_t，其中需要包含查询参数ntt::param
+  std::vector<ntt::oram_sealed_data_info_t> all_data_info;
   for (auto item : input_data_var) {
     auto url = item.get<input_data_url>();
     auto data_hash = item.get<input_data_hash>();
@@ -199,10 +205,10 @@ uint32_t oram_parser::feed_datasource() {
       LOG(ERROR) << "forward_message got error " << ypc::status_string(ret);
       return ret;
     }
-    // TODO:需要定义一个oram_seal_data_info_t，其中需要包含查询参数
-    ntt::sealed_data_info_t data_info;
-    data_info.set<ntt::data_hash, ntt::pkey, ntt::tag>(
-        data_hash, shu.get<shu_pkey>(), item.get<ntt::tag>());
+    
+    ntt::oram_sealed_data_info_t data_info;
+    data_info.set<ntt::data_hash, ntt::pkey, ntt::tag, ntt::param>(
+        data_hash, shu.get<shu_pkey>(), item.get<ntt::tag>(), m_param.get<ntt::param>());
     all_data_info.push_back(data_info.make_copy());
 
   }
@@ -214,7 +220,7 @@ uint32_t oram_parser::feed_datasource() {
       return ypc::parser_missing_input;
     }
 
-    typename ypc::cast_obj_to_package<ntt::sealed_data_info_t>::type single =
+    typename ypc::cast_obj_to_package<ntt::oram_sealed_data_info_t>::type single =
         all_data_info[0];
     data_info_bytes = ypc::make_bytes<ypc::bytes>::for_package(single);
   }

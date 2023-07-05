@@ -42,6 +42,7 @@ template <typename BytesType> struct nt {
   define_nt(model, model_t);
 
   using sealed_data_info_t = ::ff::util::ntobject<data_hash, pkey, tag>;
+//   using oram_sealed_data_info_t = ::ff::util::ntobject<data_hash, pkey, tag, param>;
   define_nt(sealed_data_info_vector, std::vector<sealed_data_info_t>);
   using multi_sealed_data_info_t =
       ::ff::util::ntobject<sealed_data_info_vector>;
