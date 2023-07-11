@@ -1,4 +1,5 @@
 #pragma once
+#include "ypc/common/endian.h"
 #include "ypc/stbox/gmssl/sm2.h"
 #include "ypc/stbox/tsgx/secp256k1/secp256k1.h"
 
@@ -10,10 +11,16 @@ struct secp256k1_pkey_group {
   static int add(key_t &r, const key_t &a, const key_t &b) {
     secp256k1_context *ctx = secp256k1_context_create(SECP256K1_CONTEXT_VERIFY |
                                                       SECP256K1_CONTEXT_SIGN);
-    const key_t *pkeys[2] = {&a, &b};
-    key_t t;
-    int return_val = secp256k1_ec_pubkey_combine(ctx, &t, pkeys, 2);
-    memcpy(&r, &t, sizeof(key_t));
+    key_t s, t;
+    memcpy(&s, &a, sizeof(key_t));
+    memcpy(&t, &b, sizeof(key_t));
+    // public key endian changed for function `generate_pkey_from_skey`
+    ypc::utc::change_pubkey_endian((uint8_t *)&s, sizeof(secp256k1_pubkey));
+    ypc::utc::change_pubkey_endian((uint8_t *)&t, sizeof(secp256k1_pubkey));
+
+    const key_t *pkeys[2] = {&s, &t};
+    int return_val = secp256k1_ec_pubkey_combine(ctx, &r, pkeys, 2);
+    ypc::utc::change_pubkey_endian((uint8_t *)&r, sizeof(secp256k1_pubkey));
     secp256k1_context_destroy(ctx);
     return return_val;
   }
