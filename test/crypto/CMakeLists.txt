@@ -30,9 +30,10 @@ target_link_directories(test_crypto PRIVATE "${SGX_LIBRARY_DIR}")
 
 gtest_discover_tests(test_crypto)
 AddCoverage(test_crypto)
+
 endif()
 
 add_executable(gtest_group main.cpp gtest_group.cpp)
-target_link_libraries(gtest_group gtest core_stdeth core_gmssl core common)
+target_link_libraries(gtest_group gtest core common core_stdeth core_gmssl terminus)
 gtest_discover_tests(gtest_group)
 AddCoverage(gtest_group)
