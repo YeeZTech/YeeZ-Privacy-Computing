@@ -53,7 +53,7 @@ public:
       stbox::bytes data_skey_b;
       ret = keymgr_interface_t::request_private_key_for_public_key(
           data_pkey_b, data_skey_b, dian_key);
-      if (peer.find(data_pkey_b) != peer.end()) {
+      if (peer.find(data_pkey_b) == peer.end()) {
         peer.insert(std::make_pair(data_pkey_b, data_skey_b));
       }
     }

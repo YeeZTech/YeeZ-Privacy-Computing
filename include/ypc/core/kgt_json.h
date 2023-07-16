@@ -3,8 +3,9 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 
-namespace ypc { typedef ypc::bytes kgt_json_bytes_t; typedef
-nt<kgt_json_bytes_t> ntb_json;
+namespace ypc {
+typedef ypc::bytes kgt_json_bytes_t;
+typedef nt<kgt_json_bytes_t> ntb_json;
 
 template <typename Group> class kgt_json {
   typedef Group group_t;

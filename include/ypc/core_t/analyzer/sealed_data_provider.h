@@ -53,8 +53,6 @@ public:
 
       // TODO we may optimize this by reusing the shared key
       stbox::bytes msg;
-      LOG(INFO) << "-----------------------------------------------------------------------------------------";
-      LOG(INFO) << m_private_key;
       ret = crypto::decrypt_message_with_prefix(
           m_private_key, sealed_data, msg, ypc::utc::crypto_prefix_arbitrary);
       if (ret) {

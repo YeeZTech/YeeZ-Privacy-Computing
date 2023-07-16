@@ -31,7 +31,10 @@ class classic_job:
     def __generate_keys(self, l, role, n):
         for i in range(n):
             key_file = self.name + ".{}_{}.key.json".format(role, i)
-            shukey_json = job_step.gen_key(self.crypto, key_file)
+            if not os.path.exists(key_file):
+                shukey_json = job_step.gen_key(self.crypto, key_file)
+            with open(key_file, 'r') as f:
+                shukey_json = json.load(f)
             l.append(shukey_json)
             self.all_outputs.append(key_file)
 
@@ -137,8 +140,8 @@ class classic_job:
             kgt_shukey_json = kgt_shukey_list[i]
             prefix = kgt_shukey_json['public-key'][:8]
             data_forward_result = self.name + \
-                ".{}.data.shukey.foward.json".format(prefix)
-            tmp_key_file = self.name + ".{}.data.key.json".format(prefix)
+                ".{}.shukey.foward.json".format(prefix)
+            tmp_key_file = self.name + ".{}.key.json".format(prefix)
             self.all_outputs.append(tmp_key_file)
             with open(tmp_key_file, 'w') as f:
                 json.dump(kgt_shukey_json, f)

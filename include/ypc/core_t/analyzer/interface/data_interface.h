@@ -74,15 +74,15 @@ public:
     }
     stbox::bytes dian_pkey;
 
-    LOG(INFO) << "pkg.get<ntt::pkey>(): "<< pkg.get<ntt::pkey>();
     kgt<pkey_group_t> pkey_kgt(pkg.get<ntt::pkey>());
+    auto leaves = pkey_kgt.leaves();
     std::unordered_map<stbox::bytes, stbox::bytes> peer;
-    for (auto &l : pkey_kgt.leaves()) {
+    for (auto &l : leaves) {
       stbox::bytes data_pkey_b((uint8_t *)&l->key_val, sizeof(l->key_val));
       stbox::bytes data_skey_b;
       ret = keymgr_interface_t::request_private_key_for_public_key(
           data_pkey_b, data_skey_b, dian_pkey);
-      if (peer.find(data_pkey_b) != peer.end()) {
+      if (peer.find(data_pkey_b) == peer.end()) {
         peer.insert(std::make_pair(data_pkey_b, data_skey_b));
       }
     }
