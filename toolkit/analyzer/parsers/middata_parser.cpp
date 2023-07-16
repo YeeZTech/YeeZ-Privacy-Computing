@@ -221,10 +221,9 @@ uint32_t middata_parser::feed_datasource() {
     }
     ntt::sealed_data_info_t data_info;
     data_info.set<ntt::data_hash, ntt::pkey, ntt::tag>(
-        data_hash, shu_info.get<kgt_pkey_sum>(), item.get<ntt::tag>());
+        data_hash, shu_info.get<kgt_pkey>(), item.get<ntt::tag>());
     all_data_info.push_back(data_info.make_copy());
   }
-
   ypc::bytes data_info_bytes;
   if (m_ptype.d.data_source_type == ypc::utc::single_sealed_datasource_parser) {
     if (all_data_info.empty()) {

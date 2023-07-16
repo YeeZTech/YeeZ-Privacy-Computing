@@ -34,8 +34,8 @@ typedef ::ff::util::ntobject<shu_info, input_data, parser_path, keymgr_path,
 define_nt(algo_shu_info, shu_info_t);
 // input middata define
 define_nt(data_shu_infos, std::vector<shu_info_t>);
-define_nt(kgt_pkey_sum, ypc::bytes);
-typedef ::ff::util::ntobject<kgt_pkey_sum, data_shu_infos> kgt_shu_info_t;
+define_nt(kgt_pkey, ypc::bytes);
+typedef ::ff::util::ntobject<kgt_pkey, data_shu_infos> kgt_shu_info_t;
 define_nt(kgt_shu_info, kgt_shu_info_t);
 typedef ::ff::util::ntobject<input_data_url, input_data_hash, kgt_shu_info,
                              ntt::tag>

@@ -175,7 +175,7 @@ class classic_job:
             "input_data_url": sealed_data_url,
             "input_data_hash": data_hash,
             "kgt_shu_info": {
-                "kgt_pkey_sum": data_shukey_json["public-key"],
+                "kgt_pkey": flat_kgt_pkey,
                 "data_shu_infos": data_forward_json_list,
             },
             "tag": "0"

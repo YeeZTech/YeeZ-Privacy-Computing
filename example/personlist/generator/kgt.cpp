@@ -2,6 +2,7 @@
 #include "ypc/core/kgt_json.h"
 #include <boost/program_options.hpp>
 #include <iostream>
+#include <glog/logging.h>
 
 boost::program_options::variables_map parse_command_line(int argc,
                                                          char *argv[]) {
@@ -70,7 +71,6 @@ int main(int argc, char *argv[]) {
   ypc::kgt_json<ypc::crypto::secp256k1_skey_group> skey_kgt(content);
   skey_kgt.calculate_kgt_sum();
   const auto &sum = skey_kgt.sum();
-  ypc::bytes skey(sum.data, sizeof(sum));
   std::stringstream ss;
   ss << skey;
   boost::property_tree::ptree pt;

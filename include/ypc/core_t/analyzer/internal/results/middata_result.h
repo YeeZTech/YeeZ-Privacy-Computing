@@ -70,7 +70,6 @@ public:
 
     skey_sum_b = stbox::bytes(skey_sum.data, sizeof(skey_sum));
     ret = crypto_t::generate_pkey_from_skey(skey_sum_b, m_pkey_sum);
-
     ret = crypto_t::encrypt_message_with_prefix(
         m_pkey_sum, result_var::m_result, utc::crypto_prefix_arbitrary,
         m_encrypted_result_str);

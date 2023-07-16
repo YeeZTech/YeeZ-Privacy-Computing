@@ -3,9 +3,8 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 
-namespace ypc {
-typedef ypc::bytes kgt_json_bytes_t;
-typedef nt<kgt_json_bytes_t> ntb_json;
+namespace ypc { typedef ypc::bytes kgt_json_bytes_t; typedef
+nt<kgt_json_bytes_t> ntb_json;
 
 template <typename Group> class kgt_json {
   typedef Group group_t;
@@ -53,7 +52,7 @@ public:
   }
 
 public:
-  std::shared_ptr<key_node<peer_group_t>> gen_pkey_kgt_from_skey_kgt(
+  static std::shared_ptr<key_node<peer_group_t>> gen_pkey_kgt_from_skey_kgt(
       const std::shared_ptr<key_node<group_t>> &skey_kgt) {
     static_assert(ypc::crypto::ecc_traits<group_t>::is_private_key_type,
                   "invalid ecc key group, only supported for "
@@ -71,7 +70,7 @@ public:
     return pkey_kgt;
   }
 
-  std::shared_ptr<key_node<peer_group_t>> construct_skey_kgt_with_pkey_kgt(
+  static std::shared_ptr<key_node<peer_group_t>> construct_skey_kgt_with_pkey_kgt(
       const std::shared_ptr<key_node<group_t>> &pkey_kgt,
       const std::unordered_map<kgt_bytes_t, kgt_bytes_t> &peer) {
     static_assert(!ypc::crypto::ecc_traits<group_t>::is_private_key_type,

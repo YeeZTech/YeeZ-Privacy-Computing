@@ -18,7 +18,7 @@
 #gtest_discover_tests(gtest_sm2pub_kgt)
 #AddCoverage(gtest_sm2pub_kgt)
 
-#add_executable(gtest_secp256k1pri_kgtjson main.cpp gtest_secp256k1pri_kgtjson.cpp)
-#target_link_libraries(gtest_secp256k1pri_kgtjson gtest core_stdeth core common)
-#gtest_discover_tests(gtest_secp256k1pri_kgtjson)
-#AddCoverage(gtest_secp256k1pri_kgtjson)
+add_executable(gtest_secp256k1pri_kgtjson main.cpp gtest_secp256k1pri_kgtjson.cpp)
+target_link_libraries(gtest_secp256k1pri_kgtjson gtest core_stdeth core common terminus)
+gtest_discover_tests(gtest_secp256k1pri_kgtjson)
+AddCoverage(gtest_secp256k1pri_kgtjson)
