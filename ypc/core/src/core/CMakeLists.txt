@@ -10,6 +10,7 @@ add_library(core SHARED
   db.cpp
   configuration.cpp
   sealed_file.cpp
+  oram_sealed_file.cpp
   command_executor.cpp
   filesystem.cpp
   privacy_data_reader.cpp

@@ -94,6 +94,13 @@ def fid_data_provider(**kwargs):
     output = execute_cmd(cmd)
     return [cmd, output]
 
+def fid_oram_data_provider(**kwargs):
+    cmd = os.path.join(bin_dir, "./oram_data_provider")
+    for k, v in kwargs.items():
+        cmd = cmd + " --{} {}".format(k, v)
+    output = execute_cmd(cmd)
+    return [cmd, output]
+
 
 def fid_dump(**kwargs):
     cmd = os.path.join(bin_dir, "./ydump")
@@ -119,6 +126,13 @@ def fid_analyzer(**kwargs):
     output = execute_cmd(cmd)
     return [cmd, output]
 
+def fid_oram_analyzer(**kwargs):
+    cmd = os.path.join(bin_dir, "./fid_oram_analyzer")
+    cmd = "GLOG_logtostderr=1 " + cmd
+    for k, v in kwargs.items():
+        cmd = cmd + " --{} {}".format(k, v)
+    output = execute_cmd(cmd)
+    return [cmd, output]
 
 def iris_data(**kwargs):
     cmd = os.path.join(bin_dir, "./iris_gen_classify_input")

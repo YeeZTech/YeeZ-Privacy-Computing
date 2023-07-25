@@ -26,6 +26,17 @@ class job_step:
             "use-publickey-file": data_key_file
         }
         return common.fid_data_provider(**param)
+    
+    def oram_seal_data(crypto, data_url, plugin_url, sealed_data_url, sealed_output, data_key_file):
+        param = {
+            "crypto": crypto,
+            "data-url": data_url,
+            "plugin-path": plugin_url,
+            "sealed-data-url": sealed_data_url,
+            "output": sealed_output,
+            "use-publickey-file": data_key_file
+        }
+        return common.fid_oram_data_provider(**param)
 
     def get_first_key(crypto):
         keys = common.fid_keymgr_list(crypto)
@@ -119,6 +130,44 @@ class job_step:
             "output": parser_output_file
         }
         r = common.fid_analyzer(**param)
+        print("done fid_analyzer with cmd: {}".format(r[0]))
+        try:
+            with open(parser_output_file) as of:
+                return json.load(of)
+        except Exception as e:
+            # result is not json format
+            with open(parser_output_file) as of:
+                return of.readlines()
+    
+    def fid_oram_analyzer(shukey_json, rq_forward_json, enclave_hash, input_data, parser_url, dian_pkey, model, crypto, param_json, allowances, parser_input_file, parser_output_file):
+        parser_input = {
+            "shu_info": {
+                "shu_pkey": shukey_json["public-key"],
+                "encrypted_shu_skey": rq_forward_json["encrypted_skey"],
+                "shu_forward_signature": rq_forward_json["forward_sig"],
+                "enclave_hash": enclave_hash
+            },
+            "input_data": input_data,
+            "parser_path": parser_url,
+            "keymgr_path": common.kmgr_enclave[crypto],
+            "parser_enclave_hash": enclave_hash,
+            "dian_pkey": dian_pkey,
+            "model": model,
+            "param": {
+                "crypto": crypto,
+                "param_data": param_json["encrypted-input"],
+                "public-key": shukey_json["public-key"],
+            }
+        }
+        if allowances:
+            parser_input['param']['allowances'] = allowances
+        with open(parser_input_file, "w") as of:
+            json.dump(parser_input, of)
+        param = {
+            "input": parser_input_file,
+            "output": parser_output_file
+        }
+        r = common.fid_oram_analyzer(**param)
         print("done fid_analyzer with cmd: {}".format(r[0]))
         try:
             with open(parser_output_file) as of:

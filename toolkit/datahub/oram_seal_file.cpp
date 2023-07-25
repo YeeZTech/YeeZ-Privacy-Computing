@@ -7,6 +7,7 @@
 #include "ypc/corecommon/crypto/gmssl.h"
 #include "ypc/corecommon/crypto/stdeth.h"
 #include "ypc/corecommon/nt_cols.h"
+#include "ypc/corecommon/oram_types.h"
 #include <boost/program_options.hpp>
 #include <boost/progress.hpp>
 #include <boost/property_tree/json_parser.hpp>
@@ -15,10 +16,15 @@
 #include <fstream>
 #include <iostream>
 #include <thread>
+#include <random>
 
 using stx_status = stbox::stx_status;
 using namespace ypc;
 using ntt = ypc::nt<ypc::bytes>;
+using oram_ntt = ypc::oram::nt<ypc::bytes>;
+
+define_nt(input_buf, std::string);
+typedef ff::net::ntpackage<0, input_buf> input_buf_t;
 
 class crypto_base {
 public:
@@ -44,13 +50,119 @@ public:
   }
 };
 
+void generate_random_str(std::string& r_str, uint32_t r_str_len) {
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  int max_value = static_cast<int>(std::numeric_limits<byte_t>::max());
+  std::uniform_int_distribution<int> dis(0, max_value);
+
+  for (uint32_t i = 0; i < r_str_len; ++i) {
+    auto r_byte = static_cast<byte_t>(dis(gen));
+    // T random_byte = static_cast<T>(dis(gen));
+    r_str.push_back(r_byte);
+  }
+}
+
+void push_dummy_block(std::vector<oram_ntt::block_t>& bucket_array, uint8_t count, 
+                      uint64_t item_num_each_batch, size_t item_size,
+                      const crypto_ptr_t &crypto_ptr, const ypc::bytes &public_key) {
+  for(uint8_t i = 0; i < count; ++i) {
+    oram_ntt::block_t b_block;
+
+    std::vector<ypc::bytes> dummy_batch;
+    for(uint32_t j = 0; j < item_num_each_batch; ++j) {
+      std::string dummy_item_str;
+      generate_random_str(dummy_item_str, item_size);
+      bytes dummy_item(dummy_item_str);
+      dummy_batch.push_back(dummy_item);
+    }
+
+    bytes encrypted_dummy_batch;
+    ypc::bytes dummy_batch_str =
+      ypc::make_bytes<ypc::bytes>::for_package<ntt::batch_data_pkg_t,
+                                               ntt::batch_data>(dummy_batch);
+    // TODO:用客户要求的加密算法加密dummy_batch_str
+    uint32_t status = crypto_ptr->encrypt_message_with_prefix(
+      public_key, dummy_batch_str, ypc::utc::crypto_prefix_arbitrary, encrypted_dummy_batch);
+    if (status != 0u) {
+      std::stringstream ss;
+      ss << "encrypt "
+        << " data fail: " << stbox::status_string(status);
+      LOG(ERROR) << ss.str();
+      std::cerr << ss.str();
+      exit(1);
+    }
+
+    b_block.set<oram_ntt::block_id, oram_ntt::leaf_label, oram_ntt::valid_item_num, oram_ntt::encrypted_batch>(0, 0, 0, encrypted_dummy_batch);
+    bucket_array.push_back(b_block);
+  }
+}
+
+uint32_t get_leaf_label(uint32_t bucket_index, uint8_t level_num_L) {
+  // 最左叶节点
+  uint32_t leftmost_leaf_index = (1 << level_num_L) - 1;
+  if(bucket_index >= leftmost_leaf_index) {
+      return bucket_index - leftmost_leaf_index + 1;
+  }
+
+  // 随机选一个路径去叶节点
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_int_distribution<> dis(0, 1);
+
+  if(dis(gen) == 0) {
+      return get_leaf_label(2 * bucket_index + 1, level_num_L);
+  }
+  return get_leaf_label(2 * bucket_index + 2, level_num_L);
+}
+
+void push_real_block(std::vector<oram_ntt::block_t>& bucket_array, 
+                      uint32_t& block_id_value, uint32_t bucket_index, 
+                      std::vector<uint32_t> &position_map_array, uint8_t level_num_L,
+                      std::vector<ypc::bytes> &batch, uint32_t &batch_str_size,
+                      uint64_t item_num_each_batch, size_t item_size, 
+                      const crypto_ptr_t &crypto_ptr, const ypc::bytes &public_key) {
+  oram_ntt::block_t b_block;
+  uint32_t valid_item_num = batch.size();
+  for(uint32_t i = 0; i < item_num_each_batch - valid_item_num; ++i) {
+    std::string item_str;
+    generate_random_str(item_str, item_size);
+    bytes item(item_str);
+    batch.push_back(item);
+  }
+
+  bytes encrypted_batch;
+  ypc::bytes batch_str =
+    ypc::make_bytes<ypc::bytes>::for_package<ntt::batch_data_pkg_t,
+                                              ntt::batch_data>(batch);
+  // TODO:用客户要求的加密算法加密dummy_batch_str
+  uint32_t status = crypto_ptr->encrypt_message_with_prefix(
+    public_key, batch_str, ypc::utc::crypto_prefix_arbitrary, encrypted_batch);
+  if (status != 0u) {
+    std::stringstream ss;
+    ss << "encrypt "
+      << " data fail: " << stbox::status_string(status);
+    LOG(ERROR) << ss.str();
+    std::cerr << ss.str();
+    exit(1);
+  }
+
+  if(batch_str_size != encrypted_batch.size()) {
+    batch_str_size = encrypted_batch.size();
+  }
+
+  uint32_t b_leaf_label = get_leaf_label(bucket_index, level_num_L);
+  position_map_array[block_id_value] = b_leaf_label;
+  b_block.set<oram_ntt::block_id, oram_ntt::leaf_label, oram_ntt::valid_item_num, oram_ntt::encrypted_batch>(block_id_value++, b_leaf_label, valid_item_num, encrypted_batch);
+  bucket_array.push_back(b_block);
+
+}
+
 uint32_t oram_seal_file(const crypto_ptr_t &crypto_ptr, const std::string &plugin,
                    const std::string &file, const std::string &oram_sealed_file_path,
                    const ypc::bytes &public_key, ypc::bytes &data_hash) {
   // Read origin file use sgx to seal file
-  //TODO:plugin should be changed
   privacy_data_reader reader(plugin, file);
-  simple_oram_sealed_file sf(oram_sealed_file_path);
   // std::string k(file);
   // k = k + std::string(sealer_path);
 
@@ -68,11 +180,12 @@ uint32_t oram_seal_file(const crypto_ptr_t &crypto_ptr, const std::string &plugi
   std::cout << "Reading " << item_number << " items ..." << std::endl;
   boost::progress_display pd(item_number);
   uint counter = 0;
-  std::vector<ypc::bytes> batch;
   size_t batch_size = 0;
+  size_t item_size = item_data.size();
 
-  // 先计算batch的数量，并记录每个batch包含的item数量
+  // the number of batch 
   uint64_t batch_num = 0;
+  // item_num_array records the number of items each batch contains
   std::vector<uint64_t> item_num_array;
   uint64_t item_num_each_batch = 0;
   while (!item_data.empty() && counter < item_number) {
@@ -91,28 +204,112 @@ uint32_t oram_seal_file(const crypto_ptr_t &crypto_ptr, const std::string &plugi
                 << ypc::utc::max_item_size << " bytes!" << std::endl;
       return 1;
     }
+    ++pd;
     ++counter;
   }
 
-  assert(1 == 2);
+  if(item_num_each_batch != 0) {
+    item_num_array.push_back(item_num_each_batch);
+    item_num_each_batch = 0;
+      batch_size = 0;
+      ++batch_num;
+  }
+  
   assert(batch_num == item_num_array.size());
+
+
+  // build id map
+  LOG(INFO) << "build id_map";
+  reader.reset_for_read();
 
   batch_size = 0;
   counter = 0;
   item_num_each_batch = 0;
 
-  // TODO:build_id_map
-  // 需要一个结构去存储id_map
-  uint64_t batch_id = 1;
-  bytes item_index_field = reader.get_item_index_field();
-  
+  std::vector<oram_ntt::id_map_pair> id_map_array;
+  uint32_t batch_id = 1;
+  std::string item_index_field = reader.get_item_index_field();
+  input_buf_t item_index_field_pkg;
+  item_index_field_pkg.set<input_buf>(item_index_field);
+
+  bytes item_index_field_bytes = make_bytes<bytes>::for_package(item_index_field_pkg);
 
   while (!item_index_field.empty() && counter < item_number) {
-    // item_data是一行数据
-    // TODO:使用枢公钥加密索引字段item_index_field
-    ypc::bytes encrypted_item_index_field;
+    bytes item_index_field_hash;
+    crypto_ptr->hash_256(item_index_field_bytes, item_index_field_hash);
+
+    oram_ntt::id_map_pair k_v;
+    k_v.set<oram_ntt::item_index_field_hash, oram_ntt::block_id>(item_index_field_hash, batch_id);
+    id_map_array.push_back(k_v);
+
+    ++item_num_each_batch;
+    if (item_num_each_batch >= item_num_array[batch_id-1]) {
+      item_num_each_batch = 0;
+      ++batch_id;
+    }
+
+    item_index_field = reader.get_item_index_field();
+    input_buf_t item_index_field_pkg;
+    item_index_field_pkg.set<input_buf>(item_index_field);
+    item_index_field_bytes = make_bytes<bytes>::for_package(item_index_field_pkg);
+    
+    ++pd;
+    ++counter;
+  }
+
+  assert(id_map_array.size() == item_number);
+  oram_ntt::id_map_t id_map_pkg;
+  id_map_pkg.set<oram_ntt::id_map>(id_map_array);
+  bytes id_map_bytes = make_bytes<bytes>::for_package(id_map_pkg);
+  
+
+  // build header
+  LOG(INFO) << "build header";
+  oram::header osf_header{};
+  osf_header.block_num = batch_num;
+  uint32_t real_bucket_num = ceil(static_cast<double>(osf_header.block_num) / ypc::oram::BucketSizeZ);
+  osf_header.level_num_L = ceil(log2(real_bucket_num + 1)) - 1; 
+  osf_header.bucket_num_N = (1 << (osf_header.level_num_L + 1)) - 1;
+  osf_header.id_map_filepos = sizeof(osf_header);
+
+  osf_header.oram_tree_filepos = osf_header.id_map_filepos + id_map_bytes.size();
+  // write header, id map, invalid position map
+  LOG(INFO) << "write header, id map, invalid position map";
+  std::fstream osf(oram_sealed_file_path, std::ios::out | std::ios::binary);
+  if(!osf.is_open()) {
+    throw std::runtime_error("Failed to create oram sealed file: " + oram_sealed_file_path);
+  }
+
+  osf.seekp(0, osf.beg);
+  osf.write((char *)&osf_header, sizeof(osf_header));
+  osf.write((char *)id_map_bytes.data(), id_map_bytes.size());
+
+
+
+
+  // write ORAM tree
+  item_num_each_batch = item_num_array.front();
+  LOG(INFO) << "write ORAM tree";
+  // from which bucket to start writing real blocks
+  uint8_t lastbucket_realblocknum = osf_header.block_num % oram::BucketSizeZ;
+  uint32_t bucket_index = 0; // bucket index in ORAM tree
+  uint32_t block_id_value = 1; // block_id_value <= osf_header.block_num
+
+  // write buckets full of dummy blocks
+  LOG(INFO) << "write buckets full of dummy blocks";
+  osf.seekp(osf_header.oram_tree_filepos, osf.beg);
+  for(uint32_t i = 0; i < osf_header.bucket_num_N - real_bucket_num; ++i) {
+    std::vector<oram_ntt::block_t> bucket_array;
+    push_dummy_block(bucket_array, oram::BucketSizeZ, item_num_each_batch, item_size, crypto_ptr, public_key);
+    oram_ntt::bucket_pkg_t bucket_pkg;
+    bucket_pkg.set<oram_ntt::bucket>(bucket_array);
+    bytes bucket_str = make_bytes<bytes>::for_package(bucket_pkg);
+
+    // secondary encryption on the serialized bucket
+    // in order to encrypt the mapping relationship between block_id and leaf_label
+    bytes encrypted_bucket_bytes;
     uint32_t status = crypto_ptr->encrypt_message_with_prefix(
-        public_key, item_index_field, ypc::utc::crypto_prefix_arbitrary, encrypted_item_index_field);
+      public_key, bucket_str, ypc::utc::crypto_prefix_arbitrary, encrypted_bucket_bytes);
     if (status != 0u) {
       std::stringstream ss;
       ss << "encrypt "
@@ -121,37 +318,127 @@ uint32_t oram_seal_file(const crypto_ptr_t &crypto_ptr, const std::string &plugi
       std::cerr << ss.str();
       exit(1);
     }
-    // TODO:id map存储的是encrypted_item_index_field和batch(oram中block)id的映射关系
-    // encrypted_item_index_field和param中的param_data相同
-    // TODO:验证一下长度是否相等
 
-    ++item_num_each_batch;
-    if (item_num_each_batch >= item_num_array[batch_id-1]) {
-      item_num_each_batch = 0;
-      ++batch_id;
-    }
-    
-    item_index_field = reader.get_item_index_field();
-    item_data = reader.read_item_data();
-    if (item_data.size() > ypc::utc::max_item_size) {
-      std::cerr << "only support item size that smaller than "
-                << ypc::utc::max_item_size << " bytes!" << std::endl;
-      return 1;
-    }
-    ++pd;
-    ++counter;
+    osf.write((char *)encrypted_bucket_bytes.data(), encrypted_bucket_bytes.size());
+
+    ++bucket_index;
   }
 
-  // TODO:build_header
-
-  // TODO:write header、id_map、position map
-  // 需要一个结构去存储position map
-
-  // TODO:write_oram_tree
   reader.reset_for_read();
+  uint64_t batch_index = 0;
+  std::vector<ypc::bytes> batch;
+  std::vector<uint32_t> position_map_array(osf_header.block_num + 1, 0);
+
+  // write the bucket that contains both real and dummy blocks
+  LOG(INFO) << "write the bucket that contains both real and dummy blocks";
+  if(lastbucket_realblocknum != 0) {
+    --real_bucket_num;
+
+    std::vector<oram_ntt::block_t> bucket_array;
+    push_dummy_block(bucket_array, oram::BucketSizeZ - lastbucket_realblocknum, item_num_each_batch, item_size, crypto_ptr, public_key);
+    for(int i = 0; i < lastbucket_realblocknum; ++i) {
+      batch.clear();
+      for(int j = 0; j < item_num_array[batch_index]; ++j) {
+        item_data = reader.read_item_data();
+        batch.push_back(item_data);
+        ++pd;
+      }
+      push_real_block(bucket_array, block_id_value, bucket_index, position_map_array, osf_header.level_num_L, batch, osf_header.batch_str_size, item_num_each_batch, item_size, crypto_ptr, public_key);
+      ++batch_index;
+    }
+    
+
+    oram_ntt::bucket_pkg_t bucket_pkg;
+    bucket_pkg.set<oram_ntt::bucket>(bucket_array);
+    bytes bucket_str = make_bytes<bytes>::for_package(bucket_pkg);
+
+    bytes encrypted_bucket_bytes;
+    uint32_t status = crypto_ptr->encrypt_message_with_prefix(
+      public_key, bucket_str, ypc::utc::crypto_prefix_arbitrary, encrypted_bucket_bytes);
+    if (status != 0u) {
+      std::stringstream ss;
+      ss << "encrypt "
+        << " data fail: " << stbox::status_string(status);
+      LOG(ERROR) << ss.str();
+      std::cerr << ss.str();
+      exit(1);
+    }
+
+    osf.write((char *)encrypted_bucket_bytes.data(), encrypted_bucket_bytes.size());
+
+    ++bucket_index;
+  }
+
+  // write buckets full of dummy blocks
+  LOG(INFO) << "write buckets full of dummy blocks";
+  for(uint32_t k = 0; k < real_bucket_num; ++k) {
+    std::vector<oram_ntt::block_t> bucket_array;
+    for(int i = 0; i < oram::BucketSizeZ; ++i) {
+      batch.clear();
+      for(int j = 0; j < item_num_array[batch_index]; ++j) {
+        item_data = reader.read_item_data();
+        batch.push_back(item_data);
+        ++pd;
+      }
+      push_real_block(bucket_array, block_id_value, bucket_index, position_map_array, osf_header.level_num_L, batch, osf_header.batch_str_size, item_num_each_batch, item_size, crypto_ptr, public_key);
+      ++batch_index;
+    }
+
+    oram_ntt::bucket_pkg_t bucket_pkg;
+    bucket_pkg.set<oram_ntt::bucket>(bucket_array);
+    bytes bucket_str = make_bytes<bytes>::for_package(bucket_pkg);
+
+    bytes encrypted_bucket_bytes;
+    uint32_t status = crypto_ptr->encrypt_message_with_prefix(
+      public_key, bucket_str, ypc::utc::crypto_prefix_arbitrary, encrypted_bucket_bytes);
+    if (status != 0u) {
+      std::stringstream ss;
+      ss << "encrypt "
+        << " data fail: " << stbox::status_string(status);
+      LOG(ERROR) << ss.str();
+      std::cerr << ss.str();
+      exit(1);
+    }
+
+    if(osf_header.bucket_str_size != encrypted_bucket_bytes.size()) {
+      osf_header.bucket_str_size = encrypted_bucket_bytes.size();
+    }
+
+    osf.write((char *)encrypted_bucket_bytes.data(), encrypted_bucket_bytes.size());
+
+    ++bucket_index;
+  }
 
 
-  
+  // write position_map
+  osf_header.position_map_filepos = osf.tellp();
+  oram_ntt::position_map_t position_map_pkg;
+  position_map_pkg.set<oram_ntt::position_map>(position_map_array);
+  bytes position_map_bytes = make_bytes<bytes>::for_package(position_map_pkg);
+  ypc::bytes encrypted_position_map_bytes;
+  uint32_t status = crypto_ptr->encrypt_message_with_prefix(
+      public_key, position_map_bytes, ypc::utc::crypto_prefix_arbitrary, encrypted_position_map_bytes);
+  if (status != 0u) {
+    std::stringstream ss;
+    ss << "encrypt "
+      << " data fail: " << stbox::status_string(status);
+    LOG(ERROR) << ss.str();
+    std::cerr << ss.str();
+    exit(1);
+  }
+
+  LOG(INFO) << "osf_header.block_num : " << osf_header.block_num;
+  osf.seekp(osf_header.position_map_filepos, osf.beg);
+  osf.write((char *)encrypted_position_map_bytes.data(), encrypted_position_map_bytes.size());
+
+  osf_header.stash_filepos = osf.tellp();
+
+  // update and write osf_header
+  osf.seekp(0, osf.beg);
+  osf.write((char *)&osf_header, sizeof(osf_header));
+
+  osf.close();
+
 
   std::cout << "data hash: " << data_hash << std::endl;
   std::cout << "\nDone read data count: " << pd.count() << std::endl;

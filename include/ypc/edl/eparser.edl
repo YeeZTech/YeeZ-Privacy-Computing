@@ -39,7 +39,27 @@ enclave {
     /* define OCALLs here. */
     uint32_t next_data_batch([in, size=hash_size] const uint8_t * data_hash, uint32_t hash_size,
                              [out] uint8_t ** data, [out] uint32_t *len);
-
+    
     void free_data_batch([user_check] uint8_t *data);
+
+    uint32_t download_oram_params_OCALL([in, size=hash_size] const uint8_t *data_hash, uint32_t hash_size, 
+                                        [out] uint32_t *block_num, [out] uint32_t *bucket_num_N, 
+                                        [out]uint8_t *level_num_L, [out] uint32_t *bucket_str_size, 
+                                        [out] uint32_t *batch_str_size);
+    uint32_t get_block_id_OCALL([in, size=hash_size] const uint8_t * data_hash, uint32_t hash_size,
+                                [out] uint32_t *block_id,
+                                [in, size=hash_size] const uint8_t *param_hash, uint32_t param_hash_size);
+    uint32_t download_position_map_OCALL([in, size=hash_size] const uint8_t *data_hash, uint32_t hash_size, 
+                                          [out] uint8_t ** position_map, [out] uint32_t *len);
+    uint32_t update_position_map_OCALL([in, size=hash_size] const uint8_t *data_hash, uint32_t hash_size, 
+                                       [in, size = len] uint8_t * position_map, uint32_t len);
+    uint32_t download_path_OCALL([in, size=hash_size] const uint8_t *data_hash, uint32_t hash_size, 
+                                  uint32_t leaf, [out] uint8_t ** encrpypted_path, [out] uint32_t *len);
+    uint32_t download_stash_OCALL([in, size=hash_size] const uint8_t *data_hash, uint32_t hash_size, 
+                                  [out] uint8_t ** stash, [out] uint32_t *len);
+    uint32_t update_stash_OCALL([in, size=hash_size] const uint8_t *data_hash, uint32_t hash_size,
+                                [in, size = len] uint8_t * stash, uint32_t len);
+    uint32_t upload_path_OCALL([in, size=hash_size] const uint8_t *data_hash, uint32_t hash_size,
+                               uint32_t leaf, [in, size = len] uint8_t * encrpypted_path, uint32_t len);
   };
 };

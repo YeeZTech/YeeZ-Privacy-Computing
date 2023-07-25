@@ -32,6 +32,22 @@ sgx_status_t SGX_CDECL km_send_request_ocall(
     secure_message_t *resp_message, size_t resp_message_size);
 sgx_status_t SGX_CDECL km_end_session_ocall(uint32_t *retval,
                                             uint32_t session_id);
+
+sgx_status_t SGX_CDECL km_session_request_oram_ocall(uint32_t *retval,
+                                                sgx_dh_msg1_t *dh_msg1,
+                                                uint32_t *session_id);
+sgx_status_t SGX_CDECL km_exchange_report_oram_ocall(uint32_t *retval,
+                                                sgx_dh_msg2_t *dh_msg2,
+                                                sgx_dh_msg3_t *dh_msg3,
+                                                uint32_t session_id);
+sgx_status_t SGX_CDECL km_send_request_oram_ocall(
+    uint32_t *retval, uint32_t session_id, secure_message_t *req_message,
+    size_t req_message_size, size_t max_payload_size,
+    secure_message_t *resp_message, size_t resp_message_size);
+sgx_status_t SGX_CDECL km_end_session_oram_ocall(uint32_t *retval,
+                                            uint32_t session_id);
+
+
 sgx_status_t SGX_CDECL sgx_oc_cpuidex(int cpuinfo[4], int leaf, int subleaf);
 sgx_status_t SGX_CDECL sgx_thread_wait_untrusted_event_ocall(int *retval,
                                                              const void *self);

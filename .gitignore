@@ -40,8 +40,11 @@ bin
 *.env
 generate
 
-test/integrate
+test/integrate/person_list
+test/integrate/project.py
 test/project_path.h
+test/integrate/__pycache__/
+test/integrate/js/
 .vscode/
 hash_hex/
 build_PreRelease/

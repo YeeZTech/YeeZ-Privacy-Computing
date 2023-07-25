@@ -43,7 +43,7 @@ public:
   bytes get_sample_data();
   std::string get_data_format();
 
-  bytes get_item_index_field();
+  std::string get_item_index_field();
 
 protected:
   template <typename T> T get_func_with_name(const std::string &name) {

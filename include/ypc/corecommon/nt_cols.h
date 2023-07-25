@@ -42,10 +42,15 @@ template <typename BytesType> struct nt {
   define_nt(model, model_t);
 
   using sealed_data_info_t = ::ff::util::ntobject<data_hash, pkey, tag>;
-//   using oram_sealed_data_info_t = ::ff::util::ntobject<data_hash, pkey, tag, param>;
   define_nt(sealed_data_info_vector, std::vector<sealed_data_info_t>);
   using multi_sealed_data_info_t =
       ::ff::util::ntobject<sealed_data_info_vector>;
+
+  define_nt(param_data_pkey, BytesType);
+  using oram_sealed_data_info_t = ::ff::util::ntobject<data_hash, pkey, tag, param_data, param_data_pkey>;
+  define_nt(oram_sealed_data_info_vector, std::vector<oram_sealed_data_info_t>);
+  using multi_oram_sealed_data_info_t =
+      ::ff::util::ntobject<oram_sealed_data_info_vector>;
 
   using batch_data_pkg_t = ::ff::net::ntpackage<0x82c4e8d8, batch_data>;
 

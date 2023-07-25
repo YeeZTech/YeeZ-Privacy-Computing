@@ -115,7 +115,10 @@ bytes privacy_data_reader::read_item_data() {
   return bytes(buf, len);
 }
 
-bytes privacy_data_reader::get_item_index_field() {
+std::string privacy_data_reader::get_item_index_field() {
+  if (m_get_item_index_field == nullptr) {
+    return std::string();
+  }
   // We use static buf here to optimize memory usage.
   // TODO:max_field_size 
   char buf[::ypc::utc::max_item_size] = {0};
@@ -123,8 +126,8 @@ bytes privacy_data_reader::get_item_index_field() {
   int len = ::ypc::utc::max_item_size;
   auto status = m_get_item_index_field(m_handle, buf, &len);
   if (status != 0) {
-    return bytes();
+    return std::string();
   }
-  return bytes(buf, len);
+  return std::string(buf, len);
 }
 } // namespace ypc

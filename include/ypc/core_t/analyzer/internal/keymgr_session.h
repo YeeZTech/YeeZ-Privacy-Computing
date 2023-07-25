@@ -18,6 +18,7 @@ class keymgr_session : virtual public enclave_hash_var,
                        virtual public keymgr_var {
 protected:
   uint32_t init_keymgr_session();
+  uint32_t init_keymgr_session_oram();
   uint32_t close_keymgr_session();
 };
 } // namespace internal

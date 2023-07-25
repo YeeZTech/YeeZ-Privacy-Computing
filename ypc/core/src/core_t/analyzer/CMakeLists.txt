@@ -1,3 +1,5 @@
+set(ASM_FILE ${PROJECT_SOURCE_DIR}/ypc/core/src/core_t/analyzer/oblivious_functions.asm)
+
 set(src
   analyzer_version.cpp
   internal/keymgr_session.cpp
@@ -7,7 +9,24 @@ set(src
   ${FF_PATH}/src/net/common/archive.cpp
   ${PROJECT_SOURCE_DIR}/hpda/src/engine/engine.cpp
   ${PROJECT_SOURCE_DIR}/hpda/src/engine/functor.cpp
+  # ${PROJECT_SOURCE_DIR}/ypc/core/src/core_t/analyzer/oblivious_functions.asm
   )
+
+
+
+add_custom_target(asm_target ALL COMMAND nasm -f elf64 ${ASM_FILE} -o ${PROJECT_SOURCE_DIR}/bin/oblivious_functions.o)
+
+# set(CMAKE_ASM_NASM_COMPILER nasm)
+# add_library(oblivious_functions
+#   SHARED
+#   ASM_FILE
+# )
+# set_property(SOURCE ASM_FILE PROPERTY LANGUAGE C)
+# set(CMAKE_ASM_NASM_FLAGS "-f elf64")
+
+# SET(CMAKE_ASM_NASM_SOURCE_FILE_EXTENSIONS asm)
+# ENABLE_LANGUAGE(ASM_NASM)
+# SET(ASM_NASMFLAGS "-f elf64 -g")
 
 add_trusted_library(analyzer_t
   analyzer
@@ -28,7 +47,7 @@ target_include_directories(analyzer_t PUBLIC
   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/ypc/stbox>"
   )
 
-target_link_libraries(analyzer_t PUBLIC stbox_channel_t stbox_crypto_t)
+target_link_libraries(analyzer_t PUBLIC stbox_channel_t stbox_crypto_t ${PROJECT_SOURCE_DIR}/bin/oblivious_functions.o)
 
 install(TARGETS analyzer_t
   EXPORT mod_analyzer_t

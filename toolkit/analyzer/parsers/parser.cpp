@@ -87,6 +87,9 @@ uint32_t parser::parse() {
   }
   auto param_var = m_param.get<ntt::param>();
   typename ypc::cast_obj_to_package<ntt::param_t>::type param_pkg = param_var;
+  auto param_data = param_pkg.get<ntt::param_data>();
+  LOG(INFO) << "param_data.size(): " << param_data.size();
+  LOG(INFO) << "param_data: " << param_data;
   auto param_bytes = ypc::make_bytes<ypc::bytes>::for_package(param_pkg);
   ret = m_parser->parse_data_item(param_bytes.data(), param_bytes.size());
   if (ret != 0u) {
