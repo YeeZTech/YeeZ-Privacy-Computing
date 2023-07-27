@@ -184,6 +184,7 @@ uint32_t oram_parser::feed_datasource() {
     auto url = item.get<input_data_url>();
     auto data_hash = item.get<input_data_hash>();
     auto sosf = std::make_shared<ypc::simple_oram_sealed_file>(url);
+    // TODO:连续查的时候root hash一直在变化，总不能一次查询总是插入不同的root吧？
     m_data_sources.insert(std::make_pair(data_hash, sosf));
     sosf->reset();
 

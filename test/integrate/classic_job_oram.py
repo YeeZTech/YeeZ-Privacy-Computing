@@ -29,14 +29,10 @@ class classic_job:
         5. call fid_analyzer
         6. call terminus to decrypt
         '''
-        # sealed_data_url = self.name + ".sealed"
-        # sd_url = os.path.join(common.sdk_dir, "./" + sealed_data_url)
-        # print("sd_url: ", sd_url)
         self.all_outputs = list()
 
         # 0. generate key
         data_key_file = self.name + ".data.key.json"
-        # if not os.path.exists(sd_url):
         if self.read_count == 0:
           self.data_shukey_json = job_step.gen_key(self.crypto, data_key_file)
         if self.read_count + 1 == self.con_read_num:
@@ -44,7 +40,6 @@ class classic_job:
 
         # 1. generate key
         key_file = self.name + ".key.json"
-        # if not os.path.exists(sd_url):
         if self.read_count == 0:
           self.shukey_json = job_step.gen_key(self.crypto, key_file)
         if self.read_count + 1 == self.con_read_num:
@@ -62,8 +57,9 @@ class classic_job:
         if self.read_count == 0:
             r = job_step.oram_seal_data(self.crypto, self.data_url, self.plugin_url,
                             sealed_data_url, sealed_output, data_key_file)
-        data_hash = job_step.read_data_hash(sealed_output)
-        summary['data-hash'] = data_hash
+        # TODO:需要在sealed_data_url中获取root hash ，作为fid_oram_analyzer的参数之一
+        # data_hash = job_step.read_data_hash(sealed_output)
+        # summary['data-hash'] = data_hash
         if self.read_count + 1 == self.con_read_num:
            self.all_outputs.append(sealed_data_url)
            self.all_outputs.append(sealed_output)
@@ -94,10 +90,10 @@ class classic_job:
         summary['analyzer-input'] = param_json["encrypted-input"]
         self.all_outputs.append(param_output_url)
 
-        # 5. call fid_analyzer
+        # 5. call fid_oram_analyzer
         input_obj = {
             "input_data_url": sealed_data_url,
-            "input_data_hash": data_hash,
+            # "input_data_hash": data_hash,
             "shu_info": {
                 "shu_pkey": self.data_shukey_json["public-key"],
                 "encrypted_shu_skey": data_forward_json["encrypted_skey"],

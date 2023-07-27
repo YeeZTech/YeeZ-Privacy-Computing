@@ -99,13 +99,13 @@ void push_dummy_block(std::vector<oram_ntt::block_t>& bucket_array, uint8_t coun
 }
 
 uint32_t get_leaf_label(uint32_t bucket_index, uint8_t level_num_L) {
-  // 最左叶节点
+  // leftmost leaf node
   uint32_t leftmost_leaf_index = (1 << level_num_L) - 1;
   if(bucket_index >= leftmost_leaf_index) {
       return bucket_index - leftmost_leaf_index + 1;
   }
 
-  // 随机选一个路径去叶节点
+  // randomly select a path to the leaf node
   std::random_device rd;
   std::mt19937 gen(rd());
   std::uniform_int_distribution<> dis(0, 1);
@@ -160,14 +160,13 @@ void push_real_block(std::vector<oram_ntt::block_t>& bucket_array,
 
 uint32_t oram_seal_file(const crypto_ptr_t &crypto_ptr, const std::string &plugin,
                    const std::string &file, const std::string &oram_sealed_file_path,
-                   const ypc::bytes &public_key, ypc::bytes &data_hash) {
+                   const ypc::bytes &public_key) {
   // Read origin file use sgx to seal file
   privacy_data_reader reader(plugin, file);
   // std::string k(file);
   // k = k + std::string(sealer_path);
 
   // magic string here!
-  crypto_ptr->hash_256(bytes("Fidelius"), data_hash);
 
   bytes item_data = reader.read_item_data();
   if (item_data.size() > ypc::utc::max_item_size) {
@@ -222,7 +221,6 @@ uint32_t oram_seal_file(const crypto_ptr_t &crypto_ptr, const std::string &plugi
   LOG(INFO) << "build id_map";
   reader.reset_for_read();
 
-  batch_size = 0;
   counter = 0;
   item_num_each_batch = 0;
 
@@ -285,6 +283,11 @@ uint32_t oram_seal_file(const crypto_ptr_t &crypto_ptr, const std::string &plugi
   osf.write((char *)id_map_bytes.data(), id_map_bytes.size());
 
 
+  ypc::bytes root_hash;
+  crypto_ptr->hash_256(bytes("Fidelius"), root_hash);
+  bool is_root_hash_writed = false;
+
+  std::vector<ypc::bytes> data_hash_array;
 
 
   // write ORAM tree
@@ -320,6 +323,12 @@ uint32_t oram_seal_file(const crypto_ptr_t &crypto_ptr, const std::string &plugi
     }
 
     osf.write((char *)encrypted_bucket_bytes.data(), encrypted_bucket_bytes.size());
+
+    ypc::bytes data_hash;
+    crypto_ptr->hash_256(bytes("Fidelius"), data_hash);
+    ypc::bytes k = data_hash + encrypted_bucket_bytes;
+    crypto_ptr->hash_256(k, data_hash);
+    data_hash_array.push_back(data_hash);
 
     ++bucket_index;
   }
@@ -366,6 +375,12 @@ uint32_t oram_seal_file(const crypto_ptr_t &crypto_ptr, const std::string &plugi
 
     osf.write((char *)encrypted_bucket_bytes.data(), encrypted_bucket_bytes.size());
 
+    ypc::bytes data_hash;
+    crypto_ptr->hash_256(bytes("Fidelius"), data_hash);
+    ypc::bytes k = data_hash + encrypted_bucket_bytes;
+    crypto_ptr->hash_256(k, data_hash);
+    data_hash_array.push_back(data_hash);
+
     ++bucket_index;
   }
 
@@ -406,9 +421,16 @@ uint32_t oram_seal_file(const crypto_ptr_t &crypto_ptr, const std::string &plugi
 
     osf.write((char *)encrypted_bucket_bytes.data(), encrypted_bucket_bytes.size());
 
+    ypc::bytes data_hash;
+    crypto_ptr->hash_256(bytes("Fidelius"), data_hash);
+    ypc::bytes k_hash = data_hash + encrypted_bucket_bytes;
+    crypto_ptr->hash_256(k_hash, data_hash);
+    data_hash_array.push_back(data_hash);
+
     ++bucket_index;
   }
 
+  LOG(INFO) << "data_hash_array.size() = " << data_hash_array.size();
 
   // write position_map
   osf_header.position_map_filepos = osf.tellp();
@@ -440,7 +462,6 @@ uint32_t oram_seal_file(const crypto_ptr_t &crypto_ptr, const std::string &plugi
   osf.close();
 
 
-  std::cout << "data hash: " << data_hash << std::endl;
   std::cout << "\nDone read data count: " << pd.count() << std::endl;
   return 0;
 }
@@ -557,8 +578,10 @@ int main(int argc, char *argv[]) {
     throw std::runtime_error("Unsupperted crypto type!");
   }
 
+  // auto status = oram_seal_file(crypto_ptr, plugin, data_file, oram_sealed_data_file,
+  //                         public_key, data_hash);
   auto status = oram_seal_file(crypto_ptr, plugin, data_file, oram_sealed_data_file,
-                          public_key, data_hash);
+                          public_key);
   if (status != 0u) {
     return -1;
   }
@@ -574,8 +597,8 @@ int main(int argc, char *argv[]) {
       << " = " << oram_sealed_data_file << "\n";
   ofs << "public_key"
       << " = " << public_key << "\n";
-  ofs << "data_id"
-      << " = " << data_hash << "\n";
+  // ofs << "data_id"
+  //     << " = " << data_hash << "\n";
 
   privacy_data_reader reader(plugin, data_file);
   ofs << "item_num"

@@ -21,15 +21,15 @@ using oram_ntt = ypc::oram::nt<stbox::bytes>;
 
 namespace ypc {
 template <typename Crypto>
-class oram_sealed_data_provider : public data_source_with_dhash {
+// class oram_sealed_data_provider : public data_source_with_dhash {
+class oram_sealed_data_provider : public data_source_with_merkle_hash {
   typedef Crypto crypto;
 public:
-  // TODO:这里需要获取请求参数param_data(加密)和param_private_key
   oram_sealed_data_provider(const stbox::bytes &data_hash,
                        const stbox::bytes &private_key,
                        const stbox::bytes &public_key,
                        const stbox::bytes &decrypted_param)
-      : data_source_with_dhash(data_hash), m_private_key(private_key),
+      : /*data_source_with_dhash(data_hash),*/ m_private_key(private_key),
         m_public_key(public_key), m_decrypted_param(decrypted_param) {
     // magic string here, Do Not Change!
     crypto::hash_256(stbox::bytes("Fidelius"), m_actual_data_hash);
@@ -38,7 +38,6 @@ public:
     m_header.stash_size = oram::stash_size;
 
     // LOG(INFO) << "start access target batch";
-    // 这里拿到包含目标batch
     bool ret = access();
     if (!ret) {
       LOG(ERROR) << "Failed to get target batch";

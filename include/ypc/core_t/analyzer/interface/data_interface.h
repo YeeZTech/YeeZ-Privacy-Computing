@@ -140,7 +140,7 @@ public:
 
     m_ds_use_pkey = pkg.get<ntt::pkey>() + pkg.get<ntt::data_hash>();
     m_datasource.reset(new oram_sealed_data_provider<Crypto>(
-        pkg.get<ntt::data_hash>(), private_key, pkg.get<ntt::pkey>(), decrypted_param));
+        /*pkg.get<ntt::data_hash>(),*/ private_key, pkg.get<ntt::pkey>(), decrypted_param));
     return stbox::stx_status::success;
   }
 
