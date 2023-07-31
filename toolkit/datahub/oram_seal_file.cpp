@@ -430,8 +430,6 @@ uint32_t oram_seal_file(const crypto_ptr_t &crypto_ptr, const std::string &plugi
     ++bucket_index;
   }
 
-  LOG(INFO) << "data_hash_array.size() = " << data_hash_array.size();
-
   // write position_map
   osf_header.position_map_filepos = osf.tellp();
   oram_ntt::position_map_t position_map_pkg;
@@ -449,9 +447,28 @@ uint32_t oram_seal_file(const crypto_ptr_t &crypto_ptr, const std::string &plugi
     exit(1);
   }
 
-  LOG(INFO) << "osf_header.block_num : " << osf_header.block_num;
+  // LOG(INFO) << "osf_header.block_num : " << osf_header.block_num;
   osf.seekp(osf_header.position_map_filepos, osf.beg);
   osf.write((char *)encrypted_position_map_bytes.data(), encrypted_position_map_bytes.size());
+
+
+  // write merkle tree
+  LOG(INFO) << "data_hash_array.size() = " << data_hash_array.size();
+  osf_header.merkle_tree_filepos = osf.tellp();
+  for(uint32_t i = 0; i < data_hash_array.size(); ++i) {
+    if(2*i + 1 < data_hash_array.size()) {
+      ypc::bytes k_hash = data_hash_array[i] + data_hash_array[2*i + 1];
+      crypto_ptr->hash_256(k_hash, data_hash_array[i]);
+
+      k_hash = data_hash_array[i] + data_hash_array[2*i + 2];
+      crypto_ptr->hash_256(k_hash, data_hash_array[i]);
+    }
+  }
+  osf.seekp(osf_header.merkle_tree_filepos, osf.beg);
+  for(auto &data_hash : data_hash_array) {
+    osf.write((char *)data_hash.data(), data_hash.size());
+  }
+
 
   osf_header.stash_filepos = osf.tellp();
 
@@ -597,8 +614,8 @@ int main(int argc, char *argv[]) {
       << " = " << oram_sealed_data_file << "\n";
   ofs << "public_key"
       << " = " << public_key << "\n";
-  // ofs << "data_id"
-  //     << " = " << data_hash << "\n";
+  ofs << "data_id"
+      << " = " << data_hash << "\n";
 
   privacy_data_reader reader(plugin, data_file);
   ofs << "item_num"

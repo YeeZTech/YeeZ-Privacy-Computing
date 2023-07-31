@@ -23,6 +23,7 @@ public:
     const static uint64_t BlockNumLimit = OramBlockNumLimit_t;
     const static uint32_t DataSizeB = OramBlockSizeLimit_t;
     const static uint8_t BucketSizeZ = OramBucketSize_t;
+    const static uint32_t hash_size = 32;
 
     oramblockfile(const std::string &file_path): m_file(), m_file_path(file_path), m_header(), m_id_map() {
         open_for_write();
@@ -232,8 +233,106 @@ public:
         m_file.close();
     }
 
+    bool read_root_hash(memref &root_hash) {
+        size_t len = hash_size;
+        if(root_hash.data() == nullptr) {
+            root_hash.alloc(len);
+        }
+        if(root_hash.size() < len) {
+            root_hash.dealloc();
+            root_hash.alloc(len);
+        }
+
+        m_file.seekg(m_header.merkle_tree_filepos, m_file.beg);
+        m_file.read((char *)root_hash.data(), len);
+        root_hash.size() = len;
+
+        return true;
+    }
+
+    bool download_merkle_hash(uint32_t leaf, memref &merkle_hash) {
+        std::vector<uint32_t> offsets;
+        get_hash_offset(leaf, offsets);
+
+        std::vector<bytes> merkle_hash_array;
+        for(const uint32_t& offset : offsets) {
+            bytes data_hash(hash_size);
+            m_file.seekg(m_header.merkle_tree_filepos + offset * hash_size, m_file.beg);
+            m_file.read((char *)data_hash.data(), hash_size);
+            merkle_hash_array.push_back(data_hash);
+        }
+
+        oram_ntt::merkle_hash_pkg_t merkle_hash_pkg;
+        merkle_hash_pkg.set<oram_ntt::merkle_hash>(merkle_hash_array);
+        bytes merkle_hash_str = make_bytes<bytes>::for_package(merkle_hash_pkg);
+        
+        size_t len = merkle_hash_str.size();
+        if(merkle_hash.data() == nullptr) {
+            merkle_hash.alloc(len);
+        }
+        if(merkle_hash.size() < len) {
+            merkle_hash.dealloc();
+            merkle_hash.alloc(len);
+        }
+
+        memcpy(merkle_hash.data(), merkle_hash_str.data(), len);
+        merkle_hash.size() = len;
+
+        return true;
+    }
+
+    bool update_merkle_hash(uint32_t leaf, uint8_t * merkle_hash, uint32_t len) {
+        read_header();
+        m_file.clear();
+
+        bytes merkle_hash_str(len);
+        memcpy(merkle_hash_str.data(), merkle_hash, len);
+
+        oram_ntt::merkle_hash_pkg_t merkle_hash_pkg = 
+            make_package<oram_ntt::merkle_hash_pkg_t>::from_bytes(merkle_hash_str);
+        std::vector<bytes> merkle_hash_array = merkle_hash_pkg.get<oram_ntt::merkle_hash>();
+
+        std::vector<uint32_t> offsets;
+        get_hash_offset(leaf, offsets);
+        for(uint8_t i = 0; i < offsets.size(); ++i) {
+            m_file.seekp(m_header.merkle_tree_filepos + offsets[i] * hash_size, m_file.beg);
+            m_file.write((char *)merkle_hash_array[i].data(), hash_size);
+        }
+
+        return true;
+    }
+
 
 private:
+
+    void get_hash_offsets(uint32_t leaf, std::vector<uint32_t> &offsets) {
+        if(leaf == 0) {
+            throw std::runtime_error("leaf label is invalid!");
+        }
+
+        // Convert leaf to index in ORAM tree
+        uint32_t cur_node = (1 << m_header.level_num_L) - 1 + leaf - 1;
+
+        bool flag = true;
+        while(flag) {
+            if(cur_node == 0) {
+                offsets.push_back(cur_node);
+                break;
+            }
+            
+            if(cur_node % 2 == 0) { // cur_node is a right child node
+                offsets.push_back(cur_node);
+                offsets.push_back(cur_node - 1);
+            } else {
+                offsets.push_back(cur_node + 1);
+                offsets.push_back(cur_node);
+            }
+
+            cur_node = (cur_node - 1) / 2;
+        }
+        std::reverse(offsets.begin(), offsets.end());
+
+    }
 
     void leaf_to_offsets(uint32_t leaf, std::vector<uint32_t> &offsets) {
         if(leaf == 0) {

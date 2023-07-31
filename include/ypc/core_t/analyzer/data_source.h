@@ -32,18 +32,19 @@ protected:
 
 class data_source_with_merkle_hash : public data_source<bytes> {
 public:
-  data_source_with_merkle_hash() = default;
+  data_source_with_merkle_hash(const stbox::bytes &data_hash)
+      : m_expect_root_hash(data_hash) {}
 
   virtual ~data_source_with_merkle_hash() {}
 
-  inline const bytes &expect_data_hash() const { return m_expect_data_hash; }
-  virtual const bytes &data_hash() const = 0;
+  inline const std::vector<bytes> &expect_data_hash() const { return m_expect_data_hash; }
+  virtual const std::vector<bytes> &data_hash() const = 0;
 
   inline void reset_reach_end() { m_data_reach_end = false; }
 
 protected:
-  // TODO:m_expect_data_hash应该是一个数组形式，还是说可以将多个哈希再一次哈希也能判断是否相等？
-  bytes m_expect_data_hash;
+  bytes m_expect_root_hash; // 用于映射到数据源对应的文件上
+  std::vector<bytes> m_expect_data_hash; // 用于验证完整性
   bool m_data_reach_end;
   uint32_t m_counter;
 };

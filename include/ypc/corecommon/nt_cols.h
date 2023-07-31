@@ -47,7 +47,7 @@ template <typename BytesType> struct nt {
       ::ff::util::ntobject<sealed_data_info_vector>;
 
   define_nt(param_data_pkey, BytesType);
-  using oram_sealed_data_info_t = ::ff::util::ntobject</*data_hash,*/ pkey, tag, param_data, param_data_pkey>;
+  using oram_sealed_data_info_t = ::ff::util::ntobject<data_hash, pkey, tag, param_data, param_data_pkey>;
   define_nt(oram_sealed_data_info_vector, std::vector<oram_sealed_data_info_t>);
   using multi_oram_sealed_data_info_t =
       ::ff::util::ntobject<oram_sealed_data_info_vector>;

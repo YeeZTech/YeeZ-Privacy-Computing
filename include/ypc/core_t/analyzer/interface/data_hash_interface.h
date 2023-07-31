@@ -57,5 +57,20 @@ protected:
   }
 };
 
+template <typename Crypto>
+class data_hash_interface<Crypto, oram_sealed_data_stream, false>
+    : virtual public data_merkle_hash_var,
+      virtual public data_source_var<oram_sealed_data_stream> {
+  typedef data_source_var<oram_sealed_data_stream> data_source_var_t;
+
+protected:
+  void set_data_hash() {
+    std::vector<stbox::bytes> data_hash_array = data_source_var_t::m_datasource->data_hash();
+    for(uint32_t i = 0; i < data_hash_array.size(); ++i) {
+      data_merkle_hash_var::m_data_hash.push_back(data_hash_array[i]);
+    }
+  }
+};
+
 } // namespace internal
 } // namespace ypc

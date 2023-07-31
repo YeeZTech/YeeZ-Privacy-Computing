@@ -29,10 +29,10 @@ public:
                        const stbox::bytes &private_key,
                        const stbox::bytes &public_key,
                        const stbox::bytes &decrypted_param)
-      : /*data_source_with_dhash(data_hash),*/ m_private_key(private_key),
+      : data_source_with_merkle_hash(data_hash), m_private_key(private_key),
         m_public_key(public_key), m_decrypted_param(decrypted_param) {
     // magic string here, Do Not Change!
-    crypto::hash_256(stbox::bytes("Fidelius"), m_actual_data_hash);
+    // crypto::hash_256(stbox::bytes("Fidelius"), m_actual_data_hash);
     m_data_reach_end = false;
 
     m_header.stash_size = oram::stash_size;
@@ -42,6 +42,8 @@ public:
     if (!ret) {
       LOG(ERROR) << "Failed to get target batch";
     }
+    // TODO:在access()中leaf所在的路径上获取到expect hash, 
+    // 赋值data_source_with_merkle_hash中的m_expect_root_hash
   }
 
   virtual ~oram_sealed_data_provider() {}
@@ -66,7 +68,7 @@ public:
     return ret;
   }
 
-  virtual const bytes &data_hash() const { return m_actual_data_hash; }
+  virtual const std::vector<bytes> &data_hash() const { return m_actual_data_hash; }
   const bytes &private_key() const { return m_private_key; }
 
 private:
@@ -185,7 +187,7 @@ private:
 
   bool download_oram_params() {
     auto ret = stbox::ocall_cast<uint32_t>(download_oram_params_OCALL)
-        (m_expect_data_hash.data(), m_expect_data_hash.size(), &m_header.block_num, 
+        (m_expect_root_hash.data(), m_expect_root_hash.size(), &m_header.block_num, 
         &m_header.bucket_num_N, &m_header.level_num_L, 
         &m_header.bucket_str_size, &m_header.batch_str_size);
     if (ret != stbox::stx_status::success) {
@@ -227,7 +229,7 @@ private:
     crypto::hash_256(m_decrypted_param, param_hash);
 
     auto ret = stbox::ocall_cast<uint32_t>(get_block_id_OCALL)
-        (m_expect_data_hash.data(), m_expect_data_hash.size(), 
+        (m_expect_root_hash.data(), m_expect_root_hash.size(), 
         &b_id, param_hash.data(), param_hash.size());
     if (ret != stbox::stx_status::success) {
       return false;
@@ -242,7 +244,7 @@ private:
     uint32_t posmap_len;
 
     auto ret = stbox::ocall_cast<uint32_t>(download_position_map_OCALL)
-        (m_expect_data_hash.data(), m_expect_data_hash.size(), &posmap, &posmap_len);
+        (m_expect_root_hash.data(), m_expect_root_hash.size(), &posmap, &posmap_len);
     if (ret != stbox::stx_status::success) {
       return false;
     }
@@ -300,7 +302,7 @@ private:
     // LOG(INFO) << "encrypted_position_map_bytes: " << encrypted_position_map_bytes;
 
     auto ret = stbox::ocall_cast<uint32_t>(update_position_map_OCALL)
-        (m_expect_data_hash.data(), m_expect_data_hash.size(), 
+        (m_expect_root_hash.data(), m_expect_root_hash.size(), 
         encrypted_position_map_bytes.data(), encrypted_position_map_bytes.size());
     if (ret != stbox::stx_status::success) {
       LOG(ERROR) << "update_position_map_OCALL fail!";
@@ -315,7 +317,7 @@ private:
     uint32_t encrypted_path_len;
 
     auto ret = stbox::ocall_cast<uint32_t>(download_path_OCALL)
-        (m_expect_data_hash.data(), m_expect_data_hash.size(), 
+        (m_expect_root_hash.data(), m_expect_root_hash.size(), 
         leaf, &encrypted_path, &encrypted_path_len);
     if (ret != stbox::stx_status::success) {
       return false;
@@ -332,7 +334,7 @@ private:
     uint32_t stash_len;
 
     auto ret = stbox::ocall_cast<uint32_t>(download_stash_OCALL)
-        (m_expect_data_hash.data(), m_expect_data_hash.size(), 
+        (m_expect_root_hash.data(), m_expect_root_hash.size(), 
         &stash, &stash_len);
     if (ret != stbox::stx_status::success) {
       return false;
@@ -525,7 +527,7 @@ private:
     // LOG(INFO) << "encrypted_stash_str.size() : " << encrypted_stash_str.size();
 
     auto ret = stbox::ocall_cast<uint32_t>(update_stash_OCALL)
-        (m_expect_data_hash.data(), m_expect_data_hash.size(), 
+        (m_expect_root_hash.data(), m_expect_root_hash.size(), 
         encrypted_stash_str.data(), encrypted_stash_str.size());
     
     if (ret != stbox::stx_status::success) {
@@ -561,7 +563,7 @@ private:
 
   bool upload_path(uint32_t leaf) {
     auto ret = stbox::ocall_cast<uint32_t>(upload_path_OCALL)
-        (m_expect_data_hash.data(), m_expect_data_hash.size(), 
+        (m_expect_root_hash.data(), m_expect_root_hash.size(), 
         leaf, m_encrypted_path.data(), m_encrypted_path.size());
     if (ret != stbox::stx_status::success) {
       return false;
@@ -581,7 +583,8 @@ protected:
     uint32_t batch_str_size;
   };
 
-  bytes m_actual_data_hash;
+  // bytes m_actual_data_hash;
+  std::vector<bytes> m_actual_data_hash;
   std::vector<stbox::bytes> m_items;
   size_t m_item_index;
   bytes m_private_key;

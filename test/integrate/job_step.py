@@ -58,6 +58,11 @@ class job_step:
                 if l.startswith("data_id"):
                     ks = l.split("=")
                     return ks[1].strip()
+    
+    def read_root_hash(fp):
+        # TODO:单独写一个可执行程序可以读取加密文件的root hash
+        root_hash = ""
+        return root_hash
 
     def read_parser_hash(parser_url):
         param = {

@@ -30,6 +30,9 @@ template <typename BytesType> struct nt {
 
   define_nt(path, std::vector<BytesType>);
   using path_pkg_t = ::ff::net::ntpackage<0x82c4e8ea, path>;
+
+  define_nt(merkle_hash, std::vector<BytesType>);
+  using merkle_hash_pkg_t = ::ff::net::ntpackage<0x82c4e7ea, merkle_hash>;
 };
 
 
@@ -42,6 +45,7 @@ struct header {
   long int id_map_filepos;
   long int oram_tree_filepos;
   long int position_map_filepos;
+  long int merkle_tree_filepos;
   long int stash_filepos;
   uint64_t stash_size;
 };

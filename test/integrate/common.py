@@ -101,6 +101,12 @@ def fid_oram_data_provider(**kwargs):
     output = execute_cmd(cmd)
     return [cmd, output]
 
+def fid_read_root_hash(**kwargs):
+    cmd = os.path.join(bin_dir, "./read_root_hash")
+    for k, v in kwargs.items():
+        cmd = cmd + " --{} {}".format(k, v)
+    output = execute_cmd(cmd)
+    return [cmd, output]
 
 def fid_dump(**kwargs):
     cmd = os.path.join(bin_dir, "./ydump")
