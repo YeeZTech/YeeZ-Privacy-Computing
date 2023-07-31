@@ -39,6 +39,11 @@ public:
   virtual uint32_t upload_path_OCALL(const uint8_t *data_hash, uint32_t hash_size,
                                      uint32_t leaf, uint8_t * encrpypted_path, uint32_t len);
 
+  virtual uint32_t download_merkle_hash_OCALL(const uint8_t *data_hash, uint32_t hash_size,
+                                              uint32_t leaf, uint8_t ** merkle_hash, uint32_t *len);
+
+  virtual uint32_t update_merkle_hash_OCALL(const uint8_t *data_hash, uint32_t hash_size,
+                                            uint32_t leaf, uint8_t * merkle_hash, uint32_t len);
   
 
   inline std::shared_ptr<keymgr_sgx_module> keymgr() const { return m_keymgr; }

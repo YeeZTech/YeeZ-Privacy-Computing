@@ -577,7 +577,7 @@ int main(int argc, char *argv[]) {
   std::string oram_sealed_data_file = vm["sealed-data-url"].as<std::string>();
   std::string crypto = vm["crypto"].as<std::string>();
 
-  ypc::bytes data_hash;
+  // ypc::bytes data_hash;
   std::ofstream ofs;
   ofs.open(output);
   if (!ofs.is_open()) {
@@ -614,8 +614,8 @@ int main(int argc, char *argv[]) {
       << " = " << oram_sealed_data_file << "\n";
   ofs << "public_key"
       << " = " << public_key << "\n";
-  ofs << "data_id"
-      << " = " << data_hash << "\n";
+  // ofs << "data_id"
+  //     << " = " << data_hash << "\n";
 
   privacy_data_reader reader(plugin, data_file);
   ofs << "item_num"

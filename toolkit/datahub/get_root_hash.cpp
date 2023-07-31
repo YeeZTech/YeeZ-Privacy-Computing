@@ -1,5 +1,6 @@
 #include "ypc/core/oramblockfile.h"
 #include "ypc/core/version.h"
+#include "ypc/core/oram_sealed_file.h"
 
 #include <boost/program_options.hpp>
 #include <boost/progress.hpp>
@@ -15,7 +16,8 @@ boost::program_options::variables_map parse_command_line(int argc,
 
   // clang-format off
   seal_data_opts.add_options()
-    ("data-url", bp::value<std::string>(), "Data URL");
+    ("data-url", bp::value<std::string>(), "Data URL")
+    ("output", bp::value<std::string>(), "output meta file path");
 
   general.add_options()
     ("help", "help message")
@@ -55,20 +57,33 @@ int main(int argc, char *argv[]) {
     std::cerr << "data not specified!" << std::endl;
     return -1;
   }
-
-  std::string data_file = vm["data-url"].as<std::string>();
-  std::ofstream ofs;
-  ofs.open(data_file);
-  if (!ofs.is_open()) {
-    std::cout << "Cannot open file " << data_file << "\n";
+  if (vm.count("output") == 0u) {
+    std::cerr << "output not specified" << std::endl;
     return -1;
   }
+
+  std::string data_file = vm["data-url"].as<std::string>();
+  std::string output = vm["output"].as<std::string>();
+
+  ypc::bytes root_hash;
+  auto sosf = std::make_shared<ypc::simple_oram_sealed_file>(data_file);
+  sosf->reset();
+  bool ret = sosf->read_root_hash(root_hash);
+  if(!ret) {
+    std::cout << "Cannot read root hash" << std::endl;
+    return -1;
+  }
+
+  std::ofstream ofs;
+  ofs.open(output);
+  if (!ofs.is_open()) {
+    std::cout << "Cannot open file " << output << "\n";
+    return -1;
+  }
+
+  ofs << root_hash;
   ofs.close();
 
-  std::string line;
-  
-
-
-
+  std::cout << root_hash << std::endl;
   return 0;
 }

@@ -233,20 +233,26 @@ public:
         m_file.close();
     }
 
-    bool read_root_hash(memref &root_hash) {
-        size_t len = hash_size;
-        if(root_hash.data() == nullptr) {
-            root_hash.alloc(len);
-        }
-        if(root_hash.size() < len) {
-            root_hash.dealloc();
-            root_hash.alloc(len);
-        }
+    // bool read_root_hash(memref &root_hash) {
+    //     size_t len = hash_size;
+    //     if(root_hash.data() == nullptr) {
+    //         root_hash.alloc(len);
+    //     }
+    //     if(root_hash.size() < len) {
+    //         root_hash.dealloc();
+    //         root_hash.alloc(len);
+    //     }
 
+    //     m_file.seekg(m_header.merkle_tree_filepos, m_file.beg);
+    //     m_file.read((char *)root_hash.data(), len);
+    //     root_hash.size() = len;
+
+    //     return true;
+    // }
+
+    bool read_root_hash(bytes &root_hash) {
         m_file.seekg(m_header.merkle_tree_filepos, m_file.beg);
-        m_file.read((char *)root_hash.data(), len);
-        root_hash.size() = len;
-
+        m_file.read((char *)root_hash.data(), hash_size);
         return true;
     }
 

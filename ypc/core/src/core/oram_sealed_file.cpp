@@ -47,4 +47,16 @@ bool simple_oram_sealed_file::update_stash(uint8_t * stash, uint32_t len) {
   return m_file.update_stash(stash, len); 
 }
 
+bool simple_oram_sealed_file::read_root_hash(bytes &root_hash) {
+  return m_file.read_root_hash(root_hash);
+}
+
+bool simple_oram_sealed_file::download_merkle_hash(uint32_t leaf, memref &merkle_hash) {
+  return m_file.download_merkle_hash(leaf, merkle_hash);
+}
+
+bool simple_oram_sealed_file::update_merkle_hash(uint32_t leaf, uint8_t * merkle_hash, uint32_t len) {
+  return m_file.update_merkle_hash(leaf, merkle_hash, len);
+}
+
 }

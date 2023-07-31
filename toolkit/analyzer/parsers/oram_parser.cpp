@@ -395,7 +395,6 @@ uint32_t oram_parser::update_stash_OCALL(const uint8_t *data_hash, uint32_t hash
     return stbox::stx_status::data_source_not_found;
   }
 
-  LOG(INFO) << "oram_parser::update_stash_OCALL";
   auto sosf = m_data_sources[hash];
   sosf->reset();
 
@@ -418,6 +417,45 @@ uint32_t oram_parser::upload_path_OCALL(const uint8_t *data_hash, uint32_t hash_
   sosf->reset();
 
   bool ret = sosf->upload_path(leaf, encrpypted_path, len);
+  if(ret) {
+    return stbox::stx_status::success;
+  }
+  
+  return stbox::stx_status::sealed_file_reach_end;
+}
+
+uint32_t oram_parser::download_merkle_hash_OCALL(const uint8_t *data_hash, uint32_t hash_size,
+                                                 uint32_t leaf, uint8_t ** merkle_hash, uint32_t *len) {
+  auto hash = ypc::bytes(data_hash, hash_size);
+  if (m_data_sources.find(hash) == m_data_sources.end()) {
+    LOG(ERROR) << "data with hash: " << hash << " not found";
+    return stbox::stx_status::data_source_not_found;
+  }
+  auto sosf = m_data_sources[hash];
+  sosf->reset();
+
+  ypc::memref me_hash;
+  bool ret = sosf->download_merkle_hash(leaf, me_hash);
+  if(ret) {
+    *merkle_hash = me_hash.data();
+    *len = me_hash.size();
+    return stbox::stx_status::success;
+  }
+  
+  return stbox::stx_status::sealed_file_reach_end;
+}
+
+uint32_t oram_parser::update_merkle_hash_OCALL(const uint8_t *data_hash, uint32_t hash_size,
+                                            uint32_t leaf, uint8_t * merkle_hash, uint32_t len) {
+  auto hash = ypc::bytes(data_hash, hash_size);
+  if (m_data_sources.find(hash) == m_data_sources.end()) {
+    LOG(ERROR) << "data with hash: " << hash << " not found";
+    return stbox::stx_status::data_source_not_found;
+  }
+  auto sosf = m_data_sources[hash];
+  sosf->reset();
+
+  bool ret = sosf->upload_path(leaf, merkle_hash, len);
   if(ret) {
     return stbox::stx_status::success;
   }

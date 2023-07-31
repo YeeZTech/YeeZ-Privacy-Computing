@@ -101,8 +101,8 @@ def fid_oram_data_provider(**kwargs):
     output = execute_cmd(cmd)
     return [cmd, output]
 
-def fid_read_root_hash(**kwargs):
-    cmd = os.path.join(bin_dir, "./read_root_hash")
+def fid_get_root_hash(**kwargs):
+    cmd = os.path.join(bin_dir, "./get_root_hash")
     for k, v in kwargs.items():
         cmd = cmd + " --{} {}".format(k, v)
     output = execute_cmd(cmd)

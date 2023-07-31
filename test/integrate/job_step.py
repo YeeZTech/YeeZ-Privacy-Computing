@@ -59,9 +59,17 @@ class job_step:
                     ks = l.split("=")
                     return ks[1].strip()
     
+    # TODO:单独写一个可执行程序可以读取加密文件的root hash
+    def get_root_hash(sealed_data_url, root_hash_url):
+        param = {
+            "data-url": sealed_data_url,
+            "output": root_hash_url
+        }
+        return common.fid_get_root_hash(**param)
+
     def read_root_hash(fp):
-        # TODO:单独写一个可执行程序可以读取加密文件的root hash
-        root_hash = ""
+        with open(fp) as f:
+            root_hash = f.read()
         return root_hash
 
     def read_parser_hash(parser_url):
