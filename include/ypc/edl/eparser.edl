@@ -61,5 +61,9 @@ enclave {
                                 [in, size = len] uint8_t * stash, uint32_t len);
     uint32_t upload_path_OCALL([in, size=hash_size] const uint8_t *data_hash, uint32_t hash_size,
                                uint32_t leaf, [in, size = len] uint8_t * encrpypted_path, uint32_t len);
+    uint32_t download_merkle_hash_OCALL([in, size=hash_size] const uint8_t *data_hash, uint32_t hash_size,
+                                        uint32_t leaf, [out] uint8_t ** merkle_hash, [out] uint32_t *len);
+    uint32_t update_merkle_hash_OCALL([in, size=hash_size] const uint8_t *data_hash, uint32_t hash_size,
+                                      uint32_t leaf, [in, size = len] uint8_t * merkle_hash, uint32_t len);
   };
 };

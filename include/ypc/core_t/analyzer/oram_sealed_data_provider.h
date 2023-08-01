@@ -42,8 +42,7 @@ public:
     if (!ret) {
       LOG(ERROR) << "Failed to get target batch";
     }
-    // TODO:在access()中leaf所在的路径上获取到expect hash, 
-    // 赋值data_source_with_merkle_hash中的m_expect_root_hash
+    
   }
 
   virtual ~oram_sealed_data_provider() {}
@@ -114,6 +113,12 @@ private:
 
     // LOG(INFO) << "new_leaf: " << new_leaf;
     // LOG(INFO) << "leaf: " << leaf;
+
+    ret = download_merkle_hash(leaf);
+    if (!ret) {
+      LOG(ERROR) << "Failed to download merkle hash\n";
+      return false;
+    }
 
     ret = download_path(leaf);
     if (!ret) {
@@ -308,6 +313,29 @@ private:
       LOG(ERROR) << "update_position_map_OCALL fail!";
       return false;
     }
+
+    return true;
+  }
+
+  // TODO:在access()中leaf所在的路径上获取到expect hash, 
+  // 赋值data_source_with_merkle_hash中的m_expect_root_hash
+  bool download_merkle_hash(uint32_t leaf) {
+    uint8_t *merkle_hash;
+    uint32_t merkle_hash_len;
+
+    auto ret = stbox::ocall_cast<uint32_t>(download_merkle_hash_OCALL)
+        (m_expect_root_hash.data(), m_expect_root_hash.size(), 
+        leaf, &merkle_hash, &merkle_hash_len);
+    if (ret != stbox::stx_status::success) {
+      return false;
+    }
+
+    bytes merkle_hash_str(merkle_hash_len);
+    memcpy(merkle_hash_str.data(), merkle_hash, merkle_hash_len);
+    oram_ntt::merkle_hash_pkg_t merkle_hash_pkg = 
+      make_package<oram_ntt::merkle_hash_pkg_t>::from_bytes(merkle_hash_str);
+    m_expect_data_hash = merkle_hash_pkg.get<oram_ntt::merkle_hash>();
+    m_expect_root_hash = m_expect_data_hash.front();
 
     return true;
   }

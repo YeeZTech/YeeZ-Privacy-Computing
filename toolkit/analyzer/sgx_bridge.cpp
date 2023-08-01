@@ -50,6 +50,10 @@ uint32_t update_stash_OCALL(const uint8_t *data_hash, uint32_t hash_size,
                             uint8_t * stash, uint32_t len);
 uint32_t upload_path_OCALL(const uint8_t *data_hash, uint32_t hash_size,
                            uint32_t leaf, uint8_t * encrpypted_path, uint32_t len);
+uint32_t download_merkle_hash_OCALL(const uint8_t *data_hash, uint32_t hash_size,
+                                    uint32_t leaf, uint8_t ** merkle_hash, uint32_t *len);
+uint32_t update_merkle_hash_OCALL(const uint8_t *data_hash, uint32_t hash_size,
+                                  uint32_t leaf, uint8_t * merkle_hash, uint32_t len);
 }
 
 uint32_t km_session_request_ocall(sgx_dh_msg1_t *dh_msg1,
@@ -143,4 +147,14 @@ uint32_t update_stash_OCALL(const uint8_t *data_hash, uint32_t hash_size,
 uint32_t upload_path_OCALL(const uint8_t *data_hash, uint32_t hash_size,
                            uint32_t leaf, uint8_t * encrpypted_path, uint32_t len) {
   return o_parser->upload_path_OCALL(data_hash, hash_size, leaf, encrpypted_path, len);
+}
+
+uint32_t download_merkle_hash_OCALL(const uint8_t *data_hash, uint32_t hash_size,
+                                    uint32_t leaf, uint8_t ** merkle_hash, uint32_t *len) {
+  return o_parser->download_merkle_hash_OCALL(data_hash, hash_size, leaf, merkle_hash, len);
+}
+
+uint32_t update_merkle_hash_OCALL(const uint8_t *data_hash, uint32_t hash_size,
+                                  uint32_t leaf, uint8_t * merkle_hash, uint32_t len) {
+  return o_parser->update_merkle_hash_OCALL(data_hash, hash_size, leaf, merkle_hash, len);
 }

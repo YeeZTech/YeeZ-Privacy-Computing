@@ -53,6 +53,10 @@ sgx_status_t SGX_CDECL update_stash_OCALL(uint32_t *retval, const uint8_t *data_
                                           uint8_t * stash, uint32_t len);
 sgx_status_t SGX_CDECL upload_path_OCALL(uint32_t *retval, const uint8_t *data_hash, uint32_t hash_size,
                                          uint32_t leaf, uint8_t * encrpypted_path, uint32_t len);
+sgx_status_t SGX_CDECL download_merkle_hash_OCALL(uint32_t *retval, const uint8_t *data_hash, uint32_t hash_size,
+                                                  uint32_t leaf, uint8_t ** merkle_hash, uint32_t *len);
+sgx_status_t SGX_CDECL update_merkle_hash_OCALL(uint32_t *retval, const uint8_t *data_hash, uint32_t hash_size,
+                                                uint32_t leaf, uint8_t * merkle_hash, uint32_t len);
 
 sgx_status_t SGX_CDECL km_session_request_oram_ocall(uint32_t *retval,
                                                 sgx_dh_msg1_t *dh_msg1,

@@ -455,7 +455,7 @@ uint32_t oram_parser::update_merkle_hash_OCALL(const uint8_t *data_hash, uint32_
   auto sosf = m_data_sources[hash];
   sosf->reset();
 
-  bool ret = sosf->upload_path(leaf, merkle_hash, len);
+  bool ret = sosf->update_merkle_hash(leaf, merkle_hash, len);
   if(ret) {
     return stbox::stx_status::success;
   }
