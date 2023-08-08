@@ -194,7 +194,6 @@ uint32_t parser::feed_datasource() {
     data_info.set<ntt::data_hash, ntt::pkey, ntt::tag>(
         data_hash, shu.get<shu_pkey>(), item.get<ntt::tag>());
     all_data_info.push_back(data_info.make_copy());
-
   }
 
   ypc::bytes data_info_bytes;
@@ -258,8 +257,8 @@ uint32_t parser::next_data_batch(const uint8_t *data_hash, uint32_t hash_size,
     *data = b.data();
     *len = b.size();
     return stbox::stx_status::success;
-  }     return stbox::stx_status::sealed_file_reach_end;
- 
+  }
+  return stbox::stx_status::sealed_file_reach_end;
 }
 
 void parser::free_data_batch(uint8_t *data) { delete[] data; }

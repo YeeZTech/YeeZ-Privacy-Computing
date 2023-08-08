@@ -141,7 +141,7 @@ class job_step:
                 "shu_forward_signature": algo_forward_json["forward_sig"],
                 "enclave_hash": enclave_hash
             },
-            "input_middata": input_data,
+            "input_intermediate_data": input_data,
             "parser_path": parser_url,
             "keymgr_path": common.kmgr_enclave[crypto],
             "parser_enclave_hash": enclave_hash,

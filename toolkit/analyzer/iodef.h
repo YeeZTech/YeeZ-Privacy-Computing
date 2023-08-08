@@ -32,17 +32,17 @@ typedef ::ff::util::ntobject<shu_info, input_data, parser_path, keymgr_path,
 
 // task graph input param
 define_nt(algo_shu_info, shu_info_t);
-// input middata define
+// input intermediate data define
 define_nt(data_shu_infos, std::vector<shu_info_t>);
 define_nt(kgt_pkey, ypc::bytes);
 typedef ::ff::util::ntobject<kgt_pkey, data_shu_infos> kgt_shu_info_t;
 define_nt(kgt_shu_info, kgt_shu_info_t);
 typedef ::ff::util::ntobject<input_data_url, input_data_hash, kgt_shu_info,
                              ntt::tag>
-    middata_item_t;
-define_nt(input_middata, std::vector<middata_item_t>);
-// middata input param define
-typedef ::ff::util::ntobject<shu_info, algo_shu_info, input_middata,
+    intermediate_data_item_t;
+define_nt(input_intermediate_data, std::vector<intermediate_data_item_t>);
+// task graph input param define
+typedef ::ff::util::ntobject<shu_info, algo_shu_info, input_intermediate_data,
                              parser_path, keymgr_path, parser_enclave_hash,
                              dian_pkey, ntt::model, ntt::param>
-    middata_input_param_t;
+    tg_input_param_t;

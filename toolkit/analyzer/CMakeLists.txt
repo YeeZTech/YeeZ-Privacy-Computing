@@ -2,7 +2,7 @@
 add_executable(fid_analyzer main.cpp
   sgx_bridge.cpp
   #parsers/parser.cpp
-  parsers/middata_parser.cpp
+  parsers/tg_parser.cpp
   )
 
 target_link_libraries(fid_analyzer

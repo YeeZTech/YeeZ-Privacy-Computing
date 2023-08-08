@@ -66,12 +66,12 @@ template <typename BytesType> struct nt {
       ::ff::net::ntpackage<0xf13e1f40, encrypted_result, data_hash,
                            result_signature, cost_signature>;
 
-  // middata result
+  // intermediate result
   define_nt(kgt_value, BytesType);
   define_nt(kgt_children, std::vector<BytesType>);
   typedef ::ff::net::ntpackage<0x58823cf3, kgt_value, kgt_children> kgt_pkg_t;
 
-  using middata_result_package_t =
+  using intermediate_result_package_t =
       ::ff::net::ntpackage<0x641b53c3, data_kgt_pkey, encrypted_result,
                            data_hash, result_signature>;
 

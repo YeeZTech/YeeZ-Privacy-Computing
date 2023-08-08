@@ -1,4 +1,4 @@
-#include "middata_parser.h"
+#include "tg_parser.h"
 #include "ypc/common/access_policy.h"
 #include "ypc/core/ntjson.h"
 #include "ypc/core/sealed_file.h"
@@ -7,9 +7,9 @@
 #include "ypc/corecommon/package.h"
 #include <glog/logging.h>
 
-middata_parser::middata_parser(const middata_input_param_t &param) : m_param(param) {}
+parser::parser(const tg_input_param_t &param) : m_param(param) {}
 
-middata_parser::~middata_parser() = default;
+parser::~parser() = default;
 
 ypc::bytes construct_access_control_policy() {
   using ntt = ypc::nt<ypc::bytes>;
@@ -19,17 +19,13 @@ ypc::bytes construct_access_control_policy() {
   return ypc::make_bytes<ypc::bytes>::for_package(alp);
 }
 
-uint32_t middata_parser::middata_parse() {
+uint32_t parser::parse() {
   auto parser_enclave_path = m_param.get<parser_path>();
-#ifdef DEBUG
   LOG(INFO) << "parser enclave path: " << parser_enclave_path;
-#endif
   auto keymgr_enclave_path = m_param.get<keymgr_path>();
   m_parser =
       std::make_shared<ypc::parser_sgx_module>(parser_enclave_path.c_str());
-#ifdef DEBUG
   LOG(INFO) << "keymgr enclave path: " << keymgr_enclave_path;
-#endif
   m_keymgr = std::make_shared<keymgr_sgx_module>(keymgr_enclave_path.c_str());
 
   ypc::bytes policy = construct_access_control_policy();
@@ -145,7 +141,7 @@ uint32_t middata_parser::middata_parse() {
   return ypc::success;
 }
 
-uint32_t middata_parser::dump_result(const ypc::bytes &res) {
+uint32_t parser::dump_result(const ypc::bytes &res) {
   if (m_ptype.d.result_type == ypc::utc::onchain_result_parser) {
     auto pkg =
         ypc::make_package<ntt::onchain_result_package_t>::from_bytes(res);
@@ -161,9 +157,9 @@ uint32_t middata_parser::dump_result(const ypc::bytes &res) {
     auto pkg = ypc::make_package<typename ypc::cast_obj_to_package<
         ntt::forward_result_t>::type>::from_bytes(res);
     m_result_str = ypc::ntjson::to_json(pkg);
-  } else if (m_ptype.d.result_type == ypc::utc::middata_result_parser) {
+  } else if (m_ptype.d.result_type == ypc::utc::intermediate_result_parser) {
     auto pkg =
-        ypc::make_package<ntt::middata_result_package_t>::from_bytes(res);
+        ypc::make_package<ntt::intermediate_result_package_t>::from_bytes(res);
     m_result_str = ypc::ntjson::to_json(pkg);
   } else {
     return ypc::parser_unknown_result;
@@ -171,8 +167,8 @@ uint32_t middata_parser::dump_result(const ypc::bytes &res) {
   return ypc::success;
 }
 
-uint32_t middata_parser::feed_datasource() {
-  auto input_data_var = m_param.get<input_middata>();
+uint32_t parser::feed_datasource() {
+  auto input_data_var = m_param.get<input_intermediate_data>();
   if (m_ptype.d.data_source_type == ypc::utc::noinput_datasource_parser) {
     return ypc::success;
   }
@@ -252,7 +248,7 @@ uint32_t middata_parser::feed_datasource() {
   return ypc::success;
 }
 
-uint32_t middata_parser::feed_model() {
+uint32_t parser::feed_model() {
   if (m_ptype.d.has_model == ypc::utc::no_model_parser) {
     return ypc::success;
   }
@@ -269,9 +265,9 @@ uint32_t middata_parser::feed_model() {
 
   return ypc::success;
 }
-uint32_t middata_parser::feed_param() { return ypc::success; }
+uint32_t parser::feed_param() { return ypc::success; }
 
-uint32_t middata_parser::next_data_batch(const uint8_t *data_hash, uint32_t hash_size,
+uint32_t parser::next_data_batch(const uint8_t *data_hash, uint32_t hash_size,
                                  uint8_t **data, uint32_t *len) {
   auto hash = ypc::bytes(data_hash, hash_size);
   if (m_data_sources.find(hash) == m_data_sources.end()) {
@@ -285,9 +281,8 @@ uint32_t middata_parser::next_data_batch(const uint8_t *data_hash, uint32_t hash
     *data = b.data();
     *len = b.size();
     return stbox::stx_status::success;
-  }     return stbox::stx_status::sealed_file_reach_end;
-
+  }
+  return stbox::stx_status::sealed_file_reach_end;
 }
 
-void middata_parser::free_data_batch(uint8_t *data) { delete[] data; }
-
+void parser::free_data_batch(uint8_t *data) { delete[] data; }

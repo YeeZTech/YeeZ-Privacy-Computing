@@ -1,4 +1,4 @@
-from taskgraph_job import classic_job
+from classic_job import classic_job
 import os
 import common
 import sys
@@ -26,3 +26,4 @@ if __name__ == "__main__":
         'remove-files': True if len(sys.argv) < 2 else False,
     })
     cj.run()
+    print("result is : ", cj.result)

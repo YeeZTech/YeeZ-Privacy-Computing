@@ -7,13 +7,13 @@
 #include <memory>
 #include <unordered_map>
 
-class middata_parser{
+class parser {
 public:
-  middata_parser(const middata_input_param_t &param);
+  parser(const tg_input_param_t &param);
 
-  virtual ~middata_parser();
+  virtual ~parser();
 
-  virtual uint32_t middata_parse();
+  virtual uint32_t parse();
 
   virtual uint32_t next_data_batch(const uint8_t *data_hash, uint32_t hash_size,
                                    uint8_t **data, uint32_t *len);
@@ -30,7 +30,7 @@ protected:
   uint32_t dump_result(const ypc::bytes &res);
 
 protected:
-  middata_input_param_t m_param;
+  tg_input_param_t m_param;
   ypc::utc::parser_type_t m_ptype{};
 
   std::shared_ptr<ypc::parser_sgx_module> m_parser;

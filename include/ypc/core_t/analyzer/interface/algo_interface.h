@@ -7,10 +7,10 @@
 #include "ypc/core_t/analyzer/internal/is_param_encrypted.h"
 #include "ypc/core_t/analyzer/internal/keymgr_session.h"
 #include "ypc/core_t/analyzer/var/encrypted_param_var.h"
+#include "ypc/core_t/analyzer/var/intermediate_var.h"
 #include "ypc/core_t/analyzer/var/parser_var.h"
 #include "ypc/core_t/analyzer/var/request_key_var.h"
 #include "ypc/core_t/analyzer/var/result_var.h"
-#include "ypc/core_t/analyzer/var/middata_var.h"
 #include "ypc/corecommon/allowance.h"
 #include "ypc/stbox/ebyte.h"
 #include "ypc/stbox/stx_status.h"
@@ -35,7 +35,7 @@ class algo_interface<Crypto, DataSession, ParserT, Result, ModelT,
     : virtual public parser_var<ParserT>,
       virtual public request_key_var<true>,
       virtual public result_var,
-      virtual public middata_var,
+      virtual public intermediate_var,
       virtual public do_parse_interface<ParserT, ModelT>,
       virtual public keymgr_interface<Crypto>,
       virtual public encrypted_param_var,
@@ -66,9 +66,9 @@ protected:
 #endif
 
     request_key_var_t::m_pkey4v = param.get<ntt::pkey>();
-    middata_var::m_mid_pkey = param.get<ntt::pkey>();
-    middata_var::m_algo_pkey = param.get<ntt::algo_pkey>();
-    middata_var::m_data_kgt_pkey = param.get<ntt::data_kgt_pkey>();
+    intermediate_var::m_user_pkey = param.get<ntt::pkey>();
+    intermediate_var::m_algo_pkey = param.get<ntt::algo_pkey>();
+    intermediate_var::m_data_kgt_pkey = param.get<ntt::data_kgt_pkey>();
     stbox::bytes dian_pkey;
     auto ret = keymgr_interface_t::request_private_key_for_public_key(
         request_key_var_t::m_pkey4v, request_key_var_t::m_private_key,

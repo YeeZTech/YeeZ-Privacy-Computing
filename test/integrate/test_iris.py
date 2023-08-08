@@ -15,3 +15,4 @@ if __name__ == "__main__":
     input_param = "\"[{\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"12\\\"}]\""
     cj = classic_job(crypto, name, data, parser, plugin, input_param)
     cj.run()
+    print("result is : ", cj.result)

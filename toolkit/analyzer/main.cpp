@@ -66,12 +66,14 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
-  middata_input_param_t input_param =
-      ypc::ntjson::from_json_file<middata_input_param_t>(vm["input"].as<std::string>());
+  // input_param_t input_param =
+  // ypc::ntjson::from_json_file<input_param_t>(vm["input"].as<std::string>());
+  tg_input_param_t input_param = ypc::ntjson::from_json_file<tg_input_param_t>(
+      vm["input"].as<std::string>());
+  g_parser = std::make_shared<parser>(input_param);
 
-  g_parser = std::make_shared<middata_parser>(input_param);
   std::cout << "start to parse" << std::endl;
-  g_parser->middata_parse();
+  g_parser->parse();
 
   std::string output_fp = vm["output"].as<std::string>();
   try {
