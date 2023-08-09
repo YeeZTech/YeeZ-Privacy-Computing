@@ -70,7 +70,7 @@ public:
           return false;
         }
 
-        for (auto b : m_items) {
+        for (auto &b : m_items) {
           stbox::bytes k = m_actual_data_hash + b;
           crypto::hash_256(k, m_actual_data_hash);
         }

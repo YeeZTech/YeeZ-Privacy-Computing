@@ -1,4 +1,5 @@
 #pragma once
+#include "ypc/core/byte.h"
 #include "ypc/corecommon/kgt.h"
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>

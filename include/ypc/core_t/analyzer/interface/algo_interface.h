@@ -68,7 +68,8 @@ protected:
     request_key_var_t::m_pkey4v = param.get<ntt::pkey>();
     intermediate_var::m_user_pkey = param.get<ntt::pkey>();
     intermediate_var::m_algo_pkey = param.get<ntt::algo_pkey>();
-    intermediate_var::m_data_kgt_pkey = param.get<ntt::data_kgt_pkey>();
+    intermediate_var::m_data_kgt_pkey_list =
+        param.get<ntt::data_kgt_pkey_list>();
     stbox::bytes dian_pkey;
     auto ret = keymgr_interface_t::request_private_key_for_public_key(
         request_key_var_t::m_pkey4v, request_key_var_t::m_private_key,

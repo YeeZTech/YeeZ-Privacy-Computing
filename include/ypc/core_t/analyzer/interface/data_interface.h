@@ -116,46 +116,57 @@ public:
   uint32_t init_data_source(const uint8_t *data_source_info, uint32_t len) {
     using ntt = nt<stbox::bytes>;
     auto pkg = make_package<typename cast_obj_to_package<
-        ntt::sealed_data_info_t>::type>::from_bytes(data_source_info, len);
+        ntt::multi_sealed_data_info_t>::type>::from_bytes(data_source_info,
+                                                          len);
     auto ret = keymgr_session::init_keymgr_session();
     if (ret) {
       LOG(ERROR) << "init_keymgr_session failed: " << stbox::status_string(ret);
       return ret;
     }
-    stbox::bytes dian_pkey;
+    auto infos = pkg.get<ntt::sealed_data_info_vector>();
+    for (auto &sdi : infos) {
+      if (!sdi.get<ntt::pkey>().empty()) {
+        stbox::bytes dian_pkey;
+        kgt<pkey_group_t> pkey_kgt(sdi.get<ntt::pkey>());
+        auto leaves = pkey_kgt.leaves();
+        std::unordered_map<stbox::bytes, stbox::bytes> peer;
+        for (auto &l : leaves) {
+          stbox::bytes data_pkey_b((uint8_t *)&l->key_val, sizeof(l->key_val));
+          stbox::bytes data_skey_b;
+          ret = keymgr_interface_t::request_private_key_for_public_key(
+              data_pkey_b, data_skey_b, dian_pkey);
+          if (peer.find(data_pkey_b) == peer.end()) {
+            peer.insert(std::make_pair(data_pkey_b, data_skey_b));
+          }
+        }
+        auto skey_node =
+            pkey_kgt.construct_skey_kgt_with_pkey_kgt(pkey_kgt.root(), peer);
+        kgt<skey_group_t> skey_kgt(skey_node);
+        skey_kgt.calculate_kgt_sum();
 
-    kgt<pkey_group_t> pkey_kgt(pkg.get<ntt::pkey>());
-    auto leaves = pkey_kgt.leaves();
-    std::unordered_map<stbox::bytes, stbox::bytes> peer;
-    for (auto &l : leaves) {
-      stbox::bytes data_pkey_b((uint8_t *)&l->key_val, sizeof(l->key_val));
-      stbox::bytes data_skey_b;
-      ret = keymgr_interface_t::request_private_key_for_public_key(
-          data_pkey_b, data_skey_b, dian_pkey);
-      if (peer.find(data_pkey_b) == peer.end()) {
-        peer.insert(std::make_pair(data_pkey_b, data_skey_b));
+        stbox::bytes pkey_kgt_sum((uint8_t *)&pkey_kgt.sum(),
+                                  sizeof(pkey_kgt.sum()));
+        stbox::bytes skey_kgt_sum((uint8_t *)&skey_kgt.sum(),
+                                  sizeof(skey_kgt.sum()));
+        m_ds_use_pkey.push_back(pkey_kgt_sum + sdi.get<ntt::data_hash>());
+        m_datasource.push_back(std::shared_ptr<data_source_with_dhash>(
+            new sealed_data_provider<Crypto>(sdi.get<ntt::data_hash>(),
+                                             skey_kgt_sum)));
+      } else {
+        m_datasource.push_back(std::shared_ptr<data_source_with_dhash>(
+            new raw_data_provider(sdi.get<ntt::data_hash>())));
       }
     }
-    auto skey_node =
-        pkey_kgt.construct_skey_kgt_with_pkey_kgt(pkey_kgt.root(), peer);
-    kgt<skey_group_t> skey_kgt(skey_node);
-    skey_kgt.calculate_kgt_sum();
-
-    stbox::bytes pkey_kgt_sum((uint8_t *)&pkey_kgt.sum(), sizeof(pkey_kgt.sum()));
-    stbox::bytes skey_kgt_sum((uint8_t *)&skey_kgt.sum(), sizeof(skey_kgt.sum()));
-    m_ds_use_pkey = pkey_kgt_sum + pkg.get<ntt::data_hash>();
-
-    m_datasource.reset(new sealed_data_provider<Crypto>(
-        pkg.get<ntt::data_hash>(), skey_kgt_sum));
     return stbox::stx_status::success;
   }
 
   uint32_t check_actual_data_hash() {
-    auto p = m_datasource.get();
-    if (p->data_hash() != p->expect_data_hash()) {
-      LOG(ERROR) << "expect " << p->expect_data_hash() << ", got "
-                 << p->data_hash();
-      return stbox::stx_status::data_hash_not_same_as_expect;
+    for (auto &ds : m_datasource) {
+      if (ds->data_hash() != ds->expect_data_hash()) {
+        LOG(ERROR) << "expect " << ds->expect_data_hash() << ", got "
+                   << ds->data_hash();
+        return stbox::stx_status::data_hash_not_same_as_expect;
+      }
     }
     return stbox::stx_status::success;
   }
