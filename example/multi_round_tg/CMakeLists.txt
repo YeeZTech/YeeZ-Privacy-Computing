@@ -1,0 +1,4 @@
+add_subdirectory(enclave)
+add_subdirectory(plugin)
+add_subdirectory(intermediate_datahub)
+add_subdirectory(result_decrypt)

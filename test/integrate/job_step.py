@@ -47,6 +47,14 @@ class job_step:
                     ks = l.split("=")
                     return ks[1].strip()
 
+    def read_sealed_output(fp, field):
+        with open(fp) as f:
+            lines = f.readlines()
+            for l in lines:
+                if l.startswith(field):
+                    ks = l.split("=")
+                    return ks[1].strip()
+
     def read_parser_hash(parser_url):
         param = {
             "enclave": parser_url,
@@ -127,7 +135,7 @@ class job_step:
             with open(parser_output_file) as of:
                 return of.readlines()
 
-    def fid_analyzer_tg(shukey_json, rq_forward_json, algo_shu_info, algo_forward_json, enclave_hash, input_data, parser_url, dian_pkey, model, crypto, param_json, flat_kgt_pkey, allowances, parser_input_file, parser_output_file):
+    def fid_analyzer_tg(shukey_json, rq_forward_json, algo_shu_info, algo_forward_json, enclave_hash, input_data, parser_url, dian_pkey, model, crypto, param_json, flat_kgt_pkey_list, allowances, parser_input_file, parser_output_file):
         parser_input = {
             "shu_info": {
                 "shu_pkey": shukey_json["public-key"],
@@ -152,7 +160,7 @@ class job_step:
                 "param_data": param_json["encrypted-input"],
                 "public-key": shukey_json["public-key"],
                 "algo-public-key": algo_shu_info["public-key"],
-                "data-kgt-public-key": flat_kgt_pkey,
+                "data-kgt-pkey-list": flat_kgt_pkey_list,
             }
         }
         if allowances:

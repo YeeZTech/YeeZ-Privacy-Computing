@@ -1,0 +1,2 @@
+add_executable(intermediate_data_provider main.cpp )
+target_link_libraries(intermediate_data_provider core )

@@ -21,11 +21,9 @@ ypc::bytes construct_access_control_policy() {
 
 uint32_t parser::parse() {
   auto parser_enclave_path = m_param.get<parser_path>();
-  LOG(INFO) << "parser enclave path: " << parser_enclave_path;
   auto keymgr_enclave_path = m_param.get<keymgr_path>();
   m_parser =
       std::make_shared<ypc::parser_sgx_module>(parser_enclave_path.c_str());
-  LOG(INFO) << "keymgr enclave path: " << keymgr_enclave_path;
   m_keymgr = std::make_shared<keymgr_sgx_module>(keymgr_enclave_path.c_str());
 
   ypc::bytes policy = construct_access_control_policy();
@@ -50,7 +48,6 @@ uint32_t parser::parse() {
       return ret;
     }
   }
-  LOG(INFO) << "forward data user skey";
 
   // forward developer skey
   auto algo_shu_skey =
@@ -67,7 +64,6 @@ uint32_t parser::parse() {
       return ret;
     }
   }
-  LOG(INFO) << "forward developer skey";
 
   m_ptype.value = m_parser->get_parser_type();
   ypc::bytes actual_hash;
@@ -81,21 +77,18 @@ uint32_t parser::parse() {
     LOG(ERROR) << "parser hash is " << actual_hash << ", expect " << ehash;
     return ypc::parser_return_wrong_data_hash;
   }
-  LOG(INFO) << "check parser hash succ!";
 
   ret = feed_datasource();
   if (ret != 0u) {
     LOG(ERROR) << "feed_datasource got error " << ypc::status_string(ret);
     return ret;
   }
-  LOG(INFO) << "feed datasource done";
 
   ret = feed_model();
   if (ret != 0u) {
     LOG(ERROR) << "feed_model got error " << ypc::status_string(ret);
     return ret;
   }
-  LOG(INFO) << "feed model done";
 
   ret = m_parser->begin_parse_data_item();
   if (ret != stx_status::success) {
@@ -103,7 +96,6 @@ uint32_t parser::parse() {
                << ypc::status_string(ret);
     return ret;
   }
-  LOG(INFO) << "begin parse data item";
   auto param_var = m_param.get<ntt::param>();
   typename ypc::cast_obj_to_package<ntt::param_t>::type param_pkg = param_var;
   auto param_bytes = ypc::make_bytes<ypc::bytes>::for_package(param_pkg);
@@ -112,13 +104,11 @@ uint32_t parser::parse() {
     LOG(ERROR) << "parse_data_item, got error: " << ypc::status_string(ret);
     return ret;
   }
-  LOG(INFO) << "parse data item";
 
   ret = m_parser->end_parse_data_item();
   if (ret != stx_status::success) {
     LOG(ERROR) << "end_parse_data_item, got error: " << ypc::status_string(ret);
   }
-  LOG(INFO) << "end parse data item";
 
   if (ret != 0u) {
     LOG(ERROR) << "do_parse got error " << ypc::status_string(ret);
@@ -150,7 +140,6 @@ uint32_t parser::dump_result(const ypc::bytes &res) {
     auto pkg =
         ypc::make_package<ntt::offchain_result_package_t>::from_bytes(res);
     m_result_str = ypc::ntjson::to_json(pkg);
-
   } else if (m_ptype.d.result_type == ypc::utc::local_result_parser) {
     m_result_str = std::string((const char *)res.data(), res.size());
   } else if (m_ptype.d.result_type == ypc::utc::forward_result_parser) {
@@ -196,12 +185,9 @@ uint32_t parser::feed_datasource() {
     auto ssf = std::make_shared<ypc::simple_sealed_file>(url, true);
     m_data_sources.insert(std::make_pair(data_hash, ssf));
     ssf->reset_read();
-    LOG(INFO) << "input data, input_data_url: " << url;
-    LOG(INFO) << "input data, data_hash: " << data_hash;
 
     auto shu_info = item.get<kgt_shu_info>();
     auto shus = shu_info.get<data_shu_infos>();
-    LOG(INFO) << "data shu infos size: " << shus.size();
     for (auto &shu : shus) {
       auto shu_skey = shu.get<ntt::encrypted_shu_skey>();
       auto shu_forward_sig = shu.get<ntt::shu_forward_signature>();
