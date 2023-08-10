@@ -184,7 +184,7 @@ uint32_t oram_parser::feed_datasource() {
     auto url = item.get<input_data_url>();
     auto data_hash = item.get<input_data_hash>();
     auto sosf = std::make_shared<ypc::simple_oram_sealed_file>(url);
-    // TODO:连续查的时候root hash一直在变化，总不能一次查询总是插入不同的root吧？
+    
     m_data_sources.insert(std::make_pair(data_hash, sosf));
     sosf->reset();
 
@@ -283,7 +283,8 @@ uint32_t oram_parser::download_oram_params_OCALL(const uint8_t *data_hash, uint3
   }
   
   // TODO:定义新的错误码
-  return stbox::stx_status::sealed_file_reach_end;
+  // return stbox::stx_status::sealed_file_reach_end;
+  return stbox::stx_status::oram_sealed_file_error;
 }
 
 uint32_t oram_parser::get_block_id_OCALL(const uint8_t *data_hash, uint32_t hash_size,
@@ -304,7 +305,8 @@ uint32_t oram_parser::get_block_id_OCALL(const uint8_t *data_hash, uint32_t hash
     return stbox::stx_status::success;
   }
   
-  return stbox::stx_status::sealed_file_reach_end;
+  // return stbox::stx_status::sealed_file_reach_end;
+  return stbox::stx_status::oram_sealed_file_error;
 }
 
 uint32_t oram_parser::download_position_map_OCALL(const uint8_t *data_hash, uint32_t hash_size, 
@@ -324,7 +326,8 @@ uint32_t oram_parser::download_position_map_OCALL(const uint8_t *data_hash, uint
     *len = posmap.size();
     return stbox::stx_status::success;
   }
-  return stbox::stx_status::sealed_file_reach_end;
+  // return stbox::stx_status::sealed_file_reach_end;
+  return stbox::stx_status::oram_sealed_file_error;
 }
 
 uint32_t oram_parser::update_position_map_OCALL(const uint8_t *data_hash, uint32_t hash_size, 
@@ -342,7 +345,8 @@ uint32_t oram_parser::update_position_map_OCALL(const uint8_t *data_hash, uint32
     return stbox::stx_status::success;
   }
   
-  return stbox::stx_status::sealed_file_reach_end;
+  // return stbox::stx_status::sealed_file_reach_end;
+  return stbox::stx_status::oram_sealed_file_error;
 }
 
 uint32_t oram_parser::download_path_OCALL(const uint8_t *data_hash, uint32_t hash_size,
@@ -363,7 +367,8 @@ uint32_t oram_parser::download_path_OCALL(const uint8_t *data_hash, uint32_t has
     return stbox::stx_status::success;
   }
   
-  return stbox::stx_status::sealed_file_reach_end;
+  // return stbox::stx_status::sealed_file_reach_end;
+  return stbox::stx_status::oram_sealed_file_error;
 }
 
 uint32_t oram_parser::download_stash_OCALL(const uint8_t *data_hash, uint32_t hash_size,
@@ -384,7 +389,8 @@ uint32_t oram_parser::download_stash_OCALL(const uint8_t *data_hash, uint32_t ha
     return stbox::stx_status::success;
   }
   
-  return stbox::stx_status::sealed_file_reach_end;
+  // return stbox::stx_status::sealed_file_reach_end;
+  return stbox::stx_status::oram_sealed_file_error;
 }
 
 uint32_t oram_parser::update_stash_OCALL(const uint8_t *data_hash, uint32_t hash_size,
@@ -403,7 +409,8 @@ uint32_t oram_parser::update_stash_OCALL(const uint8_t *data_hash, uint32_t hash
     return stbox::stx_status::success;
   }
   
-  return stbox::stx_status::sealed_file_reach_end;
+  // return stbox::stx_status::sealed_file_reach_end;
+  return stbox::stx_status::oram_sealed_file_error;
 }
 
 uint32_t oram_parser::upload_path_OCALL(const uint8_t *data_hash, uint32_t hash_size,
@@ -421,7 +428,8 @@ uint32_t oram_parser::upload_path_OCALL(const uint8_t *data_hash, uint32_t hash_
     return stbox::stx_status::success;
   }
   
-  return stbox::stx_status::sealed_file_reach_end;
+  // return stbox::stx_status::sealed_file_reach_end;
+  return stbox::stx_status::oram_sealed_file_error;
 }
 
 uint32_t oram_parser::download_merkle_hash_OCALL(const uint8_t *data_hash, uint32_t hash_size,
@@ -442,7 +450,8 @@ uint32_t oram_parser::download_merkle_hash_OCALL(const uint8_t *data_hash, uint3
     return stbox::stx_status::success;
   }
   
-  return stbox::stx_status::sealed_file_reach_end;
+  // return stbox::stx_status::sealed_file_reach_end;
+  return stbox::stx_status::oram_sealed_file_error;
 }
 
 uint32_t oram_parser::update_merkle_hash_OCALL(const uint8_t *data_hash, uint32_t hash_size,
@@ -460,5 +469,6 @@ uint32_t oram_parser::update_merkle_hash_OCALL(const uint8_t *data_hash, uint32_
     return stbox::stx_status::success;
   }
   
-  return stbox::stx_status::sealed_file_reach_end;
+  // return stbox::stx_status::sealed_file_reach_end;
+  return stbox::stx_status::oram_sealed_file_error;
 }

@@ -47,7 +47,7 @@ bool simple_oram_sealed_file::update_stash(uint8_t * stash, uint32_t len) {
   return m_file.update_stash(stash, len); 
 }
 
-bool simple_oram_sealed_file::read_root_hash(bytes &root_hash) {
+bool simple_oram_sealed_file::read_root_hash(memref &root_hash) {
   return m_file.read_root_hash(root_hash);
 }
 

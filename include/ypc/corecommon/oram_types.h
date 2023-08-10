@@ -31,7 +31,10 @@ template <typename BytesType> struct nt {
   define_nt(path, std::vector<BytesType>);
   using path_pkg_t = ::ff::net::ntpackage<0x82c4e8ea, path>;
 
-  define_nt(merkle_hash, std::vector<BytesType>);
+  define_nt(data_hash, BytesType);
+  define_nt(in_path, bool);
+  using hash_pair = ::ff::util::ntobject<data_hash, in_path>;
+  define_nt(merkle_hash, std::vector<hash_pair>);
   using merkle_hash_pkg_t = ::ff::net::ntpackage<0x82c4e7ea, merkle_hash>;
 };
 

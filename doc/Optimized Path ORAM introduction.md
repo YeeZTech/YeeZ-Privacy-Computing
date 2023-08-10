@@ -7,7 +7,7 @@
 - example/oram_personlist/plugin/person_reader_oram.cpp
   
   - 增加一个函数`int get_item_index_field(void *handle, char *buf, int *len)`，功能是读取原始未加密文件的每行数据中用来查询的索引字段。
-- toolkit/datahub/oram_seal_file.cpp 
+- toolkit/datahub/seal_oram_file.cpp 
   - 功能：
     - 加密文件为自定义的格式ORAM Sealed File，该文件结构包含：
       - 文件头header

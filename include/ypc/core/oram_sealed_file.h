@@ -34,7 +34,7 @@ public:
 
   virtual bool update_stash(uint8_t * stash, uint32_t len) = 0;
 
-  virtual bool read_root_hash(bytes &root_hash) = 0;
+  virtual bool read_root_hash(memref &root_hash) = 0;
 
   virtual bool download_merkle_hash(uint32_t leaf, memref &merkle_hash) = 0;
 
@@ -65,7 +65,8 @@ public:
   virtual bool upload_path(uint32_t leaf, uint8_t * encrpypted_path, uint32_t len);
   virtual bool download_stash(memref &st);
   virtual bool update_stash(uint8_t * stash, uint32_t len);
-  virtual bool read_root_hash(bytes &root_hash);
+  // virtual bool read_root_hash(bytes &root_hash);
+  virtual bool read_root_hash(memref &root_hash);
   virtual bool download_merkle_hash(uint32_t leaf, memref &merkle_hash);
   virtual bool update_merkle_hash(uint32_t leaf, uint8_t * merkle_hash, uint32_t len);
 };

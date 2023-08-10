@@ -38,8 +38,8 @@ if __name__ == "__main__":
         cj.input = input_param
         cj.run()
         result.append(cj.result)
-        print("input_param is : ", input_param)
-        print("result is : ", cj.result)
+        # print("input_param is : ", input_param)
+        # print("result is : ", cj.result)
         matches = re.findall(r"\d+", cj.result[0])
         if matches[0] != matches[1]:
             print("not find target row!")

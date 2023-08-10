@@ -1,4 +1,4 @@
-#include "ypc/core/oramblockfile.h"
+#include "ypc/core/oram_sealed_file.h"
 #include "ypc/core/version.h"
 #include "ypc/core/oram_sealed_file.h"
 
@@ -12,12 +12,12 @@ boost::program_options::variables_map parse_command_line(int argc,
   namespace bp = boost::program_options;
   bp::options_description all("Read root hash options");
   bp::options_description general("General Options");
-  bp::options_description seal_data_opts("Seal Data Options");
+  bp::options_description get_root_hash_opts("Seal Data Options");
 
   // clang-format off
-  seal_data_opts.add_options()
-    ("data-url", bp::value<std::string>(), "Data URL")
-    ("output", bp::value<std::string>(), "output meta file path");
+  get_root_hash_opts.add_options()
+    ("data-url", bp::value<std::string>(), "Sealed Data URL")
+    ("output", bp::value<std::string>(), "root hash file path");
 
   general.add_options()
     ("help", "help message")
@@ -25,7 +25,7 @@ boost::program_options::variables_map parse_command_line(int argc,
 
   // clang-format on
 
-  all.add(general).add(seal_data_opts);
+  all.add(general).add(get_root_hash_opts);
 
   boost::program_options::variables_map vm;
   boost::program_options::store(
@@ -65,10 +65,11 @@ int main(int argc, char *argv[]) {
   std::string data_file = vm["data-url"].as<std::string>();
   std::string output = vm["output"].as<std::string>();
 
-  ypc::bytes root_hash;
   auto sosf = std::make_shared<ypc::simple_oram_sealed_file>(data_file);
   sosf->reset();
-  bool ret = sosf->read_root_hash(root_hash);
+  ypc::memref me_hash;
+  bool ret = sosf->read_root_hash(me_hash);
+  ypc::bytes root_hash(me_hash.data(), me_hash.size());
   if(!ret) {
     std::cout << "Cannot read root hash" << std::endl;
     return -1;
@@ -84,6 +85,6 @@ int main(int argc, char *argv[]) {
   ofs << root_hash;
   ofs.close();
 
-  std::cout << root_hash << std::endl;
+  std::cout << root_hash;
   return 0;
 }

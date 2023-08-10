@@ -59,7 +59,8 @@ class classic_job:
                             sealed_data_url, sealed_output, data_key_file)
         # TODO:需要在sealed_data_url中获取root hash ，作为fid_oram_analyzer的参数之一
         root_hash_url = self.name + ".root_hash"
-        root_hash = job_step.get_root_hash(sealed_data_url, root_hash_url)
+        r = job_step.get_root_hash(sealed_data_url, root_hash_url)
+        root_hash = r[1]
         
 
         # root_hash = job_step.read_root_hash(root_hash_url)
@@ -68,6 +69,7 @@ class classic_job:
         if self.read_count + 1 == self.con_read_num:
            self.all_outputs.append(sealed_data_url)
            self.all_outputs.append(sealed_output)
+           self.all_outputs.append(root_hash_url)
 
         
         # use first pkey

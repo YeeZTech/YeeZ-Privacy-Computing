@@ -40,12 +40,8 @@ public:
   inline const std::vector<bytes> &expect_data_hash() const { return m_expect_data_hash; }
   virtual const std::vector<bytes> &data_hash() const = 0;
 
-  inline void reset_reach_end() { m_data_reach_end = false; }
-
 protected:
-  bytes m_expect_root_hash; // 用于映射到数据源对应的文件上
-  std::vector<bytes> m_expect_data_hash; // 用于验证完整性
-  bool m_data_reach_end;
-  uint32_t m_counter;
+  bytes m_expect_root_hash;
+  std::vector<bytes> m_expect_data_hash;
 };
 } // namespace ypc

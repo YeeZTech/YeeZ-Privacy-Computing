@@ -88,7 +88,7 @@ public:
 
 
     bool download_position_map(memref &posmap) {
-        size_t len = m_header.stash_filepos - m_header.position_map_filepos;
+        size_t len = m_header.merkle_tree_filepos - m_header.position_map_filepos;
         if(posmap.data() == nullptr) {
             posmap.alloc(len);
         }
@@ -233,39 +233,45 @@ public:
         m_file.close();
     }
 
-    // bool read_root_hash(memref &root_hash) {
-    //     size_t len = hash_size;
-    //     if(root_hash.data() == nullptr) {
-    //         root_hash.alloc(len);
-    //     }
-    //     if(root_hash.size() < len) {
-    //         root_hash.dealloc();
-    //         root_hash.alloc(len);
-    //     }
+    bool read_root_hash(memref &root_hash) {
+        size_t len = hash_size;
+        if(root_hash.data() == nullptr) {
+            root_hash.alloc(len);
+        }
+        if(root_hash.size() < len) {
+            root_hash.dealloc();
+            root_hash.alloc(len);
+        }
 
-    //     m_file.seekg(m_header.merkle_tree_filepos, m_file.beg);
-    //     m_file.read((char *)root_hash.data(), len);
-    //     root_hash.size() = len;
-
-    //     return true;
-    // }
-
-    bool read_root_hash(bytes &root_hash) {
         m_file.seekg(m_header.merkle_tree_filepos, m_file.beg);
-        m_file.read((char *)root_hash.data(), hash_size);
+        m_file.read((char *)root_hash.data(), len);
+        root_hash.size() = len;
+
         return true;
     }
 
     bool download_merkle_hash(uint32_t leaf, memref &merkle_hash) {
-        std::vector<uint32_t> offsets;
-        get_hash_offset(leaf, offsets);
+        std::vector<uint32_t> hash_offsets;
+        get_hash_offsets(leaf, hash_offsets);
 
-        std::vector<bytes> merkle_hash_array;
-        for(const uint32_t& offset : offsets) {
+        std::vector<uint32_t> path_offsets;
+        leaf_to_offsets(leaf, path_offsets);
+
+        std::vector<oram_ntt::hash_pair> merkle_hash_array;
+        uint32_t i = 0;
+        for(const uint32_t& offset : hash_offsets) {
             bytes data_hash(hash_size);
+            bool in_path = false;
             m_file.seekg(m_header.merkle_tree_filepos + offset * hash_size, m_file.beg);
             m_file.read((char *)data_hash.data(), hash_size);
-            merkle_hash_array.push_back(data_hash);
+
+            if(offset == path_offsets[i]) {
+                ++i;
+                in_path = true;
+            }
+            oram_ntt::hash_pair hash_p;
+            hash_p.set<oram_ntt::data_hash, oram_ntt::in_path>(data_hash, in_path);
+            merkle_hash_array.push_back(hash_p);
         }
 
         oram_ntt::merkle_hash_pkg_t merkle_hash_pkg;
@@ -296,13 +302,13 @@ public:
 
         oram_ntt::merkle_hash_pkg_t merkle_hash_pkg = 
             make_package<oram_ntt::merkle_hash_pkg_t>::from_bytes(merkle_hash_str);
-        std::vector<bytes> merkle_hash_array = merkle_hash_pkg.get<oram_ntt::merkle_hash>();
+        auto merkle_hash_array = merkle_hash_pkg.get<oram_ntt::merkle_hash>();
 
         std::vector<uint32_t> offsets;
-        get_hash_offset(leaf, offsets);
+        get_hash_offsets(leaf, offsets);
         for(uint8_t i = 0; i < offsets.size(); ++i) {
             m_file.seekp(m_header.merkle_tree_filepos + offsets[i] * hash_size, m_file.beg);
-            m_file.write((char *)merkle_hash_array[i].data(), hash_size);
+            m_file.write((char *)merkle_hash_array[i].get<oram_ntt::data_hash>().data(), hash_size);
         }
 
         return true;
@@ -325,7 +331,7 @@ private:
                 offsets.push_back(cur_node);
                 break;
             }
-            
+
             if(cur_node % 2 == 0) { // cur_node is a right child node
                 offsets.push_back(cur_node);
                 offsets.push_back(cur_node - 1);

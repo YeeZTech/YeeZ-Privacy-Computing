@@ -145,7 +145,23 @@ public:
   }
 
   uint32_t check_actual_data_hash() { 
-    return stbox::stx_status::success; 
+    auto p = m_datasource.get();
+    if(p->data_hash().size() != p->expect_data_hash().size()) {
+      LOG(ERROR) << "the expected data hash array needs to contain " 
+                 << p->expect_data_hash().size() << " data hashes, but got "
+                 << p->data_hash().size();
+      return stbox::stx_status::data_hash_not_same_as_expect;
+    }
+
+    for(uint32_t i = 0; i < p->data_hash().size(); ++i) {
+      if(p->data_hash()[i] != p->expect_data_hash()[i]) {
+        LOG(ERROR) << "expect " << i <<"-th data hash is " << p->expect_data_hash()[i] << ", got "
+                   << p->data_hash()[i];
+        return stbox::stx_status::data_hash_not_same_as_expect;
+      }
+    }
+    
+    return stbox::stx_status::success;
   }
 };
 
