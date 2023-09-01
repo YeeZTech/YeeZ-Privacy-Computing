@@ -6,7 +6,7 @@
 
 - example/oram_personlist/plugin/person_reader_oram.cpp
   
-  - 增加一个函数`int get_item_index_field(void *handle, char *buf, int *len)`，功能是读取原始未加密文件的每行数据中用来查询的索引字段。
+  - 增加一个函数`int get_item_index_field(void *handle, char *buf, int *len)`，功能是读取原始未加密文件的每行数据中作为查询参数的索引字段。
 - toolkit/datahub/seal_oram_file.cpp 
   - 功能：
     - 加密文件为自定义的格式ORAM Sealed File，该文件结构包含：
@@ -60,13 +60,16 @@
       12. `upload_path(leaf)`函数发起一个OCALL`upload_path_OCALL`在`data_hash`对应的加密数据文件中，将加密后的新路径写回ORAM树中；
       13. `update_stash()`函数将暂存区`m_stash`中溢出的块使用数据提供方枢公钥`pkey`加密后，再发起一个OCALL`download_oram_params_OCALL`在`data_hash`对应的加密数据文件中，写入加密的溢出块数组。
   - 成员函数`process()`
-    - 功能：遍历目标块中的每行数据，将每行数据发送给数据使用方过滤，以找到查询参数所在的数据行。
+    - 调用`access()`找到目标块；
+    - 遍历目标块中的每行数据，以找到查询参数所在的数据行。
 - include/ypc/core_t/analyzer/interface/data_interface.h
   - 增加一个类模板对应数据源解析类型`oram_sealed_datasource_parser`
   - `uint32_t init_data_source(const uint8_t *data_source_info, uint32_t len)`
     - 从`data_source_info`中获取加密的查询参数`param_data`，加密查询参数使用的数据使用方的枢公钥`param_data_pkey`
     - 用`param_data_pkey`请求对应的数据使用方枢私钥`param_private_key`，使用`param_private_key`来解密`param_data`
     - 使用 数据提供方的加密数据文件哈希`data_hash`、数据提供方枢私钥`private_key`、数据提供方枢公钥`pkey`和解密的参数`decrypted_param`去初始化类`oram_sealed_data_provider`
+  - `uint32_t check_actual_data_hash()`
+    - 两个哈希数组：从默克尔树目标路径中读取的期望哈希数组；根据从ORAM树中读取的目标路径计算出来的实际哈希数组。比较两者是否相同，若相同则可以验证获得的路径是完整的和最新的。
 - toolkit/analyzer/parsers/oram_parser.h
   - 功能：定义了path ORAM算法中调用的所有OCALL函数的接口函数，这些OCALL接口函数其实是调用了`oramblockfile.h`中对加密文件ORAM sealed file中的读写方法。
   - 在`feed_datasource()`中调用`m_parser->init_data_source(data_info_bytes)`时传递的参数`data_info_bytes`需要包含数据使用方的加密请求参数。
@@ -109,9 +112,6 @@
 
   以上使用了ntobject的换成结构体，调用OCALL的时候换成ntobject再序列化写到enclave以外（有必要吗？）就可以编写汇编函数了
 
-- 默克尔树验证完整性
-
-  - `include/ypc/core_t/analyzer/interface/data_interface.h`中函数`check_actual_data_hash()`待实现
 
 - 对每个查询参数字段都要建立索引
 

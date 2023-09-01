@@ -267,7 +267,24 @@ uint32_t seal_oram_file(const crypto_ptr_t &crypto_ptr, const std::string &plugi
 
   // build header
   LOG(INFO) << "build header";
-  oram::header osf_header{};
+  
+  struct header {
+    uint32_t block_num;
+    uint32_t bucket_num_N;
+    uint8_t level_num_L;
+    uint32_t bucket_str_size;
+    uint32_t batch_str_size;
+    long int id_map_filepos;
+    long int oram_tree_filepos;
+    long int position_map_filepos;
+    long int merkle_tree_filepos;
+    long int stash_filepos;
+    uint64_t stash_size;
+  };
+
+  // oram::header osf_header{};
+  // oram::oram_header_t osf_header;
+  header osf_header{};
   osf_header.block_num = batch_num;
   uint32_t real_bucket_num = ceil(static_cast<double>(osf_header.block_num) / ypc::oram::BucketSizeZ);
   osf_header.level_num_L = ceil(log2(real_bucket_num + 1)) - 1; 

@@ -6,6 +6,9 @@
 #include "ypc/core/sgx/parser_sgx_module.h"
 #include "ypc/keymgr/default/keymgr_sgx_module.h"
 
+// #define DECLARE_OCALL_FUNCTION(name, ...) \
+//   virtual uint32_t name##_OCALL(const uint8_t *data_hash, uint32_t hash_size, ##__VA_ARGS__);
+
 class oram_parser {
 public:
   oram_parser(const input_param_t &param);
@@ -26,7 +29,7 @@ public:
                                                uint8_t ** position_map, uint32_t *len);
 
   virtual uint32_t update_position_map_OCALL(const uint8_t *data_hash, uint32_t hash_size, 
-                                             uint8_t * position_map, uint32_t len);
+                                             const uint8_t * position_map, uint32_t len);
 
   virtual uint32_t download_path_OCALL(const uint8_t *data_hash, uint32_t hash_size,
                                        uint32_t leaf, uint8_t ** encrpypted_path, uint32_t *len);
@@ -34,16 +37,16 @@ public:
   virtual uint32_t download_stash_OCALL(const uint8_t *data_hash, uint32_t hash_size,
                                         uint8_t ** stash, uint32_t *len);
   virtual uint32_t update_stash_OCALL(const uint8_t *data_hash, uint32_t hash_size,
-                                      uint8_t * stash, uint32_t len);
+                                      const uint8_t * stash, uint32_t len);
 
   virtual uint32_t upload_path_OCALL(const uint8_t *data_hash, uint32_t hash_size,
-                                     uint32_t leaf, uint8_t * encrpypted_path, uint32_t len);
+                                     uint32_t leaf, const uint8_t * encrpypted_path, uint32_t len);
 
   virtual uint32_t download_merkle_hash_OCALL(const uint8_t *data_hash, uint32_t hash_size,
                                               uint32_t leaf, uint8_t ** merkle_hash, uint32_t *len);
 
   virtual uint32_t update_merkle_hash_OCALL(const uint8_t *data_hash, uint32_t hash_size,
-                                            uint32_t leaf, uint8_t * merkle_hash, uint32_t len);
+                                            uint32_t leaf, const uint8_t * merkle_hash, uint32_t len);
   
 
   inline std::shared_ptr<keymgr_sgx_module> keymgr() const { return m_keymgr; }

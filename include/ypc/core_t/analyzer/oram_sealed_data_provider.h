@@ -22,7 +22,6 @@ typedef ypc::nt<stbox::bytes> ntt;
 
 namespace ypc {
 template <typename Crypto>
-// class oram_sealed_data_provider : public data_source_with_dhash {
 class oram_sealed_data_provider : public data_source_with_merkle_hash {
   typedef Crypto crypto;
 public:
@@ -170,13 +169,18 @@ private:
 
     return true;
   }
-  
+
+  // oarray_search(m_position_map, block_id, &leaf, new_leaf, m_position_map.size());
   void oarray_search(std::vector<uint32_t>& array, uint32_t loc, uint32_t *leaf, 
                      uint32_t newLabel, uint32_t N_level) {
     for(uint32_t i=0; i < N_level; ++i) {
       omove(i, &(array[i]), loc, leaf, newLabel);
     }
     return;
+  }
+
+  void ostash_insert() {
+
   }
 
   bool download_oram_params() {
@@ -406,13 +410,40 @@ private:
       }
 
       for(oram_ntt::block_t e_block : block_array) {
+        bool pushed_flag = false;
         for(uint32_t k = 0; k < m_stash.size(); ++k) {
-          if(e_block.get<oram_ntt::block_id>() > 0 && m_stash[k].get<oram_ntt::block_id>() == 0) {
-            m_stash[k].set<oram_ntt::block_id, oram_ntt::leaf_label, oram_ntt::valid_item_num, oram_ntt::encrypted_batch>
-              (e_block.get<oram_ntt::block_id>(), e_block.get<oram_ntt::leaf_label>(), 
-               e_block.get<oram_ntt::valid_item_num>(), e_block.get<oram_ntt::encrypted_batch>());
-            break;
-          }
+          uint32_t p_block_id = e_block.get<oram_ntt::block_id>();
+          uint32_t s_block_id = m_stash[k].get<oram_ntt::block_id>();
+
+          bool flag = p_block_id > 0 && s_block_id == 0 && !pushed_flag;
+
+          uint32_t p_leaf_label = e_block.get<oram_ntt::leaf_label>();
+          uint32_t s_leaf_label = m_stash[k].get<oram_ntt::leaf_label>();
+
+          uint32_t p_valid_item_num = e_block.get<oram_ntt::valid_item_num>();
+          uint32_t s_valid_item_num = m_stash[k].get<oram_ntt::valid_item_num>();
+
+          stbox::bytes p_encrypted_batch = e_block.get<oram_ntt::encrypted_batch>();
+          stbox::bytes s_encrypted_batch = m_stash[k].get<oram_ntt::encrypted_batch>();
+          
+          oset_value(&s_block_id, p_block_id, flag);
+          oset_value(&s_leaf_label, p_leaf_label, flag);
+          oset_value(&s_valid_item_num, p_valid_item_num, flag);
+          oset_bytes(s_encrypted_batch.data(), p_encrypted_batch.data(), p_encrypted_batch.size(), flag);
+          oset_flag(&pushed_flag, true, flag);
+          
+          m_stash[k].set<oram_ntt::block_id, oram_ntt::leaf_label, 
+              oram_ntt::valid_item_num, oram_ntt::encrypted_batch>
+              (s_block_id, s_leaf_label, s_valid_item_num, s_encrypted_batch);
+
+          
+
+          // if(e_block.get<oram_ntt::block_id>() > 0 && m_stash[k].get<oram_ntt::block_id>() == 0) {
+          //   m_stash[k].set<oram_ntt::block_id, oram_ntt::leaf_label, oram_ntt::valid_item_num, oram_ntt::encrypted_batch>
+          //     (e_block.get<oram_ntt::block_id>(), e_block.get<oram_ntt::leaf_label>(), 
+          //      e_block.get<oram_ntt::valid_item_num>(), e_block.get<oram_ntt::encrypted_batch>());
+          //   break;
+          // }
         }
 
         stbox::bytes encrypted_batch = e_block.get<oram_ntt::encrypted_batch>();
@@ -457,94 +488,188 @@ private:
   }
 
   bool access_in_stash(uint32_t block_id, uint32_t new_leaf) {
+    stbox::bytes target_encrypted_batch_str(m_header.batch_str_size);
     for(uint32_t i = 0; i < m_stash.size(); ++i) {
-      if(m_stash[i].get<oram_ntt::block_id>() == block_id) {
-        m_valid_item_num = m_stash[i].get<oram_ntt::valid_item_num>();
-        if(m_valid_item_num == 0) {
-          LOG(ERROR) << "fail, the value of valid item num is 0 ";
-          return false;
-        }
+      bool flag = m_stash[i].get<oram_ntt::block_id>() == block_id;
+      uint32_t leaf_label = m_stash[i].get<oram_ntt::leaf_label>();
 
-        stbox::bytes encrypted_batch_str = m_stash[i].get<oram_ntt::encrypted_batch>();
-        stbox::bytes decrypted_batch_str;
-        uint32_t status = crypto::decrypt_message_with_prefix(
-            m_private_key, encrypted_batch_str, decrypted_batch_str, ypc::utc::crypto_prefix_arbitrary);
-        if (status) {
-          LOG(ERROR) << "decrypt_message_with_prefix fail: "
-                      << stbox::status_string(status);
-          return false;
-        }
-
-        try {
-          auto pkg = make_package<ntt::batch_data_pkg_t>::from_bytes(decrypted_batch_str);
-          m_items = pkg.get<ntt::batch_data>();
-          if (m_items.size() == 0) {
-            LOG(ERROR) << "fail, m_items.size() == 0 ";
-            return false;
-          }
-
-          m_item_index = 0;
-          m_stash[i].set<oram_ntt::leaf_label>(new_leaf);
-          return true;
-        } catch (const std::exception &e) {
-          LOG(ERROR) << "make_package got: " << e.what();
-          return false;
-        }
-
-      }
+      oset_value(&leaf_label, new_leaf, flag);
+      oset_value(&m_valid_item_num, m_stash[i].get<oram_ntt::valid_item_num>(), flag);
+      oset_bytes(target_encrypted_batch_str.data(), m_stash[i].get<oram_ntt::encrypted_batch>().data(), m_header.batch_str_size, flag);
+      m_stash[i].set<oram_ntt::leaf_label>(leaf_label);
 
     }
+
+    if(m_valid_item_num == 0) {
+      LOG(ERROR) << "fail, the value of valid item num is 0 ";
+      return false;
+    }
+
+    stbox::bytes decrypted_batch_str;
+    uint32_t status = crypto::decrypt_message_with_prefix(
+        m_private_key, target_encrypted_batch_str, decrypted_batch_str, ypc::utc::crypto_prefix_arbitrary);
+    if (status) {
+      LOG(ERROR) << "decrypt_message_with_prefix fail: "
+                  << stbox::status_string(status);
+      return false;
+    }
+
+    try {
+      auto pkg = make_package<ntt::batch_data_pkg_t>::from_bytes(decrypted_batch_str);
+      m_items = pkg.get<ntt::batch_data>();
+      if (m_items.size() == 0) {
+        LOG(ERROR) << "fail, m_items size should not be 0 ";
+        return false;
+      }
+
+      m_item_index = 0;
+      return true;
+    } catch (const std::exception &e) {
+      LOG(ERROR) << "make_package got: " << e.what();
+      return false;
+    }
+    
+
+    // for(uint32_t i = 0; i < m_stash.size(); ++i) {
+    //   if(m_stash[i].get<oram_ntt::block_id>() == block_id) {
+    //     m_valid_item_num = m_stash[i].get<oram_ntt::valid_item_num>();
+    //     if(m_valid_item_num == 0) {
+    //       LOG(ERROR) << "fail, the value of valid item num is 0 ";
+    //       return false;
+    //     }
+
+    //     stbox::bytes encrypted_batch_str = m_stash[i].get<oram_ntt::encrypted_batch>();
+    //     stbox::bytes decrypted_batch_str;
+    //     uint32_t status = crypto::decrypt_message_with_prefix(
+    //         m_private_key, encrypted_batch_str, decrypted_batch_str, ypc::utc::crypto_prefix_arbitrary);
+    //     if (status) {
+    //       LOG(ERROR) << "decrypt_message_with_prefix fail: "
+    //                   << stbox::status_string(status);
+    //       return false;
+    //     }
+
+    //     try {
+    //       auto pkg = make_package<ntt::batch_data_pkg_t>::from_bytes(decrypted_batch_str);
+    //       m_items = pkg.get<ntt::batch_data>();
+    //       if (m_items.size() == 0) {
+    //         LOG(ERROR) << "fail, m_items size should not be 0 ";
+    //         return false;
+    //       }
+
+    //       m_item_index = 0;
+    //       m_stash[i].set<oram_ntt::leaf_label>(new_leaf);
+    //       return true;
+    //     } catch (const std::exception &e) {
+    //       LOG(ERROR) << "make_package got: " << e.what();
+    //       return false;
+    //     }
+
+    //   }
+
+    // }
 
     return false;
   }
 
-  uint8_t get_level(uint32_t leaf1, uint32_t leaf2) {
+  // uint8_t get_level(uint32_t leaf1, uint32_t leaf2) {
+  //   uint32_t leaf1_index = leaf1 - 1 + (1 << m_header.level_num_L) - 1;
+  //   uint32_t leaf2_index = leaf2 - 1 + (1 << m_header.level_num_L) - 1;
+
+  //   while(leaf1_index != leaf2_index) {
+  //     leaf1_index = (leaf1_index - 1) / 2;
+  //     leaf2_index = (leaf2_index - 1) / 2;
+  //   }
+
+  //   return floor(log2(leaf1_index + 1));
+  // }
+
+  bool fit_in_path(uint32_t bucket_index, uint32_t leaf1, uint32_t leaf2) {
     uint32_t leaf1_index = leaf1 - 1 + (1 << m_header.level_num_L) - 1;
     uint32_t leaf2_index = leaf2 - 1 + (1 << m_header.level_num_L) - 1;
 
     while(leaf1_index != leaf2_index) {
-        leaf1_index = (leaf1_index - 1) / 2;
-        leaf2_index = (leaf2_index - 1) / 2;
+      leaf1_index = (leaf1_index - 1) / 2;
+      leaf2_index = (leaf2_index - 1) / 2;
     }
 
-    return floor(log2(leaf1_index + 1));
+    return leaf1_index == bucket_index;
   }
 
   void rebuild_new_path(uint32_t leaf) {
-    for(auto &bu : m_decrypted_path) {
-      auto block_array = bu.get<oram_ntt::bucket>();
+    uint32_t bucket_index = leaf - 1 + (1 << m_header.level_num_L) - 1;
+    for(int i = m_decrypted_path.size() - 1; i >= 0; --i) {
+      auto block_array = m_decrypted_path[i].get<oram_ntt::bucket>();
       for(uint8_t j = 0; j < oram::BucketSizeZ; ++j) {
-        block_array[j].set<oram_ntt::block_id, oram_ntt::leaf_label, oram_ntt::valid_item_num>(0, 0, 0);
-      }
-      bu.set<oram_ntt::bucket>(block_array);
-    }
+        uint32_t b_block_id = 0, b_leaf_label = 0, b_valid_item_num = 0;
+        stbox::bytes encrypted_batch = block_array[j].get<oram_ntt::encrypted_batch>();
+        bool updated_flag = false;
+        for(uint32_t k = 0; k < m_stash.size(); ++k) {
+          uint32_t s_block_id = m_stash[k].get<oram_ntt::block_id>();
+          uint32_t s_leaf_label = m_stash[k].get<oram_ntt::leaf_label>();
+          uint32_t s_valid_item_num = m_stash[k].get<oram_ntt::valid_item_num>();
+          bool flag = s_block_id > 0 && !updated_flag
+                      && fit_in_path(bucket_index, s_leaf_label, leaf);
+          
+          oset_value(&b_block_id, s_block_id, flag);
+          oset_value(&b_leaf_label, s_leaf_label, flag);
+          oset_value(&b_valid_item_num, s_valid_item_num, flag);
+          oset_bytes(encrypted_batch.data(), m_stash[k].get<oram_ntt::encrypted_batch>().data(), 
+                      encrypted_batch.size(), flag);\
+          
+          oset_value(&s_block_id, 0, flag);
+          oset_value(&s_leaf_label, 0, flag);
+          oset_value(&s_valid_item_num, 0, flag);
 
-    for(uint32_t i = 0; i < m_stash.size(); ++i) {
-      if(m_stash[i].get<oram_ntt::block_id>() > 0) {
-        uint8_t low_level = get_level(leaf, m_stash[i].get<oram_ntt::leaf_label>());
-        for(int level = low_level; level >= 0; --level) {
-          for(uint8_t k = 0; k < oram::BucketSizeZ; ++k) {
-            if(m_decrypted_path[level].get<oram_ntt::bucket>()[k].get<oram_ntt::block_id>() == 0) {
-              m_decrypted_path[level].get<oram_ntt::bucket>()[k].set
-                  <oram_ntt::block_id, oram_ntt::leaf_label, 
-                  oram_ntt::valid_item_num, oram_ntt::encrypted_batch>
-                  (m_stash[i].get<oram_ntt::block_id>(), m_stash[i].get<oram_ntt::leaf_label>(), 
-                  m_stash[i].get<oram_ntt::valid_item_num>(), m_stash[i].get<oram_ntt::encrypted_batch>());
+          oset_flag(&updated_flag, true, flag);
 
-              m_stash[i].set<oram_ntt::block_id, oram_ntt::leaf_label, 
-                  oram_ntt::valid_item_num>(0, 0, 0);
-              
-              break;
-
-            }
-          }
-
-          if(m_stash[i].get<oram_ntt::block_id>() == 0) {
-            break;
-          }
+          m_stash[k].set<oram_ntt::block_id, oram_ntt::leaf_label, oram_ntt::valid_item_num>
+                        (s_block_id, s_leaf_label, s_valid_item_num);
         }
+
+        block_array[j].set<oram_ntt::block_id, oram_ntt::leaf_label, 
+                           oram_ntt::valid_item_num, oram_ntt::encrypted_batch>
+                           (b_block_id, b_leaf_label, b_valid_item_num, encrypted_batch);
+
       }
+      m_decrypted_path[i].set<oram_ntt::bucket>(block_array);
+      bucket_index = (bucket_index - 1) / 2;
     }
+
+
+    // for(auto &bu : m_decrypted_path) {
+    //   auto block_array = bu.get<oram_ntt::bucket>();
+    //   for(uint8_t j = 0; j < oram::BucketSizeZ; ++j) {
+    //     block_array[j].set<oram_ntt::block_id, oram_ntt::leaf_label, oram_ntt::valid_item_num>(0, 0, 0);
+    //   }
+    //   bu.set<oram_ntt::bucket>(block_array);
+    // }
+
+    // for(uint32_t i = 0; i < m_stash.size(); ++i) {
+    //   if(m_stash[i].get<oram_ntt::block_id>() > 0) {
+    //     uint8_t low_level = get_level(leaf, m_stash[i].get<oram_ntt::leaf_label>());
+    //     for(int level = low_level; level >= 0; --level) {
+    //       for(uint8_t k = 0; k < oram::BucketSizeZ; ++k) {
+    //         if(m_decrypted_path[level].get<oram_ntt::bucket>()[k].get<oram_ntt::block_id>() == 0) {
+    //           m_decrypted_path[level].get<oram_ntt::bucket>()[k].set
+    //               <oram_ntt::block_id, oram_ntt::leaf_label, 
+    //               oram_ntt::valid_item_num, oram_ntt::encrypted_batch>
+    //               (m_stash[i].get<oram_ntt::block_id>(), m_stash[i].get<oram_ntt::leaf_label>(), 
+    //               m_stash[i].get<oram_ntt::valid_item_num>(), m_stash[i].get<oram_ntt::encrypted_batch>());
+
+    //           m_stash[i].set<oram_ntt::block_id, oram_ntt::leaf_label, 
+    //               oram_ntt::valid_item_num>(0, 0, 0);
+              
+    //           break;
+
+    //         }
+    //       }
+
+    //       if(m_stash[i].get<oram_ntt::block_id>() == 0) {
+    //         break;
+    //       }
+    //     }
+    //   }
+    // }
   }
 
   bool update_stash() {

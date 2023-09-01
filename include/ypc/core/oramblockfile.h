@@ -16,17 +16,17 @@ using oram_ntt = ypc::oram::nt<ypc::bytes>;
 namespace ypc {
 namespace oram {
 
-template <uint64_t OramBlockNumLimit_t,
-          uint32_t OramBlockSizeLimit_t, uint8_t OramBucketSize_t>
+template <uint64_t OramBlockNumLimit_t>
+        //   uint32_t OramBlockSizeLimit_t, uint8_t OramBucketSize_t>
 class oramblockfile {
 public: 
     const static uint64_t BlockNumLimit = OramBlockNumLimit_t;
-    const static uint32_t DataSizeB = OramBlockSizeLimit_t;
-    const static uint8_t BucketSizeZ = OramBucketSize_t;
+    // const static uint32_t DataSizeB = OramBlockSizeLimit_t;
+    // const static uint8_t BucketSizeZ = OramBucketSize_t;
     const static uint32_t hash_size = 32;
 
     oramblockfile(const std::string &file_path): m_file(), m_file_path(file_path), m_header(), m_id_map() {
-        open_for_write();
+        // open_for_write();
     }
 
     oramblockfile(const oramblockfile &) = delete;
@@ -67,7 +67,7 @@ public:
 
     void read_header() {
         m_file.seekg(0, m_file.beg);
-        m_file.read((char *)&m_header, sizeof(header));
+        m_file.read((char *)&m_header, sizeof(m_header));
     }
 
     void read_id_map() {
@@ -103,7 +103,7 @@ public:
         return true;
     }
 
-    bool get_block_id(bytes &item_index_field_hash, uint32_t *block_id) {
+    bool get_block_id(const bytes &item_index_field_hash, uint32_t *block_id) {
         read_id_map();
         if(m_id_map.find(item_index_field_hash) == m_id_map.end()) {
             return false;
@@ -132,7 +132,7 @@ public:
         return m_header.batch_str_size;
     }
 
-    bool update_position_map(uint8_t * position_map, uint32_t len) {
+    bool update_position_map(const uint8_t * position_map, uint32_t len) {
         read_header();
         m_file.clear();
 
@@ -173,7 +173,7 @@ public:
         return true;
     }
 
-    bool upload_path(uint32_t leaf, uint8_t * encrpypted_path, uint32_t len) {
+    bool upload_path(uint32_t leaf, const uint8_t * encrpypted_path, uint32_t len) {
         read_header();
         m_file.clear();
 
@@ -213,9 +213,9 @@ public:
         return true;
     }
 
-    bool update_stash(uint8_t * stash, uint32_t len) {
-        read_header();
-        m_file.clear();
+    bool update_stash(const uint8_t * stash, uint32_t len) {
+        // read_header();
+        // m_file.clear();
 
         m_header.stash_size = len;
         m_file.seekp(0, m_file.beg);
@@ -293,7 +293,7 @@ public:
         return true;
     }
 
-    bool update_merkle_hash(uint32_t leaf, uint8_t * merkle_hash, uint32_t len) {
+    bool update_merkle_hash(uint32_t leaf, const uint8_t * merkle_hash, uint32_t len) {
         read_header();
         m_file.clear();
 
@@ -365,6 +365,20 @@ private:
         }
         std::reverse(offsets.begin(), offsets.end());
     }
+
+    struct header {
+        uint32_t block_num;
+        uint32_t bucket_num_N;
+        uint8_t level_num_L;
+        uint32_t bucket_str_size;
+        uint32_t batch_str_size;
+        long int id_map_filepos;
+        long int oram_tree_filepos;
+        long int position_map_filepos;
+        long int merkle_tree_filepos;
+        long int stash_filepos;
+        uint64_t stash_size;
+    };
 
 
     std::fstream m_file;

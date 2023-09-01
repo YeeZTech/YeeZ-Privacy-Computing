@@ -21,7 +21,7 @@ if __name__ == "__main__":
     plugin = os.path.join(
         common.lib_dir, "libperson_reader_oram{}.so".format(common.debug_postfix()))
     
-    con_read_num = 1
+    con_read_num = 10
 
     cj = classic_job(crypto, name, data, parser, plugin, con_read_num, {
         'request-use-js': True,
