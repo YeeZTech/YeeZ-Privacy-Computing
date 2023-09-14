@@ -20,5 +20,27 @@ target_include_directories(fid_analyzer PRIVATE
 
 install(TARGETS fid_analyzer
   DESTINATION "${bin_install_dir}")
+
+add_library(fid_analyzer_lib 
+  lib.cpp
+  sgx_bridge.cpp
+  #parsers/parser.cpp
+  parsers/tg_parser.cpp)
+set_property(TARGET fid_analyzer_lib PROPERTY OUTPUT_NAME fid_analyzer)
+target_link_libraries(fid_analyzer_lib 
+  stbox_common
+  core
+  core_parser_module
+  keymgr_module
+  keymgr_utils
+  glog
+  )
+target_include_directories(fid_analyzer_lib PRIVATE
+  "${PROJECT_SOURCE_DIR}/toolkit/analyzer/"
+  "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
+  )
+install(TARGETS fid_analyzer_lib
+  DESTINATION "${bin_install_dir}")
+
 AddClangTidy(fid_analyzer)
 EnableCoverage(fid_analyzer)

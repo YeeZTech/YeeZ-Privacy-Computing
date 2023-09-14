@@ -8,6 +8,7 @@
 *.lo
 *.o
 *.obj
+cmake-build-debug/
 
 # Precompiled Headers
 *.gch
@@ -43,4 +44,5 @@ generate
 test/integrate
 test/project_path.h
 .vscode/
+.idea/
 hash_hex/
