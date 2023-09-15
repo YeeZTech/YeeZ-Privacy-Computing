@@ -10,3 +10,6 @@
 [submodule "vendor/taskflow"]
 	path = vendor/taskflow
 	url = https://github.com/taskflow/taskflow.git
+[submodule "vendor/spdlog"]
+	path = vendor/spdlog
+	url = https://github.com/gabime/spdlog.git
