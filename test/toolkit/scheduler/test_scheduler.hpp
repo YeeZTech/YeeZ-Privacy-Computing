@@ -4,6 +4,22 @@
 #include "job_step.hpp"
 
 namespace cluster {
+    nlohmann::json intermediate_seal_data(std::string encrypted_data, std::string sealed_data_url)
+    {
+        nlohmann::json ret;
+
+        std::string cmd = Common::bin_dir / std::filesystem::path("./intermediate_data_provider");
+        cmd = cmd + " --encrypted-data-hex ";
+        cmd = cmd + encrypted_data;
+        cmd = cmd + " --sealed-data-url ";
+        cmd = cmd + sealed_data_url;
+        std::string output = Common::execute_cmd(cmd);
+
+        ret["cmd"] = cmd;
+        ret["output"] = output;
+        return ret;
+    }
+
     class TaskGraph_Job {
     public:
         TaskGraph_Job(
@@ -21,7 +37,7 @@ namespace cluster {
                 std::string dian_pkey,
                 std::string enclave_hash,
                 uint64_t idx,
-                std::string tasks,
+                std::vector<nlohmann::json> tasks,
                 std::vector<uint64_t> prev_tasks_idx);
 
         nlohmann::json run(

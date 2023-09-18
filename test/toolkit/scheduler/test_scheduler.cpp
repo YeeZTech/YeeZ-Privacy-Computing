@@ -23,7 +23,7 @@ nlohmann::json TaskGraph_Job::handle_input_data(
         std::string dian_pkey,
         std::string enclave_hash,
         uint64_t idx,
-        std::string tasks,
+        std::vector<nlohmann::json> tasks,
         std::vector<uint64_t> prev_tasks_idx) {
     nlohmann::json ret;
 
@@ -44,7 +44,7 @@ nlohmann::json TaskGraph_Job::handle_input_data(
     summary["sealed-data-url"] = sealed_data_url;
     summary["sealed-output"] = sealed_output;
 
-    if (prev_tasks_idx.size() == 0)
+    if (prev_tasks_idx.empty())
     {
         nlohmann::json r = JobStep::seal_data(
                 crypto,
@@ -56,7 +56,37 @@ nlohmann::json TaskGraph_Job::handle_input_data(
     }
     else
     {
-        // TODO: fill-in logic 
+        nlohmann::json task = tasks[idx];
+        std::string name = task["name"];
+        std::string parser_output_file = name + "_parser_output.json";
+        std::ifstream ifs_pof(parser_output_file);
+        nlohmann::json output_json = nlohmann::json::parse(ifs_pof);
+
+        nlohmann::json r = intermediate_seal_data(
+                output_json["encrypted_result"],
+                sealed_data_url);
+
+        std::ofstream ofs_so(sealed_output);
+        ofs_so << "data_id = " << output_json["intermediate_data_hash"] << std::endl;
+        ofs_so << "pkey_kgt = " << output_json["data_kgt_pkey"] << std::endl;
+
+        // TODO: read sealed output
+        std::string data_hash = JobStep::read_sealed_output(sealed_output, "data_id");
+        std::string flat_kgt_pkey = JobStep::read_sealed_output(sealed_output, "pkey_kgt");
+        summary["data-hash"] = data_hash;
+        // TODO: print("done seal data with hash: {}, cmd: {}".format(data_hash, r[0]))
+        all_outputs.push_back(sealed_data_url);
+        all_outputs.push_back(sealed_output);
+
+        std::vector<std::string> data_forward_json_list;
+        for (auto kf_iter : key_files)
+        {
+            std::ifstream ifs_kf(kf_iter);
+            nlohmann::json shukey_json = nlohmann::json::parse(ifs_kf);
+            std::string forward_result = kf_iter + ".shukey.foward.json";
+            // TODO: job_step.forward_message
+
+        }
     }
 
     return ret;

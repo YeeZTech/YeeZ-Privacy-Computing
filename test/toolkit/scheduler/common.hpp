@@ -48,7 +48,7 @@ namespace cluster {
             return result;
         }
 
-        static nlohmann::json fid_termius(nlohmann::json kwargs)
+        static nlohmann::json fid_terminus(nlohmann::json kwargs)
         {
             nlohmann::json ret;
 
@@ -62,6 +62,26 @@ namespace cluster {
 
             ret["cmd"] = cmd;
             ret["output"] = output;
+
+            return ret;
+        }
+
+        static nlohmann::json fid_data_provider(nlohmann::json kwargs)
+        {
+            nlohmann::json ret;
+
+            std::string cmd = Common::bin_dir / std::filesystem::path("./data_provider");
+            for (nlohmann::json::iterator iter = kwargs.begin(); iter != kwargs.end(); ++iter)
+            {
+                cmd = cmd + " --" + iter.key() + " " + to_string(iter.value());
+            }
+
+            std::string output = execute_cmd(cmd);
+
+            ret["cmd"] = cmd;
+            ret["output"] = output;
+
+            return ret;
         }
 
     public:
