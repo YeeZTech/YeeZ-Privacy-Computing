@@ -27,18 +27,41 @@ namespace cluster {
         }
 
     public:
-        static void execute_cmd(std::string cmd)
-        {
-            std::system(cmd.c_str());
+//        static std::string execute_cmd(std::string cmd)
+//        {
+//            std::system(cmd.c_str());
+//            return std::string{""};
+//        }
+
+        // ack: https://stackoverflow.com/questions/478898/how-do-i-execute-a-command-and-get-the-output-of-the-command-within-c-using-po
+        static std::string execute_cmd(std::string cmd) {
+            auto cmd_cc = cmd.c_str();
+            std::array<char, 128> buffer;
+            std::string result;
+            std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd_cc, "r"), pclose);
+            if (!pipe) {
+                throw std::runtime_error("popen() failed!");
+            }
+            while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+                result += buffer.data();
+            }
+            return result;
         }
 
-        void fid_termius(std::list<std::pair<std::string, std::string>> kwargs)
+        static nlohmann::json fid_termius(nlohmann::json kwargs)
         {
-            std::string cmd = bin_dir / std::filesystem::path("./ydump");
-            for (auto iter : kwargs)
-            {
+            nlohmann::json ret;
 
+            std::string cmd = bin_dir / std::filesystem::path("./yterminus");
+            for (nlohmann::json::iterator iter = kwargs.begin(); iter != kwargs.end(); ++iter)
+            {
+                cmd = cmd + " --" + iter.key() + " " + to_string(iter.value());
             }
+
+            std::string output = execute_cmd(cmd);
+
+            ret["cmd"] = cmd;
+            ret["output"] = output;
         }
 
     public:

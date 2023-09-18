@@ -5,20 +5,59 @@ using namespace cluster;
 TaskGraph_Job::TaskGraph_Job(
         std::string crypto,
         nlohmann::json all_tasks,
-        nlohmann::json config) {
+        std::vector<std::string> all_output,
+        nlohmann::json config,
+        std::vector<std::string> key_files) :
+        crypto(crypto),
+        all_tasks(all_tasks),
+        all_outputs(all_output),
+        config(config),
+        key_files(key_files) {
 
 }
 
 nlohmann::json TaskGraph_Job::handle_input_data(
-        std::string summary,
+        nlohmann::json summary,
         std::string data_url,
         std::string plugin_url,
         std::string dian_pkey,
         std::string enclave_hash,
-        std::string idx,
+        uint64_t idx,
         std::string tasks,
-        std::string prev_tasks_idx) {
+        std::vector<uint64_t> prev_tasks_idx) {
     nlohmann::json ret;
+
+    // 1.1 generate data key
+    std::string data_key_file =
+            data_url +
+            ".data" +
+            std::to_string(idx) +
+            ".key.json";
+    nlohmann::json data_shukey_json = JobStep::gen_key(crypto, data_key_file);
+    key_files.push_back(data_key_file);
+
+    // 2. call data provider to seal data
+    std::string sealed_data_url = data_url + ".sealed";
+    std::string sealed_output = data_url + ".sealed.output";
+    summary["data-url"] = data_url;
+    summary["plugin-path"] = plugin_url;
+    summary["sealed-data-url"] = sealed_data_url;
+    summary["sealed-output"] = sealed_output;
+
+    if (prev_tasks_idx.size() == 0)
+    {
+        nlohmann::json r = JobStep::seal_data(
+                crypto,
+                data_url,
+                plugin_url,
+                sealed_data_url,
+                sealed_output,
+                data_key_file);
+    }
+    else
+    {
+        // TODO: fill-in logic 
+    }
 
     return ret;
 }
@@ -78,7 +117,12 @@ int main(const int argc, const char *argv[]) {
         "remove-files": "true"
     )");
 
-    TaskGraph_Job tj(crypto, all_tasks, config);
+    TaskGraph_Job tj(
+            crypto,
+            all_tasks,
+            std::vector<std::string>(),
+            config,
+            std::vector<std::string>());
     tj.run(all_tasks, 0, std::vector<uint64_t>());
     tj.run(all_tasks, 1, std::vector<uint64_t>());
     return 0; 

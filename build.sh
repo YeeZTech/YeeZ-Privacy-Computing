@@ -84,7 +84,7 @@ compile_project() {
   # clean_build_path $ypc_home $build_path
 
   cmake -DCMAKE_INSTALL_PREFIX=$HOME -DCMAKE_BUILD_TYPE=$build_type -DCMAKE_DEBUG_POSTFIX=$suffix -B $build_path
-  cmake --build $build_path -j
+  cmake --build $build_path -j8
   #cmake --install $build_path
 
   if [[ "$build_type" == "Release" ]]; then
