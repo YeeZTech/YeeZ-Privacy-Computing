@@ -6,7 +6,8 @@ add_executable(scheduler
     scheduler.cpp)
 target_include_directories(scheduler PUBLIC
     "${PROJECT_SOURCE_DIR}/vendor/json/include"
-    "${PROJECT_SOURCE_DIR}/vendor/taskflow")
+    "${PROJECT_SOURCE_DIR}/vendor/taskflow"
+    "${PROJECT_SOURCE_DIR}/vendor/spdlog")
 target_link_libraries(scheduler
     pthread)
 install(TARGETS scheduler
@@ -21,7 +22,8 @@ set_property(TARGET scheduler_lib PROPERTY OUTPUT_NAME scheduler)
 #        LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 target_include_directories(scheduler_lib PUBLIC
     "${PROJECT_SOURCE_DIR}/vendor/json/include"
-    "${PROJECT_SOURCE_DIR}/vendor/taskflow")
+    "${PROJECT_SOURCE_DIR}/vendor/taskflow"
+    "${PROJECT_SOURCE_DIR}/vendor/spdlog")
 target_link_libraries(scheduler_lib
     pthread)
 install(TARGETS scheduler_lib

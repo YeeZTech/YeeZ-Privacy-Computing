@@ -2,6 +2,36 @@
 
 using namespace cluster;
 
+TaskGraph_Job::TaskGraph_Job(
+        std::string crypto,
+        nlohmann::json all_tasks,
+        nlohmann::json config) {
+
+}
+
+nlohmann::json TaskGraph_Job::handle_input_data(
+        std::string summary,
+        std::string data_url,
+        std::string plugin_url,
+        std::string dian_pkey,
+        std::string enclave_hash,
+        std::string idx,
+        std::string tasks,
+        std::string prev_tasks_idx) {
+    nlohmann::json ret;
+
+    return ret;
+}
+
+nlohmann::json TaskGraph_Job::run(
+        std::vector<std::string> tasks,
+        uint64_t idx,
+        std::vector<uint64_t> prev_tasks_idx) {
+    nlohmann::json ret;
+
+    return ret;
+}
+
 std::unique_ptr<JobStep> jobStep;
 std::unique_ptr<Common> common;
 
@@ -43,5 +73,13 @@ int main(const int argc, const char *argv[]) {
     }
     )");
 
+    nlohmann::json config = nlohmann::json::parse(R"(
+        "request-use-js": "true",
+        "remove-files": "true"
+    )");
+
+    TaskGraph_Job tj(crypto, all_tasks, config);
+    tj.run(all_tasks, 0, std::vector<uint64_t>());
+    tj.run(all_tasks, 1, std::vector<uint64_t>());
     return 0; 
 }
