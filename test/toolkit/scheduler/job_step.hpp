@@ -10,6 +10,8 @@
 #include <list>
 #include <fstream>
 
+#include <boost/algorithm/string.hpp>
+
 namespace cluster {
     class JobStep {
     public:
@@ -57,12 +59,6 @@ namespace cluster {
             return Common::fid_data_provider(param);
         }
 
-        std::string& trim_string(std::string& in) {
-            return in = std::ranges::to<std::string>(in |
-                    std::views::drop_while(std::isspace) | std::views::reverse |
-                    std::views::drop_while(std::isspace) | std::views::reverse);
-        }
-
         static std::string read_sealed_output(std::string filepath, std::string field)
         {
             std::ifstream ifs(filepath);
@@ -72,11 +68,11 @@ namespace cluster {
             {
                 std::istringstream iss(line);
                 std::string iss_data;
-                std::get_line(iss, data, '=');
+                std::getline(iss, iss_data, '=');
                 std::string key, value;
                 iss >> key >> value;
-                trim_string(key);
-                trim_string(value);
+                boost::trim(key);
+                boost::trim(value);
                 if (key == field)
                 {
                     return value;
