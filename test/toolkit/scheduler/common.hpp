@@ -42,10 +42,10 @@ namespace cluster {
         }
 
     public:
-        static std::string sdk_dir;
-        static std::string bin_dir;
-        static std::string lib_dir;
-        static struct {
+        inline static std::string sdk_dir;
+        inline static std::string bin_dir;
+        inline static std::string lib_dir;
+        inline static struct {
             std::string stdeth;
             std::string gmssl;
         } kmgr_enclave;
