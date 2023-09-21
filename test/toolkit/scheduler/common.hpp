@@ -13,6 +13,7 @@
 #include <list>
 
 #include "nlohmann/json.hpp"
+#include <boost/algorithm/string.hpp>
 
 namespace cluster {
     class Common {
@@ -84,14 +85,30 @@ namespace cluster {
             return ret;
         }
 
-        static nlohmann::json fid_keymgr_list(std::string crypto = std::string{"stdeth"})
+        static std::map<uint64_t, std::string> fid_keymgr_list(std::string crypto = std::string{"stdeth"})
         {
-            nlohmann::json ret;
+            std::map<uint64_t, std::string> keys;
 
-            // TODO: cmd 
-            std::string cmd;
+            // TODO: cmd
+            std::string cmd = bin_dir / std::filesystem::path("./keymgr_tool");
+            cmd = cmd + " --crypto " + crypto;
+            std::string output = execute_cmd(cmd + " --list");
 
-            return ret;
+            std::vector<std::string> ls;
+            std::istringstream f(output);
+            std::string s;
+
+            std::string tkeyid = std::string{""};
+
+            while (getline(f, s, '\n')) {
+                boost::trim(s);
+                if (s.rfind(">> key ", 0) == 0)
+                {
+                    // TODO: split
+                }
+            }
+
+            return keys;
         }
 
     public:
