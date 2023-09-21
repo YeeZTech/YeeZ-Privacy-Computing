@@ -69,34 +69,81 @@ nlohmann::json TaskGraph_Job::handle_input_data(
         std::ofstream ofs_so(sealed_output);
         ofs_so << "data_id = " << output_json["intermediate_data_hash"] << std::endl;
         ofs_so << "pkey_kgt = " << output_json["data_kgt_pkey"] << std::endl;
-
-        // TODO: read sealed output
-        std::string data_hash = JobStep::read_sealed_output(sealed_output, "data_id");
-        std::string flat_kgt_pkey = JobStep::read_sealed_output(sealed_output, "pkey_kgt");
-        summary["data-hash"] = data_hash;
-        // TODO: print("done seal data with hash: {}, cmd: {}".format(data_hash, r[0]))
-        all_outputs.push_back(sealed_data_url);
-        all_outputs.push_back(sealed_output);
-
-        std::vector<std::string> data_forward_json_list;
-        for (auto kf_iter : key_files)
-        {
-            std::ifstream ifs_kf(kf_iter);
-            nlohmann::json shukey_json = nlohmann::json::parse(ifs_kf);
-            std::string forward_result = kf_iter + ".shukey.foward.json";
-            // TODO: job_step.forward_message
-
-        }
     }
+
+    // TODO: read sealed output
+    std::string data_hash = JobStep::read_sealed_output(sealed_output, "data_id");
+    std::string flat_kgt_pkey = JobStep::read_sealed_output(sealed_output, "pkey_kgt");
+    summary["data-hash"] = data_hash;
+    // TODO: print("done seal data with hash: {}, cmd: {}".format(data_hash, r[0]))
+    all_outputs.push_back(sealed_data_url);
+    all_outputs.push_back(sealed_output);
+
+    std::vector<nlohmann::json> data_forward_json_list;
+    for (auto key_file : key_files)
+    {
+        std::ifstream ifs_kf(key_file);
+        nlohmann::json shukey_json = nlohmann::json::parse(ifs_kf);
+        std::string forward_result = key_file + ".shukey.foward.json";
+        // TODO: job_step.forward_message
+        nlohmann::json d = JobStep::forward_message(
+                crypto,
+                key_file,
+                dian_pkey,
+                enclave_hash,
+                forward_result);
+
+        nlohmann::json forward_json;
+        forward_json["shu_pkey"] = shukey_json["public-key"];
+        forward_json["encrypted_shu_skey"] = d["encrypted_skey"];
+        forward_json["shu_forward_signature"] = d["forward_sig"];
+        forward_json["enclave_hash"] = d["enclave_hash"];
+
+        all_outputs.push_back(forward_result);
+        data_forward_json_list.push_back(forward_json);
+
+    }
+
+    nlohmann::json data_obj;
+    data_obj["input_data_url"] = sealed_data_url;
+    data_obj["input_data_hash"] = data_hash;
+    data_obj["input_data_hash"]["kgt_pkey"] = flat_kgt_pkey;
+    data_obj["input_data_hash"]["data_shu_infos"] = data_forward_json_list;
+    data_obj["tag"] = std::string{"0"};
+
+    ret["data_obj"] = data_obj;
+    ret["flat_kgt_pkey"] = flat_kgt_pkey;
 
     return ret;
 }
 
 nlohmann::json TaskGraph_Job::run(
-        std::vector<std::string> tasks,
+        std::vector<nlohmann::json> tasks,
         uint64_t idx,
         std::vector<uint64_t> prev_tasks_idx) {
     nlohmann::json ret;
+
+    nlohmann::json task = tasks[idx];
+    std::string name = task["name"];
+    std::string data_urls = task["data"];
+    std::string plugin_urls = task["reader"];
+    std::string parser_url = task["parser"];
+    std::string input_param = task["param"];
+
+    // 1. generate keys
+    // 1.2 generate algo key
+    std::string algo_key_file = name + ".algo" + std::to_string(idx) + ".key.json";
+    nlohmann::json algo_shukey_json = JobStep::gen_key(crypto, algo_key_file);
+    // self.all_outputs.append(algo_key_file)
+    key_files.push_back(algo_key_file);
+    // 1.3 generate user key
+    std::string user_key_file = name + ".user" + std::to_string(idx) + ".key.json";
+    nlohmann::json user_shukey_json = JobStep::gen_key(crypto, user_key_file);
+    // self.all_outputs.append(user_key_file)
+    key_files.push_back(user_key_file);
+
+    // TODO: get dian pkey
+
 
     return ret;
 }

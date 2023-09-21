@@ -82,6 +82,37 @@ namespace cluster {
             // FIXME: should report error here
             return std::string{""};
         }
+
+        static nlohmann::json forward_message(
+                std::string crypto,
+                std::string shukey_file,
+                std::string dian_pkey,
+                std::string enclave_hash,
+                std::string forward_result
+                )
+        {
+            nlohmann::json param;
+            param["crypto"] = crypto;
+            param["forward"] = std::string{""};
+            param["use-privatekey-file"] = shukey_file;
+            param["tee-pubkey"] = dian_pkey;
+            param["output"] = forward_result;
+
+            if (enclave_hash != "")
+            {
+                param["use-enclave-hash"] = enclave_hash;
+            }
+            Common::fid_terminus(param);
+
+            std::ifstream f(forward_result);
+            nlohmann::json output = nlohmann::json::parse(f);
+            return output;
+        }
+
+        static void get_first_key(std::string crypto)
+        {
+            // TODO: fid_keymgr_list
+        }
     };
 }
 

@@ -84,6 +84,16 @@ namespace cluster {
             return ret;
         }
 
+        static nlohmann::json fid_keymgr_list(std::string crypto = std::string{"stdeth"})
+        {
+            nlohmann::json ret;
+
+            // TODO: cmd 
+            std::string cmd;
+
+            return ret;
+        }
+
     public:
         inline static std::string sdk_dir;
         inline static std::string bin_dir;

@@ -41,7 +41,7 @@ namespace cluster {
                 std::vector<uint64_t> prev_tasks_idx);
 
         nlohmann::json run(
-                std::vector<std::string> tasks,
+                std::vector<nlohmann::json> tasks,
                 uint64_t idx,
                 std::vector<uint64_t> prev_tasks_idx);
 
