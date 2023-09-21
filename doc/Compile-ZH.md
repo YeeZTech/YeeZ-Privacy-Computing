@@ -8,6 +8,7 @@ Fidelius的构建系统使用CMake（>=3.12)。
 ## 获取源代码
 
 `git clone https://github.com/YeeZTech/YeeZ-Privacy-Computing.git`
+
 `git submodule update --init`
 
 ## 编译Fidelius
