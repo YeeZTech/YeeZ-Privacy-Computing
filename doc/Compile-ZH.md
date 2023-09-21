@@ -3,7 +3,12 @@
 注意：本文内容仅适合Fidelius的开发者，如果您只是需要使用Fidelius或基于Fidelius进行开发，请直接安装二进制文件！
 
 ## 简介
-Fidelius的构建系统使用CMake（>=3.12)，
+Fidelius的构建系统使用CMake（>=3.12)。
+
+## 获取源代码
+
+`git clone https://github.com/YeeZTech/YeeZ-Privacy-Computing.git`
+`git submodule update --init`
 
 ## 编译Fidelius
 
