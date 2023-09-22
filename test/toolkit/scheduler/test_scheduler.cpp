@@ -2,6 +2,28 @@
 
 using namespace cluster;
 
+nlohmann::json decrypt_result(
+        std::string crypto,
+        std::string encrypted_result,
+        std::string kgt_pkey,
+        std::string key_json_list,
+        std::string output)
+{
+    std::string cmd = Common::bin_dir / std::filesystem::path("./result_decrypt") ;
+    cmd = cmd +
+            " --crypto " + crypto +
+            " --encrypted-result " + encrypted_result +
+            " --kgt-pkey " + kgt_pkey +
+            " --key-json-file " + key_json_list +
+            " --output " + output;
+    std::string cmd_output = Common::execute_cmd(cmd);
+
+    nlohmann::json ret;
+    ret["cmd"] = cmd;
+    ret["output"] = cmd_output;
+    return ret;
+}
+
 TaskGraph_Job::TaskGraph_Job(
         std::string crypto,
         nlohmann::json all_tasks,
@@ -220,9 +242,9 @@ nlohmann::json TaskGraph_Job::run(
     summary["encrypted-result"] = result_json["encrypted_result"];
     summary["result-signature"] = result_json["result_signature"];
     std::string summary_file = name + ".summary.json";
-    std:: ofstream ofs_sf(summary_file);
-    // TODO: dump
-    // summary.dump(ofs_sf);
+    std::ofstream ofs_sf(summary_file);
+    ofs_sf << summary.dump();
+    ofs_sf.close();
     all_outputs.push_back(summary_file);
     JobStep::remove_files(all_outputs);
 
@@ -234,12 +256,16 @@ nlohmann::json TaskGraph_Job::run(
     }
     std::string all_keys_file = name + ".all-keys.json";
     std::ofstream ofs_akf(all_keys_file);
+    nlohmann::json kjl;
+    kjl["key_pair_list"] = key_json_list;
     // dump
+    ofs_akf << kjl.dump();
+    ofs_akf.close();
 
     ret["encrypted_result"] = result_json["encrypted_result"];
     ret["data_kgt_pkey"] = result_json["data_kgt_pkey"];
     ret["all_keys_file"] = all_keys_file;
-    
+
     return ret;
 }
 
@@ -297,5 +323,8 @@ int main(const int argc, const char *argv[]) {
             std::vector<std::string>());
     tj.run(all_tasks, 0, std::vector<uint64_t>());
     tj.run(all_tasks, 1, std::vector<uint64_t>());
+    nlohmann::json result = tj.run(all_tasks, 2, std::vector<uint64_t>{0, 1});
+    std::string result_file = "taskgraph.result.output";
+
     return 0; 
 }
