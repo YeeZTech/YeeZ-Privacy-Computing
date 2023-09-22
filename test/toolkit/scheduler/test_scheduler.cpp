@@ -93,11 +93,10 @@ nlohmann::json TaskGraph_Job::handle_input_data(
         ofs_so << "pkey_kgt = " << output_json["data_kgt_pkey"] << std::endl;
     }
 
-    // TODO: read sealed output
     std::string data_hash = JobStep::read_sealed_output(sealed_output, "data_id");
     std::string flat_kgt_pkey = JobStep::read_sealed_output(sealed_output, "pkey_kgt");
     summary["data-hash"] = data_hash;
-    // TODO: print("done seal data with hash: {}, cmd: {}".format(data_hash, r[0]))
+    // print("done seal data with hash: {}, cmd: {}".format(data_hash, r[0]))
     all_outputs.push_back(sealed_data_url);
     all_outputs.push_back(sealed_output);
 
@@ -107,7 +106,6 @@ nlohmann::json TaskGraph_Job::handle_input_data(
         std::ifstream ifs_kf(key_file);
         nlohmann::json shukey_json = nlohmann::json::parse(ifs_kf);
         std::string forward_result = key_file + ".shukey.foward.json";
-        // TODO: job_step.forward_message
         nlohmann::json d = JobStep::forward_message(
                 crypto,
                 key_file,

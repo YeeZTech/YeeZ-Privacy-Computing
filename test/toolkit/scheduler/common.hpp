@@ -107,7 +107,6 @@ namespace cluster {
                 boost::trim(iter_output);
                 if (iter_output.rfind(">> key ", 0) == 0)
                 {
-                    // TODO: split
                     std::vector<std::string> svec_iter_output;
                     std::istringstream iss_iter_output(iter_output);
                     std::string s_iter_output;
@@ -120,7 +119,6 @@ namespace cluster {
                 }
                 if (iter_output.rfind("public key:", 0) == 0)
                 {
-                    // TODO: split
                     std::vector<std::string> svec_iter_output;
                     std::istringstream iss_iter_output(iter_output);
                     std::string s_iter_output;

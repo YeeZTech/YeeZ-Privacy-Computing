@@ -141,7 +141,6 @@ namespace cluster {
             param["enclave"] = parser_url;
             param["output"] = "info.json";
 
-            // TODO: fid_dump
             nlohmann::json r = Common::fid_dump(param);
 
             std::ifstream ifs("info.json");
@@ -158,7 +157,6 @@ namespace cluster {
                 nlohmann::json config)
         {
             nlohmann::json param;
-            // TODO: param
             param["crypto"] = crypto;
             param["request"] = "";
             param["use-param"] = input_param;
@@ -202,7 +200,7 @@ namespace cluster {
 
             nlohmann::json parser_input;
             parser_input["shu_info"]["shu_pkey"] = shukey_json["public-key"];
-            // TODO:
+            // TODO: logic
 
             return ret;
         }
