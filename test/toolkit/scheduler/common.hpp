@@ -14,6 +14,7 @@
 
 #include "nlohmann/json.hpp"
 #include <boost/algorithm/string.hpp>
+#include <fstream>
 
 namespace cluster {
     class Common {
@@ -85,30 +86,119 @@ namespace cluster {
             return ret;
         }
 
-        static std::map<uint64_t, std::string> fid_keymgr_list(std::string crypto = std::string{"stdeth"})
+        static nlohmann::json fid_keymgr_list(std::string crypto = std::string{"stdeth"})
         {
-            std::map<uint64_t, std::string> keys;
-
-            // TODO: cmd
             std::string cmd = bin_dir / std::filesystem::path("./keymgr_tool");
             cmd = cmd + " --crypto " + crypto;
             std::string output = execute_cmd(cmd + " --list");
 
-            std::vector<std::string> ls;
-            std::istringstream f(output);
-            std::string s;
+            std::vector<std::string> svec_output;
+            std::istringstream iss_output(output);
+            std::string s_output;
 
             std::string tkeyid = std::string{""};
+            nlohmann::json keys;
 
-            while (getline(f, s, '\n')) {
-                boost::trim(s);
-                if (s.rfind(">> key ", 0) == 0)
+            while (getline(iss_output, s_output, '\n')) {
+                svec_output.push_back(s_output);
+            }
+            for (auto iter_output : svec_output)
+            {
+                boost::trim(iter_output);
+                if (iter_output.rfind(">> key ", 0) == 0)
                 {
                     // TODO: split
+                    std::vector<std::string> svec_iter_output;
+                    std::istringstream iss_iter_output(iter_output);
+                    std::string s_iter_output;
+                    while (getline(iss_iter_output, s_iter_output, ':'))
+                    {
+                        svec_iter_output.push_back(s_iter_output);
+                        boost::trim(svec_iter_output[1]);
+                        tkeyid = svec_iter_output[1];
+                    }
+                }
+                if (iter_output.rfind("public key:", 0) == 0)
+                {
+                    // TODO: split
+                    std::vector<std::string> svec_iter_output;
+                    std::istringstream iss_iter_output(iter_output);
+                    std::string s_iter_output;
+                    while (getline(iss_iter_output, s_iter_output, ':'))
+                    {
+                        svec_iter_output.push_back(s_iter_output);
+                        boost::trim(svec_iter_output[1]);
+                        std::string pkey = svec_iter_output[1];
+                        if (pkey.rfind(tkeyid, 0) == 0)
+                        {
+                            keys[tkeyid] = pkey;
+                        }
+                    }
                 }
             }
 
             return keys;
+        }
+
+        static nlohmann::json fid_keymgr_create(std::string user_id, std::string crypto = "")
+        {
+            nlohmann::json ret;
+
+            std::string cmd = bin_dir / std::filesystem::path("./keymgr_tool");
+            cmd = cmd + " --crypto " + crypto;
+
+            nlohmann::json param;
+            param["create"] = "";
+            param["user-id"] = user_id;
+
+            for (nlohmann::json::iterator iter = param.begin(); iter != param.end(); ++iter)
+            {
+                cmd = cmd + " --" + iter.key() + " " + to_string(iter.value());
+            }
+
+            std::string output = execute_cmd(cmd);
+
+            ret["cmd"] = cmd;
+            ret["output"] = output;
+
+            return ret;
+        }
+
+        static std::string get_keymgr_private_key(std::string keyid, std::string crypto_type = "stdeth")
+        {
+            std::string cmd = bin_dir / std::filesystem::path("./keymgr_tool");
+            cmd = cmd + " --crypto " + crypto_type;
+            std::string output = execute_cmd(cmd + " --list");
+
+            std::vector<std::string> ls;
+            boost::split(ls, output, boost::is_any_of("\n"));
+
+            std::vector<std::string> ks;
+            boost::split(ks, ls[0], boost::is_any_of(" "));
+            std::string dir_ = ks[ks.size() - 1];
+            std::string fp = std::filesystem::path(dir_) / std::filesystem::path(keyid);
+
+            std::ifstream ifs(fp);
+            nlohmann::json info = nlohmann::json::parse(ifs);
+
+            return info["private_key"].template get<std::string>();
+        }
+
+        static nlohmann::json fid_dump(nlohmann::json param)
+        {
+            nlohmann::json ret;
+
+            std::string cmd = bin_dir / std::filesystem::path("./ydump");
+            for (nlohmann::json::iterator iter = param.begin(); iter != param.end(); ++iter)
+            {
+                cmd = cmd + " --" + iter.key() + " " + to_string(iter.value());
+            }
+            std::string output = execute_cmd(cmd);
+
+            ret["cmd"] = cmd;
+            ret["output"] = output;
+
+            return ret;
         }
 
     public:

@@ -6,6 +6,7 @@
 #define YPC_JOB_STEP_HPP
 
 #include "common.hpp"
+#include "commonjs.hpp"
 
 #include <list>
 #include <fstream>
@@ -109,9 +110,75 @@ namespace cluster {
             return output;
         }
 
-        static void get_first_key(std::string crypto)
+        static nlohmann::json get_first_key(std::string crypto)
         {
-            // TODO: fid_keymgr_list
+            nlohmann::json ret;
+
+            nlohmann::json keys = Common::fid_keymgr_list(crypto);
+            if (keys.size() == 0)
+            {
+                Common::fid_keymgr_create("test", crypto);
+            }
+            keys = Common::fid_keymgr_list(crypto);
+            std::string pkey = "";
+            std::string private_key = "";
+            for (nlohmann::json::iterator iter_key = keys.begin(); iter_key != keys.end(); ++iter_key)
+            {
+                pkey = iter_key.value();
+                private_key = Common::get_keymgr_private_key(iter_key.key(), crypto);
+                break;
+            }
+
+            ret["public-key"] = pkey;
+            ret["private-key"] = private_key;
+
+            return ret;
+        }
+
+        static std::string read_parser_hash(std::string parser_url)
+        {
+            nlohmann::json param;
+            param["enclave"] = parser_url;
+            param["output"] = "info.json";
+
+            // TODO: fid_dump
+            nlohmann::json r = Common::fid_dump(param);
+
+            std::ifstream ifs("info.json");
+            nlohmann::json data = nlohmann::json::parse(ifs);
+
+            return data["enclave-hash"];
+        }
+
+        static nlohmann::json generate_request(
+                std::string crypto,
+                std::string input_param,
+                std::string shukey_file,
+                std::string param_output_url,
+                nlohmann::json config)
+        {
+            nlohmann::json param;
+            // TODO: param
+            param["crypto"] = crypto;
+            param["request"] = "";
+            param["use-param"] = input_param;
+            param["param-format"] = "text";
+            param["use-publickey-file"] = shukey_file;
+            param["output"] = param_output_url;
+
+            std::string r;
+            if (config.contains("request-use-js") && config["request-use-js"] != "")
+            {
+                nlohmann::json r = CommonJs::fid_terminus(param);
+            }
+            else
+            {
+                nlohmann::json r = Common::fid_terminus(param);
+            }
+            std::ifstream ifs(param_output_url);
+
+            nlohmann::json ret = nlohmann::json::parse(ifs);
+            return ret;
         }
     };
 }

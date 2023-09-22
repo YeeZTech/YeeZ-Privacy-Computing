@@ -125,8 +125,8 @@ nlohmann::json TaskGraph_Job::run(
 
     nlohmann::json task = tasks[idx];
     std::string name = task["name"];
-    std::string data_urls = task["data"];
-    std::string plugin_urls = task["reader"];
+    nlohmann::json data_urls = task["data"];
+    nlohmann::json plugin_urls = task["reader"];
     std::string parser_url = task["parser"];
     std::string input_param = task["param"];
 
@@ -142,7 +142,64 @@ nlohmann::json TaskGraph_Job::run(
     // self.all_outputs.append(user_key_file)
     key_files.push_back(user_key_file);
 
-    // TODO: get dian pkey
+    // get dian pkey
+    nlohmann::json key = JobStep::get_first_key(crypto);
+    std::string pkey = key["public-key"];
+    nlohmann::json summary;
+    summary["tee-pkey"] = key["public-key"];
+    // read parser enclave hash
+    std::string enclave_hash = JobStep::read_parser_hash(parser_url);
+
+    // 3. call terminus to generate forward message
+    // 3.2 forward algo shu skey
+    std::string algo_forward_result =
+            name +
+            ".algo" +
+            std::to_string(idx) +
+            ".shukey.foward.json";
+    nlohmann::json algo_forward_json = JobStep::forward_message(
+            crypto, algo_key_file, pkey, enclave_hash, algo_forward_result);
+    all_outputs.push_back(algo_forward_result);
+
+    // 3.3 forward user shu skey
+    std::string user_forward_result = name + ".user" + std::to_string(idx) + ".shukey.foward.json";
+    nlohmann::json user_forward_json = JobStep::forward_message(
+            crypto, user_key_file, pkey, enclave_hash, user_forward_result);
+    all_outputs.push_back(user_forward_result);
+
+    // handle all data
+    if (!prev_tasks_idx.empty())
+    {
+        assert(prev_tasks_idx.size() == data_urls.size());
+    }
+    std::vector<nlohmann::json> input_data;
+    std::vector<std::string> flat_kgt_pkey_list;
+    for (size_t i = 0; i < data_urls.size(); i++)
+    {
+        auto iter = data_urls[i];
+        nlohmann::json result = handle_input_data(
+                summary,
+                data_urls[idx],
+                plugin_urls[idx],
+                pkey, enclave_hash,
+                idx,
+                tasks,
+                prev_tasks_idx);
+        input_data.push_back(result["data-obj"]);
+        flat_kgt_pkey_list.push_back(result["flat_kgt_pkey"]);
+    }
+
+    // 4. call terminus to generate request
+    std::string param_output_url = name + "_param" + std::to_string(idx) + ".json";
+    nlohmann::json param_json = JobStep::generate_request(
+            crypto, input_param, user_key_file, param_output_url, config);
+    summary["analyzer-output"] = param_json["encrypted-input"];
+    all_outputs.push_back(param_output_url);
+
+    // 5. call fid_analyzer
+    std::string parser_input_file = name + "_parser_input.json";
+    std::string parser_output_file = name + "_parser_output.json";
+    // TODO: fid_analyzer_tg
 
 
     return ret;
