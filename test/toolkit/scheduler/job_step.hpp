@@ -16,7 +16,7 @@
 namespace cluster {
     class JobStep {
     public:
-        static void remove_files(std::list<std::string> file_list)
+        static void remove_files(std::vector<std::string> file_list)
         {
             for (auto iter : file_list)
             {
@@ -178,6 +178,32 @@ namespace cluster {
             std::ifstream ifs(param_output_url);
 
             nlohmann::json ret = nlohmann::json::parse(ifs);
+            return ret;
+        }
+
+        static nlohmann::json fid_analyzer_tg(
+                nlohmann::json shukey_json,
+                nlohmann::json rq_forward_json,
+                nlohmann::json algo_shu_info,
+                nlohmann::json algo_forward_json,
+                std::string enclave_hash,
+                std::vector<nlohmann::json> input_data,
+                std::string parser_url,
+                std::string dian_pkey,
+                std::string model,
+                std::string crypto,
+                std::string param_json,
+                std::vector<std::string> flat_kgt_pkey_list,
+                std::vector<uint64_t> allowances,
+                std::string parser_input_file,
+                std::string parser_output_file)
+        {
+            nlohmann::json ret;
+
+            nlohmann::json parser_input;
+            parser_input["shu_info"]["shu_pkey"] = shukey_json["public-key"];
+            // TODO:
+
             return ret;
         }
     };

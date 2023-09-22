@@ -51,7 +51,6 @@ namespace cluster {
             ret["output"] = output;
 
             return  ret;
-
         }
 
     public:

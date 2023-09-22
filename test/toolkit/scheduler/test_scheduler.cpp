@@ -200,8 +200,46 @@ nlohmann::json TaskGraph_Job::run(
     std::string parser_input_file = name + "_parser_input.json";
     std::string parser_output_file = name + "_parser_output.json";
     // TODO: fid_analyzer_tg
+    nlohmann::json result_json = JobStep::fid_analyzer_tg(
+            user_shukey_json,
+            user_forward_json,
+            algo_shukey_json,
+            algo_forward_json,
+            enclave_hash,
+            input_data,
+            parser_url,
+            pkey,
+            nlohmann::json(),
+            crypto,
+            param_json,
+            flat_kgt_pkey_list,
+            std::vector<uint64_t>(),
+            parser_input_file,
+            parser_output_file);
 
+    summary["encrypted-result"] = result_json["encrypted_result"];
+    summary["result-signature"] = result_json["result_signature"];
+    std::string summary_file = name + ".summary.json";
+    std:: ofstream ofs_sf(summary_file);
+    // TODO: dump
+    // summary.dump(ofs_sf);
+    all_outputs.push_back(summary_file);
+    JobStep::remove_files(all_outputs);
 
+    std::vector<nlohmann::json> key_json_list;
+    for (auto key_file : key_files)
+    {
+        std::ifstream ifs(key_file);
+        key_json_list.push_back(nlohmann::json::parse(ifs));
+    }
+    std::string all_keys_file = name + ".all-keys.json";
+    std::ofstream ofs_akf(all_keys_file);
+    // dump
+
+    ret["encrypted_result"] = result_json["encrypted_result"];
+    ret["data_kgt_pkey"] = result_json["data_kgt_pkey"];
+    ret["all_keys_file"] = all_keys_file;
+    
     return ret;
 }
 
