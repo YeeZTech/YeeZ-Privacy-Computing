@@ -219,7 +219,6 @@ nlohmann::json TaskGraph_Job::run(
     // 5. call fid_analyzer
     std::string parser_input_file = name + "_parser_input.json";
     std::string parser_output_file = name + "_parser_output.json";
-    // TODO: fid_analyzer_tg
     nlohmann::json result_json = JobStep::fid_analyzer_tg(
             user_shukey_json,
             user_forward_json,

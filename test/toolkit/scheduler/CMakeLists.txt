@@ -4,8 +4,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_executable(test_scheduler
     test_scheduler.cpp)
 # external libraries
-target_include_directories(test_scheduler PRIVATE
-    "${PROJECT_SOURCE_DIR}/vendor/json/include")
+target_include_directories(test_scheduler PUBLIC
+    "${PROJECT_SOURCE_DIR}/vendor/json/include"
+    "${PROJECT_SOURCE_DIR}/vendor/spdlog/include")
 # internal headers
 target_include_directories(test_scheduler PUBLIC
     "${PROJECT_SOURCE_DIR}/toolkit/analyzer"

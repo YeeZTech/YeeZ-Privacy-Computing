@@ -190,19 +190,54 @@ namespace cluster {
                 std::string dian_pkey,
                 std::string model,
                 std::string crypto,
-                std::string param_json,
+                nlohmann::json param_json,
                 std::vector<std::string> flat_kgt_pkey_list,
                 std::vector<uint64_t> allowances,
                 std::string parser_input_file,
                 std::string parser_output_file)
         {
-            nlohmann::json ret;
-
             nlohmann::json parser_input;
             parser_input["shu_info"]["shu_pkey"] = shukey_json["public-key"];
-            // TODO: logic
+            parser_input["shu_info"]["encrypted_shu_skey"] = rq_forward_json["encrypted_skey"];
+            parser_input["shu_info"]["shu_forward_signature"] = rq_forward_json["forward_sig"];
+            parser_input["shu_info"]["enclave_hash"] = enclave_hash;
+            parser_input["algo_shu_info"]["shu_pkey"] = algo_shu_info["public-key"];
+            parser_input["algo_shu_info"]["encrypted_shu_skey"] = algo_forward_json["encrypted_skey"];
+            parser_input["algo_shu_info"]["shu_forward_signature"] = algo_forward_json["forward_sig"];
+            parser_input["algo_shu_info"]["enclave_hash"] = enclave_hash;
+            parser_input["input_intermediate_data"] = input_data;
+            parser_input["parser_path"] = parser_url;
+            parser_input["keymgr_path"] = Common::kmgr_enclave[crypto];
+            parser_input["parser_enclave_hash"] = enclave_hash;
+            parser_input["dian_pkey"] = dian_pkey;
+            parser_input["model"] = model;
+            parser_input["param"]["crypto"] = crypto;
+            parser_input["param"]["param_data"] = param_json["encrypted-input"];
+            parser_input["param"]["public-key"] = shukey_json["public-key"];
+            parser_input["param"]["algo-public-key"] = algo_shu_info["public-key"];
+            parser_input["param"]["data-kgt-pkey-list"] = flat_kgt_pkey_list;
 
-            return ret;
+            if (!allowances.empty())
+            {
+                parser_input["param"]["allowances"] = allowances;
+            }
+            std::ofstream ofs(parser_input_file);
+            ofs << parser_input.dump();
+            nlohmann::json param;
+            param["input"] = parser_input_file;
+            param["output"] = parser_output_file;
+            nlohmann::json r = Common::fid_analyzer(param);
+
+            try {
+                std::ifstream ifs(parser_output_file);
+                return nlohmann::json::parse(ifs);
+            }
+            catch (const std::exception& e)
+            {
+                // do nothing
+                spdlog::error(e.what());
+                return nlohmann::json();
+            }
         }
     };
 }

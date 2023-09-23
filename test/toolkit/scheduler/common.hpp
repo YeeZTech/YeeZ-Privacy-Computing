@@ -10,11 +10,12 @@
 #include <iostream>
 #include <filesystem>
 #include <cstdlib>
-#include <list>
+#include <vector>
+#include <fstream>
 
 #include "nlohmann/json.hpp"
 #include <boost/algorithm/string.hpp>
-#include <fstream>
+#include "spdlog/spdlog.h"
 
 namespace cluster {
     class Common {
@@ -24,8 +25,10 @@ namespace cluster {
             sdk_dir = std::filesystem::current_path();
             bin_dir = sdk_dir / std::filesystem::path("./bin");
             lib_dir = sdk_dir / std::filesystem::path("./lib");
-            kmgr_enclave.stdeth = lib_dir / std::filesystem::path("keymgr.signed.so");
-            kmgr_enclave.gmssl = lib_dir / std::filesystem::path("keymgr_gmssl.signed.so");
+//            kmgr_enclave.stdeth = lib_dir / std::filesystem::path("keymgr.signed.so");
+//            kmgr_enclave.gmssl = lib_dir / std::filesystem::path("keymgr_gmssl.signed.so");
+            kmgr_enclave["stdeth"] = lib_dir / std::filesystem::path("keymgr.signed.so");
+            kmgr_enclave["gmssl"] = lib_dir / std::filesystem::path("keymgr_gmssl.signed.so");
         }
 
     public:
@@ -199,14 +202,33 @@ namespace cluster {
             return ret;
         }
 
+        static nlohmann::json fid_analyzer(nlohmann::json param)
+        {
+            nlohmann::json ret;
+
+            std::string cmd = bin_dir / std::filesystem::path("./fid_analyzer");
+            cmd = "GLOG_logtostderr=1 " + cmd;
+            for (nlohmann::json::iterator iter = param.begin(); iter != param.end(); ++iter)
+            {
+                cmd = cmd + " --" + iter.key() + " " + to_string(iter.value());
+            }
+            std::string output = execute_cmd(cmd);
+
+            ret["cmd"] = cmd;
+            ret["output"] = output;
+
+            return ret;
+        }
+
     public:
         inline static std::string sdk_dir;
         inline static std::string bin_dir;
         inline static std::string lib_dir;
-        inline static struct {
-            std::string stdeth;
-            std::string gmssl;
-        } kmgr_enclave;
+//        inline static struct {
+//            std::string stdeth;
+//            std::string gmssl;
+//        } kmgr_enclave;
+        inline static nlohmann::json kmgr_enclave;
     };
 }
 
