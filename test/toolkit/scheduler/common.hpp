@@ -40,6 +40,8 @@ namespace cluster {
 
         // ack: https://stackoverflow.com/questions/478898/how-do-i-execute-a-command-and-get-the-output-of-the-command-within-c-using-po
         static std::string execute_cmd(std::string cmd) {
+            spdlog::info("execute_cmd: {}", cmd);
+
             auto cmd_cc = cmd.c_str();
             std::array<char, 128> buffer;
             std::string result;
@@ -55,6 +57,8 @@ namespace cluster {
 
         static nlohmann::json fid_terminus(nlohmann::json kwargs)
         {
+            spdlog::info("fid_terminus");
+
             nlohmann::json ret;
 
             std::string cmd = bin_dir / std::filesystem::path("./yterminus");
@@ -73,6 +77,8 @@ namespace cluster {
 
         static nlohmann::json fid_data_provider(nlohmann::json kwargs)
         {
+            spdlog::info("fid_data_provider");
+
             nlohmann::json ret;
 
             std::string cmd = Common::bin_dir / std::filesystem::path("./data_provider");
@@ -91,6 +97,8 @@ namespace cluster {
 
         static nlohmann::json fid_keymgr_list(std::string crypto = std::string{"stdeth"})
         {
+            spdlog::info("fid_keymgr_list starts");
+
             std::string cmd = bin_dir / std::filesystem::path("./keymgr_tool");
             cmd = cmd + " --crypto " + crypto;
             std::string output = execute_cmd(cmd + " --list");
@@ -102,17 +110,21 @@ namespace cluster {
             std::string tkeyid = std::string{""};
             nlohmann::json keys;
 
+            spdlog::info("fid_keymgr_list split lines");
             while (getline(iss_output, s_output, '\n')) {
                 svec_output.push_back(s_output);
             }
             for (auto iter_output : svec_output)
             {
                 boost::trim(iter_output);
+                spdlog::info("fid_keymgr_list finds keys");
                 if (iter_output.rfind(">> key ", 0) == 0)
                 {
+                    spdlog::info("fid_keymgr_list key found");
                     std::vector<std::string> svec_iter_output;
                     std::istringstream iss_iter_output(iter_output);
                     std::string s_iter_output;
+                    // FIXME: change to boost split 
                     while (getline(iss_iter_output, s_iter_output, ':'))
                     {
                         svec_iter_output.push_back(s_iter_output);
@@ -120,8 +132,10 @@ namespace cluster {
                         tkeyid = svec_iter_output[1];
                     }
                 }
+                spdlog::info("fid_keymgr_list finds pkey");
                 if (iter_output.rfind("public key:", 0) == 0)
                 {
+                    spdlog::info("fid_keymgr_list pkey found");
                     std::vector<std::string> svec_iter_output;
                     std::istringstream iss_iter_output(iter_output);
                     std::string s_iter_output;
@@ -138,11 +152,15 @@ namespace cluster {
                 }
             }
 
+            spdlog::info("fid_keymgr_list ends");
+
             return keys;
         }
 
         static nlohmann::json fid_keymgr_create(std::string user_id, std::string crypto = "")
         {
+            spdlog::info("fid_keymgr_create");
+
             nlohmann::json ret;
 
             std::string cmd = bin_dir / std::filesystem::path("./keymgr_tool");
@@ -167,6 +185,8 @@ namespace cluster {
 
         static std::string get_keymgr_private_key(std::string keyid, std::string crypto_type = "stdeth")
         {
+            spdlog::info("get_keymgr_private_key");
+
             std::string cmd = bin_dir / std::filesystem::path("./keymgr_tool");
             cmd = cmd + " --crypto " + crypto_type;
             std::string output = execute_cmd(cmd + " --list");
@@ -187,6 +207,8 @@ namespace cluster {
 
         static nlohmann::json fid_dump(nlohmann::json param)
         {
+            spdlog::info("fid_dump");
+
             nlohmann::json ret;
 
             std::string cmd = bin_dir / std::filesystem::path("./ydump");
@@ -204,6 +226,8 @@ namespace cluster {
 
         static nlohmann::json fid_analyzer(nlohmann::json param)
         {
+            spdlog::info("fid_analyzer");
+
             nlohmann::json ret;
 
             std::string cmd = bin_dir / std::filesystem::path("./fid_analyzer");

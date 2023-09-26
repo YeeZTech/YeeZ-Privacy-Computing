@@ -18,6 +18,8 @@ namespace cluster {
     public:
         static void remove_files(std::vector<std::string> file_list)
         {
+            spdlog::info("remove_files");
+
             for (auto iter : file_list)
             {
                 std::string cmd = std::string{"rm -rf "} + iter;
@@ -28,14 +30,21 @@ namespace cluster {
 
         static nlohmann::json gen_key(std::string crypto, std::string shukey_file)
         {
-            nlohmann::json param = nlohmann::json::parse(R"(
-                {
-                    "crypto": crypto,
-                    "gen-key": "",
-                    "no-password": "",
-                    "output": shukey_file
-                }
-            )");
+            spdlog::info("gen_key");
+
+            nlohmann::json param;
+            param["crypto"] = crypto;
+            param["gen-key"] = "";
+            param["no-password"] = "";
+            param["output"] = shukey_file;
+//            nlohmann::json param = nlohmann::json::parse(R"(
+//                {
+//                    "crypto": crypto,
+//                    "gen-key": "",
+//                    "no-password": "",
+//                    "output": shukey_file
+//                }
+//            )");
             Common::fid_terminus(param);
             std::ifstream f(shukey_file);
             nlohmann::json data = nlohmann::json::parse(f);
@@ -50,6 +59,8 @@ namespace cluster {
                 std::string sealed_output,
                 std::string data_key_file)
         {
+            spdlog::info("seal_data");
+
             nlohmann::json param;
             param["crypto"] = crypto;
             param["data-url"] = data_url;
@@ -62,6 +73,8 @@ namespace cluster {
 
         static std::string read_sealed_output(std::string filepath, std::string field)
         {
+            spdlog::info("read_sealed_output");
+
             std::ifstream ifs(filepath);
 
             std::string line;
@@ -92,6 +105,8 @@ namespace cluster {
                 std::string forward_result
                 )
         {
+            spdlog::info("forward_message");
+
             nlohmann::json param;
             param["crypto"] = crypto;
             param["forward"] = std::string{""};
@@ -112,6 +127,8 @@ namespace cluster {
 
         static nlohmann::json get_first_key(std::string crypto)
         {
+            spdlog::info("get_first_key starts");
+
             nlohmann::json ret;
 
             nlohmann::json keys = Common::fid_keymgr_list(crypto);
@@ -132,11 +149,15 @@ namespace cluster {
             ret["public-key"] = pkey;
             ret["private-key"] = private_key;
 
+            spdlog::info("get_first_key ends");
+
             return ret;
         }
 
         static std::string read_parser_hash(std::string parser_url)
         {
+            spdlog::info("read_parser_hash");
+
             nlohmann::json param;
             param["enclave"] = parser_url;
             param["output"] = "info.json";
@@ -156,6 +177,8 @@ namespace cluster {
                 std::string param_output_url,
                 nlohmann::json config)
         {
+            spdlog::info("generate_request");
+
             nlohmann::json param;
             param["crypto"] = crypto;
             param["request"] = "";
@@ -196,6 +219,8 @@ namespace cluster {
                 std::string parser_input_file,
                 std::string parser_output_file)
         {
+            spdlog::info("fid_analyzer_tg");
+
             nlohmann::json parser_input;
             parser_input["shu_info"]["shu_pkey"] = shukey_json["public-key"];
             parser_input["shu_info"]["encrypted_shu_skey"] = rq_forward_json["encrypted_skey"];
