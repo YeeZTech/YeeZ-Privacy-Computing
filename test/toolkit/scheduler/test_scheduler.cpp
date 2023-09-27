@@ -47,9 +47,13 @@ nlohmann::json TaskGraph_Job::handle_input_data(
         uint64_t idx,
         std::vector<nlohmann::json> tasks,
         std::vector<uint64_t> prev_tasks_idx) {
+
+    spdlog::trace("handle_input_data starts");
+
     nlohmann::json ret;
 
     // 1.1 generate data key
+    spdlog::trace("handle_input_data: 1.1 generate data key");
     std::string data_key_file =
             data_url +
             ".data" +
@@ -59,6 +63,7 @@ nlohmann::json TaskGraph_Job::handle_input_data(
     key_files.push_back(data_key_file);
 
     // 2. call data provider to seal data
+    spdlog::trace("handle_input_data: 2. call data provider to seal data");
     std::string sealed_data_url = data_url + ".sealed";
     std::string sealed_output = data_url + ".sealed.output";
     summary["data-url"] = data_url;
@@ -100,6 +105,7 @@ nlohmann::json TaskGraph_Job::handle_input_data(
     all_outputs.push_back(sealed_data_url);
     all_outputs.push_back(sealed_output);
 
+    spdlog::trace("handle_input_data: render data_forward_json_list");
     std::vector<nlohmann::json> data_forward_json_list;
     for (auto key_file : key_files)
     {
@@ -124,15 +130,18 @@ nlohmann::json TaskGraph_Job::handle_input_data(
 
     }
 
+    spdlog::trace("handle_input_data: render data_obj");
     nlohmann::json data_obj;
     data_obj["input_data_url"] = sealed_data_url;
     data_obj["input_data_hash"] = data_hash;
-    data_obj["input_data_hash"]["kgt_pkey"] = flat_kgt_pkey;
-    data_obj["input_data_hash"]["data_shu_infos"] = data_forward_json_list;
-    data_obj["tag"] = std::string{"0"};
+    data_obj["kgt_shu_info"]["kgt_pkey"] = flat_kgt_pkey;
+    data_obj["kgt_shu_info"]["data_shu_infos"] = data_forward_json_list;
+    data_obj["tag"] = "0";
 
     ret["data_obj"] = data_obj;
     ret["flat_kgt_pkey"] = flat_kgt_pkey;
+
+    spdlog::trace("handle_input_data ends");
 
     return ret;
 }
@@ -277,6 +286,7 @@ nlohmann::json TaskGraph_Job::run(
 
 std::unique_ptr<JobStep> jobStep;
 std::unique_ptr<Common> common;
+std::unique_ptr<CommonJs> commonJs;
 
 void gen_kgt()
 {
@@ -288,6 +298,10 @@ void gen_kgt()
 int main(const int argc, const char *argv[]) {
     jobStep = std::make_unique<JobStep>();
     common = std::make_unique<Common>();
+    commonJs = std::make_unique<CommonJs>();
+
+
+    spdlog::set_level(spdlog::level::trace);
 
     std::string crypto = "stdeth";
 
@@ -299,7 +313,7 @@ int main(const int argc, const char *argv[]) {
     task1["data"] = nlohmann::json::array({"corp.csv"});
     std::string task1_reader = Common::lib_dir / std::filesystem::path("libt_org_info_reader.so");
     std::string task1_parser = Common::lib_dir / std::filesystem::path("t_org_info_parser.signed.so");
-    std::string task1_param = "\"[{\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"91110114787775909K\\\"}]\"";
+    std::string task1_param = R"("[{"type":"string","value":"91110114787775909K"}])";
     task1["reader"] = nlohmann::json::array({task1_reader});
     task1["parser"] = task1_parser;
     task1["param"] = task1_param;
@@ -310,7 +324,7 @@ int main(const int argc, const char *argv[]) {
     task2["data"] = nlohmann::json::array({"tax.csv"});
     std::string task2_reader = Common::lib_dir / std::filesystem::path("libt_tax_reader.so");
     std::string task2_parser = Common::lib_dir / std::filesystem::path("t_tax_parser.signed.so");
-    std::string task2_param = "\"[{\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"91110114787775909K\\\"}]\"";
+    std::string task2_param = R"("[{"type":"string","value":"91110114787775909K"}])";
     task2["reader"] = nlohmann::json::array({task2_reader});
     task2["parser"] = task2_parser;
     task2["param"] = task2_param;
@@ -322,7 +336,9 @@ int main(const int argc, const char *argv[]) {
     std::string task3_reader1 = Common::lib_dir / std::filesystem::path("libt_org_info_reader.so");
     std::string task3_reader2 = Common::lib_dir / std::filesystem::path("libt_tax_reader.so");
     std::string task3_parser = Common::lib_dir / std::filesystem::path("t_org_tax_parser.signed.so");
-    std::string task3_param = "\"[{\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"91110114787775909K\\\"}]\"";
+    // std::string task3_param = "\"[{\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"91110114787775909K\\\"}]\"";
+    std::string task3_param = R"("[{"type":"string","value":"91110114787775909K"}])";
+
     task3["reader"] = nlohmann::json::array({task3_reader1, task3_reader2});
     task3["parser"] = task3_parser;
     task3["param"] = task3_param;

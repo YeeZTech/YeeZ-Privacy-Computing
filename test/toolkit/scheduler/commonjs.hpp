@@ -12,6 +12,7 @@ namespace cluster {
     public:
         CommonJs() {
             sdk_dir = std::filesystem::current_path();
+            current_dir = sdk_dir / std::filesystem::path("./test/integrate");
             bin_dir = sdk_dir / std::filesystem::path("./bin");
             lib_dir = sdk_dir / std::filesystem::path("./lib");
             kmgr_enclave.stdeth = lib_dir / std::filesystem::path("edatahub.signed.so");
@@ -20,6 +21,8 @@ namespace cluster {
 
         static std::string execute_cmd(std::string cmd)
         {
+            spdlog::info("CommonJs::execute_cmd: {}", cmd);
+
             cmd = "node " + cmd;
             auto cmd_cc = cmd.c_str();
             std::array<char, 128> buffer;
@@ -36,10 +39,12 @@ namespace cluster {
 
         static nlohmann::json fid_terminus(nlohmann::json kwargs)
         {
+            spdlog::trace("CommonJs::fid_terminus starts");
+
             nlohmann::json ret;
 
             // FIXME: change dir
-            std::string cmd = sdk_dir / std::filesystem::path("./js/simjs.js");
+            std::string cmd = current_dir / std::filesystem::path("./js/simjs.js");
             for (nlohmann::json::iterator iter = kwargs.begin(); iter != kwargs.end(); ++iter)
             {
                 cmd = cmd + " --" + iter.key() + " " + to_string(iter.value());
@@ -50,6 +55,8 @@ namespace cluster {
             ret["cmd"] = cmd;
             ret["output"] = output;
 
+            spdlog::trace("CommonJs::fid_terminus ends");
+
             return  ret;
         }
 
@@ -57,6 +64,7 @@ namespace cluster {
         inline static std::string sdk_dir;
         inline static std::string bin_dir;
         inline static std::string lib_dir;
+        inline static std::string current_dir;
         inline static struct {
             std::string stdeth;
             std::string gmssl;

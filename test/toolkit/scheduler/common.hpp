@@ -32,12 +32,6 @@ namespace cluster {
         }
 
     public:
-//        static std::string execute_cmd(std::string cmd)
-//        {
-//            std::system(cmd.c_str());
-//            return std::string{""};
-//        }
-
         // ack: https://stackoverflow.com/questions/478898/how-do-i-execute-a-command-and-get-the-output-of-the-command-within-c-using-po
         static std::string execute_cmd(std::string cmd) {
             spdlog::info("execute_cmd: {}", cmd);
@@ -77,7 +71,7 @@ namespace cluster {
 
         static nlohmann::json fid_data_provider(nlohmann::json kwargs)
         {
-            spdlog::info("fid_data_provider");
+            spdlog::info("fid_data_provider starts");
 
             nlohmann::json ret;
 
@@ -91,6 +85,8 @@ namespace cluster {
 
             ret["cmd"] = cmd;
             ret["output"] = output;
+
+            spdlog::info("fid_data_provider ends");
 
             return ret;
         }
@@ -121,33 +117,45 @@ namespace cluster {
                 if (iter_output.rfind(">> key ", 0) == 0)
                 {
                     spdlog::info("fid_keymgr_list key found");
-                    std::vector<std::string> svec_iter_output;
-                    std::istringstream iss_iter_output(iter_output);
-                    std::string s_iter_output;
-                    // FIXME: change to boost split 
-                    while (getline(iss_iter_output, s_iter_output, ':'))
-                    {
-                        svec_iter_output.push_back(s_iter_output);
-                        boost::trim(svec_iter_output[1]);
-                        tkeyid = svec_iter_output[1];
-                    }
+//                    std::vector<std::string> svec_iter_output;
+//                    std::istringstream iss_iter_output(iter_output);
+//                    std::string s_iter_output;
+                    // FIXME: change to boost split
+//                    while (getline(iss_iter_output, s_iter_output, ':'))
+//                    {
+//                        svec_iter_output.push_back(s_iter_output);
+//                        boost::trim(svec_iter_output[1]);
+//                        tkeyid = svec_iter_output[1];
+//                    }
+                    std::vector<std::string> split_iter_output;
+                    boost::split(split_iter_output, iter_output, boost::is_any_of(":"));
+                    boost::trim(split_iter_output[1]);
+                    tkeyid = split_iter_output[1];
                 }
                 spdlog::info("fid_keymgr_list finds pkey");
                 if (iter_output.rfind("public key:", 0) == 0)
                 {
                     spdlog::info("fid_keymgr_list pkey found");
-                    std::vector<std::string> svec_iter_output;
-                    std::istringstream iss_iter_output(iter_output);
-                    std::string s_iter_output;
-                    while (getline(iss_iter_output, s_iter_output, ':'))
+//                    std::vector<std::string> svec_iter_output;
+//                    std::istringstream iss_iter_output(iter_output);
+//                    std::string s_iter_output;
+//                    while (getline(iss_iter_output, s_iter_output, ':'))
+//                    {
+//                        svec_iter_output.push_back(s_iter_output);
+//                        boost::trim(svec_iter_output[1]);
+//                        std::string pkey = svec_iter_output[1];
+//                        if (pkey.rfind(tkeyid, 0) == 0)
+//                        {
+//                            keys[tkeyid] = pkey;
+//                        }
+//                    }
+                    std::vector<std::string> split_iter_output;
+                    boost::split(split_iter_output, iter_output, boost::is_any_of(":"));
+                    boost::trim(split_iter_output[1]);
+                    std::string pkey = split_iter_output[1];
+                    if (pkey.rfind(tkeyid, 0) == 0)
                     {
-                        svec_iter_output.push_back(s_iter_output);
-                        boost::trim(svec_iter_output[1]);
-                        std::string pkey = svec_iter_output[1];
-                        if (pkey.rfind(tkeyid, 0) == 0)
-                        {
-                            keys[tkeyid] = pkey;
-                        }
+                        keys[tkeyid] = pkey;
                     }
                 }
             }

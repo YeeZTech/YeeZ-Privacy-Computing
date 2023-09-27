@@ -64,6 +64,7 @@ namespace cluster {
             nlohmann::json param;
             param["crypto"] = crypto;
             param["data-url"] = data_url;
+            param["plugin-path"] = plugin_url;
             param["sealed-data-url"] = sealed_data_url;
             param["output"] = sealed_output;
             param["use-publickey-file"] = data_key_file;
@@ -105,7 +106,7 @@ namespace cluster {
                 std::string forward_result
                 )
         {
-            spdlog::info("forward_message");
+            spdlog::trace("forward_message starts");
 
             nlohmann::json param;
             param["crypto"] = crypto;
@@ -120,8 +121,12 @@ namespace cluster {
             }
             Common::fid_terminus(param);
 
-            std::ifstream f(forward_result);
-            nlohmann::json output = nlohmann::json::parse(f);
+            spdlog::trace("forward_message: get forward result");
+            std::ifstream ifs(forward_result);
+            nlohmann::json output = nlohmann::json::parse(ifs);
+
+            spdlog::trace("forward_message ends");
+
             return output;
         }
 
@@ -177,7 +182,7 @@ namespace cluster {
                 std::string param_output_url,
                 nlohmann::json config)
         {
-            spdlog::info("generate_request");
+            spdlog::trace("generate_request starts");
 
             nlohmann::json param;
             param["crypto"] = crypto;
@@ -196,9 +201,18 @@ namespace cluster {
             {
                 nlohmann::json r = Common::fid_terminus(param);
             }
+
+            spdlog::trace("param_output_url: {}", param_output_url);
             std::ifstream ifs(param_output_url);
+            if (ifs.fail())
+            {
+                spdlog::error("open file failed");
+            }
 
             nlohmann::json ret = nlohmann::json::parse(ifs);
+
+            spdlog::trace("generate_request ends");
+
             return ret;
         }
 
@@ -211,7 +225,7 @@ namespace cluster {
                 std::vector<nlohmann::json> input_data,
                 std::string parser_url,
                 std::string dian_pkey,
-                std::string model,
+                nlohmann::json model,
                 std::string crypto,
                 nlohmann::json param_json,
                 std::vector<std::string> flat_kgt_pkey_list,
@@ -219,7 +233,7 @@ namespace cluster {
                 std::string parser_input_file,
                 std::string parser_output_file)
         {
-            spdlog::info("fid_analyzer_tg");
+            spdlog::info("fid_analyzer_tg starts");
 
             nlohmann::json parser_input;
             parser_input["shu_info"]["shu_pkey"] = shukey_json["public-key"];
@@ -263,6 +277,8 @@ namespace cluster {
                 spdlog::error(e.what());
                 return nlohmann::json();
             }
+
+            spdlog::info("fid_analyzer_tg ends");
         }
     };
 }
