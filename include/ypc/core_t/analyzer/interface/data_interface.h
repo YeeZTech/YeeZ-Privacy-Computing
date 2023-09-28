@@ -4,9 +4,11 @@
 #include "ypc/core_t/analyzer/internal/data_streams/noinput_data_stream.h"
 #include "ypc/core_t/analyzer/internal/data_streams/raw_data_stream.h"
 #include "ypc/core_t/analyzer/internal/data_streams/sealed_data_stream.h"
+#include "ypc/core_t/analyzer/internal/data_streams/oram_sealed_data_stream.h"
 #include "ypc/core_t/analyzer/internal/keymgr_session.h"
 #include "ypc/core_t/analyzer/raw_data_provider.h"
 #include "ypc/core_t/analyzer/sealed_data_provider.h"
+// #include "ypc/core_t/analyzer/oram_sealed_data_provider.h"
 #include "ypc/core_t/analyzer/var/data_source_var.h"
 #include "ypc/corecommon/nt_cols.h"
 #include "ypc/corecommon/package.h"
@@ -88,6 +90,53 @@ public:
     return stbox::stx_status::success;
   }
 };
+
+// template <typename Crypto>
+// class data_interface<Crypto, oram_sealed_data_stream>
+//     : virtual public data_source_var<oram_sealed_data_stream>,
+//       virtual public keymgr_interface<Crypto>,
+//       virtual public keymgr_session {
+//   typedef keymgr_interface<Crypto> keymgr_interface_t;
+// public:
+//   uint32_t init_data_source(const uint8_t *data_source_info, uint32_t len) {
+//     using ntt = nt<stbox::bytes>;
+//     auto pkg = make_package<typename cast_obj_to_package<
+//         ntt::oram_sealed_data_info_t>::type>::from_bytes(data_source_info, len);
+//     auto ret = keymgr_session::init_keymgr_session();
+//     if (ret) {
+//       LOG(ERROR) << "init_keymgr_session failed: " << stbox::status_string(ret);
+//       return ret;
+//     }
+//     stbox::bytes private_key, dian_pkey;
+//     ret = keymgr_interface_t::request_private_key_for_public_key(
+//         pkg.get<ntt::pkey>(), private_key, dian_pkey);
+//     if (ret) {
+//       LOG(ERROR) << "request_private_key_for_public_key failed: "
+//                  << stbox::status_string(ret);
+//       return ret;
+//     }
+
+//     // TODO:获取pkg中param(param_data(加密), public-key)
+//     // 使用public-key获取数据使用方的枢私钥param_private_key
+//     // 增加参数param_private_key和param_data(加密)初始化oram_sealed_data_provider<Crypto>
+//     auto param = pkg.get<ntt::param>();
+//     stbox::bytes param_private_key, dian_pkey;
+//     ret = keymgr_interface_t::request_private_key_for_public_key(
+//         param.get<ntt::pkey>(), param_private_key, dian_pkey);
+//     if (ret) {
+//       LOG(ERROR) << "request_private_key_for_public_key failed: "
+//                  << stbox::status_string(ret);
+//       return ret;
+//     }
+
+//     m_ds_use_pkey = pkg.get<ntt::pkey>() + pkg.get<ntt::data_hash>();
+//     m_datasource.reset(new oram_sealed_data_provider<Crypto>(
+//         pkg.get<ntt::data_hash>(), private_key, param.get<ntt::param_data>(), param_private_key));
+//     return stbox::stx_status::success;
+//   }
+
+//   uint32_t check_actual_data_hash() { return stbox::stx_status::success; }
+// };
 
 template <typename Crypto>
 class data_interface<Crypto, multi_data_stream>

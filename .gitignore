@@ -44,3 +44,5 @@ test/integrate
 test/project_path.h
 .vscode/
 hash_hex/
+build_PreRelease/
+build_debug/
