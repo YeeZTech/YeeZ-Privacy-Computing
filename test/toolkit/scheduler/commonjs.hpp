@@ -21,9 +21,9 @@ namespace cluster {
 
         static std::string execute_cmd(std::string cmd)
         {
+            cmd = "node " + cmd;
             spdlog::info("CommonJs::execute_cmd: {}", cmd);
 
-            cmd = "node " + cmd;
             auto cmd_cc = cmd.c_str();
             std::array<char, 128> buffer;
             std::string result;
@@ -47,7 +47,14 @@ namespace cluster {
             std::string cmd = current_dir / std::filesystem::path("./js/simjs.js");
             for (nlohmann::json::iterator iter = kwargs.begin(); iter != kwargs.end(); ++iter)
             {
-                cmd = cmd + " --" + iter.key() + " " + to_string(iter.value());
+                if (to_string(iter.value()) == R"("")")
+                {
+                    cmd = cmd + " --" + iter.key();
+                }
+                else
+                {
+                    cmd = cmd + " --" + iter.key() + " " + to_string(iter.value());
+                }
             }
 
             std::string output = execute_cmd(cmd);

@@ -202,8 +202,9 @@ namespace cluster {
                 nlohmann::json r = Common::fid_terminus(param);
             }
 
-            spdlog::trace("param_output_url: {}", param_output_url);
-            std::ifstream ifs(param_output_url);
+            std::string abs_param_output_url = Common::sdk_dir / std::filesystem::path(param_output_url);
+            std::ifstream ifs(abs_param_output_url);
+            spdlog::trace("absolute param_output_url: {}", abs_param_output_url);
             if (ifs.fail())
             {
                 spdlog::error("open file failed");
@@ -269,6 +270,7 @@ namespace cluster {
 
             try {
                 std::ifstream ifs(parser_output_file);
+                spdlog::info("fid_analyzer_tg ends");
                 return nlohmann::json::parse(ifs);
             }
             catch (const std::exception& e)
@@ -277,8 +279,6 @@ namespace cluster {
                 spdlog::error(e.what());
                 return nlohmann::json();
             }
-
-            spdlog::info("fid_analyzer_tg ends");
         }
     };
 }

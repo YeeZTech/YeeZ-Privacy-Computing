@@ -215,10 +215,10 @@ nlohmann::json TaskGraph_Job::run(
         auto iter = data_urls[i];
         nlohmann::json result = handle_input_data(
                 summary,
-                data_urls[idx],
-                plugin_urls[idx],
+                data_urls[i],
+                plugin_urls[i],
                 pkey, enclave_hash,
-                idx,
+                i,
                 tasks,
                 prev_tasks_idx);
         input_data.push_back(result["data-obj"]);
@@ -313,7 +313,7 @@ int main(const int argc, const char *argv[]) {
     task1["data"] = nlohmann::json::array({"corp.csv"});
     std::string task1_reader = Common::lib_dir / std::filesystem::path("libt_org_info_reader.so");
     std::string task1_parser = Common::lib_dir / std::filesystem::path("t_org_info_parser.signed.so");
-    std::string task1_param = R"("[{"type":"string","value":"91110114787775909K"}])";
+    std::string task1_param = R"([{"type":"string","value":"91110114787775909K"}])";
     task1["reader"] = nlohmann::json::array({task1_reader});
     task1["parser"] = task1_parser;
     task1["param"] = task1_param;
@@ -324,7 +324,7 @@ int main(const int argc, const char *argv[]) {
     task2["data"] = nlohmann::json::array({"tax.csv"});
     std::string task2_reader = Common::lib_dir / std::filesystem::path("libt_tax_reader.so");
     std::string task2_parser = Common::lib_dir / std::filesystem::path("t_tax_parser.signed.so");
-    std::string task2_param = R"("[{"type":"string","value":"91110114787775909K"}])";
+    std::string task2_param = R"([{"type":"string","value":"91110114787775909K"}])";
     task2["reader"] = nlohmann::json::array({task2_reader});
     task2["parser"] = task2_parser;
     task2["param"] = task2_param;
@@ -337,7 +337,7 @@ int main(const int argc, const char *argv[]) {
     std::string task3_reader2 = Common::lib_dir / std::filesystem::path("libt_tax_reader.so");
     std::string task3_parser = Common::lib_dir / std::filesystem::path("t_org_tax_parser.signed.so");
     // std::string task3_param = "\"[{\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"91110114787775909K\\\"}]\"";
-    std::string task3_param = R"("[{"type":"string","value":"91110114787775909K"}])";
+    std::string task3_param = R"([{"type":"string","value":"91110114787775909K"}])";
 
     task3["reader"] = nlohmann::json::array({task3_reader1, task3_reader2});
     task3["parser"] = task3_parser;
@@ -389,6 +389,13 @@ int main(const int argc, const char *argv[]) {
     spdlog::info("run job2");
     nlohmann::json result = tj.run(all_tasks, 2, std::vector<uint64_t>{0, 1});
     std::string result_file = "taskgraph.result.output";
+
+    std::string enc_res = result["encrypted_result"];
+    std::string kgt_pkey = result["data_kgt_pkey"];
+    std::string all_keys_file = result["all_keys_file"];
+    nlohmann::json dec_res =
+            decrypt_result(crypto, enc_res, kgt_pkey, all_keys_file, result_file);
+    spdlog::info(dec_res["output"]);
 
     return 0; 
 }
