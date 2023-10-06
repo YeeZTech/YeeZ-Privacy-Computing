@@ -22,11 +22,11 @@ namespace cluster {
 
     public:
         Common() {
-            sdk_dir = std::filesystem::current_path();
+            std::string current_dir = std::filesystem::current_path();
+            std::string test_dir = current_dir / std::filesystem::path("../");
+            sdk_dir = test_dir / std::filesystem::path("../");
             bin_dir = sdk_dir / std::filesystem::path("./bin");
             lib_dir = sdk_dir / std::filesystem::path("./lib");
-//            kmgr_enclave.stdeth = lib_dir / std::filesystem::path("keymgr.signed.so");
-//            kmgr_enclave.gmssl = lib_dir / std::filesystem::path("keymgr_gmssl.signed.so");
             kmgr_enclave["stdeth"] = lib_dir / std::filesystem::path("keymgr.signed.so");
             kmgr_enclave["gmssl"] = lib_dir / std::filesystem::path("keymgr_gmssl.signed.so");
         }
@@ -46,19 +46,30 @@ namespace cluster {
             while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
                 result += buffer.data();
             }
+            if (result != "")
+            {
+                spdlog::info(result);
+            }
             return result;
         }
 
         static nlohmann::json fid_terminus(nlohmann::json kwargs)
         {
-            spdlog::info("fid_terminus");
+            spdlog::trace("fid_terminus");
 
             nlohmann::json ret;
 
             std::string cmd = bin_dir / std::filesystem::path("./yterminus");
             for (nlohmann::json::iterator iter = kwargs.begin(); iter != kwargs.end(); ++iter)
             {
-                cmd = cmd + " --" + iter.key() + " " + to_string(iter.value());
+                if (to_string(iter.value()) == R"("")")
+                {
+                    cmd = cmd + " --" + iter.key();
+                }
+                else
+                {
+                    cmd = cmd + " --" + iter.key() + " " + to_string(iter.value());
+                }
             }
 
             std::string output = execute_cmd(cmd);
@@ -71,14 +82,21 @@ namespace cluster {
 
         static nlohmann::json fid_data_provider(nlohmann::json kwargs)
         {
-            spdlog::info("fid_data_provider starts");
+            spdlog::trace("fid_data_provider starts");
 
             nlohmann::json ret;
 
             std::string cmd = Common::bin_dir / std::filesystem::path("./data_provider");
             for (nlohmann::json::iterator iter = kwargs.begin(); iter != kwargs.end(); ++iter)
             {
-                cmd = cmd + " --" + iter.key() + " " + to_string(iter.value());
+                if (to_string(iter.value()) == R"("")")
+                {
+                    cmd = cmd + " --" + iter.key();
+                }
+                else
+                {
+                    cmd = cmd + " --" + iter.key() + " " + to_string(iter.value());
+                }
             }
 
             std::string output = execute_cmd(cmd);
@@ -86,14 +104,14 @@ namespace cluster {
             ret["cmd"] = cmd;
             ret["output"] = output;
 
-            spdlog::info("fid_data_provider ends");
+            spdlog::trace("fid_data_provider ends");
 
             return ret;
         }
 
         static nlohmann::json fid_keymgr_list(std::string crypto = std::string{"stdeth"})
         {
-            spdlog::info("fid_keymgr_list starts");
+            spdlog::trace("fid_keymgr_list starts");
 
             std::string cmd = bin_dir / std::filesystem::path("./keymgr_tool");
             cmd = cmd + " --crypto " + crypto;
@@ -106,17 +124,17 @@ namespace cluster {
             std::string tkeyid = std::string{""};
             nlohmann::json keys;
 
-            spdlog::info("fid_keymgr_list split lines");
+            spdlog::trace("fid_keymgr_list split lines");
             while (getline(iss_output, s_output, '\n')) {
                 svec_output.push_back(s_output);
             }
             for (auto iter_output : svec_output)
             {
                 boost::trim(iter_output);
-                spdlog::info("fid_keymgr_list finds keys");
+                spdlog::trace("fid_keymgr_list finds keys");
                 if (iter_output.rfind(">> key ", 0) == 0)
                 {
-                    spdlog::info("fid_keymgr_list key found");
+                    spdlog::trace("fid_keymgr_list key found");
 //                    std::vector<std::string> svec_iter_output;
 //                    std::istringstream iss_iter_output(iter_output);
 //                    std::string s_iter_output;
@@ -132,10 +150,10 @@ namespace cluster {
                     boost::trim(split_iter_output[1]);
                     tkeyid = split_iter_output[1];
                 }
-                spdlog::info("fid_keymgr_list finds pkey");
+                spdlog::trace("fid_keymgr_list finds pkey");
                 if (iter_output.rfind("public key:", 0) == 0)
                 {
-                    spdlog::info("fid_keymgr_list pkey found");
+                    spdlog::trace("fid_keymgr_list pkey found");
 //                    std::vector<std::string> svec_iter_output;
 //                    std::istringstream iss_iter_output(iter_output);
 //                    std::string s_iter_output;
@@ -160,14 +178,14 @@ namespace cluster {
                 }
             }
 
-            spdlog::info("fid_keymgr_list ends");
+            spdlog::trace("fid_keymgr_list ends");
 
             return keys;
         }
 
         static nlohmann::json fid_keymgr_create(std::string user_id, std::string crypto = "")
         {
-            spdlog::info("fid_keymgr_create");
+            spdlog::trace("fid_keymgr_create");
 
             nlohmann::json ret;
 
@@ -180,7 +198,14 @@ namespace cluster {
 
             for (nlohmann::json::iterator iter = param.begin(); iter != param.end(); ++iter)
             {
-                cmd = cmd + " --" + iter.key() + " " + to_string(iter.value());
+                if (to_string(iter.value()) == R"("")")
+                {
+                    cmd = cmd + " --" + iter.key();
+                }
+                else
+                {
+                    cmd = cmd + " --" + iter.key() + " " + to_string(iter.value());
+                }
             }
 
             std::string output = execute_cmd(cmd);
@@ -193,7 +218,7 @@ namespace cluster {
 
         static std::string get_keymgr_private_key(std::string keyid, std::string crypto_type = "stdeth")
         {
-            spdlog::info("get_keymgr_private_key");
+            spdlog::trace("get_keymgr_private_key");
 
             std::string cmd = bin_dir / std::filesystem::path("./keymgr_tool");
             cmd = cmd + " --crypto " + crypto_type;
@@ -215,14 +240,21 @@ namespace cluster {
 
         static nlohmann::json fid_dump(nlohmann::json param)
         {
-            spdlog::info("fid_dump");
+            spdlog::trace("fid_dump");
 
             nlohmann::json ret;
 
             std::string cmd = bin_dir / std::filesystem::path("./ydump");
             for (nlohmann::json::iterator iter = param.begin(); iter != param.end(); ++iter)
             {
-                cmd = cmd + " --" + iter.key() + " " + to_string(iter.value());
+                if (to_string(iter.value()) == R"("")")
+                {
+                    cmd = cmd + " --" + iter.key();
+                }
+                else
+                {
+                    cmd = cmd + " --" + iter.key() + " " + to_string(iter.value());
+                }
             }
             std::string output = execute_cmd(cmd);
 
@@ -234,7 +266,7 @@ namespace cluster {
 
         static nlohmann::json fid_analyzer(nlohmann::json param)
         {
-            spdlog::info("fid_analyzer");
+            spdlog::trace("fid_analyzer");
 
             nlohmann::json ret;
 
@@ -242,7 +274,14 @@ namespace cluster {
             cmd = "GLOG_logtostderr=1 " + cmd;
             for (nlohmann::json::iterator iter = param.begin(); iter != param.end(); ++iter)
             {
-                cmd = cmd + " --" + iter.key() + " " + to_string(iter.value());
+                if (to_string(iter.value()) == R"("")")
+                {
+                    cmd = cmd + " --" + iter.key();
+                }
+                else
+                {
+                    cmd = cmd + " --" + iter.key() + " " + to_string(iter.value());
+                }
             }
             std::string output = execute_cmd(cmd);
 

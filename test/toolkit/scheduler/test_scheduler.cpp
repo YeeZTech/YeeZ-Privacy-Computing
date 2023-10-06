@@ -161,31 +161,31 @@ nlohmann::json TaskGraph_Job::run(
 
     // 1. generate keys
     // 1.2 generate algo key
-    spdlog::info("1.2 generate algo key");
+    spdlog::trace("1.2 generate algo key");
     std::string algo_key_file = name + ".algo" + std::to_string(idx) + ".key.json";
     nlohmann::json algo_shukey_json = JobStep::gen_key(crypto, algo_key_file);
     // self.all_outputs.append(algo_key_file)
     key_files.push_back(algo_key_file);
     // 1.3 generate user key
-    spdlog::info("1.3 generate user key");
+    spdlog::trace("1.3 generate user key");
     std::string user_key_file = name + ".user" + std::to_string(idx) + ".key.json";
     nlohmann::json user_shukey_json = JobStep::gen_key(crypto, user_key_file);
     // self.all_outputs.append(user_key_file)
     key_files.push_back(user_key_file);
 
     // get dian pkey
-    spdlog::info("get dian pkey");
+    spdlog::trace("get dian pkey");
     nlohmann::json key = JobStep::get_first_key(crypto);
     std::string pkey = key["public-key"];
     nlohmann::json summary;
     summary["tee-pkey"] = key["public-key"];
     // read parser enclave hash
-    spdlog::info("read parser enclave hash");
+    spdlog::trace("read parser enclave hash");
     std::string enclave_hash = JobStep::read_parser_hash(parser_url);
 
     // 3. call terminus to generate forward message
     // 3.2 forward algo shu skey
-    spdlog::info("3.2 forward algo shu skey");
+    spdlog::trace("3.2 forward algo shu skey");
     std::string algo_forward_result =
             name +
             ".algo" +
@@ -196,14 +196,14 @@ nlohmann::json TaskGraph_Job::run(
     all_outputs.push_back(algo_forward_result);
 
     // 3.3 forward user shu skey
-    spdlog::info("3.3 forward user shu skey");
+    spdlog::trace("3.3 forward user shu skey");
     std::string user_forward_result = name + ".user" + std::to_string(idx) + ".shukey.foward.json";
     nlohmann::json user_forward_json = JobStep::forward_message(
             crypto, user_key_file, pkey, enclave_hash, user_forward_result);
     all_outputs.push_back(user_forward_result);
 
     // handle all data
-    spdlog::info("handle all data");
+    spdlog::trace("handle all data");
     if (!prev_tasks_idx.empty())
     {
         assert(prev_tasks_idx.size() == data_urls.size());
@@ -226,7 +226,7 @@ nlohmann::json TaskGraph_Job::run(
     }
 
     // 4. call terminus to generate request
-    spdlog::info("4. call terminus to generate request");
+    spdlog::trace("4. call terminus to generate request");
     std::string param_output_url = name + "_param" + std::to_string(idx) + ".json";
     nlohmann::json param_json = JobStep::generate_request(
             crypto, input_param, user_key_file, param_output_url, config);
@@ -234,7 +234,7 @@ nlohmann::json TaskGraph_Job::run(
     all_outputs.push_back(param_output_url);
 
     // 5. call fid_analyzer
-    spdlog::info("5. call fid_analyzer");
+    spdlog::trace("5. call fid_analyzer");
     std::string parser_input_file = name + "_parser_input.json";
     std::string parser_output_file = name + "_parser_output.json";
     nlohmann::json result_json = JobStep::fid_analyzer_tg(
@@ -301,11 +301,11 @@ int main(const int argc, const char *argv[]) {
     commonJs = std::make_unique<CommonJs>();
 
 
-    spdlog::set_level(spdlog::level::trace);
+    spdlog::set_level(spdlog::level::info);
 
     std::string crypto = "stdeth";
 
-    spdlog::info("build all_tasks");
+    spdlog::trace("build all_tasks");
     std::vector<nlohmann::json> all_tasks;
 
     nlohmann::json task1;
@@ -370,23 +370,23 @@ int main(const int argc, const char *argv[]) {
 //    }
 //    )");
 
-    spdlog::info("build config");
+    spdlog::trace("build config");
     nlohmann::json config;
     config["request-use-js"] = "true";
     config["remove-files"] = "true";
 
-    spdlog::info("build taskgraph job");
+    spdlog::trace("build taskgraph job");
     TaskGraph_Job tj(
             crypto,
             all_tasks,
             std::vector<std::string>(),
             config,
             std::vector<std::string>());
-    spdlog::info("run job0");
+    spdlog::trace("run job0");
     tj.run(all_tasks, 0, std::vector<uint64_t>());
-    spdlog::info("run job1");
+    spdlog::trace("run job1");
     tj.run(all_tasks, 1, std::vector<uint64_t>());
-    spdlog::info("run job2");
+    spdlog::trace("run job2");
     nlohmann::json result = tj.run(all_tasks, 2, std::vector<uint64_t>{0, 1});
     std::string result_file = "taskgraph.result.output";
 

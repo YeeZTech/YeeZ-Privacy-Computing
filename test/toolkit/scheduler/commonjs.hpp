@@ -11,8 +11,9 @@ namespace cluster {
     class CommonJs {
     public:
         CommonJs() {
-            sdk_dir = std::filesystem::current_path();
-            current_dir = sdk_dir / std::filesystem::path("./test/integrate");
+            current_dir = std::filesystem::current_path();
+            std::string test_dir = current_dir / std::filesystem::path("../");
+            sdk_dir = test_dir / std::filesystem::path("../");
             bin_dir = sdk_dir / std::filesystem::path("./bin");
             lib_dir = sdk_dir / std::filesystem::path("./lib");
             kmgr_enclave.stdeth = lib_dir / std::filesystem::path("edatahub.signed.so");
@@ -33,6 +34,10 @@ namespace cluster {
             }
             while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
                 result += buffer.data();
+            }
+            if (result != "")
+            {
+                spdlog::info(result);
             }
             return result;
         }

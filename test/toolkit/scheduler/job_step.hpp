@@ -18,7 +18,7 @@ namespace cluster {
     public:
         static void remove_files(std::vector<std::string> file_list)
         {
-            spdlog::info("remove_files");
+            spdlog::trace("remove_files");
 
             for (auto iter : file_list)
             {
@@ -30,7 +30,7 @@ namespace cluster {
 
         static nlohmann::json gen_key(std::string crypto, std::string shukey_file)
         {
-            spdlog::info("gen_key");
+            spdlog::trace("gen_key");
 
             nlohmann::json param;
             param["crypto"] = crypto;
@@ -59,7 +59,7 @@ namespace cluster {
                 std::string sealed_output,
                 std::string data_key_file)
         {
-            spdlog::info("seal_data");
+            spdlog::trace("seal_data");
 
             nlohmann::json param;
             param["crypto"] = crypto;
@@ -74,7 +74,7 @@ namespace cluster {
 
         static std::string read_sealed_output(std::string filepath, std::string field)
         {
-            spdlog::info("read_sealed_output");
+            spdlog::trace("read_sealed_output");
 
             std::ifstream ifs(filepath);
 
@@ -132,7 +132,7 @@ namespace cluster {
 
         static nlohmann::json get_first_key(std::string crypto)
         {
-            spdlog::info("get_first_key starts");
+            spdlog::trace("get_first_key starts");
 
             nlohmann::json ret;
 
@@ -154,14 +154,14 @@ namespace cluster {
             ret["public-key"] = pkey;
             ret["private-key"] = private_key;
 
-            spdlog::info("get_first_key ends");
+            spdlog::trace("get_first_key ends");
 
             return ret;
         }
 
         static std::string read_parser_hash(std::string parser_url)
         {
-            spdlog::info("read_parser_hash");
+            spdlog::trace("read_parser_hash");
 
             nlohmann::json param;
             param["enclave"] = parser_url;
@@ -234,7 +234,7 @@ namespace cluster {
                 std::string parser_input_file,
                 std::string parser_output_file)
         {
-            spdlog::info("fid_analyzer_tg starts");
+            spdlog::trace("fid_analyzer_tg starts");
 
             nlohmann::json parser_input;
             parser_input["shu_info"]["shu_pkey"] = shukey_json["public-key"];
@@ -270,7 +270,7 @@ namespace cluster {
 
             try {
                 std::ifstream ifs(parser_output_file);
-                spdlog::info("fid_analyzer_tg ends");
+                spdlog::trace("fid_analyzer_tg ends");
                 return nlohmann::json::parse(ifs);
             }
             catch (const std::exception& e)
