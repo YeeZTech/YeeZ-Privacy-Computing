@@ -41,8 +41,13 @@ bin
 *.env
 generate
 
-test/integrate
+*node_modules*
+*pycache*
+*.output
 test/project_path.h
 .vscode/
 .idea/
 hash_hex/
+
+*.csv
+toolkit/plugins

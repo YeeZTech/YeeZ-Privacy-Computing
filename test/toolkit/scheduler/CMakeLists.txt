@@ -6,12 +6,14 @@ add_executable(test_scheduler
 # external libraries
 target_include_directories(test_scheduler PUBLIC
     "${PROJECT_SOURCE_DIR}/vendor/json/include"
-    "${PROJECT_SOURCE_DIR}/vendor/spdlog/include")
+    "${PROJECT_SOURCE_DIR}/vendor/spdlog/include"
+    "${PROJECT_SOURCE_DIR}/vendor/taskflow")
 # internal headers
 target_include_directories(test_scheduler PUBLIC
     "${PROJECT_SOURCE_DIR}/toolkit/analyzer"
     "${PROJECT_SOURCE_DIR}/toolkit/datahub"
-    "${PROJECT_SOURCE_DIR}/toolkit/ydump")
+    "${PROJECT_SOURCE_DIR}/toolkit/ydump"
+    "${PROJECT_SOURCE_DIR}/toolkit/scheduler")
 # internal links
 target_link_directories(test_scheduler PUBLIC
     "${PROJECT_SOURCE_DIR}/lib")

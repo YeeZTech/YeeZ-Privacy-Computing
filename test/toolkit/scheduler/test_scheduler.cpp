@@ -1,5 +1,9 @@
 #include "test_scheduler.hpp"
 
+#include <filesystem>
+
+#include <taskflow/taskflow.hpp>
+
 using namespace cluster;
 
 nlohmann::json decrypt_result(
@@ -88,6 +92,8 @@ nlohmann::json TaskGraph_Job::handle_input_data(
         std::string parser_output_file = name + "_parser_output.json";
         std::ifstream ifs_pof(parser_output_file);
         nlohmann::json output_json = nlohmann::json::parse(ifs_pof);
+        std::cout << output_json << std::endl;
+        // exit(0);
 
         nlohmann::json r = intermediate_seal_data(
                 output_json["encrypted_result"],
@@ -140,6 +146,8 @@ nlohmann::json TaskGraph_Job::handle_input_data(
 
     ret["data_obj"] = data_obj;
     ret["flat_kgt_pkey"] = flat_kgt_pkey;
+    std::cout << ret << std::endl;
+    // exit(0);
 
     spdlog::trace("handle_input_data ends");
 
@@ -221,7 +229,7 @@ nlohmann::json TaskGraph_Job::run(
                 i,
                 tasks,
                 prev_tasks_idx);
-        input_data.push_back(result["data-obj"]);
+        input_data.push_back(result["data_obj"]);
         flat_kgt_pkey_list.push_back(result["flat_kgt_pkey"]);
     }
 
@@ -300,49 +308,50 @@ int main(const int argc, const char *argv[]) {
     common = std::make_unique<Common>();
     commonJs = std::make_unique<CommonJs>();
 
-
     spdlog::set_level(spdlog::level::trace);
 
-    std::string crypto = "stdeth";
+    std::cout << std::filesystem::current_path() << std::endl; 
 
-    spdlog::trace("build all_tasks");
-    std::vector<nlohmann::json> all_tasks;
+//     std::string crypto = "stdeth";
 
-    nlohmann::json task1;
-    task1["name"] = "org_info";
-    task1["data"] = nlohmann::json::array({"corp.csv"});
-    std::string task1_reader = Common::lib_dir / std::filesystem::path("libt_org_info_reader.so");
-    std::string task1_parser = Common::lib_dir / std::filesystem::path("t_org_info_parser.signed.so");
-    std::string task1_param = R"([{"type":"string","value":"91110114787775909K"}])";
-    task1["reader"] = nlohmann::json::array({task1_reader});
-    task1["parser"] = task1_parser;
-    task1["param"] = task1_param;
-    all_tasks.push_back(task1);
+//     spdlog::trace("build all_tasks");
+//     std::vector<nlohmann::json> all_tasks;
 
-    nlohmann::json task2;
-    task2["name"] = "tax";
-    task2["data"] = nlohmann::json::array({"tax.csv"});
-    std::string task2_reader = Common::lib_dir / std::filesystem::path("libt_tax_reader.so");
-    std::string task2_parser = Common::lib_dir / std::filesystem::path("t_tax_parser.signed.so");
-    std::string task2_param = R"([{"type":"string","value":"91110114787775909K"}])";
-    task2["reader"] = nlohmann::json::array({task2_reader});
-    task2["parser"] = task2_parser;
-    task2["param"] = task2_param;
-    all_tasks.push_back(task2);
+//     nlohmann::json task1;
+//     task1["name"] = "org_info";
+//     task1["data"] = nlohmann::json::array({"corp.csv"});
+//     std::string task1_reader = Common::lib_dir / std::filesystem::path("libt_org_info_reader.so");
+//     std::string task1_parser = Common::lib_dir / std::filesystem::path("t_org_info_parser.signed.so");
+//     std::string task1_param = R"([{"type":"string","value":"91110114787775909K"}])";
+//     task1["reader"] = nlohmann::json::array({task1_reader});
+//     task1["parser"] = task1_parser;
+//     task1["param"] = task1_param;
+//     all_tasks.push_back(task1);
 
-    nlohmann::json task3;
-    task3["name"] = "merge";
-    task3["data"] = nlohmann::json::array({"result_org_info.csv", "result_tax.csv"});
-    std::string task3_reader1 = Common::lib_dir / std::filesystem::path("libt_org_info_reader.so");
-    std::string task3_reader2 = Common::lib_dir / std::filesystem::path("libt_tax_reader.so");
-    std::string task3_parser = Common::lib_dir / std::filesystem::path("t_org_tax_parser.signed.so");
-    // std::string task3_param = "\"[{\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"91110114787775909K\\\"}]\"";
-    std::string task3_param = R"([{"type":"string","value":"91110114787775909K"}])";
+//     nlohmann::json task2;
+//     task2["name"] = "tax";
+//     task2["data"] = nlohmann::json::array({"tax.csv"});
+//     std::string task2_reader = Common::lib_dir / std::filesystem::path("libt_tax_reader.so");
+//     std::string task2_parser = Common::lib_dir / std::filesystem::path("t_tax_parser.signed.so");
+//     std::string task2_param = R"([{"type":"string","value":"91110114787775909K"}])";
+//     task2["reader"] = nlohmann::json::array({task2_reader});
+//     task2["parser"] = task2_parser;
+//     task2["param"] = task2_param;
+//     all_tasks.push_back(task2);
 
-    task3["reader"] = nlohmann::json::array({task3_reader1, task3_reader2});
-    task3["parser"] = task3_parser;
-    task3["param"] = task3_param;
-    all_tasks.push_back(task3);
+//     nlohmann::json task3;
+//     task3["name"] = "merge";
+//     task3["data"] = nlohmann::json::array({"result_org_info.csv", "result_tax.csv"});
+//     std::string task3_reader1 = Common::lib_dir / std::filesystem::path("libt_org_info_reader.so");
+//     std::string task3_reader2 = Common::lib_dir / std::filesystem::path("libt_tax_reader.so");
+//     std::string task3_parser = Common::lib_dir / std::filesystem::path("t_org_tax_parser.signed.so");
+//     // std::string task3_param = "\"[{\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"91110114787775909K\\\"}]\"";
+//     std::string task3_param = R"([{"type":"string","value":"91110114787775909K"}])";
+
+//     task3["reader"] = nlohmann::json::array({task3_reader1, task3_reader2});
+//     task3["parser"] = task3_parser;
+//     task3["param"] = task3_param;
+//     all_tasks.push_back(task3);
 
 //    nlohmann::json all_tasks = nlohmann::json::parse(R"(
 //    {
@@ -370,32 +379,47 @@ int main(const int argc, const char *argv[]) {
 //    }
 //    )");
 
-    spdlog::trace("build config");
-    nlohmann::json config;
-    config["request-use-js"] = "true";
-    config["remove-files"] = "true";
+//     spdlog::trace("build config");
+//     nlohmann::json config;
+//     config["request-use-js"] = "true";
+//     config["remove-files"] = "true";
 
-    spdlog::trace("build taskgraph job");
-    TaskGraph_Job tj(
-            crypto,
-            all_tasks,
-            std::vector<std::string>(),
-            config,
-            std::vector<std::string>());
-    spdlog::trace("run job0");
-    tj.run(all_tasks, 0, std::vector<uint64_t>());
-    spdlog::trace("run job1");
-    tj.run(all_tasks, 1, std::vector<uint64_t>());
-    spdlog::trace("run job2");
-    nlohmann::json result = tj.run(all_tasks, 2, std::vector<uint64_t>{0, 1});
-    std::string result_file = "taskgraph.result.output";
+//     spdlog::trace("build taskgraph job");
+//     TaskGraph_Job tj(
+//             crypto,
+//             all_tasks,
+//             std::vector<std::string>(),
+//             config,
+//             std::vector<std::string>());
+//     spdlog::trace("run job0");
+//     tj.run(all_tasks, 0, std::vector<uint64_t>());
+//    spdlog::trace("run job1");
+//    tj.run(all_tasks, 1, std::vector<uint64_t>());
+//    spdlog::trace("run job2");
+//    nlohmann::json result = tj.run(all_tasks, 2, std::vector<uint64_t>{0, 1});
+//    std::string result_file = "taskgraph.result.output";
+//
+//    std::string enc_res = result["encrypted_result"];
+//    std::string kgt_pkey = result["data_kgt_pkey"];
+//    std::string all_keys_file = result["all_keys_file"];
+//    nlohmann::json dec_res =
+//            decrypt_result(crypto, enc_res, kgt_pkey, all_keys_file, result_file);
+//    spdlog::info(dec_res["output"]);
 
-    std::string enc_res = result["encrypted_result"];
-    std::string kgt_pkey = result["data_kgt_pkey"];
-    std::string all_keys_file = result["all_keys_file"];
-    nlohmann::json dec_res =
-            decrypt_result(crypto, enc_res, kgt_pkey, all_keys_file, result_file);
-    spdlog::info(dec_res["output"]);
+    tf::Executor executor;
+    tf::Taskflow taskflow;
+    auto [task_0, task_1, task_2] = taskflow.emplace(  // create four tasks
+        [&] () { std::cout << "Task0 starts \n"; Common::execute_cmd("python3 taskgraph_job_0.py 0"); std::cout << "Task0 ends \n";},
+        [&] () { std::cout << "Task1 starts \n"; Common::execute_cmd("python3 taskgraph_job_1.py 1"); std::cout << "Task1 ends \n";},
+        [&] () { std::cout << "Task2 starts \n"; Common::execute_cmd("python3 taskgraph_job_2.py 2"); std::cout << "Task2 ends \n";}
+    );  
+//     task_1.succeed(task_0); 
+    task_2.succeed(task_0, task_1); 
+    executor.run(taskflow).wait(); 
+
+    // Common::execute_cmd("python3 taskgraph_job_0.py 0"); 
+    // Common::execute_cmd("python3 taskgraph_job_1.py 1"); 
+    // Common::execute_cmd("python3 taskgraph_job_2.py 2"); 
 
     return 0; 
 }
