@@ -22,7 +22,7 @@ namespace cluster {
 
     public:
         Common() {
-            std::string current_dir = std::filesystem::current_path();
+            current_dir = std::filesystem::current_path();
             std::string test_dir = current_dir / std::filesystem::path("../");
             sdk_dir = test_dir / std::filesystem::path("../");
             bin_dir = sdk_dir / std::filesystem::path("./bin");
@@ -295,6 +295,7 @@ namespace cluster {
         inline static std::string sdk_dir;
         inline static std::string bin_dir;
         inline static std::string lib_dir;
+        inline static std::string current_dir;
 //        inline static struct {
 //            std::string stdeth;
 //            std::string gmssl;

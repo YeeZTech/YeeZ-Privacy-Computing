@@ -379,14 +379,14 @@ def main():
     all_tasks = [
         {
             'name': 'org_info',
-            'data': ['企业信息.csv'],
+            'data': ['corp.csv'],
             'reader': [os.path.join(common.lib_dir, "libt_org_info_reader.so")],
             'parser': os.path.join(common.lib_dir, "t_org_info_parser.signed.so"),
             'param': "\"[{\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"91110114787775909K\\\"}]\"",
         },
         {
             'name': 'tax',
-            'data': ['税收.csv'],
+            'data': ['tax.csv'],
             'reader': [os.path.join(common.lib_dir, "libt_tax_reader.so")],
             'parser': os.path.join(common.lib_dir, "t_tax_parser.signed.so"),
             'param': "\"[{\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"91110114787775909K\\\"}]\"",

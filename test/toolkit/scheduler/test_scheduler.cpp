@@ -301,7 +301,7 @@ int main(const int argc, const char *argv[]) {
     commonJs = std::make_unique<CommonJs>();
 
 
-    spdlog::set_level(spdlog::level::info);
+    spdlog::set_level(spdlog::level::trace);
 
     std::string crypto = "stdeth";
 

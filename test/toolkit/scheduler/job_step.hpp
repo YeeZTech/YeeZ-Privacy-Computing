@@ -202,9 +202,9 @@ namespace cluster {
                 nlohmann::json r = Common::fid_terminus(param);
             }
 
-            std::string abs_param_output_url = Common::sdk_dir / std::filesystem::path(param_output_url);
-            std::ifstream ifs(abs_param_output_url);
+            std::string abs_param_output_url = Common::current_dir / std::filesystem::path(param_output_url);
             spdlog::trace("absolute param_output_url: {}", abs_param_output_url);
+            std::ifstream ifs(abs_param_output_url);
             if (ifs.fail())
             {
                 spdlog::error("open file failed");
