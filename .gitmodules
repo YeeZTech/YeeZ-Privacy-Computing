@@ -4,3 +4,12 @@
 [submodule "vendor/pybind11"]
 	path = vendor/pybind11
 	url = https://github.com/pybind/pybind11.git
+[submodule "vendor/json"]
+	path = vendor/json
+	url = https://github.com/nlohmann/json.git
+[submodule "vendor/taskflow"]
+	path = vendor/taskflow
+	url = https://github.com/taskflow/taskflow.git
+[submodule "vendor/spdlog"]
+	path = vendor/spdlog
+	url = https://github.com/gabime/spdlog.git

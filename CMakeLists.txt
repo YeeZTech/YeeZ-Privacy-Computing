@@ -6,6 +6,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 cmake_minimum_required(VERSION 3.12)
 project(YPC VERSION 0.5.1)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_DEBUG_POSTFIX "")
+
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 if(CMAKE_BUILD_TYPE STREQUAL "")
@@ -126,13 +130,18 @@ endif()
 if(SGX_MODE STREQUAL "Debug")
   include(GTest)
   enable_testing()
+endif()
+
+add_subdirectory(toolkit)
+#add_subdirectory(test/integrate)
+
+if(SGX_MODE STREQUAL "Debug")
   add_subdirectory(test)
 endif()
 
 Doxygen(${PROJECT_SOURCE_DIR})
 
-add_subdirectory(toolkit)
-#add_subdirectory(test/integrate)
+
 
 install(
   FILES "${project_config}" "${version_config}" "${util_config}"

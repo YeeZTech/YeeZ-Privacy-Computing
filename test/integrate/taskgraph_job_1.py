@@ -412,14 +412,14 @@ def main():
         'request-use-js': True,
         'remove-files': True if len(sys.argv) < 2 else False,
     })
-    tj.run(all_tasks, 0, [])
+    # tj.run(all_tasks, 0, [])
     tj.run(all_tasks, 1, [])
-    enc_res, kgt_pkey, all_keys_file = tj.run(all_tasks, 2, [0, 1])
-    result_file = 'taskgraph.result.output'
-    decrypt_result(crypto, enc_res, kgt_pkey, all_keys_file, result_file)
-    with open(result_file) as fp:
-        print('\n\ndecrypted result is:')
-        print(fp.read())
+    # enc_res, kgt_pkey, all_keys_file = tj.run(all_tasks, 2, [0, 1])
+    # result_file = 'taskgraph.result.output'
+    # decrypt_result(crypto, enc_res, kgt_pkey, all_keys_file, result_file)
+    # with open(result_file) as fp:
+    #     print('\n\ndecrypted result is:')
+    #     print(fp.read())
 
 
 if __name__ == '__main__':

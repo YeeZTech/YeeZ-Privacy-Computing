@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
 
   // input_param_t input_param =
   // ypc::ntjson::from_json_file<input_param_t>(vm["input"].as<std::string>());
-  tg_input_param_t input_param = ypc::ntjson::from_json_file<tg_input_param_t>(
+  auto input_param = ypc::ntjson::from_json_file<tg_input_param_t>(
       vm["input"].as<std::string>());
   g_parser = std::make_shared<parser>(input_param);
 
