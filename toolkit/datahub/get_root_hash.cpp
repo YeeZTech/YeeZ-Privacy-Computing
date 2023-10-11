@@ -1,6 +1,5 @@
 #include "ypc/core/oram_sealed_file.h"
 #include "ypc/core/version.h"
-#include "ypc/core/oram_sealed_file.h"
 
 #include <boost/program_options.hpp>
 #include <boost/progress.hpp>
@@ -42,7 +41,6 @@ boost::program_options::variables_map parse_command_line(int argc,
   return vm;
 }
 
-
 int main(int argc, char *argv[]) {
   boost::program_options::variables_map vm;
 
@@ -70,7 +68,7 @@ int main(int argc, char *argv[]) {
   ypc::memref me_hash;
   bool ret = sosf->read_root_hash(me_hash);
   ypc::bytes root_hash(me_hash.data(), me_hash.size());
-  if(!ret) {
+  if (!ret) {
     std::cout << "Cannot read root hash" << std::endl;
     return -1;
   }

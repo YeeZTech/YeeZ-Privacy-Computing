@@ -1,8 +1,8 @@
 #include "parsers/oram_parser.h"
 #include "ypc/common/access_policy.h"
-#include "ypc/corecommon/nt_cols.h"
-#include "ypc/core/status.h"
 #include "ypc/core/ntjson.h"
+#include "ypc/core/status.h"
+#include "ypc/corecommon/nt_cols.h"
 #include "ypc/corecommon/package.h"
 #include <glog/logging.h>
 
@@ -40,7 +40,7 @@ uint32_t oram_parser::oram_parse() {
   auto shu_skey = m_param.get<shu_info>().get<ntt::encrypted_shu_skey>();
   auto shu_forward_sig =
       m_param.get<shu_info>().get<ntt::shu_forward_signature>();
-  
+
   uint32_t ret = 0;
   if (!shu_skey.empty()) {
     LOG(INFO) << "keymgr_enclave_path: " << keymgr_enclave_path;
@@ -157,7 +157,8 @@ uint32_t oram_parser::feed_datasource() {
     if (input_data_var.empty()) {
       LOG(ERROR) << "missing input, require one input data source";
       return ypc::parser_missing_input;
-    } if (input_data_var.size() > 1) {
+    }
+    if (input_data_var.size() > 1) {
       LOG(WARNING) << "only need 1 input, ignore other inputs";
     }
   }
@@ -166,7 +167,8 @@ uint32_t oram_parser::feed_datasource() {
     if (input_data_var.empty()) {
       LOG(ERROR) << "missing input, require one input data source";
       return ypc::parser_missing_input;
-    } if (input_data_var.size() > 1) {
+    }
+    if (input_data_var.size() > 1) {
       LOG(WARNING) << "only need 1 input, ignore other inputs";
     }
   }
@@ -184,7 +186,7 @@ uint32_t oram_parser::feed_datasource() {
     auto url = item.get<input_data_url>();
     auto data_hash = item.get<input_data_hash>();
     auto sosf = std::make_shared<ypc::simple_oram_sealed_file>(url);
-    
+
     m_data_sources.insert(std::make_pair(data_hash, sosf));
     sosf->reset();
 
@@ -200,13 +202,13 @@ uint32_t oram_parser::feed_datasource() {
       LOG(ERROR) << "forward_message got error " << ypc::status_string(ret);
       return ret;
     }
-    
+
     ntt::oram_sealed_data_info_t data_info;
-    data_info.set<ntt::data_hash, ntt::pkey, ntt::tag, ntt::param_data, ntt::param_data_pkey>(
-        data_hash, shu.get<shu_pkey>(), item.get<ntt::tag>(), 
+    data_info.set<ntt::data_hash, ntt::pkey, ntt::tag, ntt::param_data,
+                  ntt::param_data_pkey>(
+        data_hash, shu.get<shu_pkey>(), item.get<ntt::tag>(),
         param_var.get<ntt::param_data>(), param_var.get<ntt::pkey>());
     all_data_info.push_back(data_info.make_copy());
-
   }
 
   ypc::bytes data_info_bytes;
@@ -232,9 +234,10 @@ uint32_t oram_parser::feed_datasource() {
     data_info_bytes = ypc::make_bytes<ypc::bytes>::for_package(single);
   }
 
-  if (m_ptype.d.data_source_type == ypc::utc::multi_sealed_datasource_parser) { 
+  if (m_ptype.d.data_source_type == ypc::utc::multi_sealed_datasource_parser) {
     data_info_bytes = ypc::make_bytes<ypc::bytes>::for_package<
-        typename ypc::cast_obj_to_package<ntt::multi_oram_sealed_data_info_t>::type,
+        typename ypc::cast_obj_to_package<
+            ntt::multi_oram_sealed_data_info_t>::type,
         ntt::oram_sealed_data_info_vector>(all_data_info);
   }
   if (m_ptype.d.data_source_type == ypc::utc::raw_datasource_parser) {
@@ -268,28 +271,31 @@ uint32_t oram_parser::feed_model() {
 }
 uint32_t oram_parser::feed_param() { return ypc::success; }
 
-uint32_t oram_parser::download_oram_params_OCALL(const uint8_t *data_hash, uint32_t hash_size, 
-                        uint32_t *block_num, uint32_t *bucket_num_N, uint8_t *level_num_L, 
-                        uint32_t *bucket_str_size, uint32_t *batch_str_size) {
+uint32_t oram_parser::download_oram_params_OCALL(
+    const uint8_t *data_hash, uint32_t hash_size, uint32_t *block_num,
+    uint32_t *bucket_num_N, uint8_t *level_num_L, uint32_t *bucket_str_size,
+    uint32_t *batch_str_size) {
   auto hash = ypc::bytes(data_hash, hash_size);
   if (m_data_sources.find(hash) == m_data_sources.end()) {
     LOG(ERROR) << "data with hash: " << hash << " not found";
     return stbox::stx_status::data_source_not_found;
   }
   auto sosf = m_data_sources[hash];
-  bool ret = sosf->download_oram_params(block_num, bucket_num_N, level_num_L, bucket_str_size, batch_str_size);
-  if(ret) {
+  bool ret = sosf->download_oram_params(block_num, bucket_num_N, level_num_L,
+                                        bucket_str_size, batch_str_size);
+  if (ret) {
     return stbox::stx_status::success;
   }
-  
+
   // TODO:定义新的错误码
   // return stbox::stx_status::sealed_file_reach_end;
   return stbox::stx_status::oram_sealed_file_error;
 }
 
-uint32_t oram_parser::get_block_id_OCALL(const uint8_t *data_hash, uint32_t hash_size,
-                                        uint32_t *block_id,
-                                        const uint8_t *param_hash, uint32_t param_hash_size) {
+uint32_t oram_parser::get_block_id_OCALL(const uint8_t *data_hash,
+                                         uint32_t hash_size, uint32_t *block_id,
+                                         const uint8_t *param_hash,
+                                         uint32_t param_hash_size) {
 
   auto hash = ypc::bytes(data_hash, hash_size);
   if (m_data_sources.find(hash) == m_data_sources.end()) {
@@ -297,20 +303,22 @@ uint32_t oram_parser::get_block_id_OCALL(const uint8_t *data_hash, uint32_t hash
     return stbox::stx_status::data_source_not_found;
   }
   auto sosf = m_data_sources[hash];
-  
+
   sosf->reset();
   ypc::bytes item_index_field_hash(param_hash, param_hash_size);
   bool ret = sosf->get_block_id(item_index_field_hash, block_id);
-  if(ret) {
+  if (ret) {
     return stbox::stx_status::success;
   }
-  
+
   // return stbox::stx_status::sealed_file_reach_end;
   return stbox::stx_status::oram_sealed_file_error;
 }
 
-uint32_t oram_parser::download_position_map_OCALL(const uint8_t *data_hash, uint32_t hash_size, 
-                                     uint8_t ** position_map, uint32_t *len) {
+uint32_t oram_parser::download_position_map_OCALL(const uint8_t *data_hash,
+                                                  uint32_t hash_size,
+                                                  uint8_t **position_map,
+                                                  uint32_t *len) {
   auto hash = ypc::bytes(data_hash, hash_size);
   if (m_data_sources.find(hash) == m_data_sources.end()) {
     LOG(ERROR) << "data with hash: " << hash << " not found";
@@ -321,7 +329,7 @@ uint32_t oram_parser::download_position_map_OCALL(const uint8_t *data_hash, uint
 
   ypc::memref posmap;
   bool ret = sosf->download_position_map(posmap);
-  if(ret) {
+  if (ret) {
     *position_map = posmap.data();
     *len = posmap.size();
     return stbox::stx_status::success;
@@ -330,8 +338,10 @@ uint32_t oram_parser::download_position_map_OCALL(const uint8_t *data_hash, uint
   return stbox::stx_status::oram_sealed_file_error;
 }
 
-uint32_t oram_parser::update_position_map_OCALL(const uint8_t *data_hash, uint32_t hash_size, 
-                                             uint8_t * position_map, uint32_t len) {
+uint32_t oram_parser::update_position_map_OCALL(const uint8_t *data_hash,
+                                                uint32_t hash_size,
+                                                uint8_t *position_map,
+                                                uint32_t len) {
   auto hash = ypc::bytes(data_hash, hash_size);
   if (m_data_sources.find(hash) == m_data_sources.end()) {
     LOG(ERROR) << "data with hash: " << hash << " not found";
@@ -341,16 +351,18 @@ uint32_t oram_parser::update_position_map_OCALL(const uint8_t *data_hash, uint32
   sosf->reset();
 
   bool ret = sosf->update_position_map(position_map, len);
-  if(ret) {
+  if (ret) {
     return stbox::stx_status::success;
   }
-  
+
   // return stbox::stx_status::sealed_file_reach_end;
   return stbox::stx_status::oram_sealed_file_error;
 }
 
-uint32_t oram_parser::download_path_OCALL(const uint8_t *data_hash, uint32_t hash_size,
-                                      uint32_t leaf, uint8_t ** encrpypted_path, uint32_t *len) {
+uint32_t oram_parser::download_path_OCALL(const uint8_t *data_hash,
+                                          uint32_t hash_size, uint32_t leaf,
+                                          uint8_t **encrpypted_path,
+                                          uint32_t *len) {
   auto hash = ypc::bytes(data_hash, hash_size);
   if (m_data_sources.find(hash) == m_data_sources.end()) {
     LOG(ERROR) << "data with hash: " << hash << " not found";
@@ -361,18 +373,19 @@ uint32_t oram_parser::download_path_OCALL(const uint8_t *data_hash, uint32_t has
 
   ypc::memref en_path;
   bool ret = sosf->download_path(leaf, en_path);
-  if(ret) {
+  if (ret) {
     *encrpypted_path = en_path.data();
     *len = en_path.size();
     return stbox::stx_status::success;
   }
-  
+
   // return stbox::stx_status::sealed_file_reach_end;
   return stbox::stx_status::oram_sealed_file_error;
 }
 
-uint32_t oram_parser::download_stash_OCALL(const uint8_t *data_hash, uint32_t hash_size,
-                                        uint8_t ** stash, uint32_t *len) {
+uint32_t oram_parser::download_stash_OCALL(const uint8_t *data_hash,
+                                           uint32_t hash_size, uint8_t **stash,
+                                           uint32_t *len) {
   auto hash = ypc::bytes(data_hash, hash_size);
   if (m_data_sources.find(hash) == m_data_sources.end()) {
     LOG(ERROR) << "data with hash: " << hash << " not found";
@@ -383,18 +396,19 @@ uint32_t oram_parser::download_stash_OCALL(const uint8_t *data_hash, uint32_t ha
 
   ypc::memref st;
   bool ret = sosf->download_stash(st);
-  if(ret) {
+  if (ret) {
     *stash = st.data();
     *len = st.size();
     return stbox::stx_status::success;
   }
-  
+
   // return stbox::stx_status::sealed_file_reach_end;
   return stbox::stx_status::oram_sealed_file_error;
 }
 
-uint32_t oram_parser::update_stash_OCALL(const uint8_t *data_hash, uint32_t hash_size,
-                                         uint8_t * stash, uint32_t len) {
+uint32_t oram_parser::update_stash_OCALL(const uint8_t *data_hash,
+                                         uint32_t hash_size, uint8_t *stash,
+                                         uint32_t len) {
   auto hash = ypc::bytes(data_hash, hash_size);
   if (m_data_sources.find(hash) == m_data_sources.end()) {
     LOG(ERROR) << "data with hash: " << hash << " not found";
@@ -405,16 +419,18 @@ uint32_t oram_parser::update_stash_OCALL(const uint8_t *data_hash, uint32_t hash
   sosf->reset();
 
   bool ret = sosf->update_stash(stash, len);
-  if(ret) {
+  if (ret) {
     return stbox::stx_status::success;
   }
-  
+
   // return stbox::stx_status::sealed_file_reach_end;
   return stbox::stx_status::oram_sealed_file_error;
 }
 
-uint32_t oram_parser::upload_path_OCALL(const uint8_t *data_hash, uint32_t hash_size,
-                           uint32_t leaf, uint8_t * encrpypted_path, uint32_t len) {
+uint32_t oram_parser::upload_path_OCALL(const uint8_t *data_hash,
+                                        uint32_t hash_size, uint32_t leaf,
+                                        uint8_t *encrpypted_path,
+                                        uint32_t len) {
   auto hash = ypc::bytes(data_hash, hash_size);
   if (m_data_sources.find(hash) == m_data_sources.end()) {
     LOG(ERROR) << "data with hash: " << hash << " not found";
@@ -424,16 +440,19 @@ uint32_t oram_parser::upload_path_OCALL(const uint8_t *data_hash, uint32_t hash_
   sosf->reset();
 
   bool ret = sosf->upload_path(leaf, encrpypted_path, len);
-  if(ret) {
+  if (ret) {
     return stbox::stx_status::success;
   }
-  
+
   // return stbox::stx_status::sealed_file_reach_end;
   return stbox::stx_status::oram_sealed_file_error;
 }
 
-uint32_t oram_parser::download_merkle_hash_OCALL(const uint8_t *data_hash, uint32_t hash_size,
-                                                 uint32_t leaf, uint8_t ** merkle_hash, uint32_t *len) {
+uint32_t oram_parser::download_merkle_hash_OCALL(const uint8_t *data_hash,
+                                                 uint32_t hash_size,
+                                                 uint32_t leaf,
+                                                 uint8_t **merkle_hash,
+                                                 uint32_t *len) {
   auto hash = ypc::bytes(data_hash, hash_size);
   if (m_data_sources.find(hash) == m_data_sources.end()) {
     LOG(ERROR) << "data with hash: " << hash << " not found";
@@ -444,18 +463,21 @@ uint32_t oram_parser::download_merkle_hash_OCALL(const uint8_t *data_hash, uint3
 
   ypc::memref me_hash;
   bool ret = sosf->download_merkle_hash(leaf, me_hash);
-  if(ret) {
+  if (ret) {
     *merkle_hash = me_hash.data();
     *len = me_hash.size();
     return stbox::stx_status::success;
   }
-  
+
   // return stbox::stx_status::sealed_file_reach_end;
   return stbox::stx_status::oram_sealed_file_error;
 }
 
-uint32_t oram_parser::update_merkle_hash_OCALL(const uint8_t *data_hash, uint32_t hash_size,
-                                            uint32_t leaf, uint8_t * merkle_hash, uint32_t len) {
+uint32_t oram_parser::update_merkle_hash_OCALL(const uint8_t *data_hash,
+                                               uint32_t hash_size,
+                                               uint32_t leaf,
+                                               uint8_t *merkle_hash,
+                                               uint32_t len) {
   auto hash = ypc::bytes(data_hash, hash_size);
   if (m_data_sources.find(hash) == m_data_sources.end()) {
     LOG(ERROR) << "data with hash: " << hash << " not found";
@@ -465,10 +487,10 @@ uint32_t oram_parser::update_merkle_hash_OCALL(const uint8_t *data_hash, uint32_
   sosf->reset();
 
   bool ret = sosf->update_merkle_hash(leaf, merkle_hash, len);
-  if(ret) {
+  if (ret) {
     return stbox::stx_status::success;
   }
-  
+
   // return stbox::stx_status::sealed_file_reach_end;
   return stbox::stx_status::oram_sealed_file_error;
 }

@@ -1,6 +1,6 @@
 #include "person_reader_oram.h"
-#include "ypc/common/limits.h"
 #include "../common.h"
+#include "ypc/common/limits.h"
 #include <cstring>
 #include <fstream>
 #include <iostream>
@@ -77,7 +77,7 @@ int get_item_index_field(void *handle, char *buf, int *len) {
     std::string index_field = item_pkg.get<ZJHM>();
     memcpy(buf, index_field.c_str(), index_field.size());
     *len = index_field.size();
-    
+
     r.dealloc();
     return 0;
   } else {

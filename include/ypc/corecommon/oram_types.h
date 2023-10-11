@@ -3,7 +3,6 @@
 #include <ff/net/middleware/ntpackage.h>
 #include <ff/util/ntobject.h>
 
-
 namespace ypc {
 namespace oram {
 
@@ -23,7 +22,8 @@ template <typename BytesType> struct nt {
   define_nt(leaf_label, uint32_t);
   define_nt(valid_item_num, uint32_t);
   define_nt(encrypted_batch, BytesType);
-  using block_t = ::ff::util::ntobject<block_id, leaf_label, valid_item_num, encrypted_batch>;
+  using block_t = ::ff::util::ntobject<block_id, leaf_label, valid_item_num,
+                                       encrypted_batch>;
 
   define_nt(bucket, std::vector<block_t>);
   using bucket_pkg_t = ::ff::net::ntpackage<0x82c4e8df, bucket>;
@@ -37,7 +37,6 @@ template <typename BytesType> struct nt {
   define_nt(merkle_hash, std::vector<hash_pair>);
   using merkle_hash_pkg_t = ::ff::net::ntpackage<0x82c4e7ea, merkle_hash>;
 };
-
 
 struct header {
   uint32_t block_num;
@@ -53,6 +52,5 @@ struct header {
   uint64_t stash_size;
 };
 
-
-}
-}
+} // namespace oram
+} // namespace ypc

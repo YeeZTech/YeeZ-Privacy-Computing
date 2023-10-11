@@ -1,9 +1,9 @@
 #include "iodef.h"
-#include "ypc/core/version.h"
 #include "sgx_bridge.h"
 #include "ypc/core/configuration.h"
 #include "ypc/core/ntobject_file.h"
 #include "ypc/core/oram_sealed_file.h"
+#include "ypc/core/version.h"
 #include "ypc/stbox/stx_status.h"
 #include <boost/program_options.hpp>
 #include <exception>
@@ -22,12 +22,12 @@ boost::program_options::variables_map parse_command_line(int argc,
   bp::options_description all("YeeZ Privacy Analyzer options");
 
   // clang-format off
-  all.add_options()
-    ("help", "help message")
-    ("version", "show version")
-    ("input", bp::value<std::string>(), "input parameters JSON file")
-    ("output", bp::value<std::string>(), "output result JSON file")
-    ("gen-example-input", bp::value<std::string>(), "generate example input parameters JSON file");
+   all.add_options()
+     ("help", "help message")
+     ("version", "show version")
+     ("input", bp::value<std::string>(), "input parameters JSON file")
+     ("output", bp::value<std::string>(), "output result JSON file")
+     ("gen-example-input", bp::value<std::string>(), "generate example input parameters JSON file");
   // clang-format on
 
   boost::program_options::variables_map vm;
@@ -92,4 +92,3 @@ int main(int argc, char *argv[]) {
 
   return 0;
 }
-

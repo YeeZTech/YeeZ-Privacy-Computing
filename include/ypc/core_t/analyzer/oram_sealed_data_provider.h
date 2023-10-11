@@ -1,9 +1,9 @@
 #pragma once
+#include "ypc/common/crypto_prefix.h"
 #include "ypc/core_t/analyzer/data_source.h"
+#include "ypc/core_t/analyzer/oasm_lib.h"
 #include "ypc/corecommon/oram_types.h"
 #include <sgx_trts.h>
-#include "ypc/common/crypto_prefix.h"
-#include "ypc/core_t/analyzer/oasm_lib.h"
 
 #include "hpda/extractor/extractor_base.h"
 #include "ypc/common/limits.h"
@@ -16,7 +16,6 @@
 #include "ypc/stbox/tsgx/log.h"
 #include <ff/util/ntobject.h>
 
-
 using oram_ntt = ypc::oram::nt<stbox::bytes>;
 typedef ypc::nt<stbox::bytes> ntt;
 
@@ -25,23 +24,22 @@ template <typename Crypto>
 // class oram_sealed_data_provider : public data_source_with_dhash {
 class oram_sealed_data_provider : public data_source_with_merkle_hash {
   typedef Crypto crypto;
+
 public:
   oram_sealed_data_provider(const stbox::bytes &data_hash,
-                       const stbox::bytes &private_key,
-                       const stbox::bytes &public_key,
-                       const stbox::bytes &decrypted_param)
+                            const stbox::bytes &private_key,
+                            const stbox::bytes &public_key,
+                            const stbox::bytes &decrypted_param)
       : data_source_with_merkle_hash(data_hash), m_private_key(private_key),
         m_public_key(public_key), m_decrypted_param(decrypted_param) {
     // magic string here, Do Not Change!
     m_header.stash_size = oram::stash_size;
-    
   }
 
   virtual ~oram_sealed_data_provider() {}
 
-  
   virtual bool process() {
-    if(! m_is_access_executed) {
+    if (!m_is_access_executed) {
       bool ret = access();
       if (!ret) {
         LOG(ERROR) << "Failed to get target batch";
@@ -50,7 +48,7 @@ public:
       m_is_access_executed = true;
       return true;
     }
-    if(m_item_index + 1 < m_valid_item_num) {
+    if (m_item_index + 1 < m_valid_item_num) {
       m_item_index++;
       return true;
     }
@@ -64,18 +62,19 @@ public:
     return ret;
   }
 
-  virtual const std::vector<bytes> &data_hash() const { return m_actual_data_hash; }
+  virtual const std::vector<bytes> &data_hash() const {
+    return m_actual_data_hash;
+  }
   const bytes &private_key() const { return m_private_key; }
 
 private:
-
   bool access() {
     bool ret = download_oram_params();
     if (!ret) {
       LOG(ERROR) << "Failed to download_oram_params\n";
       return false;
     }
-    
+
     uint32_t block_id;
     ret = get_block_id(block_id);
     if (!ret) {
@@ -90,15 +89,17 @@ private:
     }
 
     unsigned char random_value[4];
-    sgx_status_t se_ret = sgx_read_rand((unsigned char*) random_value, 4); 
+    sgx_status_t se_ret = sgx_read_rand((unsigned char *)random_value, 4);
     if (se_ret != SGX_SUCCESS) {
       LOG(ERROR) << "Failed to generate rand number\n";
       return false;
     }
-    uint32_t new_leaf = *((uint32_t *)random_value) % (1 << m_header.level_num_L) + 1;
+    uint32_t new_leaf =
+        *((uint32_t *)random_value) % (1 << m_header.level_num_L) + 1;
     uint32_t leaf;
 
-    oarray_search(m_position_map, block_id, &leaf, new_leaf, m_position_map.size());
+    oarray_search(m_position_map, block_id, &leaf, new_leaf,
+                  m_position_map.size());
 
     ret = download_merkle_hash(leaf);
     if (!ret) {
@@ -170,29 +171,29 @@ private:
 
     return true;
   }
-  
-  void oarray_search(std::vector<uint32_t>& array, uint32_t loc, uint32_t *leaf, 
+
+  void oarray_search(std::vector<uint32_t> &array, uint32_t loc, uint32_t *leaf,
                      uint32_t newLabel, uint32_t N_level) {
-    for(uint32_t i=0; i < N_level; ++i) {
+    for (uint32_t i = 0; i < N_level; ++i) {
       omove(i, &(array[i]), loc, leaf, newLabel);
     }
     return;
   }
 
   bool download_oram_params() {
-    auto ret = stbox::ocall_cast<uint32_t>(download_oram_params_OCALL)
-        (m_expect_root_hash.data(), m_expect_root_hash.size(), &m_header.block_num, 
-        &m_header.bucket_num_N, &m_header.level_num_L, 
+    auto ret = stbox::ocall_cast<uint32_t>(download_oram_params_OCALL)(
+        m_expect_root_hash.data(), m_expect_root_hash.size(),
+        &m_header.block_num, &m_header.bucket_num_N, &m_header.level_num_L,
         &m_header.bucket_str_size, &m_header.batch_str_size);
     if (ret != stbox::stx_status::success) {
       return false;
     }
 
-    for(uint32_t i = 0; i < m_header.stash_size; ++i) {
+    for (uint32_t i = 0; i < m_header.stash_size; ++i) {
       oram_ntt::block_t s_block;
-      s_block.set<oram_ntt::block_id, oram_ntt::leaf_label, 
-                  oram_ntt::valid_item_num, oram_ntt::encrypted_batch>
-                (0, 0, 0, stbox::bytes(m_header.batch_str_size));
+      s_block.set<oram_ntt::block_id, oram_ntt::leaf_label,
+                  oram_ntt::valid_item_num, oram_ntt::encrypted_batch>(
+          0, 0, 0, stbox::bytes(m_header.batch_str_size));
       m_stash.push_back(s_block);
     }
 
@@ -204,13 +205,13 @@ private:
     bytes param_hash;
     crypto::hash_256(m_decrypted_param, param_hash);
 
-    auto ret = stbox::ocall_cast<uint32_t>(get_block_id_OCALL)
-        (m_expect_root_hash.data(), m_expect_root_hash.size(), 
-        &b_id, param_hash.data(), param_hash.size());
+    auto ret = stbox::ocall_cast<uint32_t>(get_block_id_OCALL)(
+        m_expect_root_hash.data(), m_expect_root_hash.size(), &b_id,
+        param_hash.data(), param_hash.size());
     if (ret != stbox::stx_status::success) {
       return false;
     }
-    
+
     block_id = b_id;
     return true;
   }
@@ -219,26 +220,30 @@ private:
     uint8_t *posmap;
     uint32_t posmap_len;
 
-    auto ret = stbox::ocall_cast<uint32_t>(download_position_map_OCALL)
-        (m_expect_root_hash.data(), m_expect_root_hash.size(), &posmap, &posmap_len);
+    auto ret = stbox::ocall_cast<uint32_t>(download_position_map_OCALL)(
+        m_expect_root_hash.data(), m_expect_root_hash.size(), &posmap,
+        &posmap_len);
     if (ret != stbox::stx_status::success) {
       return false;
     }
-    
+
     stbox::bytes posmap_str(posmap_len);
     memcpy(posmap_str.data(), posmap, posmap_len);
 
     stbox::bytes decrypted_position_map_bytes;
     uint32_t status = crypto::decrypt_message_with_prefix(
-        m_private_key, posmap_str, decrypted_position_map_bytes, ypc::utc::crypto_prefix_arbitrary);
+        m_private_key, posmap_str, decrypted_position_map_bytes,
+        ypc::utc::crypto_prefix_arbitrary);
     if (ret) {
       LOG(ERROR) << "decrypt_message_with_prefix fail: "
-                  << stbox::status_string(status);
+                 << stbox::status_string(status);
       return false;
     }
 
     try {
-      oram_ntt::position_map_t position_map_pkg = make_package<oram_ntt::position_map_t>::from_bytes(decrypted_position_map_bytes);
+      oram_ntt::position_map_t position_map_pkg =
+          make_package<oram_ntt::position_map_t>::from_bytes(
+              decrypted_position_map_bytes);
       m_position_map = position_map_pkg.get<oram_ntt::position_map>();
     } catch (const std::exception &e) {
       LOG(ERROR) << "make_package got: " << e.what();
@@ -253,23 +258,26 @@ private:
     position_map_pkg.set<oram_ntt::position_map>(m_position_map);
     stbox::bytes position_map_bytes;
     try {
-      position_map_bytes = make_bytes<stbox::bytes>::for_package(position_map_pkg);
+      position_map_bytes =
+          make_bytes<stbox::bytes>::for_package(position_map_pkg);
     } catch (const std::exception &e) {
       LOG(ERROR) << "make_bytes got: " << e.what();
       return false;
     }
     stbox::bytes encrypted_position_map_bytes;
     uint32_t status = crypto::encrypt_message_with_prefix(
-      m_public_key, position_map_bytes, ypc::utc::crypto_prefix_arbitrary, encrypted_position_map_bytes);
+        m_public_key, position_map_bytes, ypc::utc::crypto_prefix_arbitrary,
+        encrypted_position_map_bytes);
     if (status) {
       LOG(ERROR) << "encrypt_message_with_prefix fail: "
-                  << stbox::status_string(status);
+                 << stbox::status_string(status);
       return false;
     }
 
-    auto ret = stbox::ocall_cast<uint32_t>(update_position_map_OCALL)
-        (m_expect_root_hash.data(), m_expect_root_hash.size(), 
-        encrypted_position_map_bytes.data(), encrypted_position_map_bytes.size());
+    auto ret = stbox::ocall_cast<uint32_t>(update_position_map_OCALL)(
+        m_expect_root_hash.data(), m_expect_root_hash.size(),
+        encrypted_position_map_bytes.data(),
+        encrypted_position_map_bytes.size());
     if (ret != stbox::stx_status::success) {
       LOG(ERROR) << "update_position_map_OCALL fail!";
       return false;
@@ -282,9 +290,9 @@ private:
     uint8_t *merkle_hash;
     uint32_t merkle_hash_len;
 
-    auto ret = stbox::ocall_cast<uint32_t>(download_merkle_hash_OCALL)
-        (m_expect_root_hash.data(), m_expect_root_hash.size(), 
-        leaf, &merkle_hash, &merkle_hash_len);
+    auto ret = stbox::ocall_cast<uint32_t>(download_merkle_hash_OCALL)(
+        m_expect_root_hash.data(), m_expect_root_hash.size(), leaf,
+        &merkle_hash, &merkle_hash_len);
     if (ret != stbox::stx_status::success) {
       return false;
     }
@@ -293,16 +301,17 @@ private:
     memcpy(merkle_hash_str.data(), merkle_hash, merkle_hash_len);
 
     try {
-      oram_ntt::merkle_hash_pkg_t merkle_hash_pkg = 
-        make_package<oram_ntt::merkle_hash_pkg_t>::from_bytes(merkle_hash_str);
+      oram_ntt::merkle_hash_pkg_t merkle_hash_pkg =
+          make_package<oram_ntt::merkle_hash_pkg_t>::from_bytes(
+              merkle_hash_str);
       m_merkle_hash_array = merkle_hash_pkg.get<oram_ntt::merkle_hash>();
     } catch (const std::exception &e) {
       LOG(ERROR) << "make_package got: " << e.what();
       return false;
     }
 
-    for(const auto& hash_p : m_merkle_hash_array) {
-      if(hash_p.get<oram_ntt::in_path>()) {
+    for (const auto &hash_p : m_merkle_hash_array) {
+      if (hash_p.get<oram_ntt::in_path>()) {
         m_expect_data_hash.push_back(hash_p.get<oram_ntt::data_hash>());
       }
     }
@@ -314,9 +323,9 @@ private:
     uint8_t *encrypted_path;
     uint32_t encrypted_path_len;
 
-    auto ret = stbox::ocall_cast<uint32_t>(download_path_OCALL)
-        (m_expect_root_hash.data(), m_expect_root_hash.size(), 
-        leaf, &encrypted_path, &encrypted_path_len);
+    auto ret = stbox::ocall_cast<uint32_t>(download_path_OCALL)(
+        m_expect_root_hash.data(), m_expect_root_hash.size(), leaf,
+        &encrypted_path, &encrypted_path_len);
     if (ret != stbox::stx_status::success) {
       return false;
     }
@@ -331,32 +340,34 @@ private:
     uint8_t *stash;
     uint32_t stash_len;
 
-    auto ret = stbox::ocall_cast<uint32_t>(download_stash_OCALL)
-        (m_expect_root_hash.data(), m_expect_root_hash.size(), 
-        &stash, &stash_len);
+    auto ret = stbox::ocall_cast<uint32_t>(download_stash_OCALL)(
+        m_expect_root_hash.data(), m_expect_root_hash.size(), &stash,
+        &stash_len);
     if (ret != stbox::stx_status::success) {
       return false;
     }
 
-    if(stash_len > 0) {
+    if (stash_len > 0) {
       stbox::bytes stash_str(stash_len);
       memcpy(stash_str.data(), stash, stash_len);
 
       stbox::bytes decrypted_stash_bytes;
       uint32_t status = crypto::decrypt_message_with_prefix(
-          m_private_key, stash_str, decrypted_stash_bytes, ypc::utc::crypto_prefix_arbitrary);
+          m_private_key, stash_str, decrypted_stash_bytes,
+          ypc::utc::crypto_prefix_arbitrary);
       if (status) {
         LOG(ERROR) << "decrypt_message_with_prefix fail: "
-                    << stbox::status_string(status);
+                   << stbox::status_string(status);
         return false;
       }
 
       try {
-        auto stash_pkg = make_package<oram_ntt::bucket_pkg_t>::from_bytes(decrypted_stash_bytes);
+        auto stash_pkg = make_package<oram_ntt::bucket_pkg_t>::from_bytes(
+            decrypted_stash_bytes);
         auto block_array = stash_pkg.get<oram_ntt::bucket>();
-        
+
         uint32_t i = 0;
-        for(const auto& element : block_array) {
+        for (const auto &element : block_array) {
           m_stash[i++] = element;
         }
 
@@ -364,7 +375,6 @@ private:
         LOG(ERROR) << "make_package got: " << e.what();
         return false;
       }
-
     }
 
     return true;
@@ -374,7 +384,8 @@ private:
     std::vector<stbox::bytes> bucket_array;
 
     try {
-      oram_ntt::path_pkg_t path_pkg = make_package<oram_ntt::path_pkg_t>::from_bytes(m_encrypted_path);
+      oram_ntt::path_pkg_t path_pkg =
+          make_package<oram_ntt::path_pkg_t>::from_bytes(m_encrypted_path);
       bucket_array = path_pkg.get<oram_ntt::path>();
     } catch (const std::exception &e) {
       LOG(ERROR) << "make_package got: " << e.what();
@@ -382,22 +393,25 @@ private:
     }
 
     // calculate m_actual_data_hash
-    for(const auto& encrypted_bucket_str : bucket_array) {
+    for (const auto &encrypted_bucket_str : bucket_array) {
       stbox::bytes decrypted_bucket_str;
       uint32_t status = crypto::decrypt_message_with_prefix(
-          m_private_key, encrypted_bucket_str, decrypted_bucket_str, ypc::utc::crypto_prefix_arbitrary);
+          m_private_key, encrypted_bucket_str, decrypted_bucket_str,
+          ypc::utc::crypto_prefix_arbitrary);
       if (status) {
         LOG(ERROR) << "decrypt_message_with_prefix fail: "
-                    << stbox::status_string(status);
+                   << stbox::status_string(status);
         return false;
       }
 
       stbox::bytes data_hash;
       crypto::hash_256(bytes("Fidelius"), data_hash);
-      
+
       std::vector<oram_ntt::block_t> block_array;
       try {
-        oram_ntt::bucket_pkg_t bucket_pkg = make_package<oram_ntt::bucket_pkg_t>::from_bytes(decrypted_bucket_str);
+        oram_ntt::bucket_pkg_t bucket_pkg =
+            make_package<oram_ntt::bucket_pkg_t>::from_bytes(
+                decrypted_bucket_str);
         m_decrypted_path.push_back(bucket_pkg);
         block_array = bucket_pkg.get<oram_ntt::bucket>();
       } catch (const std::exception &e) {
@@ -405,12 +419,17 @@ private:
         return false;
       }
 
-      for(oram_ntt::block_t e_block : block_array) {
-        for(uint32_t k = 0; k < m_stash.size(); ++k) {
-          if(e_block.get<oram_ntt::block_id>() > 0 && m_stash[k].get<oram_ntt::block_id>() == 0) {
-            m_stash[k].set<oram_ntt::block_id, oram_ntt::leaf_label, oram_ntt::valid_item_num, oram_ntt::encrypted_batch>
-              (e_block.get<oram_ntt::block_id>(), e_block.get<oram_ntt::leaf_label>(), 
-               e_block.get<oram_ntt::valid_item_num>(), e_block.get<oram_ntt::encrypted_batch>());
+      for (oram_ntt::block_t e_block : block_array) {
+        for (uint32_t k = 0; k < m_stash.size(); ++k) {
+          if (e_block.get<oram_ntt::block_id>() > 0 &&
+              m_stash[k].get<oram_ntt::block_id>() == 0) {
+            m_stash[k]
+                .set<oram_ntt::block_id, oram_ntt::leaf_label,
+                     oram_ntt::valid_item_num, oram_ntt::encrypted_batch>(
+                    e_block.get<oram_ntt::block_id>(),
+                    e_block.get<oram_ntt::leaf_label>(),
+                    e_block.get<oram_ntt::valid_item_num>(),
+                    e_block.get<oram_ntt::encrypted_batch>());
             break;
           }
         }
@@ -418,15 +437,17 @@ private:
         stbox::bytes encrypted_batch = e_block.get<oram_ntt::encrypted_batch>();
         stbox::bytes decrypted_batch_str;
         status = crypto::decrypt_message_with_prefix(
-            m_private_key, encrypted_batch, decrypted_batch_str, ypc::utc::crypto_prefix_arbitrary);
+            m_private_key, encrypted_batch, decrypted_batch_str,
+            ypc::utc::crypto_prefix_arbitrary);
         if (status) {
           LOG(ERROR) << "decrypt_message_with_prefix fail: "
-                      << stbox::status_string(status);
+                     << stbox::status_string(status);
           return false;
         }
 
         try {
-          auto pkg = make_package<ntt::batch_data_pkg_t>::from_bytes(decrypted_batch_str);
+          auto pkg = make_package<ntt::batch_data_pkg_t>::from_bytes(
+              decrypted_batch_str);
           auto items = pkg.get<ntt::batch_data>();
 
           for (auto b : items) {
@@ -441,15 +462,16 @@ private:
       }
 
       m_actual_data_hash.push_back(data_hash);
-
-
     }
 
-    for(int i = m_actual_data_hash.size() - 2; i >= 0; --i) {
-      stbox::bytes k_hash = m_actual_data_hash[i] + m_merkle_hash_array[2*i + 1].get<oram_ntt::data_hash>();
+    for (int i = m_actual_data_hash.size() - 2; i >= 0; --i) {
+      stbox::bytes k_hash =
+          m_actual_data_hash[i] +
+          m_merkle_hash_array[2 * i + 1].get<oram_ntt::data_hash>();
       crypto::hash_256(k_hash, m_actual_data_hash[i]);
 
-      k_hash = m_actual_data_hash[i] + m_merkle_hash_array[2*i + 2].get<oram_ntt::data_hash>();
+      k_hash = m_actual_data_hash[i] +
+               m_merkle_hash_array[2 * i + 2].get<oram_ntt::data_hash>();
       crypto::hash_256(k_hash, m_actual_data_hash[i]);
     }
 
@@ -457,26 +479,29 @@ private:
   }
 
   bool access_in_stash(uint32_t block_id, uint32_t new_leaf) {
-    for(uint32_t i = 0; i < m_stash.size(); ++i) {
-      if(m_stash[i].get<oram_ntt::block_id>() == block_id) {
+    for (uint32_t i = 0; i < m_stash.size(); ++i) {
+      if (m_stash[i].get<oram_ntt::block_id>() == block_id) {
         m_valid_item_num = m_stash[i].get<oram_ntt::valid_item_num>();
-        if(m_valid_item_num == 0) {
+        if (m_valid_item_num == 0) {
           LOG(ERROR) << "fail, the value of valid item num is 0 ";
           return false;
         }
 
-        stbox::bytes encrypted_batch_str = m_stash[i].get<oram_ntt::encrypted_batch>();
+        stbox::bytes encrypted_batch_str =
+            m_stash[i].get<oram_ntt::encrypted_batch>();
         stbox::bytes decrypted_batch_str;
         uint32_t status = crypto::decrypt_message_with_prefix(
-            m_private_key, encrypted_batch_str, decrypted_batch_str, ypc::utc::crypto_prefix_arbitrary);
+            m_private_key, encrypted_batch_str, decrypted_batch_str,
+            ypc::utc::crypto_prefix_arbitrary);
         if (status) {
           LOG(ERROR) << "decrypt_message_with_prefix fail: "
-                      << stbox::status_string(status);
+                     << stbox::status_string(status);
           return false;
         }
 
         try {
-          auto pkg = make_package<ntt::batch_data_pkg_t>::from_bytes(decrypted_batch_str);
+          auto pkg = make_package<ntt::batch_data_pkg_t>::from_bytes(
+              decrypted_batch_str);
           m_items = pkg.get<ntt::batch_data>();
           if (m_items.size() == 0) {
             LOG(ERROR) << "fail, m_items.size() == 0 ";
@@ -490,9 +515,7 @@ private:
           LOG(ERROR) << "make_package got: " << e.what();
           return false;
         }
-
       }
-
     }
 
     return false;
@@ -502,44 +525,52 @@ private:
     uint32_t leaf1_index = leaf1 - 1 + (1 << m_header.level_num_L) - 1;
     uint32_t leaf2_index = leaf2 - 1 + (1 << m_header.level_num_L) - 1;
 
-    while(leaf1_index != leaf2_index) {
-        leaf1_index = (leaf1_index - 1) / 2;
-        leaf2_index = (leaf2_index - 1) / 2;
+    while (leaf1_index != leaf2_index) {
+      leaf1_index = (leaf1_index - 1) / 2;
+      leaf2_index = (leaf2_index - 1) / 2;
     }
 
     return floor(log2(leaf1_index + 1));
   }
 
   void rebuild_new_path(uint32_t leaf) {
-    for(auto &bu : m_decrypted_path) {
+    for (auto &bu : m_decrypted_path) {
       auto block_array = bu.get<oram_ntt::bucket>();
-      for(uint8_t j = 0; j < oram::BucketSizeZ; ++j) {
-        block_array[j].set<oram_ntt::block_id, oram_ntt::leaf_label, oram_ntt::valid_item_num>(0, 0, 0);
+      for (uint8_t j = 0; j < oram::BucketSizeZ; ++j) {
+        block_array[j]
+            .set<oram_ntt::block_id, oram_ntt::leaf_label,
+                 oram_ntt::valid_item_num>(0, 0, 0);
       }
       bu.set<oram_ntt::bucket>(block_array);
     }
 
-    for(uint32_t i = 0; i < m_stash.size(); ++i) {
-      if(m_stash[i].get<oram_ntt::block_id>() > 0) {
-        uint8_t low_level = get_level(leaf, m_stash[i].get<oram_ntt::leaf_label>());
-        for(int level = low_level; level >= 0; --level) {
-          for(uint8_t k = 0; k < oram::BucketSizeZ; ++k) {
-            if(m_decrypted_path[level].get<oram_ntt::bucket>()[k].get<oram_ntt::block_id>() == 0) {
-              m_decrypted_path[level].get<oram_ntt::bucket>()[k].set
-                  <oram_ntt::block_id, oram_ntt::leaf_label, 
-                  oram_ntt::valid_item_num, oram_ntt::encrypted_batch>
-                  (m_stash[i].get<oram_ntt::block_id>(), m_stash[i].get<oram_ntt::leaf_label>(), 
-                  m_stash[i].get<oram_ntt::valid_item_num>(), m_stash[i].get<oram_ntt::encrypted_batch>());
+    for (uint32_t i = 0; i < m_stash.size(); ++i) {
+      if (m_stash[i].get<oram_ntt::block_id>() > 0) {
+        uint8_t low_level =
+            get_level(leaf, m_stash[i].get<oram_ntt::leaf_label>());
+        for (int level = low_level; level >= 0; --level) {
+          for (uint8_t k = 0; k < oram::BucketSizeZ; ++k) {
+            if (m_decrypted_path[level]
+                    .get<oram_ntt::bucket>()[k]
+                    .get<oram_ntt::block_id>() == 0) {
+              m_decrypted_path[level]
+                  .get<oram_ntt::bucket>()[k]
+                  .set<oram_ntt::block_id, oram_ntt::leaf_label,
+                       oram_ntt::valid_item_num, oram_ntt::encrypted_batch>(
+                      m_stash[i].get<oram_ntt::block_id>(),
+                      m_stash[i].get<oram_ntt::leaf_label>(),
+                      m_stash[i].get<oram_ntt::valid_item_num>(),
+                      m_stash[i].get<oram_ntt::encrypted_batch>());
 
-              m_stash[i].set<oram_ntt::block_id, oram_ntt::leaf_label, 
-                  oram_ntt::valid_item_num>(0, 0, 0);
-              
+              m_stash[i]
+                  .set<oram_ntt::block_id, oram_ntt::leaf_label,
+                       oram_ntt::valid_item_num>(0, 0, 0);
+
               break;
-
             }
           }
 
-          if(m_stash[i].get<oram_ntt::block_id>() == 0) {
+          if (m_stash[i].get<oram_ntt::block_id>() == 0) {
             break;
           }
         }
@@ -549,12 +580,11 @@ private:
 
   bool update_stash() {
     std::vector<oram_ntt::block_t> stash_block_array;
-    for(uint32_t i = 0; i < m_stash.size(); ++i) {
+    for (uint32_t i = 0; i < m_stash.size(); ++i) {
       if (m_stash[i].get<oram_ntt::block_id>() > 0) {
         stash_block_array.push_back(m_stash[i]);
       }
     }
-
 
     oram_ntt::bucket_pkg_t stash_pkg;
     stash_pkg.set<oram_ntt::bucket>(stash_block_array);
@@ -567,17 +597,18 @@ private:
     }
     stbox::bytes encrypted_stash_str;
     uint32_t status = crypto::encrypt_message_with_prefix(
-      m_public_key, stash_str, ypc::utc::crypto_prefix_arbitrary, encrypted_stash_str);
+        m_public_key, stash_str, ypc::utc::crypto_prefix_arbitrary,
+        encrypted_stash_str);
     if (status) {
       LOG(ERROR) << "encrypt_message_with_prefix fail: "
-                  << stbox::status_string(status);
+                 << stbox::status_string(status);
       return false;
     }
 
-    auto ret = stbox::ocall_cast<uint32_t>(update_stash_OCALL)
-        (m_expect_root_hash.data(), m_expect_root_hash.size(), 
+    auto ret = stbox::ocall_cast<uint32_t>(update_stash_OCALL)(
+        m_expect_root_hash.data(), m_expect_root_hash.size(),
         encrypted_stash_str.data(), encrypted_stash_str.size());
-    
+
     if (ret != stbox::stx_status::success) {
       return false;
     }
@@ -587,25 +618,27 @@ private:
 
   bool recalculate_hash() {
     uint32_t index = 0;
-    for(auto &bu : m_decrypted_path) {
-      
+    for (auto &bu : m_decrypted_path) {
+
       stbox::bytes data_hash;
       crypto::hash_256(bytes("Fidelius"), data_hash);
 
       auto block_array = bu.get<oram_ntt::bucket>();
-      for(auto &e_block : block_array) {
+      for (auto &e_block : block_array) {
         stbox::bytes encrypted_batch = e_block.get<oram_ntt::encrypted_batch>();
         stbox::bytes decrypted_batch_str;
         uint32_t status = crypto::decrypt_message_with_prefix(
-            m_private_key, encrypted_batch, decrypted_batch_str, ypc::utc::crypto_prefix_arbitrary);
+            m_private_key, encrypted_batch, decrypted_batch_str,
+            ypc::utc::crypto_prefix_arbitrary);
         if (status) {
           LOG(ERROR) << "decrypt_message_with_prefix fail: "
-                      << stbox::status_string(status);
+                     << stbox::status_string(status);
           return false;
         }
 
         try {
-          auto pkg = make_package<ntt::batch_data_pkg_t>::from_bytes(decrypted_batch_str);
+          auto pkg = make_package<ntt::batch_data_pkg_t>::from_bytes(
+              decrypted_batch_str);
           auto items = pkg.get<ntt::batch_data>();
 
           for (auto b : items) {
@@ -628,41 +661,43 @@ private:
         // }
 
         // 重新加密放入m_decrypted_path中
-
       }
 
-      while(!m_merkle_hash_array[index].get<oram_ntt::in_path>()) {
+      while (!m_merkle_hash_array[index].get<oram_ntt::in_path>()) {
         ++index;
       }
       m_merkle_hash_array[index++].set<oram_ntt::data_hash>(data_hash);
-      
     }
 
-    for(int i = m_header.level_num_L - 1; i >= 0; --i) {
+    for (int i = m_header.level_num_L - 1; i >= 0; --i) {
 
-      if(i != 0 && m_merkle_hash_array[2*i - 1].get<oram_ntt::in_path>()) {
-        stbox::bytes k_hash = m_merkle_hash_array[2*i - 1].get<oram_ntt::data_hash>() 
-                              + m_merkle_hash_array[2*i + 1].get<oram_ntt::data_hash>();
+      if (i != 0 && m_merkle_hash_array[2 * i - 1].get<oram_ntt::in_path>()) {
+        stbox::bytes k_hash =
+            m_merkle_hash_array[2 * i - 1].get<oram_ntt::data_hash>() +
+            m_merkle_hash_array[2 * i + 1].get<oram_ntt::data_hash>();
         stbox::bytes data_hash;
         crypto::hash_256(k_hash, data_hash);
 
-        k_hash = data_hash + m_merkle_hash_array[2*i + 2].get<oram_ntt::data_hash>();
+        k_hash = data_hash +
+                 m_merkle_hash_array[2 * i + 2].get<oram_ntt::data_hash>();
         crypto::hash_256(k_hash, data_hash);
 
-        m_merkle_hash_array[2*i - 1].set<oram_ntt::data_hash>(data_hash);
-      } 
+        m_merkle_hash_array[2 * i - 1].set<oram_ntt::data_hash>(data_hash);
+      }
 
-      if(m_merkle_hash_array[2*i].get<oram_ntt::in_path>()) {
-        stbox::bytes k_hash = m_merkle_hash_array[2*i].get<oram_ntt::data_hash>() 
-                              + m_merkle_hash_array[2*i + 1].get<oram_ntt::data_hash>();
+      if (m_merkle_hash_array[2 * i].get<oram_ntt::in_path>()) {
+        stbox::bytes k_hash =
+            m_merkle_hash_array[2 * i].get<oram_ntt::data_hash>() +
+            m_merkle_hash_array[2 * i + 1].get<oram_ntt::data_hash>();
         stbox::bytes data_hash;
         crypto::hash_256(k_hash, data_hash);
 
-        k_hash = data_hash + m_merkle_hash_array[2*i + 2].get<oram_ntt::data_hash>();
+        k_hash = data_hash +
+                 m_merkle_hash_array[2 * i + 2].get<oram_ntt::data_hash>();
         crypto::hash_256(k_hash, data_hash);
 
-        m_merkle_hash_array[2*i].set<oram_ntt::data_hash>(data_hash);
-      } 
+        m_merkle_hash_array[2 * i].set<oram_ntt::data_hash>(data_hash);
+      }
     }
 
     return true;
@@ -670,7 +705,7 @@ private:
 
   bool encrypt_path() {
     std::vector<stbox::bytes> encrypted_path_array;
-    for(oram_ntt::bucket_pkg_t bucket_pkg : m_decrypted_path) {
+    for (oram_ntt::bucket_pkg_t bucket_pkg : m_decrypted_path) {
       stbox::bytes bucket_str;
       try {
         bucket_str = make_bytes<stbox::bytes>::for_package(bucket_pkg);
@@ -680,10 +715,11 @@ private:
       }
       stbox::bytes encrypted_bucket_bytes;
       uint32_t status = crypto::encrypt_message_with_prefix(
-        m_public_key, bucket_str, ypc::utc::crypto_prefix_arbitrary, encrypted_bucket_bytes);
+          m_public_key, bucket_str, ypc::utc::crypto_prefix_arbitrary,
+          encrypted_bucket_bytes);
       if (status) {
         LOG(ERROR) << "encrypt_message_with_prefix fail: "
-                    << stbox::status_string(status);
+                   << stbox::status_string(status);
         return false;
       }
 
@@ -703,9 +739,9 @@ private:
   }
 
   bool upload_path(uint32_t leaf) {
-    auto ret = stbox::ocall_cast<uint32_t>(upload_path_OCALL)
-        (m_expect_root_hash.data(), m_expect_root_hash.size(), 
-        leaf, m_encrypted_path.data(), m_encrypted_path.size());
+    auto ret = stbox::ocall_cast<uint32_t>(upload_path_OCALL)(
+        m_expect_root_hash.data(), m_expect_root_hash.size(), leaf,
+        m_encrypted_path.data(), m_encrypted_path.size());
     if (ret != stbox::stx_status::success) {
       return false;
     }
@@ -724,9 +760,9 @@ private:
       return false;
     }
 
-    auto ret = stbox::ocall_cast<uint32_t>(update_merkle_hash_OCALL)
-        (m_expect_root_hash.data(), m_expect_root_hash.size(), 
-        leaf, merkle_hash_str.data(), merkle_hash_str.size());
+    auto ret = stbox::ocall_cast<uint32_t>(update_merkle_hash_OCALL)(
+        m_expect_root_hash.data(), m_expect_root_hash.size(), leaf,
+        merkle_hash_str.data(), merkle_hash_str.size());
     if (ret != stbox::stx_status::success) {
       return false;
     }
@@ -760,7 +796,5 @@ protected:
   uint32_t m_valid_item_num;
   std::vector<oram_ntt::hash_pair> m_merkle_hash_array;
   bool m_is_access_executed;
-  
-
 };
 } // namespace ypc
