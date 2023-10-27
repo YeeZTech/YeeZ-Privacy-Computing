@@ -13,8 +13,10 @@
 
 #include <boost/algorithm/string.hpp>
 
-namespace cluster {
-    class JobStep {
+namespace cluster
+{
+    class JobStep
+    {
     public:
         static void remove_files(std::vector<std::string> file_list)
         {
@@ -25,7 +27,6 @@ namespace cluster {
                 std::string cmd = std::string{"rm -rf "} + iter;
                 Common::execute_cmd(cmd);
             }
-
         }
 
         static nlohmann::json gen_key(std::string crypto, std::string shukey_file)
@@ -37,14 +38,14 @@ namespace cluster {
             param["gen-key"] = "";
             param["no-password"] = "";
             param["output"] = shukey_file;
-//            nlohmann::json param = nlohmann::json::parse(R"(
-//                {
-//                    "crypto": crypto,
-//                    "gen-key": "",
-//                    "no-password": "",
-//                    "output": shukey_file
-//                }
-//            )");
+            //            nlohmann::json param = nlohmann::json::parse(R"(
+            //                {
+            //                    "crypto": crypto,
+            //                    "gen-key": "",
+            //                    "no-password": "",
+            //                    "output": shukey_file
+            //                }
+            //            )");
             Common::fid_terminus(param);
             std::ifstream f(shukey_file);
             nlohmann::json data = nlohmann::json::parse(f);
@@ -52,12 +53,12 @@ namespace cluster {
         }
 
         static nlohmann::json seal_data(
-                std::string crypto,
-                std::string data_url,
-                std::string plugin_url,
-                std::string sealed_data_url,
-                std::string sealed_output,
-                std::string data_key_file)
+            std::string crypto,
+            std::string data_url,
+            std::string plugin_url,
+            std::string sealed_data_url,
+            std::string sealed_output,
+            std::string data_key_file)
         {
             spdlog::trace("seal_data");
 
@@ -74,20 +75,27 @@ namespace cluster {
 
         static std::string read_sealed_output(std::string filepath, std::string field)
         {
-            spdlog::trace("read_sealed_output");
-
             std::ifstream ifs(filepath);
+            if (!ifs)
+            {
+                throw std::runtime_error("fail to open file stream");
+            }
 
             std::string line;
             while (std::getline(ifs, line))
             {
-                std::istringstream iss(line);
-                std::string iss_data;
-                std::getline(iss, iss_data, '=');
+                std::vector<std::string> line_split;
+                boost::split(line_split, line, boost::is_any_of("="));
                 std::string key, value;
-                iss >> key >> value;
+                key = line_split[0];
+                value = line_split[1];
                 boost::trim(key);
                 boost::trim(value);
+                if (value.front() == '"')
+                {
+                    value.erase(0, 1);             // erase the first character
+                    value.erase(value.size() - 1); // erase the last character
+                }
                 if (key == field)
                 {
                     return value;
@@ -99,12 +107,11 @@ namespace cluster {
         }
 
         static nlohmann::json forward_message(
-                std::string crypto,
-                std::string shukey_file,
-                std::string dian_pkey,
-                std::string enclave_hash,
-                std::string forward_result
-                )
+            std::string crypto,
+            std::string shukey_file,
+            std::string dian_pkey,
+            std::string enclave_hash,
+            std::string forward_result)
         {
             spdlog::trace("forward_message starts");
 
@@ -176,11 +183,11 @@ namespace cluster {
         }
 
         static nlohmann::json generate_request(
-                std::string crypto,
-                std::string input_param,
-                std::string shukey_file,
-                std::string param_output_url,
-                nlohmann::json config)
+            std::string crypto,
+            std::string input_param,
+            std::string shukey_file,
+            std::string param_output_url,
+            nlohmann::json config)
         {
             spdlog::trace("generate_request starts");
 
@@ -218,21 +225,21 @@ namespace cluster {
         }
 
         static nlohmann::json fid_analyzer_tg(
-                nlohmann::json shukey_json,
-                nlohmann::json rq_forward_json,
-                nlohmann::json algo_shu_info,
-                nlohmann::json algo_forward_json,
-                std::string enclave_hash,
-                std::vector<nlohmann::json> input_data,
-                std::string parser_url,
-                std::string dian_pkey,
-                nlohmann::json model,
-                std::string crypto,
-                nlohmann::json param_json,
-                std::vector<std::string> flat_kgt_pkey_list,
-                std::vector<uint64_t> allowances,
-                std::string parser_input_file,
-                std::string parser_output_file)
+            nlohmann::json shukey_json,
+            nlohmann::json rq_forward_json,
+            nlohmann::json algo_shu_info,
+            nlohmann::json algo_forward_json,
+            std::string enclave_hash,
+            std::vector<nlohmann::json> input_data,
+            std::string parser_url,
+            std::string dian_pkey,
+            nlohmann::json model,
+            std::string crypto,
+            nlohmann::json param_json,
+            std::vector<std::string> flat_kgt_pkey_list,
+            std::vector<uint64_t> allowances,
+            std::string parser_input_file,
+            std::string parser_output_file)
         {
             spdlog::trace("fid_analyzer_tg starts");
 
@@ -268,12 +275,13 @@ namespace cluster {
             param["output"] = parser_output_file;
             nlohmann::json r = Common::fid_analyzer(param);
 
-            try {
+            try
+            {
                 std::ifstream ifs(parser_output_file);
                 spdlog::trace("fid_analyzer_tg ends");
                 return nlohmann::json::parse(ifs);
             }
-            catch (const std::exception& e)
+            catch (const std::exception &e)
             {
                 // do nothing
                 spdlog::error(e.what());
@@ -283,4 +291,4 @@ namespace cluster {
     };
 }
 
-#endif //YPC_JOB_STEP_HPP
+#endif // YPC_JOB_STEP_HPP
