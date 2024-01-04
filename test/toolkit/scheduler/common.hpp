@@ -73,6 +73,7 @@ namespace cluster {
             }
 
             std::string output = execute_cmd(cmd);
+            spdlog::trace(output); 
 
             ret["cmd"] = cmd;
             ret["output"] = output;
@@ -257,6 +258,7 @@ namespace cluster {
                 }
             }
             std::string output = execute_cmd(cmd);
+            spdlog::trace(output);
 
             ret["cmd"] = cmd;
             ret["output"] = output;

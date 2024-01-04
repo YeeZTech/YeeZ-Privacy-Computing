@@ -10,6 +10,7 @@
 
 #include <list>
 #include <fstream>
+#include <mutex>
 
 #include <boost/algorithm/string.hpp>
 
@@ -17,6 +18,9 @@ namespace cluster
 {
     class JobStep
     {
+    public: 
+        static std::mutex mutex; 
+
     public:
         static void remove_files(std::vector<std::string> file_list)
         {
@@ -46,7 +50,9 @@ namespace cluster
             //                    "output": shukey_file
             //                }
             //            )");
+            JobStep::mutex.lock();
             Common::fid_terminus(param);
+            JobStep::mutex.unlock(); 
             std::ifstream f(shukey_file);
             nlohmann::json data = nlohmann::json::parse(f);
             return data;
@@ -166,17 +172,20 @@ namespace cluster
             return ret;
         }
 
-        static std::string read_parser_hash(std::string parser_url)
+        static std::string read_parser_hash(std::string name, std::string parser_url)
         {
             spdlog::trace("read_parser_hash");
 
             nlohmann::json param;
             param["enclave"] = parser_url;
-            param["output"] = "info.json";
+            std::string name_url = name + "-info.json";
+            param["output"] = name_url;
 
+            JobStep::mutex.lock();
             nlohmann::json r = Common::fid_dump(param);
+            JobStep::mutex.unlock(); 
 
-            std::ifstream ifs("info.json");
+            std::ifstream ifs(name_url);
             nlohmann::json data = nlohmann::json::parse(ifs);
 
             return data["enclave-hash"];

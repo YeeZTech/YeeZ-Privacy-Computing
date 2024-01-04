@@ -6,6 +6,8 @@
 
 using namespace cluster;
 
+std::mutex JobStep::mutex; 
+
 nlohmann::json decrypt_result(
     std::string crypto,
     std::string encrypted_result,
@@ -93,6 +95,7 @@ nlohmann::json TaskGraph_Job::handle_input_data(
         nlohmann::json task = tasks[idx];
         std::string name = task["name"];
         std::string parser_output_file = name + "_parser_output.json";
+        spdlog::trace(parser_output_file);
         std::ifstream ifs_pof(parser_output_file);
         nlohmann::json output_json = nlohmann::json::parse(ifs_pof);
         std::cout << output_json << std::endl;
@@ -129,6 +132,7 @@ nlohmann::json TaskGraph_Job::handle_input_data(
             dian_pkey,
             enclave_hash,
             forward_result);
+        spdlog::trace("forward_message");
 
         nlohmann::json forward_json;
         forward_json["shu_pkey"] = shukey_json["public-key"];
@@ -161,7 +165,8 @@ nlohmann::json TaskGraph_Job::handle_input_data(
 nlohmann::json TaskGraph_Job::run(
     std::vector<nlohmann::json> tasks,
     uint64_t idx,
-    std::vector<uint64_t> prev_tasks_idx)
+    std::vector<uint64_t> prev_tasks_idx, 
+    nlohmann::json key)
 {
     spdlog::trace("run task {} starts", idx);
 
@@ -191,13 +196,13 @@ nlohmann::json TaskGraph_Job::run(
 
     // get dian pkey
     spdlog::trace("get dian pkey");
-    nlohmann::json key = JobStep::get_first_key(crypto);
+    // nlohmann::json key = JobStep::get_first_key(crypto);
     std::string pkey = key["public-key"];
     nlohmann::json summary;
     summary["tee-pkey"] = key["public-key"];
     // read parser enclave hash
     spdlog::trace("read parser enclave hash");
-    std::string enclave_hash = JobStep::read_parser_hash(parser_url);
+    std::string enclave_hash = JobStep::read_parser_hash(name, parser_url);
 
     // 3. call terminus to generate forward message
     // 3.2 forward algo shu skey
@@ -280,7 +285,9 @@ nlohmann::json TaskGraph_Job::run(
     ofs_sf << summary.dump();
     ofs_sf.close();
     all_outputs.push_back(summary_file);
-    JobStep::remove_files(all_outputs);
+
+    // FIXME: disable remove files as tasks share one all outputs list 
+    // JobStep::remove_files(all_outputs);
 
     std::vector<nlohmann::json> key_json_list;
     for (auto key_file : key_files)
@@ -396,7 +403,7 @@ int main(const int argc, const char *argv[])
     spdlog::trace("build config");
     nlohmann::json config;
     config["request-use-js"] = "true";
-    config["remove-files"] = "true";
+    config["remove-files"] = "false";
 
     spdlog::trace("build taskgraph job");
     TaskGraph_Job tj(
@@ -405,12 +412,50 @@ int main(const int argc, const char *argv[])
         std::vector<std::string>(),
         config,
         std::vector<std::string>());
-    spdlog::trace("run job0");
-    tj.run(all_tasks, 0, std::vector<uint64_t>());
-    spdlog::trace("run job1");
-    tj.run(all_tasks, 1, std::vector<uint64_t>());
-    spdlog::trace("run job2");
-    nlohmann::json result = tj.run(all_tasks, 2, std::vector<uint64_t>{0, 1});
+
+    nlohmann::json result;
+    
+    nlohmann::json key_0 = JobStep::get_first_key(crypto);
+    nlohmann::json key_1 = JobStep::get_first_key(crypto);
+    nlohmann::json key_2 = JobStep::get_first_key(crypto);
+
+    // create a thread with code to execute 
+    // std::thread t1([&] () {
+    //     spdlog::trace("run job0");
+    //     tj.run(all_tasks, 0, std::vector<uint64_t>(), key_0);
+    // });
+    // std::thread t2([&] () {
+    //     spdlog::trace("run job1");
+    //     tj.run(all_tasks, 1, std::vector<uint64_t>(), key_1);
+    // });
+    // t1.join();
+    // t2.join(); 
+
+    tf::Executor executor;
+    tf::Taskflow taskflow;
+    auto [task_0, task_1, task_2] = taskflow.emplace(  // create tasks
+        [&] () { 
+            spdlog::trace("run job0");
+            tj.run(all_tasks, 0, std::vector<uint64_t>(), key_0);
+        },
+        [&] () { 
+            spdlog::trace("run job1");
+            tj.run(all_tasks, 1, std::vector<uint64_t>(), key_1);
+        }, 
+        [&] () { 
+            spdlog::trace("run job2");
+            result = tj.run(all_tasks, 2, std::vector<uint64_t>{0, 1}, key_2);
+            std::cout << result << std::endl;
+        }
+    );
+    // task_0.succeed(task_1);
+    task_2.succeed(task_0, task_1);
+    executor.run(taskflow).wait();
+
+    // Common::execute_cmd("python3 taskgraph_job_0.py 0");
+    // Common::execute_cmd("python3 taskgraph_job_1.py 1");
+    // Common::execute_cmd("python3 taskgraph_job_2.py 2");
+
     std::string result_file = "taskgraph.result.output";
 
     std::string enc_res = result["encrypted_result"];
@@ -428,21 +473,6 @@ int main(const int argc, const char *argv[])
         std::cout << line << std::endl;
     }
     ifs.close();
-
-    //     tf::Executor executor;
-    //     tf::Taskflow taskflow;
-    //     auto [task_0, task_1, task_2] = taskflow.emplace(  // create four tasks
-    //         [&] () { std::cout << "Task0 starts \n"; Common::execute_cmd("python3 taskgraph_job_0.py 0"); std::cout << "Task0 ends \n";},
-    //         [&] () { std::cout << "Task1 starts \n"; Common::execute_cmd("python3 taskgraph_job_1.py 1"); std::cout << "Task1 ends \n";},
-    //         [&] () { std::cout << "Task2 starts \n"; Common::execute_cmd("python3 taskgraph_job_2.py 2"); std::cout << "Task2 ends \n";}
-    //     );
-    // //     task_1.succeed(task_0);
-    //     task_2.succeed(task_0, task_1);
-    //     executor.run(taskflow).wait();
-
-    // Common::execute_cmd("python3 taskgraph_job_0.py 0");
-    // Common::execute_cmd("python3 taskgraph_job_1.py 1");
-    // Common::execute_cmd("python3 taskgraph_job_2.py 2");
 
     return 0;
 }
