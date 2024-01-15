@@ -55,7 +55,8 @@ namespace cluster {
 
         static nlohmann::json fid_terminus(nlohmann::json kwargs)
         {
-            spdlog::trace("fid_terminus");
+            spdlog::trace("fid_terminus starts");
+            spdlog::trace(kwargs.dump()); 
 
             nlohmann::json ret;
 
@@ -77,6 +78,8 @@ namespace cluster {
 
             ret["cmd"] = cmd;
             ret["output"] = output;
+
+            spdlog::trace("fid_terminus ends");
 
             return ret;
         }
