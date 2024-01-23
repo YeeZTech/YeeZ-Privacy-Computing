@@ -145,9 +145,9 @@ namespace cluster
 
             spdlog::trace("stub3");
 
-            JobStep::mutex.lock();
+            // JobStep::mutex.lock();
             Common::fid_terminus(param);
-            JobStep::mutex.unlock();
+            // JobStep::mutex.unlock();
 
             spdlog::trace("forward_message: get forward result");
             std::ifstream ifs(forward_result);
@@ -226,15 +226,15 @@ namespace cluster
             std::string r;
             if (config.contains("request-use-js") && config["request-use-js"] != "")
             {
-                JobStep::mutex.lock();
+                // JobStep::mutex.lock();
                 nlohmann::json r = CommonJs::fid_terminus(param);
-                JobStep::mutex.unlock();
+                // JobStep::mutex.unlock();
             }
             else
             {
-                JobStep::mutex.lock();
+                // JobStep::mutex.lock();
                 nlohmann::json r = Common::fid_terminus(param);
-                JobStep::mutex.unlock();
+                // JobStep::mutex.unlock();
             }
 
             std::string abs_param_output_url = Common::current_dir / std::filesystem::path(param_output_url);
