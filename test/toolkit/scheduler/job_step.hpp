@@ -10,6 +10,7 @@
 
 #include <list>
 #include <fstream>
+#include <mutex>
 
 #include <boost/algorithm/string.hpp>
 
@@ -17,6 +18,9 @@ namespace cluster
 {
     class JobStep
     {
+    public: 
+        static std::mutex mutex; 
+
     public:
         static void remove_files(std::vector<std::string> file_list)
         {
@@ -31,7 +35,7 @@ namespace cluster
 
         static nlohmann::json gen_key(std::string crypto, std::string shukey_file)
         {
-            spdlog::trace("gen_key");
+            spdlog::trace("gen_key starts");
 
             nlohmann::json param;
             param["crypto"] = crypto;
@@ -46,9 +50,18 @@ namespace cluster
             //                    "output": shukey_file
             //                }
             //            )");
+            // JobStep::mutex.lock();
             Common::fid_terminus(param);
+            // JobStep::mutex.unlock(); 
+
+            // JobStep::mutex.lock();
+            spdlog::trace("shukey_file={}", shukey_file); 
             std::ifstream f(shukey_file);
             nlohmann::json data = nlohmann::json::parse(f);
+            // JobStep::mutex.unlock();
+
+            spdlog::trace("gen_key ends");
+
             return data;
         }
 
@@ -122,11 +135,19 @@ namespace cluster
             param["tee-pubkey"] = dian_pkey;
             param["output"] = forward_result;
 
+            spdlog::trace("stub1");
+
             if (enclave_hash != "")
             {
+                spdlog::trace("stub2");
                 param["use-enclave-hash"] = enclave_hash;
             }
+
+            spdlog::trace("stub3");
+
+            // JobStep::mutex.lock();
             Common::fid_terminus(param);
+            // JobStep::mutex.unlock();
 
             spdlog::trace("forward_message: get forward result");
             std::ifstream ifs(forward_result);
@@ -166,17 +187,20 @@ namespace cluster
             return ret;
         }
 
-        static std::string read_parser_hash(std::string parser_url)
+        static std::string read_parser_hash(std::string name, std::string parser_url)
         {
             spdlog::trace("read_parser_hash");
 
             nlohmann::json param;
             param["enclave"] = parser_url;
-            param["output"] = "info.json";
+            std::string name_url = name + "-info.json";
+            param["output"] = name_url;
 
+            // JobStep::mutex.lock();
             nlohmann::json r = Common::fid_dump(param);
+            // JobStep::mutex.unlock(); 
 
-            std::ifstream ifs("info.json");
+            std::ifstream ifs(name_url);
             nlohmann::json data = nlohmann::json::parse(ifs);
 
             return data["enclave-hash"];
@@ -202,11 +226,15 @@ namespace cluster
             std::string r;
             if (config.contains("request-use-js") && config["request-use-js"] != "")
             {
+                // JobStep::mutex.lock();
                 nlohmann::json r = CommonJs::fid_terminus(param);
+                // JobStep::mutex.unlock();
             }
             else
             {
+                // JobStep::mutex.lock();
                 nlohmann::json r = Common::fid_terminus(param);
+                // JobStep::mutex.unlock();
             }
 
             std::string abs_param_output_url = Common::current_dir / std::filesystem::path(param_output_url);
