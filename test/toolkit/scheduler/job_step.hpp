@@ -56,8 +56,9 @@ namespace cluster
 
             // JobStep::mutex.lock();
             spdlog::trace("shukey_file={}", shukey_file); 
-            std::ifstream f(shukey_file);
-            nlohmann::json data = nlohmann::json::parse(f);
+            std::ifstream ifs(shukey_file);
+            nlohmann::json data = nlohmann::json::parse(ifs);
+            ifs.close(); 
             // JobStep::mutex.unlock();
 
             spdlog::trace("gen_key ends");
@@ -114,6 +115,7 @@ namespace cluster
                     return value;
                 }
             }
+            ifs.close(); 
 
             // FIXME: should report error here
             return std::string{""};
@@ -135,15 +137,10 @@ namespace cluster
             param["tee-pubkey"] = dian_pkey;
             param["output"] = forward_result;
 
-            spdlog::trace("stub1");
-
             if (enclave_hash != "")
             {
-                spdlog::trace("stub2");
                 param["use-enclave-hash"] = enclave_hash;
             }
-
-            spdlog::trace("stub3");
 
             // JobStep::mutex.lock();
             Common::fid_terminus(param);
@@ -152,6 +149,7 @@ namespace cluster
             spdlog::trace("forward_message: get forward result");
             std::ifstream ifs(forward_result);
             nlohmann::json output = nlohmann::json::parse(ifs);
+            ifs.close(); 
 
             spdlog::trace("forward_message ends");
 
@@ -202,6 +200,7 @@ namespace cluster
 
             std::ifstream ifs(name_url);
             nlohmann::json data = nlohmann::json::parse(ifs);
+            ifs.close(); 
 
             return data["enclave-hash"];
         }
@@ -246,6 +245,7 @@ namespace cluster
             }
 
             nlohmann::json ret = nlohmann::json::parse(ifs);
+            ifs.close(); 
 
             spdlog::trace("generate_request ends");
 
@@ -307,7 +307,9 @@ namespace cluster
             {
                 std::ifstream ifs(parser_output_file);
                 spdlog::trace("fid_analyzer_tg ends");
-                return nlohmann::json::parse(ifs);
+                nlohmann::json ret = nlohmann::json::parse(ifs); 
+                ifs.close(); 
+                return ret; 
             }
             catch (const std::exception &e)
             {

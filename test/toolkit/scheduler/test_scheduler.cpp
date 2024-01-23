@@ -66,7 +66,9 @@ nlohmann::json TaskGraph_Job::handle_input_data(
         std::to_string(idx) +
         ".key.json";
     nlohmann::json data_shukey_json = JobStep::gen_key(crypto, data_key_file);
+    // JobStep::mutex.lock(); 
     key_files.push_back(data_key_file);
+    // JobStep::mutex.unlock(); 
 
     // 2. call data provider to seal data
     spdlog::trace("handle_input_data: 2. call data provider to seal data");
@@ -81,6 +83,7 @@ nlohmann::json TaskGraph_Job::handle_input_data(
     if (prev_tasks_idx.empty())
     {
         spdlog::trace("prev_tasks_idx empty");
+        // JobStep::mutex.lock();
         nlohmann::json r = JobStep::seal_data(
             crypto,
             data_url,
@@ -88,6 +91,7 @@ nlohmann::json TaskGraph_Job::handle_input_data(
             sealed_data_url,
             sealed_output,
             data_key_file);
+        // JobStep::mutex.unlock();
     }
     else
     {
@@ -97,17 +101,22 @@ nlohmann::json TaskGraph_Job::handle_input_data(
         std::string parser_output_file = name + "_parser_output.json";
         spdlog::trace(parser_output_file);
         std::ifstream ifs_pof(parser_output_file);
+        spdlog::trace("fstream opened"); 
         nlohmann::json output_json = nlohmann::json::parse(ifs_pof);
-        std::cout << output_json << std::endl;
-        // exit(0);
+        spdlog::trace("json parsed"); 
+        ifs_pof.close(); 
+        std::cout << "output_json" << output_json << std::endl;
 
+        // JobStep::mutex.lock();
         nlohmann::json r = intermediate_seal_data(
             output_json["encrypted_result"],
             sealed_data_url);
+        // JobStep::mutex.unlock();
 
         std::ofstream ofs_so(sealed_output);
         ofs_so << "data_id = " << output_json["intermediate_data_hash"] << std::endl;
         ofs_so << "pkey_kgt = " << output_json["data_kgt_pkey"] << std::endl;
+        ofs_so.close(); 
     }
 
     std::string data_hash = JobStep::read_sealed_output(sealed_output, "data_id");
@@ -121,17 +130,25 @@ nlohmann::json TaskGraph_Job::handle_input_data(
 
     spdlog::trace("handle_input_data: render data_forward_json_list");
     std::vector<nlohmann::json> data_forward_json_list;
-    for (auto key_file : key_files)
+    // for (auto key_file : key_files)
+    for (size_t i = 0; i < key_files.size(); i++)
     {
+        // JobStep::mutex.lock(); 
+        auto key_file = key_files[i]; 
+        // JobStep::mutex.unlock(); 
+
         std::ifstream ifs_kf(key_file);
         nlohmann::json shukey_json = nlohmann::json::parse(ifs_kf);
-        std::string forward_result = key_file + ".shukey.foward.json";
+        ifs_kf.close(); 
+        std::string forward_result = key_file + "." + enclave_hash + ".shukey.foward.json"; 
+        // JobStep::mutex.lock(); 
         nlohmann::json d = JobStep::forward_message(
             crypto,
             key_file,
             dian_pkey,
             enclave_hash,
             forward_result);
+        // JobStep::mutex.unlock(); 
         spdlog::trace("forward_message");
 
         nlohmann::json forward_json;
@@ -212,17 +229,23 @@ nlohmann::json TaskGraph_Job::run(
         ".algo" +
         std::to_string(idx) +
         ".shukey.foward.json";
+    // JobStep::mutex.lock(); 
+    spdlog::trace("forward_message algo {}", idx); 
     nlohmann::json algo_forward_json = JobStep::forward_message(
         crypto, algo_key_file, pkey, enclave_hash, algo_forward_result);
+    // JobStep::mutex.unlock(); 
     all_outputs.push_back(algo_forward_result);
 
+    // JobStep::mutex.lock();
     // 3.3 forward user shu skey
     spdlog::trace("3.3 forward user shu skey");
     std::string user_forward_result = name + ".user" + std::to_string(idx) + ".shukey.foward.json";
     nlohmann::json user_forward_json = JobStep::forward_message(
         crypto, user_key_file, pkey, enclave_hash, user_forward_result);
     all_outputs.push_back(user_forward_result);
+    // JobStep::mutex.unlock();
 
+    // JobStep::mutex.lock();
     // handle all data
     spdlog::trace("handle all data");
     if (!prev_tasks_idx.empty())
@@ -248,6 +271,7 @@ nlohmann::json TaskGraph_Job::run(
         input_data.push_back(result["data_obj"]);
         flat_kgt_pkey_list.push_back(result["flat_kgt_pkey"]);
     }
+    // JobStep::mutex.unlock();
 
     // 4. call terminus to generate request
     spdlog::trace("4. call terminus to generate request");
@@ -294,6 +318,7 @@ nlohmann::json TaskGraph_Job::run(
     {
         std::ifstream ifs(key_file);
         key_json_list.push_back(nlohmann::json::parse(ifs));
+        ifs.close(); 
     }
     std::string all_keys_file = name + ".all-keys.json";
     std::ofstream ofs_akf(all_keys_file);
