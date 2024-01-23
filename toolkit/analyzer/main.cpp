@@ -28,14 +28,16 @@ int main(int argc, char *argv[]) {
       vm["input"].as<std::string>());
   g_parser = std::make_shared<parser>(input_param);
 
-  std::cout << "start to parse" << std::endl;
+  std::cout << "parse starts" << std::endl;
   g_parser->parse();
+  std::cout << "parse ends" << std::endl;
 
   std::string output_fp = vm["output"].as<std::string>();
   try {
     std::ofstream os(output_fp, std::ios::out | std::ios::binary);
     const std::string &res = g_parser->get_result_str();
     os.write(res.data(), res.size());
+    os.close(); 
   } catch (const std::exception &e) {
     std::cerr << "cannot open " << output_fp << std::endl;
     return 1;
