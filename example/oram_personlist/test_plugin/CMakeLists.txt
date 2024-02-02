@@ -1,0 +1,2 @@
+add_library(person_reader_oram SHARED person_reader_oram.cpp)
+target_link_libraries(person_reader_oram core)

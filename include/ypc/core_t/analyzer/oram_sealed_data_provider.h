@@ -487,6 +487,12 @@ private:
     return true;
   }
 
+  void oset_value(uint32_t *dest_value, uint32_t src_value, bool move_flag) {
+    if(move_flag) {
+      *dest_value = src_value;
+    }
+  }
+
   bool access_in_stash(uint32_t block_id, uint32_t new_leaf) {
     stbox::bytes target_encrypted_batch_str(m_header.batch_str_size);
     for(uint32_t i = 0; i < m_stash.size(); ++i) {

@@ -47,5 +47,3 @@ test/integrate/__pycache__/
 test/integrate/js/
 .vscode/
 hash_hex/
-build_PreRelease/
-build_debug/

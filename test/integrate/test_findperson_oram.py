@@ -28,6 +28,8 @@ if __name__ == "__main__":
         'remove-files': True if len(sys.argv) < 2 else False,
     })
 
+    # TODO:需要提供拿什么字段作为索引字段
+    index_name = "ZJHM"
     id = 421003198607262336
     result = []
     for i in range(con_read_num):

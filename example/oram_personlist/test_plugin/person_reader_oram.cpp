@@ -1,3 +1,4 @@
+
 #include "person_reader_oram.h"
 #include "ypc/common/limits.h"
 #include "../common.h"
@@ -74,7 +75,7 @@ int get_item_index_field(void *handle, char *buf, int *len) {
     typedef typename ypc::cast_obj_to_package<row_t>::type pkg_t;
     auto item_pkg =
         ypc::make_package<pkg_t>::from_bytes(ypc::bytes(r.data(), r.size()));
-    std::string index_field = item_pkg.get<ZJHM>();
+      std::string index_field = item_pkg.get<ZJHM>();
     memcpy(buf, index_field.c_str(), index_field.size());
     *len = index_field.size();
     
@@ -87,3 +88,4 @@ int get_item_index_field(void *handle, char *buf, int *len) {
 
   return 0;
 }
+  

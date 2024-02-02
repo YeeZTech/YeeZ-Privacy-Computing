@@ -218,8 +218,6 @@ uint32_t seal_oram_file(const crypto_ptr_t &crypto_ptr, const std::string &plugi
       ++batch_num;
   }
   
-  assert(batch_num == item_num_array.size());
-
 
   // build id map
   LOG(INFO) << "build id_map";
@@ -259,7 +257,6 @@ uint32_t seal_oram_file(const crypto_ptr_t &crypto_ptr, const std::string &plugi
     ++counter;
   }
 
-  assert(id_map_array.size() == item_number);
   oram_ntt::id_map_t id_map_pkg;
   id_map_pkg.set<oram_ntt::id_map>(id_map_array);
   bytes id_map_bytes = make_bytes<bytes>::for_package(id_map_pkg);
@@ -462,7 +459,6 @@ uint32_t seal_oram_file(const crypto_ptr_t &crypto_ptr, const std::string &plugi
 
 
   // write merkle tree
-  assert(data_hash_array.size() == osf_header.bucket_num_N);
   osf_header.merkle_tree_filepos = osf.tellp();
 
   for(int i = (1 << osf_header.level_num_L) - 2; i >= 0; --i) {
