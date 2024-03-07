@@ -260,7 +260,7 @@ uint32_t parser::next_data_batch(const uint8_t *hash_and_pkey,
                << " not found";
     return stbox::stx_status::data_source_not_found;
   }
-  auto ssf = m_data_sources[hash];
+  auto ssf = m_data_sources[all];
   size_t s;
   bool ret = ssf->next_item(m_mem_buf.get(), m_mem_buf_size, s) ==
              ypc::simple_sealed_file::blockfile_t::succ;
