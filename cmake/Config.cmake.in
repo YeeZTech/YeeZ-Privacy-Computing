@@ -33,7 +33,7 @@ add_component(core
   COMP_TARGETS "common/mod_common.cmake stbox/mod_stbox_common.cmake core/mod_core.cmake core/mod_core_parser_module.cmake")
 
 add_component(core_t
-  COMP_TARGETS "stbox/mod_stbox_common_t.cmake stbox/mod_channel_t.cmake stbox/mod_crypto_t.cmake core/mod_analyzer_t.cmake")
+  COMP_TARGETS "stbox/mod_stbox_common_t.cmake stbox/mod_channel_t.cmake stbox/mod_crypto_t.cmake core/mod_analyzer_t.cmake core/mod_core_util_t.cmake")
 
 #add_component(core_parser_module
   #COMP_TARGETS core/mod_core_parser_module.cmake)
