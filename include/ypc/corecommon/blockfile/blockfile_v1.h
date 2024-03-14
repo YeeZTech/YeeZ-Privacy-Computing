@@ -1,4 +1,6 @@
+#pragma once
 #include "ypc/corecommon/blockfile/blockfile_base.h"
+#include "ypc/corecommon/blockfile/blockfile_base_r.h"
 
 namespace ypc {
 namespace internal {
@@ -11,9 +13,10 @@ struct blockfile_header_v1 {
 
 } // namespace internal
 template <typename File_t, uint64_t MagicNumber_t, uint64_t BlockNumLimit_t,
-          uint64_t BlockSizeLimit_t>
+          uint64_t ItemNumPerBlockLimit_t>
 using blockfile_v1 =
-    internal::blockfile_impl<internal::blockfile_header_v1, File_t,
-                             MagicNumber_t, BlockNumLimit_t, BlockSizeLimit_t>;
+    internal::blockfile_impl_r<internal::blockfile_header_v1, File_t,
+                               MagicNumber_t, BlockNumLimit_t,
+                               ItemNumPerBlockLimit_t>;
 
 } // namespace ypc

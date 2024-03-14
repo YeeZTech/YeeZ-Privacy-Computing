@@ -21,7 +21,7 @@ namespace ypc {
 namespace internal {
 template <typename Header_t, typename File_t, uint64_t MagicNumber_t,
           uint64_t BlockNumLimit_t, uint64_t ItemNumPerBlockLimit_t>
-class blockfile_impl : public blockfile_interface {
+class blockfile_impl_r : public blockfile_interface {
 public:
   const static uint64_t MagicNumber = MagicNumber_t;
   const static uint64_t BlockNumLimit = BlockNumLimit_t;
@@ -31,15 +31,15 @@ public:
   enum { succ = 0, eof = 1, invalid_buf = 2, small_buf = 3 };
   using ftt = file_traits<File_t>;
 
-  blockfile_impl()
+  blockfile_impl_r()
       : m_file(), m_file_path(), m_header(), m_is_header_valid(false),
         m_is_block_info_valid(false), m_block_infos() {}
 
-  blockfile_impl(const blockfile_impl &) = delete;
-  blockfile_impl(blockfile_impl &&) = delete;
-  blockfile_impl &operator=(const blockfile_impl &) = delete;
-  blockfile_impl &operator=(blockfile_impl &&) = delete;
-  virtual ~blockfile_impl() = default;
+  blockfile_impl_r(const blockfile_impl_r &) = delete;
+  blockfile_impl_r(blockfile_impl_r &&) = delete;
+  blockfile_impl_r &operator=(const blockfile_impl_r &) = delete;
+  blockfile_impl_r &operator=(blockfile_impl_r &&) = delete;
+  virtual ~blockfile_impl_r() = default;
 
   virtual void open_for_read(const char *file_path) {
     if (m_file.is_open()) {
@@ -52,6 +52,7 @@ public:
     }
     reset_read_item();
   }
+
   virtual void open_for_write(const char *file_path) {
     if (m_file.is_open()) {
       throw std::runtime_error("already open");
@@ -82,35 +83,28 @@ public:
     if (m_block_infos.empty()) {
       bi.start_item_index = 0;
       bi.end_item_index = 1;
-      bi.start_file_pos = block_start_offset;
+      bi.start_file_pos = 0;
       bi.end_file_pos = bi.start_file_pos + len + sizeof(len);
       m_block_infos.push_back(bi);
       m_header.block_number++;
     } else {
       bi = m_block_infos.back();
       if (bi.end_item_index - bi.start_item_index >= ItemNumPerBlockLimit) {
-        auto back = m_block_infos.back();
-        bi.start_item_index = back.end_item_index;
+        bi.start_item_index = bi.end_item_index;
         bi.end_item_index = bi.start_item_index + 1;
-        bi.start_file_pos = back.end_file_pos;
+        bi.start_file_pos = bi.end_file_pos;
         bi.end_file_pos = bi.end_file_pos + len + sizeof(len);
         m_block_infos.push_back(bi);
         m_header.block_number++;
       } else {
-        block_info &back = m_block_infos.back();
-        back.end_item_index++;
-        back.end_file_pos = back.end_file_pos + len + sizeof(len);
+        auto &back = m_block_infos.back();
+        back.end_item_index = bi.end_item_index + 1;
+        back.end_file_pos = bi.end_file_pos + len + sizeof(len);
       }
     }
-    block_info &back = m_block_infos.back();
-    auto offset =
-        sizeof(Header_t) + (m_block_infos.size() - 1) * sizeof(block_info);
-    m_file.seekp(offset, ftt::beg);
-    m_file.write((char *)&back, sizeof(back));
-    m_file.seekp(0, ftt::beg);
-    m_file.write((char *)&m_header, sizeof(m_header));
-
-    m_file.seekp(back.end_file_pos - len - sizeof(len), ftt::beg);
+    auto &back = m_block_infos.back();
+    // write data
+    m_file.seekp(back.end_file_pos - sizeof(len) - len, ftt::beg);
     m_file.write((char *)&len, sizeof(len));
     m_file.write(data, len);
     return 0;
@@ -120,7 +114,7 @@ public:
     m_file.clear();
     read_header();
     read_all_block_info();
-    m_file.seekg(block_start_offset, ftt::beg);
+    m_file.seekg(0, ftt::beg);
   }
 
   virtual int next_item(char *buf, size_t in_size, size_t &out_size) {
@@ -154,6 +148,15 @@ public:
   }
 
   virtual void close() {
+    // write block info
+    auto &back = m_block_infos.back();
+    m_file.seekp(back.end_file_pos, ftt::beg);
+    for (auto &bi : m_block_infos) {
+      m_file.write((char *)&bi, sizeof(bi));
+    }
+    // write header
+    m_file.write((char *)&m_header, sizeof(m_header));
+
     m_is_header_valid = false;
     m_is_block_info_valid = false;
     m_block_infos.clear();
@@ -169,27 +172,40 @@ protected:
       return;
     }
     auto prev = m_file.tellg();
+    // empty file
+    m_file.seekg(0, ftt::end);
+    auto len = m_file.tellg();
+    if (!len) {
+      m_is_header_valid = true;
+      m_file.seekg(prev, ftt::beg);
+      return;
+    }
 
-    m_file.seekg(0, ftt::beg);
+    m_file.seekg(-sizeof(Header_t), ftt::end);
     m_file.read((char *)&m_header, sizeof(Header_t));
-    if (!m_file.eof() && m_header.magic_number != MagicNumber) {
+    if (m_header.magic_number != MagicNumber) {
       throw invalid_blockfile();
     }
     m_is_header_valid = true;
     m_file.seekg(prev, ftt::beg);
   }
+
   void read_all_block_info() {
     read_header();
     if (m_is_block_info_valid) {
       return;
     }
-    m_file.seekg(sizeof(Header_t), ftt::beg);
+    auto prev = m_file.tellg();
+    m_file.seekg(
+        -(sizeof(Header_t) + m_header.block_number * sizeof(block_info)),
+        ftt::end);
     for (size_t i = 0; i < m_header.block_number; ++i) {
       block_info bi{};
       m_file.read((char *)&bi, sizeof(bi));
       m_block_infos.push_back(bi);
     }
     m_is_block_info_valid = true;
+    m_file.seekg(prev, ftt::beg);
   }
 
 protected:
@@ -207,8 +223,6 @@ protected:
     long int start_file_pos;
     long int end_file_pos;
   };
-  const static long int block_start_offset =
-      sizeof(Header_t) + sizeof(block_info) * BlockNumLimit;
 
   File_t m_file;
   std::string m_file_path;

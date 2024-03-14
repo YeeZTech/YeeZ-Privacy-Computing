@@ -264,7 +264,7 @@ uint32_t parser::next_data_batch(const uint8_t *hash_and_pkey,
   size_t s;
   bool ret = ssf->next_item(m_mem_buf.get(), m_mem_buf_size, s) ==
              ypc::simple_sealed_file::blockfile_t::succ;
-  if (ret) {
+  if (ret && 0u != s) {
     *data = (uint8_t *)m_mem_buf.get();
     *len = s;
     return stbox::stx_status::success;

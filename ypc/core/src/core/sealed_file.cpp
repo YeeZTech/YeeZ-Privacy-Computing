@@ -10,6 +10,7 @@ sealed_file_base::sealed_file_base(const std::string &file_path, bool read) {
     m_file.open_for_write(file_path.c_str());
   }
 }
+sealed_file_base::~sealed_file_base() { m_file.close(); }
 
 void sealed_file_base::write_item(const bytes &data) {
   m_file.append_item((const char *)data.data(), data.size());

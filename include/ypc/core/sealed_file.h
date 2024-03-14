@@ -15,12 +15,11 @@ namespace ypc {
 namespace internal {
 class sealed_file_base {
 public:
-  using blockfile_t = blockfile<0x4788d13e7fefe21f, 1024 * 1024,
-                                256 * ::ypc::utc::max_item_size>;
+  using blockfile_t = blockfile<0x4788d13e7fefe21f, 1024 * 1024, 256>;
 
   sealed_file_base(const std::string &file_path, bool read);
 
-  virtual ~sealed_file_base() = default;
+  virtual ~sealed_file_base();
   virtual void write_item(const bytes &data);
 
   virtual void reset_read() = 0;

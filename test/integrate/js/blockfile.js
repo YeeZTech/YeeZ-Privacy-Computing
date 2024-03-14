@@ -1,8 +1,8 @@
 const ByteBuffer = require('bytebuffer')
 
-const BlockFile = function(MagicNumber, BlockNumLimit, BlockSizeLimit) {
+const BlockFile = function(MagicNumber, BlockNumLimit, ItemNumPerBlockLimit) {
   if (!(this instanceof BlockFile)) {
-    return new BlockFile(MagicNumber, BlockNumLimit, BlockSizeLimit)
+    return new BlockFile(MagicNumber, BlockNumLimit, ItemNumPerBlockLimit)
   }
 
   // 32 bytes
@@ -42,7 +42,7 @@ const BlockFile = function(MagicNumber, BlockNumLimit, BlockSizeLimit) {
       m_header.block_number++;
     } else {
       bi = m_block_infos[m_block_infos.length - 1];
-      if (bi.end_item_index - bi.start_item_index >= BlockSizeLimit) {
+      if (bi.end_item_index - bi.start_item_index >= ItemNumPerBlockLimit) {
         new_block = new block_info_t(0, 0, 0, 0);
         new_block.start_item_index = bi.end_item_index;
         new_block.end_item_index = new_block.start_item_index + 1;
