@@ -20,6 +20,7 @@
 #include "ypc/core_t/analyzer/internal/data_streams/sealed_data_stream.h"
 #include "ypc/core_t/analyzer/internal/keymgr_session.h"
 #include "ypc/core_t/analyzer/internal/results/local_result.h"
+#include "ypc/core_t/analyzer/internal/results/offchain_file_result.h"
 #include "ypc/core_t/analyzer/internal/results/offchain_result.h"
 #include "ypc/core_t/analyzer/internal/results/onchain_result.h"
 

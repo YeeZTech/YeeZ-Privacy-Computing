@@ -11,11 +11,11 @@
 namespace ypc {
 namespace internal {
 template <typename Crypto>
-class offchain_result : virtual public request_key_var<true>,
-                        virtual public enclave_hash_var,
-                        virtual public result_var,
-                        virtual public encrypted_param_var,
-                        virtual public data_hash_var {
+class offchain_file_result : virtual public request_key_var<true>,
+                             virtual public enclave_hash_var,
+                             virtual public result_var,
+                             virtual public encrypted_param_var,
+                             virtual public data_hash_var {
   typedef Crypto crypto;
   typedef request_key_var<true> request_key_var_t;
 
@@ -111,9 +111,10 @@ protected:
 };
 } // namespace internal
 template <typename Crypto>
-using offchain_result = internal::offchain_result<Crypto>;
+using offchain_file_result = internal::offchain_file_result<Crypto>;
 
-template <typename Crypto> struct result_type_traits<offchain_result<Crypto>> {
+template <typename Crypto>
+struct result_type_traits<offchain_file_result<Crypto>> {
   constexpr static uint32_t value = ypc::utc::offchain_result_parser;
 };
 } // namespace ypc
