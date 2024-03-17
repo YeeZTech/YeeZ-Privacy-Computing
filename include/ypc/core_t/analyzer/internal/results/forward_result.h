@@ -4,6 +4,7 @@
 #include "ypc/core_t/analyzer/var/data_hash_var.h"
 #include "ypc/core_t/analyzer/var/enclave_hash_var.h"
 #include "ypc/core_t/analyzer/var/encrypted_param_var.h"
+#include "ypc/core_t/analyzer/var/internal_key_var.h"
 #include "ypc/core_t/analyzer/var/request_key_var.h"
 #include "ypc/core_t/analyzer/var/result_var.h"
 #include "ypc/stbox/ebyte.h"
@@ -16,7 +17,8 @@ class forward_result : virtual public request_key_var<true>,
                        virtual public enclave_hash_var,
                        virtual public result_var,
                        virtual public encrypted_param_var,
-                       virtual public data_hash_var {
+                       virtual public data_hash_var,
+                       virtual public internal_key_var<Crypto> {
   typedef Crypto ecc;
   typedef request_key_var<true> request_key_var_t;
 
@@ -29,7 +31,9 @@ public:
     }
 
     // 1. gen private key
-    stbox::bytes shu_skey;
+    stbox::bytes shu_skey = get_internal_private_key();
+    stbox::bytes shu_pkey = get_internal_public_key();
+    /*
     auto ret = ecc::gen_private_key(shu_skey);
     if (ret) {
       LOG(ERROR) << "gen_private_key failed: " << stbox::status_string(ret);
@@ -61,8 +65,8 @@ public:
       LOG(ERROR) << "sign_message failed: " << stbox::status_string(ret);
       return ret;
     }
-
-    // 3. encrypt result with dian pkey
+*/
+    // 3. encrypt result with shu pkey
     std::vector<stbox::bytes> batch;
     batch.push_back(result_var::m_result);
     auto pb = make_bytes<stbox::bytes>::for_package<ntt::batch_data_pkg_t,
@@ -88,10 +92,12 @@ public:
 
     ///
     ntt::forward_result_t result;
-    ntt::shu_info_t shu;
-    shu.set<ntt::pkey, ntt::encrypted_shu_skey, ntt::shu_forward_signature,
-            ntt::enclave_hash>(shu_pkey, encrypted_skey, sig,
-                               m_target_enclave_hash);
+    ntt::shu_info_t shu =
+        forward_internal_key(m_target_dian_pkey, m_target_enclave_hash);
+
+    // shu.set<ntt::pkey, ntt::encrypted_shu_skey, ntt::shu_forward_signature,
+    // ntt::enclave_hash>(shu_pkey, encrypted_skey, sig,
+    // m_target_enclave_hash);
     result.set<ntt::shu_info>(shu);
     result.set<ntt::data_hash>(data_hash);
     result.set<ntt::encrypted_result>(m_encrypted_result_str);

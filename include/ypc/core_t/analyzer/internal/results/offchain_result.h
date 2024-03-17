@@ -3,6 +3,7 @@
 #include "ypc/core_t/analyzer/helper/parser_type_traits.h"
 #include "ypc/core_t/analyzer/var/enclave_hash_var.h"
 #include "ypc/core_t/analyzer/var/encrypted_param_var.h"
+#include "ypc/core_t/analyzer/var/internal_key_var.h"
 #include "ypc/core_t/analyzer/var/request_key_var.h"
 #include "ypc/core_t/analyzer/var/result_var.h"
 #include "ypc/stbox/ebyte.h"
@@ -15,17 +16,18 @@ class offchain_result : virtual public request_key_var<true>,
                         virtual public enclave_hash_var,
                         virtual public result_var,
                         virtual public encrypted_param_var,
-                        virtual public data_hash_var {
+                        virtual public data_hash_var,
+                        virtual public internal_key_var<Crypto> {
   typedef Crypto crypto;
   typedef request_key_var<true> request_key_var_t;
 
 public:
   uint32_t generate_result() {
-    stbox::bytes skey;
+    stbox::bytes skey = get_internal_private_key();
 
-    crypto::gen_private_key(skey);
-    stbox::bytes pkey;
-    crypto::generate_pkey_from_skey(skey, pkey);
+    // crypto::gen_private_key(skey);
+    stbox::bytes pkey = get_internal_public_key();
+    // crypto::generate_pkey_from_skey(skey, pkey);
 
     auto rs = result_var::m_result;
 
@@ -43,13 +45,14 @@ public:
     stbox::bytes pkey_a;
     status = crypto::generate_pkey_from_skey(m_private_key, pkey_a);
 
-    status = crypto::encrypt_message_with_prefix(
-        pkey_a, skey, utc::crypto_prefix_arbitrary, m_encrypted_c);
+    m_encrypted_c = export_internal_key(pkey_a);
+    // status = crypto::encrypt_message_with_prefix(
+    // pkey_a, skey, utc::crypto_prefix_arbitrary, m_encrypted_c);
 
-    if (status != stbox::stx_status::success) {
-      LOG(ERROR) << "error for encrypt_message: " << status;
-      return status;
-    }
+    // if (status != stbox::stx_status::success) {
+    // LOG(ERROR) << "error for encrypt_message: " << status;
+    // return status;
+    //}
 
     stbox::bytes cost_gas_str(sizeof(m_cost_gas));
     memcpy((uint8_t *)&cost_gas_str[0], (uint8_t *)&m_cost_gas,
