@@ -21,6 +21,7 @@ class forward_result : virtual public request_key_var<true>,
                        virtual public internal_key_var<Crypto> {
   typedef Crypto ecc;
   typedef request_key_var<true> request_key_var_t;
+  typedef internal_key_var<Crypto> internal_key_t;
 
 public:
   uint32_t generate_result() {
@@ -31,8 +32,8 @@ public:
     }
 
     // 1. gen private key
-    stbox::bytes shu_skey = get_internal_private_key();
-    stbox::bytes shu_pkey = get_internal_public_key();
+    stbox::bytes shu_skey = internal_key_t::get_internal_private_key();
+    stbox::bytes shu_pkey = internal_key_t::get_internal_public_key();
     /*
     auto ret = ecc::gen_private_key(shu_skey);
     if (ret) {
@@ -72,7 +73,7 @@ public:
     auto pb = make_bytes<stbox::bytes>::for_package<ntt::batch_data_pkg_t,
                                                     ntt::batch_data>(batch);
 
-    ret = ecc::encrypt_message_with_prefix(
+    auto ret = ecc::encrypt_message_with_prefix(
         shu_pkey, pb, utc::crypto_prefix_arbitrary, m_encrypted_result_str);
 
     if (ret != stbox::stx_status::success) {
@@ -93,7 +94,7 @@ public:
     ///
     ntt::forward_result_t result;
     ntt::shu_info_t shu =
-        forward_internal_key(m_target_dian_pkey, m_target_enclave_hash);
+        internal_key_t::forward_internal_key(m_target_dian_pkey, m_target_enclave_hash);
 
     // shu.set<ntt::pkey, ntt::encrypted_shu_skey, ntt::shu_forward_signature,
     // ntt::enclave_hash>(shu_pkey, encrypted_skey, sig,

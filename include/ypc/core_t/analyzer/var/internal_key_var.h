@@ -56,7 +56,7 @@ public:
     return shu;
   }
 
-  virtual export_internal_key(const stbox::bytes &shu_pkey) {
+  virtual stbox::bytes export_internal_key(const stbox::bytes &shu_pkey) {
     stbox::bytes m_encrypted_skey;
     auto ret = ecc::encrypt_message_with_prefix(shu_pkey, m_private_key,
                                                 utc::crypto_prefix_arbitrary,

@@ -23,6 +23,7 @@
 #include "ypc/core_t/analyzer/internal/results/offchain_file_result.h"
 #include "ypc/core_t/analyzer/internal/results/offchain_result.h"
 #include "ypc/core_t/analyzer/internal/results/onchain_result.h"
+#include "ypc/core_t/analyzer/var/internal_key_var.h"
 
 namespace ypc {
 template <typename Crypto, typename DataSession, typename ParserT,
@@ -39,7 +40,8 @@ class algo_wrapper
       virtual public internal::parser_interface<DataSession, ParserT>,
       virtual public internal::data_interface<Crypto, DataSession>,
       virtual public internal::data_hash_interface<Crypto, DataSession>,
-      virtual public internal::model_interface<Crypto, ModelT> {
+      virtual public internal::model_interface<Crypto, ModelT>,
+      virtual public internal::internal_key_var<Crypto>{
   typedef internal::keymgr_session keymgr_session_t;
   typedef internal::parser_interface<DataSession, ParserT> parser_interface_t;
   typedef internal::algo_interface<Crypto, DataSession, ParserT, Result, ModelT,

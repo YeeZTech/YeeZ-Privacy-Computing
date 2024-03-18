@@ -20,13 +20,14 @@ class offchain_result : virtual public request_key_var<true>,
                         virtual public internal_key_var<Crypto> {
   typedef Crypto crypto;
   typedef request_key_var<true> request_key_var_t;
+  typedef internal_key_var<Crypto> internal_key_t;
 
 public:
   uint32_t generate_result() {
-    stbox::bytes skey = get_internal_private_key();
+    stbox::bytes skey = internal_key_t::get_internal_private_key();
 
     // crypto::gen_private_key(skey);
-    stbox::bytes pkey = get_internal_public_key();
+    stbox::bytes pkey = internal_key_t::get_internal_public_key();
     // crypto::generate_pkey_from_skey(skey, pkey);
 
     auto rs = result_var::m_result;
@@ -45,7 +46,7 @@ public:
     stbox::bytes pkey_a;
     status = crypto::generate_pkey_from_skey(m_private_key, pkey_a);
 
-    m_encrypted_c = export_internal_key(pkey_a);
+    m_encrypted_c = internal_key_t::export_internal_key(pkey_a);
     // status = crypto::encrypt_message_with_prefix(
     // pkey_a, skey, utc::crypto_prefix_arbitrary, m_encrypted_c);
 
