@@ -68,7 +68,7 @@ template <typename BytesType> struct nt {
 
   using offchain_result_package_t =
       ::ff::net::ntpackage<0xf13e1f41, encrypted_result, data_hash,
-                           result_signature, cost_signature,
+                           result_signature, cost_signature, pkey,
                            result_encrypt_key>;
 
   using keymgr_key_package_t =

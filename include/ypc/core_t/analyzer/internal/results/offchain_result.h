@@ -22,16 +22,12 @@ class offchain_result : virtual public request_key_var<true>,
 public:
   uint32_t generate_result() {
     stbox::bytes skey;
-
     crypto::gen_private_key(skey);
-    stbox::bytes pkey;
-    crypto::generate_pkey_from_skey(skey, pkey);
+    crypto::generate_pkey_from_skey(skey, m_tmp_pkey);
 
     auto rs = result_var::m_result;
-
     auto status = crypto::encrypt_message_with_prefix(
-        pkey, rs, utc::crypto_prefix_arbitrary, m_encrypted_result_str);
-
+        m_tmp_pkey, rs, utc::crypto_prefix_arbitrary, m_encrypted_result_str);
     if (status != stbox::stx_status::success) {
       LOG(ERROR) << "error for encrypt_message: " << status;
       return status;
@@ -42,10 +38,8 @@ public:
 
     stbox::bytes pkey_a;
     status = crypto::generate_pkey_from_skey(m_private_key, pkey_a);
-
     status = crypto::encrypt_message_with_prefix(
-        pkey_a, skey, utc::crypto_prefix_arbitrary, m_encrypted_c);
-
+        pkey_a, skey, utc::crypto_prefix_arbitrary, m_encrypted_tmp_skey);
     if (status != stbox::stx_status::success) {
       LOG(ERROR) << "error for encrypt_message: " << status;
       return status;
@@ -55,7 +49,6 @@ public:
     memcpy((uint8_t *)&cost_gas_str[0], (uint8_t *)&m_cost_gas,
            sizeof(m_cost_gas));
     ypc::utc::endian_swap(cost_gas_str);
-
     auto cost_msg =
         m_encrypted_param + m_data_hash + m_enclave_hash + cost_gas_str;
     status =
@@ -65,12 +58,12 @@ public:
       return status;
     }
 
-    auto msg = m_encrypted_c + hash_m + m_encrypted_param + m_data_hash +
+    auto msg = m_encrypted_tmp_skey + hash_m + m_encrypted_param + m_data_hash +
                cost_gas_str + m_enclave_hash;
     status = crypto::sign_message(m_private_key, msg, m_result_signature_str);
-
     return static_cast<uint32_t>(status);
   }
+
   nt<stbox::bytes>::offchain_result_package_t get_result_pkg() {
     using ntt = nt<stbox::bytes>;
     typename ntt::offchain_result_package_t pkg;
@@ -78,14 +71,13 @@ public:
     pkg.set<ntt::data_hash>(data_hash_var::m_data_hash);
     pkg.set<ntt::result_signature>(m_result_signature_str);
     pkg.set<ntt::cost_signature>(m_cost_signature_str);
-    pkg.set<ntt::result_encrypt_key>(m_encrypted_c);
+    pkg.set<ntt::result_encrypt_key>(m_encrypted_tmp_skey);
+    pkg.set<ntt::pkey>(m_tmp_pkey);
     return pkg;
   }
 
   uint32_t get_analyze_result(uint8_t *result, uint32_t size) {
-
     auto pkg = get_result_pkg();
-
     ff::net::marshaler lm(ff::net::marshaler::length_retriver);
     pkg.arch(lm);
     if (size != lm.get_length()) {
@@ -104,7 +96,8 @@ public:
   }
 
 protected:
-  stbox::bytes m_encrypted_c;
+  stbox::bytes m_encrypted_tmp_skey;
+  stbox::bytes m_tmp_pkey;
   stbox::bytes m_encrypted_result_str;
   stbox::bytes m_cost_signature_str;
   stbox::bytes m_result_signature_str;
