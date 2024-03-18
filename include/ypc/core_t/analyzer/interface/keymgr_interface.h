@@ -22,9 +22,10 @@ class keymgr_interface : virtual public enclave_hash_var,
   typedef Crypto ecc;
 
 public:
-  uint32_t request_private_key_for_public_key(const stbox::bytes &pubkey,
-                                              stbox::bytes &private_key,
-                                              stbox::bytes &dian_pkey) {
+  virtual uint32_t
+  request_private_key_for_public_key(const stbox::bytes &pubkey,
+                                     stbox::bytes &private_key,
+                                     stbox::bytes &dian_pkey) {
     stbox::bytes request_msg = ypc::make_bytes<stbox::bytes>::for_package<
         request_skey_from_pkey_pkg_t, nt<stbox::bytes>::pkey>(pubkey);
 
