@@ -20,10 +20,12 @@
 namespace ypc {
 namespace internal {
 template <typename Header_t, typename File_t, uint64_t MagicNumber_t,
-          uint64_t BlockNumLimit_t, uint64_t ItemNumPerBlockLimit_t>
+          uint64_t VersionNumber_t, uint64_t BlockNumLimit_t,
+          uint64_t ItemNumPerBlockLimit_t>
 class blockfile_impl_r : public blockfile_interface {
 public:
   const static uint64_t MagicNumber = MagicNumber_t;
+  const static uint64_t VersionNumber = VersionNumber_t;
   const static uint64_t BlockNumLimit = BlockNumLimit_t;
   const static uint64_t ItemNumPerBlockLimit = ItemNumPerBlockLimit_t;
   const static uint64_t BlockSizeLimit =
@@ -79,6 +81,7 @@ public:
 
     m_header.item_number++;
     m_header.magic_number = MagicNumber;
+    m_header.version_number = VersionNumber;
 
     if (m_block_infos.empty()) {
       bi.start_item_index = 0;

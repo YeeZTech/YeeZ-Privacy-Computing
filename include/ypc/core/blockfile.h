@@ -8,6 +8,7 @@
 #include <glog/logging.h>
 #endif
 #include "ypc/corecommon/blockfile/blockfile_v1.h"
+#include "ypc/corecommon/blockfile/blockfile_v2.h"
 #include "ypc/corecommon/blockfile/traits.h"
 
 namespace ypc {
@@ -24,9 +25,9 @@ template <> struct file_traits<std::fstream> {
   constexpr static auto end = std::ios::end;
 };
 
-template <uint64_t MagicNumber_t, uint64_t BlockNumLimit_t,
-          uint64_t ItemNumPerBlockLimit_t>
-using blockfile = blockfile_v1<std::fstream, MagicNumber_t, BlockNumLimit_t,
-                               ItemNumPerBlockLimit_t>;
+template <uint64_t MagicNumber_t, uint64_t VersionNumber_t,
+          uint64_t BlockNumLimit_t, uint64_t ItemNumPerBlockLimit_t>
+using blockfile = blockfile_v2_r<std::fstream, MagicNumber_t, VersionNumber_t,
+                                 BlockNumLimit_t, ItemNumPerBlockLimit_t>;
 
 } // namespace ypc

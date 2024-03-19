@@ -11,6 +11,7 @@
 #include "ypc/core_t/util/file_openmode.h"
 #include "ypc/core_t/util/fpos.h"
 #include "ypc/corecommon/blockfile/blockfile_v1.h"
+#include "ypc/corecommon/blockfile/blockfile_v2.h"
 #include "ypc/corecommon/blockfile/traits.h"
 
 namespace ypc {
@@ -27,9 +28,9 @@ template <> struct file_traits<cxxfile> {
   constexpr static auto end = ypc::ios_base::end;
 };
 
-template <uint64_t MagicNumber_t, uint64_t BlockNumLimit_t,
-          uint64_t ItemNumPerBlockLimit_t>
-using blockfile = blockfile_v1<ypc::cxxfile, MagicNumber_t, BlockNumLimit_t,
-                               ItemNumPerBlockLimit_t>;
+template <uint64_t MagicNumber_t, uint64_t VersionNumber_t,
+          uint64_t BlockNumLimit_t, uint64_t ItemNumPerBlockLimit_t>
+using blockfile = blockfile_v2_r<ypc::cxxfile, MagicNumber_t, VersionNumber_t,
+                                 BlockNumLimit_t, ItemNumPerBlockLimit_t>;
 
 } // namespace ypc
