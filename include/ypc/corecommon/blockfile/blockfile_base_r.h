@@ -212,21 +212,6 @@ protected:
   }
 
 protected:
-  struct header {
-    uint64_t magic_number;
-    uint64_t version_number;
-    uint64_t block_number;
-    uint64_t item_number;
-  };
-  struct block_info {
-    //[start_item_index, end_item_index)
-    block_info() = default;
-    uint64_t start_item_index;
-    uint64_t end_item_index; // not included
-    long int start_file_pos;
-    long int end_file_pos;
-  };
-
   File_t m_file;
   std::string m_file_path;
   Header_t m_header;
