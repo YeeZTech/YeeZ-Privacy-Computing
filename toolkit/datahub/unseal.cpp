@@ -5,6 +5,7 @@
 #include "ypc/core/sealed_file.h"
 #include "ypc/core/version.h"
 #include "ypc/corecommon/blockfile/blockfile_v1.h"
+#include "ypc/corecommon/blockfile/blockfile_v2.h"
 #include "ypc/corecommon/crypto/gmssl.h"
 #include "ypc/corecommon/crypto/stdeth.h"
 #include "ypc/corecommon/nt_cols.h"
@@ -54,7 +55,7 @@ uint32_t unseal_file(const crypto_ptr_t &crypto_ptr,
   }
   // header: magic_number, version_number, block_number, item_number
   // item_number starts with 24 bytes offset
-  ypc::internal::blockfile_header_v1 header{};
+  ypc::internal::blockfile_header_v2 header{};
   // ifs.seekg(0, ifs.beg);
   ifs.seekg(-sizeof(header), ifs.end);
   ifs.read((char *)&header, sizeof(header));
@@ -96,11 +97,12 @@ uint32_t unseal_file(const crypto_ptr_t &crypto_ptr,
             boost::format("decrypt batch %1% failed!") % item_number));
       }
       std::cout << "decrypt item succ!" << std::endl;
+      std::cout << "batch: " << batch << std::endl;
       auto pkg = ypc::make_package<ntt::batch_data_pkg_t>::from_bytes(batch);
       auto batch_data = pkg.get<ntt::batch_data>();
-      // for (auto &l : batch_data) {
-      // std::cout << l << std::endl;
-      //}
+      for (auto &l : batch_data) {
+        std::cout << l << std::endl;
+      }
     }
   }
   return 0;
