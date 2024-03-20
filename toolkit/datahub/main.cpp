@@ -54,7 +54,7 @@ void write_batch(const crypto_ptr_t &crypto_ptr, simple_sealed_file &sf,
   ypc::bytes batch_str =
       ypc::make_bytes<ypc::bytes>::for_package<ntt::batch_data_pkg_t,
                                                ntt::batch_data>(batch);
-  std::cout << "batch data: " << batch_str << std::endl;
+  // std::cout << "batch data: " << batch_str << std::endl;
   uint32_t status = crypto_ptr->encrypt_message_with_prefix(
       public_key, batch_str, ypc::utc::crypto_prefix_arbitrary, s);
   if (status != 0u) {
@@ -102,7 +102,7 @@ uint32_t seal_file(const crypto_ptr_t &crypto_ptr, const std::string &plugin,
       batch_size = 0;
     }
 
-    std::cout << "item data: " << item_data << std::endl;
+    // std::cout << "item data: " << item_data << std::endl;
     ypc::bytes k = data_hash + item_data;
     crypto_ptr->hash_256(k, data_hash);
 

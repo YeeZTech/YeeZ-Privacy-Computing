@@ -25,6 +25,7 @@ public:
     auto pkg =
         ypc::make_package<typename ntt::offchain_result_package_t>::from_bytes(
             result_var::m_result);
+    m_encrypted_result_hash = pkg.get<ntt::encrypted_result_hash>();
     m_tmp_pkey = pkg.get<ntt::pkey>();
     auto skey = pkg.get<ntt::result_encrypt_key>();
     auto rs = pkg.get<ntt::encrypted_result>();
@@ -36,8 +37,9 @@ public:
       return status;
     }
 
-    stbox::bytes hash_m;
-    crypto::hash_256(m_encrypted_result_str, hash_m);
+    // replace with m_encrypted_result_hash
+    // stbox::bytes hash_m;
+    // crypto::hash_256(m_encrypted_result_str, hash_m);
 
     stbox::bytes pkey_a;
     status = crypto::generate_pkey_from_skey(m_private_key, pkey_a);
@@ -61,8 +63,8 @@ public:
       return status;
     }
 
-    auto msg = m_encrypted_tmp_skey + hash_m + m_encrypted_param + m_data_hash +
-               cost_gas_str + m_enclave_hash;
+    auto msg = m_encrypted_tmp_skey + m_encrypted_result_hash +
+               m_encrypted_param + m_data_hash + cost_gas_str + m_enclave_hash;
     status = crypto::sign_message(m_private_key, msg, m_result_signature_str);
     return static_cast<uint32_t>(status);
   }
@@ -70,6 +72,7 @@ public:
   nt<stbox::bytes>::offchain_result_package_t get_result_pkg() {
     typename ntt::offchain_result_package_t pkg;
     pkg.set<ntt::encrypted_result>(m_encrypted_result_str);
+    pkg.set<ntt::encrypted_result_hash>(m_encrypted_result_hash);
     pkg.set<ntt::data_hash>(data_hash_var::m_data_hash);
     pkg.set<ntt::result_signature>(m_result_signature_str);
     pkg.set<ntt::cost_signature>(m_cost_signature_str);
@@ -101,6 +104,7 @@ protected:
   stbox::bytes m_encrypted_tmp_skey;
   stbox::bytes m_tmp_pkey;
   stbox::bytes m_encrypted_result_str;
+  stbox::bytes m_encrypted_result_hash;
   stbox::bytes m_cost_signature_str;
   stbox::bytes m_result_signature_str;
 };

@@ -51,6 +51,7 @@ template <typename BytesType> struct nt {
   define_nt(encrypted_param, BytesType);
   define_nt(pkey4v, BytesType);
   define_nt(encrypted_result, BytesType);
+  define_nt(encrypted_result_hash, BytesType);
   define_nt(result_signature, BytesType);
   define_nt(cost_signature, BytesType);
   define_nt(result_encrypt_key, BytesType);
@@ -67,8 +68,8 @@ template <typename BytesType> struct nt {
       ff::util::ntobject<shu_info, data_hash, encrypted_result>;
 
   using offchain_result_package_t =
-      ::ff::net::ntpackage<0xf13e1f41, encrypted_result, data_hash,
-                           result_signature, cost_signature, pkey,
+      ::ff::net::ntpackage<0xf13e1f41, encrypted_result, encrypted_result_hash,
+                           data_hash, result_signature, cost_signature, pkey,
                            result_encrypt_key>;
 
   using keymgr_key_package_t =
