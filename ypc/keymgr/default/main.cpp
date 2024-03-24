@@ -114,7 +114,7 @@ boost::program_options::variables_map parse_command_line(int argc,
   return vm;
 }
 
-void create_key(const std::shared_ptr<keymgr_sgx_module> &ptr,
+void create_key(const std::shared_ptr<ypc::keymgr_sgx_module> &ptr,
                 const std::string &key_dir,
                 const boost::program_options::variables_map &vm) {
   ypc::bref public_key, private_key;
@@ -153,7 +153,7 @@ void create_key(const std::shared_ptr<keymgr_sgx_module> &ptr,
 }
 
 void list_keys(const std::string &key_dir,
-               const std::shared_ptr<keymgr_sgx_module> &ptr) {
+               const std::shared_ptr<ypc::keymgr_sgx_module> &ptr) {
   boost::filesystem::path key_path(key_dir);
   if (!ypc::is_dir_exists(key_dir)) {
     std::stringstream ss;
@@ -250,7 +250,7 @@ void remove_key(const boost::program_options::variables_map &vm,
 }
 
 void encrypt_message(const boost::program_options::variables_map &vm,
-                     const std::shared_ptr<keymgr_sgx_module> &ptr) {
+                     const std::shared_ptr<ypc::keymgr_sgx_module> &ptr) {
   std::string msg = vm["encrypt"].as<std::string>();
   if (vm.count("encrypt.public-key") == 0U) {
     std::stringstream ss;
@@ -276,7 +276,7 @@ void encrypt_message(const boost::program_options::variables_map &vm,
 }
 
 void decrypt_message(const boost::program_options::variables_map &vm,
-                     const std::shared_ptr<keymgr_sgx_module> &ptr) {
+                     const std::shared_ptr<ypc::keymgr_sgx_module> &ptr) {
   ypc::bytes b_cipher =
       ypc::hex_bytes(vm["decrypt"].as<std::string>()).as<ypc::bytes>();
   if (vm.count("decrypt.private-key") == 0U) {
@@ -295,7 +295,7 @@ void decrypt_message(const boost::program_options::variables_map &vm,
 }
 
 void sign_message(const boost::program_options::variables_map &vm,
-                  const std::shared_ptr<keymgr_sgx_module> &ptr) {
+                  const std::shared_ptr<ypc::keymgr_sgx_module> &ptr) {
   std::string msg = vm["sign"].as<std::string>();
   if (vm.count("sign.private-key") == 0U) {
     std::stringstream ss;
@@ -318,7 +318,7 @@ void sign_message(const boost::program_options::variables_map &vm,
 }
 
 void verify_signature(const boost::program_options::variables_map &vm,
-                      const std::shared_ptr<keymgr_sgx_module> &ptr) {
+                      const std::shared_ptr<ypc::keymgr_sgx_module> &ptr) {
   ypc::bytes b_sig =
       ypc::hex_bytes(vm["verify"].as<std::string>()).as<ypc::bytes>();
   std::stringstream ss;
@@ -399,9 +399,9 @@ int main(int argc, char *argv[]) {
   auto helper_ptr = std::make_shared<keymgr_helper>(crypto_type);
   std::string kmgr_enclave_path =
       find_keymgr_enclave_path(ypc::complete_path(argv[0]), helper_ptr);
-  std::shared_ptr<keymgr_sgx_module> ptr;
+  std::shared_ptr<ypc::keymgr_sgx_module> ptr;
   try {
-    ptr = std::make_shared<keymgr_sgx_module>(kmgr_enclave_path.c_str());
+    ptr = std::make_shared<ypc::keymgr_sgx_module>(kmgr_enclave_path.c_str());
   } catch (const std::exception &e) {
     std::cerr << "cannot open enclave file " << kmgr_enclave_path << ", "
               << e.what();

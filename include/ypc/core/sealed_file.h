@@ -18,12 +18,10 @@ public:
   using blockfile_t = blockfile<0x4788d13e7fefe21f, 2, 1024 * 1024, 256>;
 
   sealed_file_base(const std::string &file_path, bool read);
-
   virtual ~sealed_file_base();
+
   virtual void write_item(const bytes &data);
-
   virtual void reset_read() = 0;
-
   virtual int next_item(char *buf, size_t in_size, size_t &out_size) = 0;
 
 public:

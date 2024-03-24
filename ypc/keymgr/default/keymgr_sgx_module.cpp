@@ -4,6 +4,7 @@
 #include <glog/logging.h>
 #include <stdexcept>
 
+namespace ypc {
 keymgr_sgx_module::keymgr_sgx_module(const char *mod_path)
     : ::stbox::sgx_module(mod_path) {}
 
@@ -146,3 +147,4 @@ keymgr_sgx_module::create_report_for_pkey(const sgx_target_info_t *p_qe3_target,
   return ecall<uint32_t>(::create_report_for_pkey, p_qe3_target, pkey.data(),
                          pkey.size(), p_report);
 }
+} // namespace ypc

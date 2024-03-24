@@ -12,6 +12,7 @@
 
 using stx_status = stbox::stx_status;
 using bref = ypc::bref;
+namespace ypc {
 class keymgr_sgx_module : public stbox::sgx_module {
 public:
   explicit keymgr_sgx_module(const char *mod_path);
@@ -65,3 +66,4 @@ public:
                                   const stbox::bytes &pkey,
                                   sgx_report_t *p_report);
 };
+} // namespace ypc

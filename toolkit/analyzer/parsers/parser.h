@@ -18,7 +18,9 @@ public:
   virtual uint32_t next_data_batch(const uint8_t *data_hash, uint32_t hash_size,
                                    uint8_t **data, uint32_t *len);
 
-  inline std::shared_ptr<keymgr_sgx_module> keymgr() const { return m_keymgr; }
+  inline std::shared_ptr<ypc::keymgr_sgx_module> keymgr() const {
+    return m_keymgr;
+  }
 
   inline const std::string &get_result_str() const { return m_result_str; }
 
@@ -33,7 +35,7 @@ protected:
   ypc::utc::parser_type_t m_ptype{};
 
   std::shared_ptr<ypc::parser_sgx_module> m_parser;
-  std::shared_ptr<keymgr_sgx_module> m_keymgr;
+  std::shared_ptr<ypc::keymgr_sgx_module> m_keymgr;
   std::unordered_map<ypc::bytes, std::shared_ptr<ypc::simple_sealed_file>>
       m_data_sources;
   std::string m_result_str;

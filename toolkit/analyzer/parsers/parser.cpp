@@ -34,7 +34,8 @@ uint32_t parser::parse() {
 #ifdef DEBUG
   LOG(INFO) << "keymgr enclave path: " << keymgr_enclave_path;
 #endif
-  m_keymgr = std::make_shared<keymgr_sgx_module>(keymgr_enclave_path.c_str());
+  m_keymgr =
+      std::make_shared<ypc::keymgr_sgx_module>(keymgr_enclave_path.c_str());
 
   ypc::bytes policy = construct_access_control_policy();
   m_keymgr->set_access_control_policy(policy);

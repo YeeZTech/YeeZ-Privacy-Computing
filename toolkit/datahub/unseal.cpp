@@ -65,6 +65,8 @@ uint32_t unseal_file(const crypto_ptr_t &crypto_ptr,
   std::cout << "block number: " << header.block_number << std::endl;
   uint64_t item_number = header.item_number;
   std::cout << "item number: " << header.item_number << std::endl;
+  ypc::bytes hash(header.data_hash, 32);
+  std::cout << "data hash: " << hash << std::endl;
   // block info: 32bytes
   ypc::internal::blockfile_header_v1 bi{};
   // auto offset = sizeof(header);
@@ -97,12 +99,12 @@ uint32_t unseal_file(const crypto_ptr_t &crypto_ptr,
             boost::format("decrypt batch %1% failed!") % item_number));
       }
       std::cout << "decrypt item succ!" << std::endl;
-      std::cout << "batch: " << batch << std::endl;
+      // std::cout << "batch: " << batch << std::endl;
       auto pkg = ypc::make_package<ntt::batch_data_pkg_t>::from_bytes(batch);
       auto batch_data = pkg.get<ntt::batch_data>();
-      for (auto &l : batch_data) {
-        std::cout << l << std::endl;
-      }
+      // for (auto &l : batch_data) {
+      // std::cout << l << std::endl;
+      //}
     }
   }
   return 0;
