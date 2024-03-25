@@ -5,7 +5,6 @@ int decrypt_message(ypc::terminus::crypto_pack *crypto,
   ypc::bytes message = get_param_use_param(vm);
 
   ypc::bytes private_key = get_param_privatekey(vm);
-
   ypc::bytes data = crypto->ecc_decrypt(message, private_key,
                                         ypc::utc::crypto_prefix_arbitrary);
   if (data.empty()) {

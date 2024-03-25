@@ -53,12 +53,28 @@ get_param_use_param(const boost::program_options::variables_map &vm) {
   if (vm.count("param-format") != 0u) {
     format = vm["param-format"].as<std::string>();
   }
+  std::string param_content;
+  if (vm.count("use-param") != 0u) {
+    param_content = vm["use-param"].as<std::string>();
+  } else if (vm.count("use-param-file") != 0u) {
+    std::ifstream ifs(vm["use-param-file"].as<std::string>());
+    if (!ifs.is_open()) {
+      std::cerr << "file open failed!" << std::endl;
+      exit(-1);
+    }
+    ifs.seekg(0, ifs.end);
+    auto size = ifs.tellg();
+    param_content = std::string(size, '0');
+    ifs.seekg(0, ifs.beg);
+    ifs.read((char *)param_content.c_str(), size);
+    ifs.close();
+  }
   if (format == "hex") {
-    param = ypc::hex_bytes(vm["use-param"].as<std::string>()).as<ypc::bytes>();
+    param = ypc::hex_bytes(param_content).as<ypc::bytes>();
   } else if (format == "text") {
-    param = ypc::bytes(vm["use-param"].as<std::string>());
+    param = ypc::bytes(param_content);
   } else {
-    std::cout << "unknow format from '--param-format='" << format << std::endl;
+    std::cerr << "unknow format from '--param-format='" << format << std::endl;
     exit(-1);
   }
   return param;
