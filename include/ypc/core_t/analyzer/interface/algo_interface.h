@@ -13,10 +13,13 @@
 #include "ypc/corecommon/allowance.h"
 #include "ypc/stbox/ebyte.h"
 #include "ypc/stbox/stx_status.h"
+#include "ypc/core_t/analyzer/internal/data_streams/convert_sealed_data_stream.h"
+#include "ypc/corecommon/oram_types.h"
 
 namespace ypc {
 namespace internal {
 typedef nt<stbox::bytes> ntt;
+typedef oram::nt<stbox::bytes> oram_ntt;
 
 template <typename Crypto, typename DataSession, typename ParserT,
           typename Result, typename ModelT,
@@ -112,6 +115,68 @@ protected:
 #endif
     result_var::m_result = do_parse_interface_t::do_parse(
         decrypted_param.data(), decrypted_param.size());
+#ifdef DEBUG
+    LOG(INFO) << "end parse ";
+#endif
+    result_var::m_cost_gas = 0;
+    return stbox::stx_status::success;
+  }
+};
+
+template <typename Crypto, typename ParserT,
+          typename Result, typename ModelT,
+          template <typename> class DataAllowancePolicy,
+          template <typename> class ModelAllowancePolicy>
+class algo_interface<Crypto, convert_sealed_data_stream, ParserT, Result, ModelT,
+                     DataAllowancePolicy, ModelAllowancePolicy, true>
+    : virtual public parser_var<ParserT>,
+      virtual public request_key_var<true>,
+      virtual public result_var,
+      virtual public do_parse_interface<ParserT, ModelT>,
+      virtual public keymgr_interface<Crypto>,
+      virtual public encrypted_param_var,
+      virtual public check_allowance_interface<Crypto, ModelT, convert_sealed_data_stream,
+                                               DataAllowancePolicy,
+                                               ModelAllowancePolicy>,
+      virtual public forward_interface<Crypto, Result> {
+  typedef Crypto ecc;
+  typedef keymgr_interface<Crypto> keymgr_interface_t;
+  typedef request_key_var<true> request_key_var_t;
+  typedef do_parse_interface<ParserT, ModelT> do_parse_interface_t;
+  typedef check_allowance_interface<Crypto, ModelT, convert_sealed_data_stream,
+                                    DataAllowancePolicy, ModelAllowancePolicy>
+      allowance_checker_t;
+  typedef forward_interface<Crypto, Result> forward_interface_t;
+
+protected:
+  uint32_t parse_data_item_impl(const uint8_t *input_param, uint32_t len) {
+#ifdef DEBUG
+    LOG(INFO) << "start parse data";
+#endif
+    ntt::param_t param =
+        make_package<cast_obj_to_package<ntt::param_t>::type>::from_bytes(
+            input_param, len);
+
+#ifdef DEBUG
+    LOG(INFO) << "done unmarshal param, start request private key";
+#endif
+
+    request_key_var_t::m_pkey4v = param.get<ntt::pkey>();
+    stbox::bytes dian_pkey;
+    auto ret = keymgr_interface_t::request_private_key_for_public_key(
+        request_key_var_t::m_pkey4v, request_key_var_t::m_private_key,
+        dian_pkey);
+    if (ret) {
+      LOG(ERROR) << "request_private_key failed: " << stbox::status_string(ret);
+      return ret;
+    }
+
+#ifdef DEBUG
+    LOG(INFO) << "start do_parse";
+#endif
+    result_var::m_result = do_parse_interface_t::do_parse(
+        request_key_var_t::m_pkey4v.data(), request_key_var_t::m_pkey4v.size());
+    
 #ifdef DEBUG
     LOG(INFO) << "end parse ";
 #endif

@@ -1,4 +1,4 @@
-from classic_job_oram import classic_job
+from classic_job_oram import classic_job_oram
 import os
 import common
 import sys
@@ -16,24 +16,22 @@ if __name__ == "__main__":
     gen_personlist()
 
     crypto = "stdeth"
-    data = "person_list_oram"
+    data = "person_list"
     parser = os.path.join(common.lib_dir, "person_first_match_oram.signed.so")
     plugin = os.path.join(
         common.lib_dir, "libperson_reader_oram{}.so".format(common.debug_postfix()))
     
-    con_read_num = 10
+    con_read_num = 5
 
-    cj = classic_job(crypto, name, data, parser, plugin, con_read_num, {
+    cj = classic_job_oram(crypto, name, data, parser, plugin, con_read_num, {
         'request-use-js': True,
         'remove-files': True if len(sys.argv) < 2 else False,
     })
 
-    # TODO:需要提供拿什么字段作为索引字段
-    index_name = "ZJHM"
     id = 421003198607262336
     result = []
     for i in range(con_read_num):
-        ran_i = random.randint(0, 1 << 16 - 1)
+        ran_i = random.randint(0, 7970 - 1)
         id_str = str(id + ran_i)
         # id_str = str(id + i)
         input_param = "\"[{\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"" + id_str + "\\\"}]\""
@@ -43,7 +41,8 @@ if __name__ == "__main__":
         # print("input_param is : ", input_param)
         # print("result is : ", cj.result)
         matches = re.findall(r"\d+", cj.result[0])
-        if matches[0] != matches[1]:
+        print(str(id))
+        if matches[0] != str(id_str):
             print("not find target row!")
             break
     print(result)

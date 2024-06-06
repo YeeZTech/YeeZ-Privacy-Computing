@@ -5,7 +5,7 @@ import json
 from job_step import job_step
 
 
-class classic_job:
+class classic_job_oram:
     def __init__(self, crypto, name, data_url, parser_url, plugin_url, con_read_num, config={}):
         self.crypto = crypto
         self.name = name
@@ -46,8 +46,8 @@ class classic_job:
           self.all_outputs.append(key_file)
 
         # 2. call data provider to seal data
-        sealed_data_url = self.name + ".sealed"
-        sealed_output = self.name + ".sealed.output"
+        sealed_data_url = self.name + ".sealed.oram"
+        sealed_output = self.name + ".sealed.oram.output"
         summary = {}
         summary['data-url'] = self.data_url
         summary['plugin-path'] = self.plugin_url
@@ -57,7 +57,7 @@ class classic_job:
         if self.read_count == 0:
             r = job_step.oram_seal_data(self.crypto, self.data_url, self.plugin_url,
                             sealed_data_url, sealed_output, data_key_file)
-        # TODO:需要在sealed_data_url中获取root hash ，作为fid_oram_analyzer的参数之一
+        # 需要在sealed_data_url中获取root hash ，作为fid_oram_analyzer的参数之一
         root_hash_url = self.name + ".root_hash"
         r = job_step.get_root_hash(sealed_data_url, root_hash_url)
         root_hash = r[1]

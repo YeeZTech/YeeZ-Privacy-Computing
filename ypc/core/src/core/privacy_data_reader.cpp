@@ -119,8 +119,7 @@ std::string privacy_data_reader::get_item_index_field() {
   if (m_get_item_index_field == nullptr) {
     return std::string();
   }
-  // We use static buf here to optimize memory usage.
-  // TODO:max_field_size 
+  // We use static buf here to optimize memory usage. 
   char buf[::ypc::utc::max_item_size] = {0};
 
   int len = ::ypc::utc::max_item_size;

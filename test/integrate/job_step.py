@@ -180,7 +180,7 @@ class job_step:
             "input": parser_input_file,
             "output": parser_output_file
         }
-        r = common.fid_convert_analyzer(**param)
+        r = common.fid_analyzer(**param)
         print("done fid_analyzer with cmd: {}".format(r[0]))
         try:
             with open(parser_output_file) as of:

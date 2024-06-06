@@ -54,6 +54,12 @@ uint32_t download_merkle_hash_OCALL(const uint8_t *data_hash, uint32_t hash_size
                                     uint32_t leaf, uint8_t ** merkle_hash, uint32_t *len);
 uint32_t update_merkle_hash_OCALL(const uint8_t *data_hash, uint32_t hash_size,
                                   uint32_t leaf, uint8_t * merkle_hash, uint32_t len);
+
+uint32_t write_convert_data_structure(int64_t filepos, uint8_t * convert_data_bytes, uint32_t len);
+
+uint32_t download_convert_params_ocall(uint32_t *block_num, long int *oram_tree_filepos, 
+    uint64_t *item_num_each_batch, uint64_t *item_size);
+
 }
 
 
@@ -148,5 +154,15 @@ uint32_t download_merkle_hash_OCALL(const uint8_t *data_hash, uint32_t hash_size
 
 uint32_t update_merkle_hash_OCALL(const uint8_t *data_hash, uint32_t hash_size,
                                   uint32_t leaf, uint8_t * merkle_hash, uint32_t len) {
+  return 0;
+}
+
+
+uint32_t write_convert_data_structure(int64_t filepos, uint8_t * convert_data_bytes, uint32_t len) {
+  return 0;
+}
+
+uint32_t download_convert_params_ocall(uint32_t *block_num, long int *oram_tree_filepos, 
+    uint64_t *item_num_each_batch, uint64_t *item_size) {
   return 0;
 }

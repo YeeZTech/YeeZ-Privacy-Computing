@@ -8,7 +8,6 @@ namespace ypc {
 namespace internal {
   class oram_sealed_file_base {
 public:
-  // TODO:幻数
   using oramblockfile_t = ypc::oram::oramblockfile<1024 * 1024 * 256>;
 
   oram_sealed_file_base(const std::string &file_path);
@@ -18,6 +17,8 @@ public:
   virtual void reset() = 0;
 
   virtual void open_for_write() = 0;
+
+  virtual void open_for_read() = 0;
 
   virtual bool download_oram_params(uint32_t *block_num, uint32_t *bucket_num_N, 
     uint8_t *level_num_L, uint32_t *bucket_str_size, uint32_t *batch_str_size) = 0;
@@ -59,6 +60,7 @@ public:
   simple_oram_sealed_file(const std::string &file_path);
   virtual void reset();
   virtual void open_for_write();
+  virtual void open_for_read();
   virtual bool download_oram_params(uint32_t *block_num, uint32_t *bucket_num_N, 
     uint8_t *level_num_L, uint32_t *bucket_str_size, uint32_t *batch_str_size);
   virtual bool get_block_id(const bytes &item_index_field_hash, uint32_t *block_id);

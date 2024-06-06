@@ -13,6 +13,8 @@ void simple_oram_sealed_file::reset() { m_file.reset(); }
 
 void simple_oram_sealed_file::open_for_write() { m_file.open_for_write(); }
 
+void simple_oram_sealed_file::open_for_read() { m_file.open_for_read(); }
+
 bool simple_oram_sealed_file::download_oram_params(uint32_t *block_num, uint32_t *bucket_num_N, 
     uint8_t *level_num_L, uint32_t *bucket_str_size, uint32_t *batch_str_size) {
   

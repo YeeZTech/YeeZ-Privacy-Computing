@@ -17,7 +17,8 @@ row_t create(const std::string &id) {
   row_t t;
 
   t.set<RYXXBZ>("4028f c 856517466 f 0165174f 03680103");
-  t.set<XM>("张三+" + id);
+  t.set<XM>("张三");
+  // t.set<XM>("张三+" + id);
   t.set<FWXXBZ>("4028f c856517466 f 0165174f 03680105");
   t.set<ZJHM>(id);
   t.set<GJDM>("156");
@@ -74,7 +75,7 @@ void check_file(const std::string &path) {
 }
 
 int main(int argc, char *argv[]) {
-  write_to_file("person_list_oram", 1 << 16);
-  check_file("person_list_oram");
+  write_to_file("person_list", 7970);
+  check_file("person_list");
   return 0;
 }

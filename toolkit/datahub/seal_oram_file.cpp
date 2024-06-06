@@ -64,7 +64,7 @@ ypc::bytes random_string(size_t len) {
 }
 
 void push_dummy_block(std::vector<oram_ntt::block_t>& bucket_array, ypc::bytes &data_hash,
-                      uint8_t count, uint64_t item_num_each_batch, size_t item_size,
+                      uint8_t count, uint64_t item_num_each_batch, uint64_t item_size,
                       const crypto_ptr_t &crypto_ptr, const ypc::bytes &public_key) {
   for(uint8_t i = 0; i < count; ++i) {
     oram_ntt::block_t b_block;
@@ -103,7 +103,7 @@ uint32_t get_leaf_label(uint32_t bucket_index, uint8_t level_num_L) {
   // leftmost leaf node
   uint32_t leftmost_leaf_index = (1 << level_num_L) - 1;
   if(bucket_index >= leftmost_leaf_index) {
-      return bucket_index - leftmost_leaf_index + 1;
+    return bucket_index - leftmost_leaf_index + 1;
   }
 
   // randomly select a path to the leaf node
@@ -112,7 +112,7 @@ uint32_t get_leaf_label(uint32_t bucket_index, uint8_t level_num_L) {
   std::uniform_int_distribution<> dis(0, 1);
 
   if(dis(gen) == 0) {
-      return get_leaf_label(2 * bucket_index + 1, level_num_L);
+    return get_leaf_label(2 * bucket_index + 1, level_num_L);
   }
   return get_leaf_label(2 * bucket_index + 2, level_num_L);
 }
@@ -121,7 +121,7 @@ void push_real_block(std::vector<oram_ntt::block_t>& bucket_array, ypc::bytes &d
                       uint32_t& block_id_value, uint32_t bucket_index, 
                       std::vector<uint32_t> &position_map_array, uint8_t level_num_L,
                       std::vector<ypc::bytes> &batch, uint32_t &batch_str_size,
-                      uint64_t item_num_each_batch, size_t item_size, 
+                      uint64_t item_num_each_batch, uint64_t item_size, 
                       const crypto_ptr_t &crypto_ptr, const ypc::bytes &public_key) {
   oram_ntt::block_t b_block;
   uint32_t valid_item_num = batch.size();
@@ -184,7 +184,7 @@ uint32_t seal_oram_file(const crypto_ptr_t &crypto_ptr, const std::string &plugi
   boost::progress_display pd(item_number);
   uint counter = 0;
   size_t batch_size = 0;
-  size_t item_size = item_data.size();
+  uint64_t item_size = item_data.size();
 
   // the number of batch 
   uint64_t batch_num = 0;
@@ -214,13 +214,14 @@ uint32_t seal_oram_file(const crypto_ptr_t &crypto_ptr, const std::string &plugi
   if(item_num_each_batch != 0) {
     item_num_array.push_back(item_num_each_batch);
     item_num_each_batch = 0;
-      batch_size = 0;
-      ++batch_num;
+    batch_size = 0;
+    ++batch_num;
   }
-  
 
-  // build id map
-  LOG(INFO) << "build id_map";
+  LOG(INFO) << "batch_num: " << batch_num;  
+
+  // create id map
+  LOG(INFO) << "create id_map";
   reader.reset_for_read();
 
   counter = 0;
@@ -262,35 +263,20 @@ uint32_t seal_oram_file(const crypto_ptr_t &crypto_ptr, const std::string &plugi
   bytes id_map_bytes = make_bytes<bytes>::for_package(id_map_pkg);
   
 
-  // build header
-  LOG(INFO) << "build header";
+  // create header
+  LOG(INFO) << "create header";
   
-  struct header {
-    uint32_t block_num;
-    uint32_t bucket_num_N;
-    uint8_t level_num_L;
-    uint32_t bucket_str_size;
-    uint32_t batch_str_size;
-    long int id_map_filepos;
-    long int oram_tree_filepos;
-    long int position_map_filepos;
-    long int merkle_tree_filepos;
-    long int stash_filepos;
-    uint64_t stash_size;
-  };
-
-  // oram::header osf_header{};
-  // oram::oram_header_t osf_header;
-  header osf_header{};
+  ypc::oram::header osf_header{};
   osf_header.block_num = batch_num;
   uint32_t real_bucket_num = ceil(static_cast<double>(osf_header.block_num) / ypc::oram::BucketSizeZ);
   osf_header.level_num_L = ceil(log2(real_bucket_num + 1)) - 1; 
   osf_header.bucket_num_N = (1 << (osf_header.level_num_L + 1)) - 1;
   osf_header.id_map_filepos = sizeof(osf_header);
-
   osf_header.oram_tree_filepos = osf_header.id_map_filepos + id_map_bytes.size();
-  // write header, id map, invalid position map
-  LOG(INFO) << "write header, id map, invalid position map";
+
+
+  // write header, id map
+  LOG(INFO) << "write header and id map";
   std::fstream osf(oram_sealed_file_path, std::ios::out | std::ios::binary);
   if(!osf.is_open()) {
     throw std::runtime_error("Failed to create oram sealed file: " + oram_sealed_file_path);
@@ -301,12 +287,11 @@ uint32_t seal_oram_file(const crypto_ptr_t &crypto_ptr, const std::string &plugi
   osf.write((char *)id_map_bytes.data(), id_map_bytes.size());
 
 
-  std::vector<ypc::bytes> data_hash_array;
-
-
   // write ORAM tree
-  item_num_each_batch = item_num_array.front();
   LOG(INFO) << "write ORAM tree";
+  std::vector<ypc::bytes> data_hash_array;
+  item_num_each_batch = item_num_array.front();
+  
   // from which bucket to start writing real blocks
   uint8_t lastbucket_realblocknum = osf_header.block_num % oram::BucketSizeZ;
   uint32_t bucket_index = 0; // bucket index in ORAM tree
@@ -384,6 +369,10 @@ uint32_t seal_oram_file(const crypto_ptr_t &crypto_ptr, const std::string &plugi
       LOG(ERROR) << ss.str();
       std::cerr << ss.str();
       exit(1);
+    }
+
+    if(osf_header.bucket_str_size != encrypted_bucket_bytes.size()) {
+      osf_header.bucket_str_size = encrypted_bucket_bytes.size();
     }
 
     osf.write((char *)encrypted_bucket_bytes.data(), encrypted_bucket_bytes.size());
@@ -482,6 +471,20 @@ uint32_t seal_oram_file(const crypto_ptr_t &crypto_ptr, const std::string &plugi
   osf.write((char *)&osf_header, sizeof(osf_header));
 
   osf.close();
+
+  LOG(INFO) << "osf_header.block_num :" << osf_header.block_num;
+  LOG(INFO) << "osf_header.bucket_num_N :" << osf_header.bucket_num_N;
+  LOG(INFO) << "osf_header.level_num_L :" << osf_header.level_num_L;
+  LOG(INFO) << "osf_header.bucket_str_size :" << osf_header.bucket_str_size;
+  LOG(INFO) << "osf_header.batch_str_size :" << osf_header.batch_str_size;
+  LOG(INFO) << "osf_header.id_map_filepos :" << osf_header.id_map_filepos;
+  LOG(INFO) << "osf_header.oram_tree_filepos :" << osf_header.oram_tree_filepos;
+  LOG(INFO) << "osf_header.position_map_filepos :" << osf_header.position_map_filepos;
+  LOG(INFO) << "osf_header.merkle_tree_filepos :" << osf_header.merkle_tree_filepos;
+  LOG(INFO) << "osf_header.stash_filepos :" << osf_header.stash_filepos;
+  LOG(INFO) << "osf_header.stash_size :" << osf_header.stash_size;
+  LOG(INFO) << "osf_header.item_num_each_batch :" << osf_header.item_num_each_batch;
+  LOG(INFO) << "osf_header.item_size :" << osf_header.item_size;
 
 
   return 0;

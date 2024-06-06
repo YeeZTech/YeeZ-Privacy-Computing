@@ -1,13 +1,10 @@
 #pragma once
 #include "ypc/core/oram_sealed_file.h"
-
 #include "iodef.h"
 #include "ypc/common/parser_type.h"
 #include "ypc/core/sgx/parser_sgx_module.h"
 #include "ypc/keymgr/default/keymgr_sgx_module.h"
 
-// #define DECLARE_OCALL_FUNCTION(name, ...) \
-//   virtual uint32_t name##_OCALL(const uint8_t *data_hash, uint32_t hash_size, ##__VA_ARGS__);
 
 class oram_parser {
 public:

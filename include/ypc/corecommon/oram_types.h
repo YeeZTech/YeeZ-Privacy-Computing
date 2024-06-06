@@ -10,6 +10,24 @@ namespace oram {
 constexpr static uint8_t BucketSizeZ = 4;
 constexpr static uint32_t stash_size = 90;
 
+struct header {
+  uint32_t block_num;
+  uint32_t bucket_num_N;
+  uint8_t level_num_L;
+  uint32_t bucket_str_size;
+  uint32_t batch_str_size;
+  long int id_map_filepos;
+  long int oram_tree_filepos;
+  long int position_map_filepos;
+  long int merkle_tree_filepos;
+  long int stash_filepos;
+  uint64_t stash_size;
+
+  uint64_t item_num_each_batch;
+  uint64_t item_size;
+  
+};
+
 template <typename BytesType> struct nt {
   define_nt(item_index_field_hash, BytesType);
   define_nt(block_id, uint32_t);

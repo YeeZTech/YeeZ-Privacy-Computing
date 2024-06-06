@@ -15,6 +15,11 @@ public:
 
   virtual uint32_t parse();
 
+  virtual uint32_t write_convert_data_structure(int64_t filepos, const uint8_t * convert_data_bytes, uint32_t len);
+
+  virtual uint32_t download_convert_params_ocall(uint32_t *block_num, long int *oram_tree_filepos, 
+    uint64_t *item_num_each_batch, uint64_t *item_size);
+
   virtual uint32_t next_data_batch(const uint8_t *data_hash, uint32_t hash_size,
                                    uint8_t **data, uint32_t *len);
   virtual void free_data_batch(uint8_t *data);
@@ -38,4 +43,5 @@ protected:
   std::unordered_map<ypc::bytes, std::shared_ptr<ypc::simple_sealed_file>>
       m_data_sources;
   std::string m_result_str;
+  std::string m_oram_sealed_file_path;
 };

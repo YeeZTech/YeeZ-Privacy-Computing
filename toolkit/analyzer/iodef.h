@@ -2,9 +2,11 @@
 #include "ypc/core/byte.h"
 #include "ypc/core/ntjson.h"
 #include "ypc/corecommon/nt_cols.h"
+#include "ypc/corecommon/oram_types.h"
 #include "ypc/corecommon/package.h"
 
 using ntt = ypc::nt<ypc::bytes>;
+using oram_ntt = ypc::oram::nt<ypc::bytes>;
 
 define_nt(input_data_url, std::string);
 define_nt(input_data_hash, ypc::bytes);

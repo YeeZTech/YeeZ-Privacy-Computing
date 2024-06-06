@@ -18,6 +18,8 @@
 #include "ypc/core_t/analyzer/internal/data_streams/noinput_data_stream.h"
 #include "ypc/core_t/analyzer/internal/data_streams/raw_data_stream.h"
 #include "ypc/core_t/analyzer/internal/data_streams/sealed_data_stream.h"
+#include "ypc/core_t/analyzer/internal/data_streams/oram_sealed_data_stream.h"
+#include "ypc/core_t/analyzer/internal/data_streams/convert_sealed_data_stream.h"
 #include "ypc/core_t/analyzer/internal/keymgr_session.h"
 #include "ypc/core_t/analyzer/internal/results/local_result.h"
 #include "ypc/core_t/analyzer/internal/results/offchain_result.h"

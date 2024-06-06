@@ -179,10 +179,6 @@ private:
     return;
   }
 
-  void ostash_insert() {
-
-  }
-
   bool download_oram_params() {
     auto ret = stbox::ocall_cast<uint32_t>(download_oram_params_OCALL)
         (m_expect_root_hash.data(), m_expect_root_hash.size(), &m_header.block_num, 
@@ -747,18 +743,6 @@ private:
           LOG(ERROR) << "make_package got: " << e.what();
           return false;
         }
-
-        // TODO:虚块重新填充
-        // for(uint32_t j = 0; j < items.size(); ++j) {
-        //   std::string dummy_item_str;
-        //   generate_random_str(dummy_item_str, item_size);
-        //   bytes dummy_item(dummy_item_str);
-        //   items[i] = dummy_item;
-        //   stbox::bytes k_hash = data_hash + dummy_item;
-        //   crypto::hash_256(k_hash, data_hash);
-        // }
-
-        // 重新加密放入m_decrypted_path中
 
       }
 

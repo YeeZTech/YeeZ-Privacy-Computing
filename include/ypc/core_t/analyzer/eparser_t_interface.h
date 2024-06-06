@@ -58,6 +58,14 @@ sgx_status_t SGX_CDECL download_merkle_hash_OCALL(uint32_t *retval, const uint8_
 sgx_status_t SGX_CDECL update_merkle_hash_OCALL(uint32_t *retval, const uint8_t *data_hash, uint32_t hash_size,
                                                 uint32_t leaf, uint8_t * merkle_hash, uint32_t len);
 
+
+
+sgx_status_t SGX_CDECL write_convert_data_structure(uint32_t *retval, int64_t filepos, 
+                                            uint8_t * convert_data_bytes, uint32_t len);
+sgx_status_t SGX_CDECL download_convert_params_ocall(uint32_t *retval, uint32_t *block_num, long int *oram_tree_filepos, 
+    uint64_t *item_num_each_batch, uint64_t *item_size);
+
+
 sgx_status_t SGX_CDECL km_session_request_oram_ocall(uint32_t *retval,
                                                 sgx_dh_msg1_t *dh_msg1,
                                                 uint32_t *session_id);

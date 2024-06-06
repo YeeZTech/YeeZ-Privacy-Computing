@@ -38,6 +38,7 @@ create_signed_so() {
                            ["person_first_match"]="example/personlist/first_match/enclave/enclave.config.xml"
                            ["person_first_match_multi"]="example/multi_personlist/first_match/enclave/enclave.config.xml"
                            ["person_first_match_multi_offchain"]="example/multi_personlist/first_match/enclave_for_offchain/enclave.config.xml"
+                           ["convert_sealed_file"]="example/convert/enclave/enclave.config.xml"
                           )
 
   for filename in ${!enclave_libs[@]}; do

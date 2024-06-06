@@ -179,6 +179,8 @@ uint32_t parser::feed_datasource() {
     m_data_sources.insert(std::make_pair(data_hash, ssf));
     ssf->reset_read();
 
+    m_oram_sealed_file_path = url + ".oram";
+
     auto shu = item.get<shu_info>();
     auto shu_skey = shu.get<ntt::encrypted_shu_skey>();
     auto shu_forward_sig = shu.get<ntt::shu_forward_signature>();
@@ -264,4 +266,66 @@ uint32_t parser::next_data_batch(const uint8_t *data_hash, uint32_t hash_size,
 }
 
 void parser::free_data_batch(uint8_t *data) { delete[] data; }
+
+
+uint32_t parser::write_convert_data_structure(int64_t filepos, const uint8_t * convert_data_bytes, uint32_t len) {
+
+  std::fstream m_oram_sealed_file = std::fstream(m_oram_sealed_file_path, std::ios::in | std::ios::out | std::ios::binary);
+  if(!m_oram_sealed_file.is_open()) {
+    LOG(ERROR) << "Failed to create oram sealed file: " + m_oram_sealed_file_path;
+    return stbox::stx_status::convert_parser_error;
+  }
+
+  try {
+    m_oram_sealed_file.seekp(filepos, m_oram_sealed_file.beg);
+    m_oram_sealed_file.write((char *)convert_data_bytes, len);    
+  } catch (const std::exception &e) {
+    LOG(ERROR) << "write_convert_data_structure got error: " << e.what();
+    return stbox::stx_status::convert_parser_error;
+  }
+
+  m_oram_sealed_file.close();
+
+  return stbox::stx_status::success;
+}
+
+
+
+
+uint32_t parser::download_convert_params_ocall(uint32_t *block_num, long int *oram_tree_filepos, 
+    uint64_t *item_num_each_batch, uint64_t *item_size) {
+
+  std::fstream m_oram_sealed_file = std::fstream(m_oram_sealed_file_path, std::ios::in | std::ios::binary);
+  if(!m_oram_sealed_file.is_open()) {
+    LOG(ERROR) << "Failed to create oram sealed file: " + m_oram_sealed_file_path;
+    return stbox::stx_status::convert_parser_error;
+  }  
+
+  ypc::oram::header osf_header{};
+  
+  try {
+    m_oram_sealed_file.seekg(0, m_oram_sealed_file.beg);
+    m_oram_sealed_file.read((char *)&osf_header, sizeof(osf_header));
+
+    *block_num = osf_header.block_num;
+    *oram_tree_filepos = osf_header.oram_tree_filepos;
+    *item_num_each_batch = osf_header.item_num_each_batch;
+    *item_size = osf_header.item_size;
+
+
+    LOG(INFO) << "osf_header.block_num = " << osf_header.block_num;
+    LOG(INFO) << "osf_header.oram_tree_filepos = " << osf_header.oram_tree_filepos;
+    LOG(INFO) << "osf_header.item_num_each_batch = " << osf_header.item_num_each_batch;
+    LOG(INFO) << "osf_header.item_size = " << osf_header.item_size;
+
+
+  } catch (const std::exception &e) {
+    LOG(ERROR) << "download_convert_params_ocall got error: " << e.what();
+    return stbox::stx_status::convert_parser_error;
+  }
+
+  m_oram_sealed_file.close();
+
+  return stbox::stx_status::success;
+}
 

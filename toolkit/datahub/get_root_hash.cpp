@@ -66,9 +66,9 @@ int main(int argc, char *argv[]) {
   std::string output = vm["output"].as<std::string>();
 
   auto sosf = std::make_shared<ypc::simple_oram_sealed_file>(data_file);
-  // TODO:open_for_read
+
   sosf->open_for_write();
-  // sosf->reset();
+  
   ypc::memref me_hash;
   bool ret = sosf->read_root_hash(me_hash);
   ypc::bytes root_hash(me_hash.data(), me_hash.size());

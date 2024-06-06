@@ -4,7 +4,6 @@
 using stx_status = stbox::stx_status;
 std::shared_ptr<parser> g_parser;
 std::shared_ptr<oram_parser> o_parser;
-std::shared_ptr<convert_parser> c_parser;
 
 extern "C" {
 uint32_t km_session_request_ocall(sgx_dh_msg1_t *dh_msg1, uint32_t *session_id);
@@ -58,22 +57,7 @@ uint32_t update_merkle_hash_OCALL(const uint8_t *data_hash, uint32_t hash_size,
 
 
 
-uint32_t km_session_request_convert_ocall(sgx_dh_msg1_t *dh_msg1, uint32_t *session_id);
-uint32_t km_exchange_report_convert_ocall(sgx_dh_msg2_t *dh_msg2,
-                                  sgx_dh_msg3_t *dh_msg3, uint32_t session_id);
-uint32_t km_send_request_convert_ocall(uint32_t session_id,
-                               secure_message_t *req_message,
-                               size_t req_message_size, size_t max_payload_size,
-                               secure_message_t *resp_message,
-                               size_t resp_message_size);
-uint32_t km_end_session_convert_ocall(uint32_t session_id);
-
-
-uint32_t next_data_batch_convert(const uint8_t *data_hash, uint32_t hash_size,
-                         uint8_t **data, uint32_t *len);
-void free_data_batch_convert(uint8_t *data);
-
-uint32_t write_convert_data_structure(int64_t filepos, uint8_t * id_map_bytes, uint32_t len);
+uint32_t write_convert_data_structure(int64_t filepos, uint8_t * convert_data_bytes, uint32_t len);
 uint32_t download_convert_params_ocall(uint32_t *block_num, long int *oram_tree_filepos, 
     uint64_t *item_num_each_batch, uint64_t *item_size);
 
@@ -184,39 +168,11 @@ uint32_t update_merkle_hash_OCALL(const uint8_t *data_hash, uint32_t hash_size,
 
 
 
-uint32_t km_session_request_convert_ocall(sgx_dh_msg1_t *dh_msg1,
-                                  uint32_t *session_id) {
-  return c_parser->keymgr()->session_request(dh_msg1, session_id);
-}
-uint32_t km_exchange_report_convert_ocall(sgx_dh_msg2_t *dh_msg2,
-                                  sgx_dh_msg3_t *dh_msg3, uint32_t session_id) {
-  return c_parser->keymgr()->exchange_report(dh_msg2, dh_msg3, session_id);
-}
-uint32_t km_send_request_convert_ocall(uint32_t session_id,
-                               secure_message_t *req_message,
-                               size_t req_message_size, size_t max_payload_size,
-                               secure_message_t *resp_message,
-                               size_t resp_message_size) {
-  return c_parser->keymgr()->generate_response(req_message, req_message_size,
-                                               max_payload_size, resp_message,
-                                               resp_message_size, session_id);
-}
-uint32_t km_end_session_convert_ocall(uint32_t session_id) {
-  return c_parser->keymgr()->end_session(session_id);
-}
-
-
-uint32_t next_data_batch_convert(const uint8_t *data_hash, uint32_t hash_size,
-                         uint8_t **data, uint32_t *len) {
-  return c_parser->next_data_batch_convert(data_hash, hash_size, data, len);
-}
-void free_data_batch_convert(uint8_t *data) { c_parser->free_data_batch_convert(data); }
-
-uint32_t write_convert_data_structure(int64_t filepos, uint8_t * id_map_bytes, uint32_t len) {
-  return c_parser->write_convert_data_structure(filepos, id_map_bytes, len);
+uint32_t write_convert_data_structure(int64_t filepos, uint8_t * convert_data_bytes, uint32_t len) {
+  return g_parser->write_convert_data_structure(filepos, convert_data_bytes, len);
 }
 
 uint32_t download_convert_params_ocall(uint32_t *block_num, long int *oram_tree_filepos, 
     uint64_t *item_num_each_batch, uint64_t *item_size) {
-  return c_parser->download_convert_params_ocall(block_num, oram_tree_filepos, item_num_each_batch, item_size);
+  return g_parser->download_convert_params_ocall(block_num, oram_tree_filepos, item_num_each_batch, item_size);
 }
