@@ -3,8 +3,10 @@ add_subdirectory(gmssl)
 
 set(edl_path ${PROJECT_SOURCE_DIR}/include/ypc/edl/:${PROJECT_SOURCE_DIR}/include/ypc/stbox)
 
+set(keymgr_srcs keymgr_sgx_module.cpp
+  keymgr_bridge.cpp)
 add_untrusted_library(keymgr_module SHARED
-  SRCS "keymgr_sgx_module.cpp"
+  SRCS ${keymgr_srcs}
   EDL ${PROJECT_SOURCE_DIR}/include/ypc/keymgr/default/enclave/ekeymgr.edl
   EDL_SEARCH_PATHS ${edl_path})
 target_include_directories(keymgr_module INTERFACE
