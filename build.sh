@@ -85,7 +85,7 @@ compile_project() {
 
   cmake -DCMAKE_INSTALL_PREFIX=$HOME -DCMAKE_BUILD_TYPE=$build_type -DCMAKE_DEBUG_POSTFIX=$suffix -B $build_path
   cmake --build $build_path -j
-  #cmake --install $build_path
+  cmake --install $build_path
 
   if [[ "$build_type" == "Release" ]]; then
     hash_dir=${ypc_home}/hash_hex

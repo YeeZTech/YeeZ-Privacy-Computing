@@ -1,4 +1,4 @@
-Install Fidelius
+Compile and Install Fidelius
 ------------------------
 ### Dependency
 - Make sure you have the following operating system:
@@ -6,7 +6,7 @@ Install Fidelius
 
 - Ensure that SGX is enabled in BIOS and CPU. Follow the [README](https://github.com/ayeks/SGX-hardware/blob/master/README.md) in [SGX-hardware](https://github.com/ayeks/SGX-hardware) or use the following method to confirm directly.
 ```
- $ git clone https://github.com/ayeks/SGX-hardware.git
+ $ git clone --depth 1 --branch ayeks-patch-1 https://github.com/ayeks/SGX-hardware.git
  $ cd SGX-hardware
  $ gcc test-sgx.c -o test-sgx
  $ ./test-sgx
@@ -34,27 +34,12 @@ $ sudo apt install libssl-dev libcurl4-openssl-dev protobuf-compiler libprotobuf
 $ sudo apt install mysql-server libgoogle-glog-dev libboost-all-dev libmysqlcppconn-dev
 ```
 
-### Install Fidelius
-- Download the public key of YeeZTech's APT repository:
+### Compile and Install Fidelius
 ```
-$ wget -O yeez-pkey.pem https://repo.yeez.tech/public-key-yeez.txt
+$ git clone --depth 1 https://github.com/YeeZTech/YeeZ-Privacy-Computing.git
+$ cd YeeZ-Privacy-Computing && ./build.sh compile-project $COMPILE_MODE
 ```
-
-- Add the downloaded repository public key to the system:
-```
-$ sudo apt-key add yeez-pkey.pem
-```
-
-- Add the APT repository to the system software sources:
-```
-$ echo -e "deb https://repo.yeez.tech/ release main" | sudo tee -a /etc/apt/sources.list
-```
-
-- Update the system software sources and install the Fidelius component:
-```
-$ sudo apt update
-$ sudo apt install ypc fflib
-```
+**Note**: Set `$COMPILE_MODE` to "debug" for "sgx available" is 0, or set `$COMPILE_MODE` to "prerelease" for "sgx available" is 1.
 
 Run Fidelius
 ------------------------
@@ -62,16 +47,16 @@ Run Fidelius
 The K-Means clustering based on the Iris dataset is a very classic learning example in machine learning.
 - Download example code:
 ```
-$ git clone --depth 1 --branch v0.5.1 https://github.com/YeeZTech/YPC-algo-example.git
+$ git clone --depth 1 https://github.com/YeeZTech/YPC-algo-example.git
 ```
 
 - Compile example code:
 ```
 $ cd YPC-algo-example && mkdir -p build && cd build
-$ cmake -DCMAKE_PREFIX_PATH=$YPC_INSTALL_DIR/lib/cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
+$ cmake -DCMAKE_PREFIX_PATH=$YPC_INSTALL_DIR/lib/cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE ..
 $ make -j8
 ```
-**Note**:`$YPC_INSTALL_DIR` is the installation path, which by default is `/opt/ypc`.
+**Note**: `$YPC_INSTALL_DIR` is the installation path, which by default is `$HOME`. Set `$BUILD_TYPE` to "Debug" for debug mode, or set `$BUILD_TYPE` to "RelWithDebInfo" for prerelease/release mode.
 
 - Run example code:
 ```
