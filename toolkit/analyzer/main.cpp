@@ -1,10 +1,10 @@
 #include "iodef.h"
-#include "ypc/core/version.h"
-//#include "parser.h"
+#include "parser.h"
 #include "sgx_bridge.h"
 #include "ypc/core/configuration.h"
 #include "ypc/core/ntobject_file.h"
 #include "ypc/core/sealed_file.h"
+#include "ypc/core/version.h"
 #include "ypc/stbox/stx_status.h"
 #include <boost/program_options.hpp>
 #include <exception>
@@ -53,10 +53,6 @@ boost::program_options::variables_map parse_command_line(int argc,
 }
 
 int main(int argc, char *argv[]) {
-
-  // google::InitGoogleLogging(argv[0]);
-  // google::InstallFailureSignalHandler();
-
   boost::program_options::variables_map vm;
   try {
     vm = parse_command_line(argc, argv);

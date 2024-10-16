@@ -1,12 +1,9 @@
+#include "iris_t.h"
+#include "user_type.h"
 #include "ypc/core_t/analyzer/data_source.h"
 #include "ypc/stbox/ebyte.h"
 #include "ypc/stbox/stx_common.h"
-#ifdef YPC_SGX
 #include "ypc/stbox/tsgx/log.h"
-#else
-#include <glog/logging.h>
-#endif
-#include "user_type.h"
 
 #include "ypc/corecommon/to_type.h"
 #include <hpda/extractor/raw_data.h>
@@ -135,6 +132,16 @@ public:
         mo(km.means_stream());
 
     mo.get_engine()->run();
+
+    uint8_t *data;
+    uint32_t len;
+    auto ret =
+        stbox::ocall_cast<uint32_t>(ocall_get_frame)(nullptr, 0, &data, &len);
+    if (ret) {
+      LOG(ERROR) << "ocall_get_frame ret: " << ret;
+    }
+    LOG(INFO) << "ocall_get_frame succ";
+
     stbox::bytes result;
     int i = 0;
     for (auto it : mo.values()) {

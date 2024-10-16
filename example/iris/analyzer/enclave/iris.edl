@@ -1,0 +1,9 @@
+enclave {
+  from "eparser.edl" import *;
+
+  untrusted {
+    uint32_t ocall_get_frame(
+        [ in, size = ifs_size ] const char *ifs,
+        uint32_t ifs_size, [out] uint8_t **data, [out] uint32_t *len);
+  };
+};
