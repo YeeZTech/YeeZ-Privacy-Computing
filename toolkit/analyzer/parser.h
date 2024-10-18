@@ -1,12 +1,14 @@
 #pragma once
 #include "iodef.h"
 #include "modules/iris_parser_module.h"
+#include "modules/person_parser_module.h"
 #include "ypc/common/access_policy.h"
 #include "ypc/common/parser_type.h"
 #include "ypc/core/sealed_file.h"
 #include "ypc/core/status.h"
 #include "ypc/keymgr/default/keymgr_bridge.h"
 #include "ypc/keymgr/default/keymgr_sgx_module.h"
+#include "ypc/core/sgx/callback_bridge.h"
 #include <memory>
 #include <unordered_map>
 
@@ -26,8 +28,17 @@ public:
     LOG(INFO) << "parser enclave path: " << parser_enclave_path;
 #endif
     auto keymgr_enclave_path = m_param.get<keymgr_path>();
-    m_parser =
-        std::make_shared<iris_parser_module>(parser_enclave_path.c_str());
+    if(0) {
+      LOG(INFO) << "creat iris_parser_module";
+      m_parser =
+        std::make_shared<iris_parser_module>(parser_enclave_path.c_str());  
+    } else {
+      LOG(INFO) << "creat person_parser_module";
+      m_parser =
+        std::make_shared<person_parser_module>(parser_enclave_path.c_str());
+    }
+    
+    
 #ifdef DEBUG
     LOG(INFO) << "keymgr enclave path: " << keymgr_enclave_path;
 #endif
@@ -35,6 +46,10 @@ public:
         std::make_shared<ypc::keymgr_sgx_module>(keymgr_enclave_path.c_str());
     m_keymgr_parser = std::make_shared<ypc::keymgr_parser>(keymgr_module);
     ypc::init_sgx_keymgr(m_keymgr_parser->keymgr());
+    ypc::init_sgx_callback(std::bind(&parser::next_data_batch, this,
+                                    std::placeholders::_1,
+                                    std::placeholders::_2, std::placeholders::_3,
+                                    std::placeholders::_4));
 
     ypc::bytes policy = construct_access_control_policy();
     m_keymgr_parser->keymgr()->set_access_control_policy(policy);

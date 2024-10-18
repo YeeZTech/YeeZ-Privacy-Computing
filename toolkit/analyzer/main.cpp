@@ -1,6 +1,5 @@
 #include "iodef.h"
 #include "parser.h"
-#include "sgx_bridge.h"
 #include "ypc/core/configuration.h"
 #include "ypc/core/ntobject_file.h"
 #include "ypc/core/sealed_file.h"
@@ -16,7 +15,7 @@
 
 using stx_status = stbox::stx_status;
 using namespace ypc;
-
+std::shared_ptr<parser> g_parser;
 boost::program_options::variables_map parse_command_line(int argc,
                                                          char *argv[]) {
   namespace bp = boost::program_options;

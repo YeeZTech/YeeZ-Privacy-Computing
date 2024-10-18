@@ -1,3 +1,4 @@
+#include "person_t.h"
 #include "ypc/corecommon/package.h"
 #include "ypc/stbox/ebyte.h"
 #include "ypc/stbox/stx_common.h"
@@ -44,6 +45,15 @@ public:
     hpda::output::internal::memory_output_impl<user_item_t> mo(&match);
     mo.get_engine()->run();
     LOG(INFO) << "do parse done";
+
+    uint8_t *data;
+    uint32_t len;
+    auto ret =
+        stbox::ocall_cast<uint32_t>(ocall_get_page)(nullptr, 0, &data, &len);
+    if (ret) {
+      LOG(ERROR) << "ocall_get_page ret: " << ret;
+    }
+    LOG(INFO) << "ocall_get_page succ";
 
     bytes result;
     for (auto it : mo.values()) {

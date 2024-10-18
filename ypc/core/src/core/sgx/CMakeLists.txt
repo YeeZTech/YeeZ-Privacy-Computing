@@ -1,7 +1,9 @@
 set(srcs parser_sgx_module.cpp
+  callback_bridge.cpp
   ./util/cxxfile_bridge.cpp
   ./util/kv_bridge.cpp
-  ./util/util.cpp)
+  ./util/util.cpp
+)
 add_untrusted_library(core_parser_module SHARED
   SRCS ${srcs}
   EDL ${PROJECT_SOURCE_DIR}/include/ypc/edl/eparser.edl

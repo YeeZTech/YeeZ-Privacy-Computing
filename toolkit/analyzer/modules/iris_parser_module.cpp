@@ -14,5 +14,6 @@ uint32_t ocall_get_frame(const char *ifs, uint32_t ifs_size, uint8_t **data,
 
 uint32_t ocall_get_frame(const char *ifs, uint32_t ifs_size, uint8_t **data,
                          uint32_t *len) {
+  LOG(INFO) << "ocall_get_frame";    
   return 0;
 }
