@@ -11,7 +11,7 @@ def gen_personlist(**kwargs):
 
 
 if __name__ == "__main__":
-    name = "findperson"
+    name = "personlist"
     gen_personlist()
 
     crypto = "stdeth"

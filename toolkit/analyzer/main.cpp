@@ -26,6 +26,7 @@ boost::program_options::variables_map parse_command_line(int argc,
   all.add_options()
     ("help", "help message")
     ("version", "show version")
+    ("lib-module", bp::value<std::string>(), "module parser path")
     ("input", bp::value<std::string>(), "input parameters JSON file")
     ("output", bp::value<std::string>(), "output result JSON file")
     ("gen-example-input", bp::value<std::string>(), "generate example input parameters JSON file");
@@ -60,11 +61,14 @@ int main(int argc, char *argv[]) {
     std::cerr << "invalid cmd line parameters!" << std::endl;
     return -1;
   }
+  if (vm.count("lib-module") == 0u) {
+    std::cerr << "lib-module not specified" << std::endl;
+    return -1;
+  }
   if (vm.count("input") == 0u) {
     std::cerr << "input not specified" << std::endl;
     return -1;
   }
-
   if (vm.count("output") == 0u) {
     std::cerr << "output not specified" << std::endl;
     return -1;
@@ -72,10 +76,10 @@ int main(int argc, char *argv[]) {
 
   input_param_t input_param =
       ypc::ntjson::from_json_file<input_param_t>(vm["input"].as<std::string>());
-
   g_parser = std::make_shared<parser>(input_param);
   std::cout << "start to parse" << std::endl;
-  g_parser->parse();
+  std::string lib_module = vm["lib-module"].as<std::string>();
+  g_parser->parse(lib_module);
 
   std::string output_fp = vm["output"].as<std::string>();
   try {

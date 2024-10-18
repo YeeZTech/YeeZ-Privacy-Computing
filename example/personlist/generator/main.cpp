@@ -55,7 +55,6 @@ void write_to_file(const std::string &path, int num) {
   uint64_t id = 421003198607262336;
   file_t f;
   f.open_for_write(path.c_str());
-
   for (int i = 0; i < num; i++) {
     row_t t = create(std::to_string(id + i));
     typename ypc::cast_obj_to_package<row_t>::type pt = t;
@@ -66,7 +65,6 @@ void write_to_file(const std::string &path, int num) {
 }
 
 void check_file(const std::string &path) {
-
   file_t f;
   f.open_for_read(path.c_str());
   std::unique_ptr<char[]> r(new char[file_t::BlockSizeLimit]);
@@ -76,15 +74,14 @@ void check_file(const std::string &path) {
   while (f.next_item(r.get(), file_t::BlockSizeLimit, s) == file_t::succ) {
     typedef typename ypc::cast_obj_to_package<row_t>::type pkg_t;
     auto pkg = ypc::make_package<pkg_t>::from_bytes(ypc::bytes(r.get(), s));
-
-    // std::cout << t.get<ZJHM>() << std::endl;
+    std::cout << i << ',' << pkg.get<::ZJHM>() << std::endl;
     i++;
   }
   std::cout << "checked " << i << " items" << std::endl;
 }
 
 int main(int argc, char *argv[]) {
-  write_to_file("person_list", 1024);
-  check_file("person_list");
+  write_to_file("person_list", 10);
+  // check_file("person_list");
   return 0;
 }

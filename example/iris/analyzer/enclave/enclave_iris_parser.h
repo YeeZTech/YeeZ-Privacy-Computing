@@ -133,14 +133,16 @@ public:
 
     mo.get_engine()->run();
 
+    std::string ifs = "this is iris";
     uint8_t *data;
     uint32_t len;
-    auto ret =
-        stbox::ocall_cast<uint32_t>(ocall_get_frame)(nullptr, 0, &data, &len);
+    LOG(INFO) << "ocall_get_iris";
+    auto ret = stbox::ocall_cast<uint32_t>(ocall_get_iris)(
+        ifs.c_str(), ifs.size(), &data, &len);
     if (ret) {
-      LOG(ERROR) << "ocall_get_frame ret: " << ret;
+      LOG(ERROR) << "ocall_get_iris ret: " << ret;
     }
-    LOG(INFO) << "ocall_get_frame succ";
+    LOG(INFO) << "ocall_get_iris succ";
 
     stbox::bytes result;
     int i = 0;

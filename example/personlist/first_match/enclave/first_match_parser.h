@@ -1,21 +1,18 @@
+#include "personlist_t.h"
+#include "user_type.h"
+#include "ypc/core_t/analyzer/data_source.h"
+#include "ypc/corecommon/data_source.h"
 #include "ypc/corecommon/package.h"
+#include "ypc/corecommon/to_type.h"
 #include "ypc/stbox/ebyte.h"
 #include "ypc/stbox/stx_common.h"
-#ifdef EXAMPLE_FM_NORMAL
-#include <glog/logging.h>
-typedef ypc::bytes bytes;
-#else
-#include "ypc/core_t/analyzer/data_source.h"
 #include "ypc/stbox/tsgx/log.h"
-typedef stbox::bytes bytes;
-#endif
-#include "user_type.h"
-#include "ypc/corecommon/data_source.h"
-#include "ypc/corecommon/to_type.h"
 #include <hpda/extractor/raw_data.h>
 #include <hpda/output/memory_output.h>
 #include <hpda/processor/query/filter.h>
 #include <string.h>
+
+typedef stbox::bytes bytes;
 
 define_nt(input_buf, std::string);
 typedef ff::net::ntpackage<0, input_buf> input_buf_t;
@@ -44,6 +41,16 @@ public:
     hpda::output::internal::memory_output_impl<user_item_t> mo(&match);
     mo.get_engine()->run();
     LOG(INFO) << "do parse done";
+
+    uint8_t *data;
+    uint32_t len;
+    LOG(INFO) << "ocall_get_personlist";
+    auto ret = stbox::ocall_cast<uint32_t>(ocall_get_personlist)(nullptr, 0,
+                                                                 &data, &len);
+    if (ret) {
+      LOG(ERROR) << "ocall_get_personlist ret: " << ret;
+    }
+    LOG(INFO) << "ocall_get_personlist succ";
 
     bytes result;
     for (auto it : mo.values()) {

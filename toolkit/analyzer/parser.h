@@ -1,14 +1,38 @@
 #pragma once
 #include "iodef.h"
-#include "modules/iris_parser_module.h"
+#include "modules/module_parser_interface.h"
 #include "ypc/common/access_policy.h"
 #include "ypc/common/parser_type.h"
 #include "ypc/core/sealed_file.h"
 #include "ypc/core/status.h"
 #include "ypc/keymgr/default/keymgr_bridge.h"
 #include "ypc/keymgr/default/keymgr_sgx_module.h"
+#include <dlfcn.h>
 #include <memory>
 #include <unordered_map>
+
+struct parser_module_loader {
+  typedef parser_module_interface *(*create_instance_t)(const char *);
+
+  static parser_module_interface *create_module_instance(const char *lib_module,
+                                                         const char *mod_path) {
+    void *handle = dlopen(lib_module, RTLD_LAZY);
+    if (!handle) {
+      std::cerr << "Cannot open library: " << dlerror() << '\n';
+      return nullptr;
+    }
+    create_instance_t func_create_instance =
+        (create_instance_t)dlsym(handle, "create_instance");
+    const char *dlsym_error = dlerror();
+    if (dlsym_error) {
+      std::cerr << "Cannot load symbol 'create_instance': " << dlsym_error
+                << '\n';
+      dlclose(handle);
+      return nullptr;
+    }
+    return func_create_instance(mod_path);
+  }
+};
 
 class parser {
 public:
@@ -17,17 +41,17 @@ public:
     m_mem_buf.reset(new char[s]);
     m_mem_buf_size = s;
   }
-
   virtual ~parser() {}
 
-  virtual uint32_t parse() {
+  virtual uint32_t parse(const std::string &lib_module) {
     auto parser_enclave_path = m_param.get<parser_path>();
 #ifdef DEBUG
     LOG(INFO) << "parser enclave path: " << parser_enclave_path;
 #endif
     auto keymgr_enclave_path = m_param.get<keymgr_path>();
-    m_parser =
-        std::make_shared<iris_parser_module>(parser_enclave_path.c_str());
+    LOG(INFO) << "lib module: " << lib_module;
+    LOG(INFO) << "parser enclave path: " << parser_enclave_path;
+    set_module(lib_module.c_str(), parser_enclave_path.c_str());
 #ifdef DEBUG
     LOG(INFO) << "keymgr enclave path: " << keymgr_enclave_path;
 #endif
@@ -286,12 +310,16 @@ protected:
     alp.set<ntt::access_list>(std::vector<ntt::access_item_t>());
     return ypc::make_bytes<ypc::bytes>::for_package(alp);
   }
+  void set_module(const char *lib_module, const char *mod_path) {
+    m_parser =
+        parser_module_loader::create_module_instance(lib_module, mod_path);
+  };
 
 protected:
   input_param_t m_param;
   ypc::utc::parser_type_t m_ptype{};
 
-  std::shared_ptr<ypc::parser_sgx_module> m_parser;
+  parser_module_interface *m_parser;
   std::shared_ptr<ypc::keymgr_parser> m_keymgr_parser;
   std::unordered_map<ypc::bytes, std::shared_ptr<ypc::simple_sealed_file>>
       m_data_sources;

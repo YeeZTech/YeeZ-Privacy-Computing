@@ -1,4 +1,3 @@
-#include_directories(${PROJECT_SOURCE_DIR}/toolkit/analyzer/)
 add_subdirectory(modules)
 add_executable(fid_analyzer main.cpp
   sgx_bridge.cpp
@@ -7,11 +6,11 @@ add_executable(fid_analyzer main.cpp
 target_link_libraries(fid_analyzer
   stbox_common
   core
-  iris_parser_module
   core_parser_module
   keymgr_module
   keymgr_utils
   glog
+  dl
   )
 target_include_directories(fid_analyzer PRIVATE
   "${PROJECT_SOURCE_DIR}/toolkit/analyzer/"
