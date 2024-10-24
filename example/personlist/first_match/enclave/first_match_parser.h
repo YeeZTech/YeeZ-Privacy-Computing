@@ -49,7 +49,7 @@ public:
     uint8_t *data;
     uint32_t len;
     auto ret =
-        stbox::ocall_cast<uint32_t>(ocall_get_page)(nullptr, 0, &data, &len);
+        stbox::ocall_cast<uint32_t>(ocall_get_personlist)(nullptr, 0, &data, &len);
     if (ret) {
       LOG(ERROR) << "ocall_get_page ret: " << ret;
     }

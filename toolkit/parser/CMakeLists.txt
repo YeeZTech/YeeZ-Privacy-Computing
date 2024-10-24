@@ -2,7 +2,8 @@ add_subdirectory(modules)
 
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -rdynamic")
 
-add_executable(fid_analyzer main.cpp
+add_executable(fid_analyzer dianshu_analyzer.cpp
+  dianshu_parser.cpp
   sgx_bridge.cpp
   )
 

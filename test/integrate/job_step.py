@@ -90,7 +90,7 @@ class job_step:
         with open(param_output_url) as of:
             return json.load(of)
 
-    def fid_analyzer(shukey_json, rq_forward_json, enclave_hash, input_data, parser_url, dian_pkey, model, crypto, param_json, allowances, parser_input_file, parser_output_file):
+    def fid_analyzer(shukey_json, rq_forward_json, enclave_hash, input_data, parser_url, dian_pkey, model, crypto, param_json, allowances, name, parser_input_file, parser_output_file):
         parser_input = {
             "shu_info": {
                 "shu_pkey": shukey_json["public-key"],
@@ -115,6 +115,7 @@ class job_step:
         with open(parser_input_file, "w") as of:
             json.dump(parser_input, of)
         param = {
+             "lib-module": "{0}/lib{1}_parser_module.so".format(common.lib_dir, name),
             "input": parser_input_file,
             "output": parser_output_file
         }

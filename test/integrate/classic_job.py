@@ -94,7 +94,7 @@ class classic_job:
         parser_input_file = self.name + "parser_input.json"
         parser_output_file = self.name + "parser_output.json"
         result_json = job_step.fid_analyzer(shukey_json, rq_forward_json, enclave_hash, input_data,
-                                            self.parser_url, pkey, {}, self.crypto, param_json, [], parser_input_file, parser_output_file)
+                                            self.parser_url, pkey, {}, self.crypto, param_json, [], self.name, parser_input_file, parser_output_file)
 
         summary['encrypted-result'] = result_json["encrypted_result"]
         summary["result-signature"] = result_json["result_signature"]

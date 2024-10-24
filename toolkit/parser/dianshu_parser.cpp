@@ -1,58 +1,59 @@
-#pragma once
-#include "iodef.h"
-#include "modules/module_parser_interface.h"
+#include "dianshu_parser.h"
 #include "ypc/common/access_policy.h"
-#include "ypc/common/parser_type.h"
-#include "ypc/core/sealed_file.h"
 #include "ypc/core/status.h"
-#include "ypc/keymgr/default/keymgr_bridge.h"
-#include "ypc/keymgr/default/keymgr_sgx_module.h"
-#include "ypc/core/sgx/callback_bridge.h"
-#include <dlfcn.h>
-#include <memory>
-#include <unordered_map>
 
-struct parser_module_loader {
-  typedef parser_module_interface *(*create_instance_t)(const char *);
 
-  static parser_module_interface *create_module_instance(const char *lib_module,
-                                                         const char *mod_path) {
-    void *handle = dlopen(lib_module, RTLD_LAZY | RTLD_GLOBAL);
-    if (!handle) {
-      std::cerr << "Cannot open library: " << dlerror() << '\n';
-      return nullptr;
-    }
-    create_instance_t func_create_instance =
-        (create_instance_t)dlsym(handle, "create_instance");
-    const char *dlsym_error = dlerror();
-    if (dlsym_error) {
-      std::cerr << "Cannot load symbol 'create_instance': " << dlsym_error
-                << '\n';
-      dlclose(handle);
-      return nullptr;
-    }
-    return func_create_instance(mod_path);
+dianshu_parser* dianshu_parser::GetParser() { 
+    static dianshu_parser parser;
+    return &parser; 
+}
+
+void dianshu_parser::Init(const input_param_t &param,
+                               const std::string &lib_module_path)
+{
+  m_param = param;
+  m_lib_module_path = lib_module_path;
+  size_t s = ypc::simple_sealed_file::blockfile_t::BlockSizeLimit;
+  m_mem_buf.reset(new char[s]);
+  m_mem_buf_size = s;
+
+  m_lib_module = dlopen(m_lib_module_path.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+  if (m_lib_module == nullptr) {
+    LOG(ERROR) << "failed to open " << m_lib_module_path
+               << " with error: " << dlerror();
+    throw std::runtime_error("failed to call dlopen");
   }
-};
+  m_create_parser_module =
+      get_func_with_name<CreateInstanceFunc>("create_instance");
 
-class parser {
-public:
-  parser(const input_param_t &param) : m_param(param) {
-    size_t s = ypc::simple_sealed_file::blockfile_t::BlockSizeLimit;
-    m_mem_buf.reset(new char[s]);
-    m_mem_buf_size = s;
+  auto parser_enclave_path = m_param.get<parser_path>();
+  m_parser = std::shared_ptr<ypc::parser_sgx_module>(m_create_parser_module(parser_enclave_path));
+  if (m_parser == nullptr) {
+    throw std::runtime_error("failed to create parser module");
   }
-  virtual ~parser() {}
+}
 
-  virtual uint32_t parse(const std::string &lib_module) {
+
+uint32_t dianshu_parser::parse() {
     auto parser_enclave_path = m_param.get<parser_path>();
 #ifdef DEBUG
     LOG(INFO) << "parser enclave path: " << parser_enclave_path;
 #endif
-    auto keymgr_enclave_path = m_param.get<keymgr_path>();
-    LOG(INFO) << "lib module: " << lib_module;
     LOG(INFO) << "parser enclave path: " << parser_enclave_path;
-    set_module(lib_module.c_str(), parser_enclave_path.c_str());
+    LOG(INFO) << "m_module_type: " << m_lib_module_path;
+    // auto it = parserMap.find(m_lib_module_path);
+    // if (it != parserMap.end()) {
+    //     // 创建类的实例
+    //     m_parser = it->second(parser_enclave_path);
+    //     // // 检测m_parser是否为pdf模块
+    //     // if(dynamic_cast<pdf_parser_module*>(m_parser.get()) != nullptr) {
+    //     //     LOG(INFO) << "parser type: pdf";
+    //     // }
+    // } else {
+    //     std::cerr << "No module found for type: " << m_module_type << std::endl;
+    // }
+    // m_parser = std::make_shared<pdf_parser_module>(parser_enclave_path.c_str());
+    auto keymgr_enclave_path = m_param.get<keymgr_path>();
 #ifdef DEBUG
     LOG(INFO) << "keymgr enclave path: " << keymgr_enclave_path;
 #endif
@@ -60,7 +61,7 @@ public:
         std::make_shared<ypc::keymgr_sgx_module>(keymgr_enclave_path.c_str());
     m_keymgr_parser = std::make_shared<ypc::keymgr_parser>(keymgr_module);
     ypc::init_sgx_keymgr(m_keymgr_parser->keymgr());
-    // ypc::init_sgx_callback(std::bind(&parser::next_data_batch, this,
+    // ypc::init_sgx_callback(std::bind(&dianshu_parser::next_data_batch, this,
     //                                 std::placeholders::_1,
     //                                 std::placeholders::_2, std::placeholders::_3,
     //                                 std::placeholders::_4));
@@ -120,13 +121,11 @@ public:
     auto param_var = m_param.get<ntt::param>();
     typename ypc::cast_obj_to_package<ntt::param_t>::type param_pkg = param_var;
     auto param_bytes = ypc::make_bytes<ypc::bytes>::for_package(param_pkg);
-    LOG(INFO) << "m_parser->parse_data_item";
     ret = m_parser->parse_data_item(param_bytes.data(), param_bytes.size());
     if (ret != 0u) {
       LOG(ERROR) << "parse_data_item, got error: " << ypc::status_string(ret);
       return ret;
     }
-    LOG(INFO) << "m_parser->parse_data_item done";
 
     ret = m_parser->end_parse_data_item();
     if (ret != stx_status::success) {
@@ -153,11 +152,11 @@ public:
     }
 
     return ypc::success;
-  }
+}
 
-  virtual uint32_t next_data_batch(const uint8_t *hash_and_pkey,
-                                   uint32_t hash_and_pkey_size, uint8_t **data,
-                                   uint32_t *len) {
+uint32_t dianshu_parser::next_data_batch(const uint8_t *hash_and_pkey,
+                                         uint32_t hash_and_pkey_size,
+                                         uint8_t **data, uint32_t *len) {
     auto all = ypc::bytes(hash_and_pkey, hash_and_pkey_size);
     if (m_data_sources.find(all) == m_data_sources.end()) {
       auto hash = ypc::bytes(hash_and_pkey, 32);
@@ -176,12 +175,17 @@ public:
       return stbox::stx_status::success;
     }
     return stbox::stx_status::sealed_file_reach_end;
-  }
+}
 
-  inline const std::string &get_result_str() const { return m_result_str; }
+ypc::bytes dianshu_parser::construct_access_control_policy() {
+    using ntt = ypc::nt<ypc::bytes>;
+    ntt::access_list_package_t alp;
+    alp.set<ntt::access_list_type>(ypc::utc::access_policy_blacklist);
+    alp.set<ntt::access_list>(std::vector<ntt::access_item_t>());
+    return ypc::make_bytes<ypc::bytes>::for_package(alp);
+}
 
-protected:
-  uint32_t feed_datasource() {
+uint32_t dianshu_parser::feed_datasource() {
     auto input_data_var = m_param.get<input_data>();
     if (m_ptype.d.data_source_type == ypc::utc::noinput_datasource_parser) {
       return ypc::success;
@@ -257,14 +261,17 @@ protected:
     if (m_ptype.d.data_source_type == ypc::utc::raw_datasource_parser) {
       data_info_bytes = all_data_info[0].get<ntt::data_hash>();
     }
+    LOG(INFO) << "data_info_bytes size: " << data_info_bytes.size();
     auto ret = m_parser->init_data_source(data_info_bytes);
     if (ret != 0u) {
       LOG(ERROR) << "init_data_source got error " << ypc::status_string(ret);
       return ret;
     }
+    LOG(INFO) << "data_info_bytes done";
     return ypc::success;
-  }
-  uint32_t feed_model() {
+}
+
+uint32_t dianshu_parser::feed_model() {
     if (m_ptype.d.has_model == ypc::utc::no_model_parser) {
       return ypc::success;
     }
@@ -280,9 +287,11 @@ protected:
     }
 
     return ypc::success;
-  }
-  uint32_t feed_param() { return ypc::success; }
-  uint32_t dump_result(const ypc::bytes &res) {
+}
+
+uint32_t dianshu_parser::feed_param() { return ypc::success; }
+
+uint32_t dianshu_parser::dump_result(const ypc::bytes &res) {
     if (m_ptype.d.result_type == ypc::utc::onchain_result_parser) {
       auto pkg =
           ypc::make_package<ntt::onchain_result_package_t>::from_bytes(res);
@@ -308,28 +317,4 @@ protected:
       return ypc::parser_unknown_result;
     }
     return ypc::success;
-  }
-  ypc::bytes construct_access_control_policy() {
-    using ntt = ypc::nt<ypc::bytes>;
-    ntt::access_list_package_t alp;
-    alp.set<ntt::access_list_type>(ypc::utc::access_policy_blacklist);
-    alp.set<ntt::access_list>(std::vector<ntt::access_item_t>());
-    return ypc::make_bytes<ypc::bytes>::for_package(alp);
-  }
-  void set_module(const char *lib_module, const char *mod_path) {
-    m_parser =
-        parser_module_loader::create_module_instance(lib_module, mod_path);
-  };
-
-protected:
-  input_param_t m_param;
-  ypc::utc::parser_type_t m_ptype{};
-
-  parser_module_interface *m_parser;
-  std::shared_ptr<ypc::keymgr_parser> m_keymgr_parser;
-  std::unordered_map<ypc::bytes, std::shared_ptr<ypc::simple_sealed_file>>
-      m_data_sources;
-  std::string m_result_str;
-  std::unique_ptr<char[]> m_mem_buf;
-  size_t m_mem_buf_size;
-};
+}

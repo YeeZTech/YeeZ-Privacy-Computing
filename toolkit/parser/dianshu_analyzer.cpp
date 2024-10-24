@@ -1,11 +1,10 @@
 #include "iodef.h"
-#include "parser.h"
-#include "sgx_bridge.h"
 #include "ypc/core/configuration.h"
 #include "ypc/core/ntobject_file.h"
 #include "ypc/core/sealed_file.h"
 #include "ypc/core/version.h"
 #include "ypc/stbox/stx_status.h"
+#include "sgx_bridge.h"
 #include <boost/program_options.hpp>
 #include <exception>
 #include <fstream>
@@ -26,7 +25,7 @@ boost::program_options::variables_map parse_command_line(int argc,
   all.add_options()
     ("help", "help message")
     ("version", "show version")
-    ("lib-module", bp::value<std::string>(), "module parser path")
+    ("lib-module", bp::value<std::string>(), "lib module type")
     ("input", bp::value<std::string>(), "input parameters JSON file")
     ("output", bp::value<std::string>(), "output result JSON file")
     ("gen-example-input", bp::value<std::string>(), "generate example input parameters JSON file");
@@ -62,7 +61,7 @@ int main(int argc, char *argv[]) {
     return -1;
   }
   if (vm.count("lib-module") == 0u) {
-    std::cerr << "lib-module not specified" << std::endl;
+    std::cerr << "module-type not specified" << std::endl;
     return -1;
   }
   if (vm.count("input") == 0u) {
@@ -76,10 +75,11 @@ int main(int argc, char *argv[]) {
 
   input_param_t input_param =
       ypc::ntjson::from_json_file<input_param_t>(vm["input"].as<std::string>());
-  g_parser = std::make_shared<parser>(input_param);
-  std::cout << "start to parse" << std::endl;
   std::string lib_module = vm["lib-module"].as<std::string>();
-  g_parser->parse(lib_module);
+  auto g_parser = dianshu_parser::GetParser();
+  g_parser->Init(input_param, lib_module);
+  std::cout << "start to parse" << std::endl;
+  g_parser->parse();
 
   std::string output_fp = vm["output"].as<std::string>();
   try {
@@ -90,7 +90,6 @@ int main(int argc, char *argv[]) {
     std::cerr << "cannot open " << output_fp << std::endl;
     return 1;
   }
-
   return 0;
 }
 

@@ -1,5 +1,4 @@
 set(srcs parser_sgx_module.cpp
-  callback_bridge.cpp
   ./util/cxxfile_bridge.cpp
   ./util/kv_bridge.cpp
   ./util/util.cpp
