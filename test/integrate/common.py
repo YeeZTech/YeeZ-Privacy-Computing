@@ -10,8 +10,8 @@ current_dir = os.path.dirname(current_file)
 test_dir = os.path.dirname(current_dir)
 sdk_dir = os.path.dirname(test_dir).replace(" ", "\ ")
 
-bin_dir = os.path.join(sdk_dir, "./bin")
-lib_dir = os.path.join(sdk_dir, "./lib")
+bin_dir = os.path.join(sdk_dir, "bin")
+lib_dir = os.path.join(sdk_dir, "lib")
 kmgr_enclave = {
     'stdeth': os.path.join(lib_dir, "keymgr.signed.so"),
     'gmssl': os.path.join(lib_dir, "keymgr_gmssl.signed.so"),

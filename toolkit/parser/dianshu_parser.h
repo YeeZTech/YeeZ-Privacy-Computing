@@ -4,14 +4,14 @@
 #include "ypc/core/sealed_file.h"
 #include "ypc/keymgr/default/keymgr_sgx_module.h"
 #include "ypc/keymgr/default/keymgr_bridge.h"
-#include "ypc/core/sgx/parser_sgx_module.h"
+#include "modules/module_parser_interface.h"
 #include <dlfcn.h>
 #include <memory>
 #include <unordered_map>
 
 class dianshu_parser {
 public:
-  using CreateInstanceFunc = ypc::parser_sgx_module *(*)(std::string);
+  using CreateInstanceFunc = parser_module_interface *(*)(std::string);
   static dianshu_parser* GetParser();
   virtual ~dianshu_parser() = default;
 
@@ -54,7 +54,7 @@ protected:
   input_param_t m_param;
   ypc::utc::parser_type_t m_ptype{};
 
-  std::shared_ptr<ypc::parser_sgx_module> m_parser;
+  parser_module_interface *m_parser;
   std::shared_ptr<ypc::keymgr_parser> m_keymgr_parser;
   std::unordered_map<ypc::bytes, std::shared_ptr<ypc::simple_sealed_file>>
       m_data_sources;

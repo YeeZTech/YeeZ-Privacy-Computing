@@ -28,7 +28,7 @@ class classic_job:
         # 0. generate key
         data_key_file = self.name + ".data.key.json"
         data_shukey_json = job_step.gen_key(self.crypto, data_key_file)
-        self.all_outputs.append(data_key_file)
+        # self.all_outputs.append(data_key_file)
 
         # 1. generate key
         key_file = self.name + ".key.json"

@@ -9,6 +9,7 @@
 #include "ypc/corecommon/crypto/gmssl.h"
 #include "ypc/corecommon/crypto/stdeth.h"
 #include "ypc/corecommon/nt_cols.h"
+#include "serialize_utils.h"
 
 #include <boost/program_options.hpp>
 #include <boost/progress.hpp>
@@ -84,6 +85,8 @@ uint32_t unseal_file(const crypto_ptr_t &crypto_ptr,
   ifs.close();
   ypc::simple_sealed_file sf(sealed_file_path, true);
   ypc::bytes buf(256 * ypc::utc::max_item_size);
+  std::ofstream ofs;
+  ofs.open(file.c_str(), std::ios::out | std::ios::binary);
   while (0u != item_number--) {
     size_t len;
     bool ret = sf.next_item((char *)buf.data(), buf.size(), len) ==
@@ -103,10 +106,11 @@ uint32_t unseal_file(const crypto_ptr_t &crypto_ptr,
       auto pkg = ypc::make_package<ntt::batch_data_pkg_t>::from_bytes(batch);
       auto batch_data = pkg.get<ntt::batch_data>();
       // for (auto &l : batch_data) {
-      // std::cout << l << std::endl;
-      //}
+      //   std::cout << l << std::endl;
+      // }
     }
   }
+  ofs.close();
   return 0;
 }
 
@@ -207,12 +211,56 @@ int main(int argc, char *argv[]) {
   } else {
     throw std::runtime_error("Unsupperted crypto type!");
   }
-
-  auto status =
-      unseal_file(crypto_ptr, private_key, sealed_data_file, data_file);
-  if (status != 0u) {
+  std::ifstream file_in(data_file, std::ios::in);
+  if (!file_in) {
+    std::cerr << "failed to open sealed data file: " << sealed_data_file
+              << std::endl;
     return -1;
   }
+  auto pt = datahub::deserializeFromBinaryFile(sealed_data_file);
+  std::ofstream ofs("file_structure.json");
+  if (ofs) {
+      boost::property_tree::write_json(ofs, pt);
+      ofs.close();
+      std::cout << "Serialized to file_structure.json" << std::endl;
+  }
+  std::ifstream seal_data_in(sealed_data_file, std::ios::in | std::ios::binary);
+  std::string line;
+  while (std::getline(file_in, line)) {
+    std::cout << line << std::endl;
+    auto FilesInfo = datahub::findFileInfo(pt, line);
+    if (FilesInfo.empty()) {
+      std::cerr << "failed to find file: " << line << std::endl;
+      return -1;
+    }
+    for(auto &fileInfo : FilesInfo) {
+      std::cout << "path: " << fileInfo.path << std::endl;
+      std::cout << "encryptedSize: " << fileInfo.encryptedSize << ", offset: " << fileInfo.offset << std::endl;
+      std::string file_name = fileInfo.path.substr(fileInfo.path.find_last_of("/") + 1);
+      std::ofstream seal_file(file_name + ".sealed", std::ios::out | std::ios::binary);
+      seal_data_in.seekg(fileInfo.offset, std::ios::beg);
+      std::cout << "seal_data_in.tellg(): " << seal_data_in.tellg() << std::endl;
+      // 使用缓冲区读取并写入数据
+      std::vector<char> buffer(fileInfo.encryptedSize);
+      seal_data_in.read(buffer.data(), fileInfo.encryptedSize);
+      std::streamsize bytes_read = seal_data_in.gcount(); // 实际读取的字节数
+      seal_file.write(buffer.data(), bytes_read);
+      // seal_file.write((char *)seal_data_in.rdbuf(), fileInfo.encryptedSize);
+      std::cout << "seal_file.tellp(): " << seal_file.tellp() << std::endl;
+      seal_file.close();
+      seal_data_in.seekg(0, std::ios::beg);
+      auto status = unseal_file(crypto_ptr, private_key, file_name + ".raw.sealed", file_name); 
+      if (status != 0u) {
+        return -1;
+      }
+    }
+  }
+  seal_data_in.close();
+  // auto status =
+  //     unseal_file(crypto_ptr, private_key, sealed_data_file, data_file);
+  // if (status != 0u) {
+  //   return -1;
+  // }
 
   std::cout << "done unsealing" << std::endl;
   return 0;

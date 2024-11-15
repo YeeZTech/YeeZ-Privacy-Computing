@@ -4,7 +4,7 @@
 #include "ypc/core/sealed_file.h"
 #include "ypc/core/version.h"
 #include "ypc/stbox/stx_status.h"
-#include "sgx_bridge.h"
+#include "dianshu_parser.h"
 #include <boost/program_options.hpp>
 #include <exception>
 #include <fstream>
@@ -25,7 +25,7 @@ boost::program_options::variables_map parse_command_line(int argc,
   all.add_options()
     ("help", "help message")
     ("version", "show version")
-    ("lib-module", bp::value<std::string>(), "lib module type")
+    ("module-lib", bp::value<std::string>(), "module lib path")
     ("input", bp::value<std::string>(), "input parameters JSON file")
     ("output", bp::value<std::string>(), "output result JSON file")
     ("gen-example-input", bp::value<std::string>(), "generate example input parameters JSON file");
@@ -60,8 +60,8 @@ int main(int argc, char *argv[]) {
     std::cerr << "invalid cmd line parameters!" << std::endl;
     return -1;
   }
-  if (vm.count("lib-module") == 0u) {
-    std::cerr << "module-type not specified" << std::endl;
+  if (vm.count("module-lib") == 0u) {
+    std::cerr << "module-lib not specified" << std::endl;
     return -1;
   }
   if (vm.count("input") == 0u) {
@@ -75,9 +75,9 @@ int main(int argc, char *argv[]) {
 
   input_param_t input_param =
       ypc::ntjson::from_json_file<input_param_t>(vm["input"].as<std::string>());
-  std::string lib_module = vm["lib-module"].as<std::string>();
+  std::string module_lib = vm["module-lib"].as<std::string>();
   auto g_parser = dianshu_parser::GetParser();
-  g_parser->Init(input_param, lib_module);
+  g_parser->Init(input_param, module_lib);
   std::cout << "start to parse" << std::endl;
   g_parser->parse();
 
@@ -93,3 +93,14 @@ int main(int argc, char *argv[]) {
   return 0;
 }
 
+
+extern "C" {
+uint32_t next_data_batch(const uint8_t *data_hash, uint32_t hash_size,
+                         uint8_t **data, uint32_t *len);
+}
+
+uint32_t next_data_batch(const uint8_t *data_hash, uint32_t hash_size,
+                         uint8_t **data, uint32_t *len) {
+  auto g_parser = dianshu_parser::GetParser();
+  return g_parser->next_data_batch(data_hash, hash_size, data, len);
+}

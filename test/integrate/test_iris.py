@@ -8,7 +8,7 @@ if __name__ == "__main__":
     crypto = "stdeth"
 
     name = "iris"
-    data = os.path.join(common.bin_dir, "iris.data")
+    data = os.path.join(common.bin_dir, "iris1.data")
     parser = os.path.join(common.lib_dir, "iris_parser.signed.so")
     plugin = os.path.join(
         common.lib_dir, "libiris_reader{}.so".format(common.debug_postfix()))

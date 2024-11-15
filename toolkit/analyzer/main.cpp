@@ -1,10 +1,9 @@
 #include "iodef.h"
-#include "parser.h"
-#include "sgx_bridge.h"
+#include "ypc/core/version.h"
+#include "parsers/parser.h"
 #include "ypc/core/configuration.h"
 #include "ypc/core/ntobject_file.h"
 #include "ypc/core/sealed_file.h"
-#include "ypc/core/version.h"
 #include "ypc/stbox/stx_status.h"
 #include <boost/program_options.hpp>
 #include <exception>
@@ -16,6 +15,7 @@
 
 using stx_status = stbox::stx_status;
 using namespace ypc;
+std::shared_ptr<parser> g_parser;
 
 boost::program_options::variables_map parse_command_line(int argc,
                                                          char *argv[]) {
@@ -26,7 +26,6 @@ boost::program_options::variables_map parse_command_line(int argc,
   all.add_options()
     ("help", "help message")
     ("version", "show version")
-    ("lib-module", bp::value<std::string>(), "module parser path")
     ("input", bp::value<std::string>(), "input parameters JSON file")
     ("output", bp::value<std::string>(), "output result JSON file")
     ("gen-example-input", bp::value<std::string>(), "generate example input parameters JSON file");
@@ -54,6 +53,10 @@ boost::program_options::variables_map parse_command_line(int argc,
 }
 
 int main(int argc, char *argv[]) {
+
+  // google::InitGoogleLogging(argv[0]);
+  // google::InstallFailureSignalHandler();
+
   boost::program_options::variables_map vm;
   try {
     vm = parse_command_line(argc, argv);
@@ -61,14 +64,11 @@ int main(int argc, char *argv[]) {
     std::cerr << "invalid cmd line parameters!" << std::endl;
     return -1;
   }
-  if (vm.count("lib-module") == 0u) {
-    std::cerr << "lib-module not specified" << std::endl;
-    return -1;
-  }
   if (vm.count("input") == 0u) {
     std::cerr << "input not specified" << std::endl;
     return -1;
   }
+
   if (vm.count("output") == 0u) {
     std::cerr << "output not specified" << std::endl;
     return -1;
@@ -76,10 +76,10 @@ int main(int argc, char *argv[]) {
 
   input_param_t input_param =
       ypc::ntjson::from_json_file<input_param_t>(vm["input"].as<std::string>());
+
   g_parser = std::make_shared<parser>(input_param);
   std::cout << "start to parse" << std::endl;
-  std::string lib_module = vm["lib-module"].as<std::string>();
-  g_parser->parse(lib_module);
+  g_parser->parse();
 
   std::string output_fp = vm["output"].as<std::string>();
   try {
@@ -94,3 +94,12 @@ int main(int argc, char *argv[]) {
   return 0;
 }
 
+extern "C" {
+uint32_t next_data_batch(const uint8_t *data_hash, uint32_t hash_size,
+                         uint8_t **data, uint32_t *len);
+}
+
+uint32_t next_data_batch(const uint8_t *data_hash, uint32_t hash_size,
+                         uint8_t **data, uint32_t *len) {
+  return g_parser->next_data_batch(data_hash, hash_size, data, len);
+}

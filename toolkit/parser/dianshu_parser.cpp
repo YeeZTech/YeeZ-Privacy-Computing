@@ -27,7 +27,7 @@ void dianshu_parser::Init(const input_param_t &param,
       get_func_with_name<CreateInstanceFunc>("create_instance");
 
   auto parser_enclave_path = m_param.get<parser_path>();
-  m_parser = std::shared_ptr<ypc::parser_sgx_module>(m_create_parser_module(parser_enclave_path));
+  m_parser = m_create_parser_module(parser_enclave_path);
   if (m_parser == nullptr) {
     throw std::runtime_error("failed to create parser module");
   }
@@ -61,10 +61,6 @@ uint32_t dianshu_parser::parse() {
         std::make_shared<ypc::keymgr_sgx_module>(keymgr_enclave_path.c_str());
     m_keymgr_parser = std::make_shared<ypc::keymgr_parser>(keymgr_module);
     ypc::init_sgx_keymgr(m_keymgr_parser->keymgr());
-    // ypc::init_sgx_callback(std::bind(&dianshu_parser::next_data_batch, this,
-    //                                 std::placeholders::_1,
-    //                                 std::placeholders::_2, std::placeholders::_3,
-    //                                 std::placeholders::_4));
     ypc::bytes policy = construct_access_control_policy();
     m_keymgr_parser->keymgr()->set_access_control_policy(policy);
     LOG(INFO) << "initializing parser/keymgr module done";

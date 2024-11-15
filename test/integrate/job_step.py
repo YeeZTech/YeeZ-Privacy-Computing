@@ -115,7 +115,6 @@ class job_step:
         with open(parser_input_file, "w") as of:
             json.dump(parser_input, of)
         param = {
-             "lib-module": "{0}/lib{1}_parser_module.so".format(common.lib_dir, name),
             "input": parser_input_file,
             "output": parser_output_file
         }

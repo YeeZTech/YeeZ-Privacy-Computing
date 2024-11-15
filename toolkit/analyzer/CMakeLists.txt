@@ -1,9 +1,6 @@
-add_subdirectory(modules)
-
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -rdynamic")
-
+#include_directories(${PROJECT_SOURCE_DIR}/toolkit/analyzer/)
 add_executable(fid_analyzer main.cpp
-  sgx_bridge.cpp
+  parsers/parser.cpp
   )
 
 target_link_libraries(fid_analyzer
@@ -13,7 +10,6 @@ target_link_libraries(fid_analyzer
   keymgr_module
   keymgr_utils
   glog
-  dl
   )
 target_include_directories(fid_analyzer PRIVATE
   "${PROJECT_SOURCE_DIR}/toolkit/analyzer/"
