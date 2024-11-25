@@ -1,12 +1,12 @@
-add_executable(data_provider main.cpp )
-target_link_libraries(data_provider stbox_common core core_stdeth core_gmssl)
-install(TARGETS data_provider
+add_executable(file_provider main.cpp )
+target_link_libraries(file_provider stbox_common core core_stdeth core_gmssl)
+install(TARGETS file_provider
   DESTINATION "${bin_install_dir}")
-target_include_directories(data_provider PRIVATE
-"${PROJECT_SOURCE_DIR}/toolkit/datahub/"
+target_include_directories(file_provider PRIVATE
+"${PROJECT_SOURCE_DIR}/toolkit/filehub/"
 )
-AddClangTidy(data_provider)
-EnableCoverage(data_provider)
+AddClangTidy(file_provider)
+EnableCoverage(file_provider)
 
 add_executable(unseal_dir unseal_dir.cpp )
 target_link_libraries(unseal_dir stbox_common core core_stdeth core_gmssl)

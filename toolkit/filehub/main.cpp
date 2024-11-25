@@ -159,7 +159,8 @@ boost::program_options::variables_map parse_command_line(int argc,
     ("data-url", bp::value<std::string>(), "Data URL")
     ("plugin-path", bp::value<std::string>(), "shared library for reading data")
     ("sealed-data-url", bp::value<std::string>(), "Sealed data URL")
-    ("output", bp::value<std::string>(), "output meta file path");
+    ("output", bp::value<std::string>(), "output meta file path")
+    ("thread-num", bp::value<int>()->default_value(1), "thread number");
 
 
   general.add_options()
@@ -231,6 +232,10 @@ int main(int argc, char *argv[])
     std::cerr << "output not specified" << std::endl;
     return -1;
   }
+  if(vm.count("thread-num") == 0u) {
+    std::cerr << "thread-num not specified" << std::endl;
+    return -1;
+  }
 
   ypc::bytes public_key;
   if (vm.count("use-publickey-hex") != 0u)
@@ -251,6 +256,11 @@ int main(int argc, char *argv[])
   std::string plugin = vm["plugin-path"].as<std::string>();
   std::string sealed_data_file = vm["sealed-data-url"].as<std::string>();
   std::string output = vm["output"].as<std::string>();
+  int thread_num = vm["thread-num"].as<int>();
+  if(thread_num <= 0) {
+    std::cerr << "thread-num should > 0" << std::endl;
+    return -1;
+  }
 
   std::ofstream ofs;
   ofs.open(output);
@@ -296,7 +306,6 @@ int main(int argc, char *argv[])
   std::vector<std::future<ypc::bytes>> futures;
 
   // 多线程运行
-  int thread_num = 7;
   ThreadPool pool(thread_num);
   for (auto &file : filePath)
   {
@@ -353,14 +362,6 @@ int main(int argc, char *argv[])
   
   // 写入目录结构
   datahub::serializeToBinaryFile(root, sealed_data_file);
-
-
-  // // seal data
-  // auto status = seal_file(crypto_ptr, plugin, data_file, sealed_data_file,
-  //                         public_key, data_hash);
-  // if (status != 0u) {
-  //   return -1;
-  // }
 
   ofs.open(output);
   if (!ofs.is_open())

@@ -86,7 +86,6 @@ uint32_t unseal_file(const crypto_ptr_t &crypto_ptr,
     auto offset = -(sizeof(header) + header.block_number * 32);
     for (int i = 0; i < header.block_number; i++)
     {
-        // ifs.seekg(offset + 32 * i, ifs.beg);
         ifs.seekg(offset + 32 * i, ifs.end);
         ifs.read((char *)&bi, sizeof(bi));
         // std::cout << "block: " << i + 1 << std::endl;
@@ -117,7 +116,6 @@ uint32_t unseal_file(const crypto_ptr_t &crypto_ptr,
                     boost::format("decrypt batch %1% failed!") % item_number));
             }
             std::cout << "decrypt item succ!" << std::endl;
-            // std::cout << "batch: " << batch << std::endl;
             auto pkg = ypc::make_package<ntt::batch_data_pkg_t>::from_bytes(batch);
             auto batch_data = pkg.get<ntt::batch_data>();
             // txt reader
@@ -135,7 +133,7 @@ const char *arg_crypto = "crypto";
 const char *arg_use_privatekey_file = "use-privatekey-file";
 const char *arg_use_privatekey_hex = "use-privatekey-hex";
 const char *arg_sealed_data_url = "sealed-data-url";
-const char *arg_data_url = "data-url";
+const char *arg_unsealed_data_url = "unsealed-data-url";
 
 boost::program_options::variables_map parse_command_line(int argc,
                                                          char *argv[])
@@ -151,7 +149,7 @@ boost::program_options::variables_map parse_command_line(int argc,
     (arg_use_privatekey_file, bp::value<std::string>(), "private key file")
     (arg_use_privatekey_hex, bp::value<std::string>(), "private key")
     (arg_sealed_data_url, bp::value<std::string>(), "Sealed data URL")
-    (arg_data_url, bp::value<std::string>()->default_value("./"), "Data URL");
+    (arg_unsealed_data_url, bp::value<std::string>(), "Unsealed data URL");
 
   general.add_options()
     ("help", "help message")
@@ -208,9 +206,9 @@ int main(int argc, char *argv[])
         std::cerr << "sealed data url not specified" << std::endl;
         return -1;
     }
-    if (vm.count(arg_data_url) == 0u)
+    if (vm.count(arg_unsealed_data_url) == 0u)
     {
-        std::cerr << "data not specified!" << std::endl;
+        std::cerr << "unsealed data path not specified!" << std::endl;
         return -1;
     }
 
@@ -230,7 +228,7 @@ int main(int argc, char *argv[])
 
     std::string crypto = vm[arg_crypto].as<std::string>();
     std::string sealed_data_dir = vm[arg_sealed_data_url].as<std::string>();
-    // std::string data_file = vm[arg_data_url].as<std::string>();
+    std::string unsealed_data_url = vm[arg_unsealed_data_url].as<std::string>();
 
     const boost::filesystem::path rootPath{sealed_data_dir};
     if (!boost::filesystem::exists(rootPath))
@@ -271,8 +269,15 @@ int main(int argc, char *argv[])
     for (auto &file : filePath)
     {
         std::string sealed_data_file = file.string();
-        std::string data_file = std::string(sealed_data_file.begin(), sealed_data_file.end() - 7);
+        // 获取相对路径
+        auto relative_path = boost::filesystem::relative(file, rootPath).string();
+        std::string data_file = unsealed_data_url + "/" + relative_path.substr(0, relative_path.find_last_of("."));
         std::cout << "data file: " << data_file << " sealed file: " << sealed_data_file << std::endl;
+        // 创建结果目录
+        boost::filesystem::path file_dir = boost::filesystem::path(data_file).parent_path();
+        if (!boost::filesystem::exists(file_dir)) {
+            boost::filesystem::create_directories(file_dir);
+        }
         futures.push_back(pool.enqueue(unseal_file, crypto_ptr, private_key, sealed_data_file, data_file));
     }
     for (int i = 0; i < futures.size(); i++)
