@@ -75,11 +75,11 @@ uint32_t unseal_file(const crypto_ptr_t &crypto_ptr,
     {
         throw std::invalid_argument("read header failed!");
     }
-    std::cout << "block number: " << header.block_number << std::endl;
+    // std::cout << "block number: " << header.block_number << std::endl;
     uint64_t item_number = header.item_number;
-    std::cout << "item number: " << header.item_number << std::endl;
+    // std::cout << "item number: " << header.item_number << std::endl;
     ypc::bytes hash(header.data_hash, 32);
-    std::cout << "data hash: " << hash << std::endl;
+    // std::cout << "data hash: " << hash << std::endl;
     // block info: 32bytes
     ypc::internal::blockfile_header_v1 bi{};
     // auto offset = sizeof(header);
@@ -272,7 +272,7 @@ int main(int argc, char *argv[])
         // 获取相对路径
         auto relative_path = boost::filesystem::relative(file, rootPath).string();
         std::string data_file = unsealed_data_url + "/" + relative_path.substr(0, relative_path.find_last_of("."));
-        std::cout << "data file: " << data_file << " sealed file: " << sealed_data_file << std::endl;
+        // std::cout << "data file: " << data_file << " sealed file: " << sealed_data_file << std::endl;
         // 创建结果目录
         boost::filesystem::path file_dir = boost::filesystem::path(data_file).parent_path();
         if (!boost::filesystem::exists(file_dir)) {

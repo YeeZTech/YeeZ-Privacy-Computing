@@ -101,7 +101,7 @@ ypc::bytes seal_file(const crypto_ptr_t &crypto_ptr, const std::string &plugin,
   }
   uint64_t item_number = reader.get_item_number();
 
-  std::cout << "Reading " << item_number << " items ..." << std::endl;
+  // std::cout << "Reading " << item_number << " items ..." << std::endl;
   boost::progress_display pd(item_number);
   uint counter = 0;
   std::vector<ypc::bytes> batch;
@@ -138,8 +138,8 @@ ypc::bytes seal_file(const crypto_ptr_t &crypto_ptr, const std::string &plugin,
     batch_size = 0;
   }
 
-  std::cout << "data hash: " << data_hash << std::endl;
-  std::cout << "\nDone read data count: " << pd.count() << std::endl;
+  // std::cout << "data hash: " << data_hash << std::endl;
+  // std::cout << "Done read data count: " << pd.count() << std::endl;
   return data_hash;
 }
 
@@ -311,7 +311,7 @@ int main(int argc, char *argv[])
   {
     std::string data_file = file.string();
     std::string sealed_data = file.filename().string() + ".raw.sealed";
-    std::cout << "data file: " << data_file << " sealed file: " << sealed_data << std::endl;
+    // std::cout << "data file: " << data_file << " sealed file: " << sealed_data << std::endl;
     futures.push_back(pool.enqueue(seal_file, crypto_ptr, plugin, data_file, sealed_data, public_key));
   }
 
@@ -354,9 +354,9 @@ int main(int argc, char *argv[])
     seal_file_ifs.close();
     std::string file_path = rootPath.filename().string() + "/" + (boost::filesystem::is_regular_file(rootPath) ?
                             "" : boost::filesystem::relative(filePath[i], rootPath).string());
-    std::cout << "file path: " << file_path << std::endl;
+    // std::cout << "file path: " << file_path << std::endl;
     datahub::insertFileInfo(root, file_path, length, offset);
-    // boost::filesystem::remove(sealed_data);
+    boost::filesystem::remove(sealed_data);
   }
   seal_file_ofs.close();
   
