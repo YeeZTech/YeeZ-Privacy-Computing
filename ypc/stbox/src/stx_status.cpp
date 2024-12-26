@@ -15,7 +15,7 @@ const char *status_string(uint32_t status) {
     switch (status) {
 #include "ypc/stbox/stx_status.def"
     default:
-      return "unknown stx status";
+      return std::to_string(status).c_str();
     }
 
 #undef ATT_STATUS
@@ -29,9 +29,9 @@ const char *status_string(uint32_t status) {
 #undef SGX_STATUS
 #endif
     default:
-      return "unknown sgx status";
+      return std::to_string(status).c_str();
     }
-    return "unknown sgx status";
+    return std::to_string(status).c_str();
   }
 }
 } // namespace stbox

@@ -83,6 +83,7 @@ ypc::bytes seal_file(const crypto_ptr_t &crypto_ptr, const std::string &plugin,
                    const ypc::bytes &public_key)
 {
   // Read origin file use sgx to seal file
+  // std::cout << "sealing file: " << file << std::endl;
   privacy_data_reader reader(plugin, file);
   simple_sealed_file sf(sealed_file_path, false);
   // std::string k(file);
@@ -102,7 +103,6 @@ ypc::bytes seal_file(const crypto_ptr_t &crypto_ptr, const std::string &plugin,
   uint64_t item_number = reader.get_item_number();
 
   // std::cout << "Reading " << item_number << " items ..." << std::endl;
-  boost::progress_display pd(item_number);
   uint counter = 0;
   std::vector<ypc::bytes> batch;
   size_t batch_size = 0;
@@ -128,7 +128,6 @@ ypc::bytes seal_file(const crypto_ptr_t &crypto_ptr, const std::string &plugin,
                 << ypc::utc::max_item_size << " bytes!" << std::endl;
       return ypc::bytes();
     }
-    ++pd;
     ++counter;
   }
   if (!batch.empty())
@@ -310,8 +309,7 @@ int main(int argc, char *argv[])
   for (auto &file : filePath)
   {
     std::string data_file = file.string();
-    std::string sealed_data = file.filename().string() + ".raw.sealed";
-    // std::cout << "data file: " << data_file << " sealed file: " << sealed_data << std::endl;
+    std::string sealed_data = file.string() + ".raw.sealed";
     futures.push_back(pool.enqueue(seal_file, crypto_ptr, plugin, data_file, sealed_data, public_key));
   }
 
@@ -327,15 +325,16 @@ int main(int argc, char *argv[])
   boost::property_tree::ptree root;
   for(int i = 0; i < futures.size(); i++){
     ypc::bytes data_hash = futures[i].get();
-    std::string file_name = filePath[i].filename().string();
+    std::string cur_file_path = filePath[i].string();
     if (data_hash.empty())
     {
-      std::cout << "Failed to seal file " << file_name << "\n";
+      std::cout << "Failed to seal file: " << cur_file_path << "\n";
       seal_file_ofs.close();
       return -1;
     }
-    all_data_hash += data_hash;
-    std::string sealed_data = file_name + ".raw.sealed";
+    ypc::bytes k = data_hash + all_data_hash;
+    crypto_ptr->hash_256(k, all_data_hash);
+    std::string sealed_data = cur_file_path + ".raw.sealed";
     std::ifstream seal_file_ifs(sealed_data, std::ios::in | std::ios::binary);
     if (!seal_file_ifs.is_open())
     {
@@ -356,6 +355,7 @@ int main(int argc, char *argv[])
                             "" : boost::filesystem::relative(filePath[i], rootPath).string());
     // std::cout << "file path: " << file_path << std::endl;
     datahub::insertFileInfo(root, file_path, length, offset);
+    // std::cout << "file: " << file_path << " done" << std::endl;
     boost::filesystem::remove(sealed_data);
   }
   seal_file_ofs.close();

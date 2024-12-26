@@ -151,12 +151,16 @@ public:
   }
 
   virtual void close() {
-    // write block info
-    auto &back = m_block_infos.back();
-    m_file.seekp(back.end_file_pos, ftt::beg);
-    for (auto &bi : m_block_infos) {
-      m_file.write((char *)&bi, sizeof(bi));
+    if(!m_block_infos.empty()) {
+      // write block info
+      auto &back = m_block_infos.back();
+      m_file.seekp(back.end_file_pos, ftt::beg);
+      for (auto &bi : m_block_infos) {
+        m_file.write((char *)&bi, sizeof(bi));
+      } 
     }
+    m_header.magic_number = MagicNumber;
+    m_header.version_number = VersionNumber;
     // write header
     m_file.write((char *)&m_header, sizeof(m_header));
 
