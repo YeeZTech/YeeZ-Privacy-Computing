@@ -1,4 +1,4 @@
-# Fidelius - 基于可信执行环境的熠智隐私计算中间件
+# Fidelius - YeeZ Privacy Computing
 English / [中文](doc/README_ZH.md)
 
 # Fidelius - YeeZ Privacy Computing

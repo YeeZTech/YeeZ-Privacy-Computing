@@ -96,6 +96,7 @@ uint32_t parser::parse() {
                << ypc::status_string(ret);
     return ret;
   }
+
   auto param_var = m_param.get<ntt::param>();
   typename ypc::cast_obj_to_package<ntt::param_t>::type param_pkg = param_var;
   auto param_bytes = ypc::make_bytes<ypc::bytes>::for_package(param_pkg);
@@ -122,6 +123,7 @@ uint32_t parser::parse() {
     LOG(ERROR) << "get_analyze_result got error " << ypc::status_string(ret);
     return ret;
   }
+
   ret = dump_result(res);
   if (ret != 0u) {
     LOG(ERROR) << "dump_result got error " << ypc::status_string(ret);
@@ -170,6 +172,7 @@ uint32_t parser::feed_datasource() {
       LOG(WARNING) << "only need 1 input, ignore other inputs";
     }
   }
+
   if (m_ptype.d.data_source_type == ypc::utc::multi_sealed_datasource_parser) {
     if (input_data_var.empty()) {
       LOG(ERROR) << "missing input, require at least one input data source";
@@ -181,6 +184,7 @@ uint32_t parser::feed_datasource() {
   std::vector<ntt::sealed_data_info_t> all_data_info;
   for (auto item : input_data_var) {
     auto url = item.get<input_data_url>();
+    LOG(INFO) << url; 
     auto data_hash = item.get<input_data_hash>();
     auto ssf = std::make_shared<ypc::simple_sealed_file>(url, true);
     m_data_sources.insert(std::make_pair(data_hash, ssf));
@@ -206,6 +210,7 @@ uint32_t parser::feed_datasource() {
         data_hash, shu_info.get<kgt_pkey>(), item.get<ntt::tag>());
     all_data_info.push_back(data_info.make_copy());
   }
+
   ypc::bytes data_info_bytes;
   if (m_ptype.d.data_source_type == ypc::utc::single_sealed_datasource_parser) {
     if (all_data_info.empty()) {
@@ -226,6 +231,7 @@ uint32_t parser::feed_datasource() {
   if (m_ptype.d.data_source_type == ypc::utc::raw_datasource_parser) {
     data_info_bytes = all_data_info[0].get<ntt::data_hash>();
   }
+
   auto ret = m_parser->init_data_source(data_info_bytes);
   if (ret != 0u) {
     LOG(ERROR) << "init_data_source got error " << ypc::status_string(ret);
