@@ -57,6 +57,9 @@ template <typename T>
 class typed_csv_reader : public csv_reader {
 public:
   typedef T item_t;
+  using csv_reader_t = io::CSVReader<ntobject_size<item_t>::size,
+                                     io::trim_chars<' ', '\t'>,
+                                     io::double_quote_escape<',', '\"'>>;
 
   // TODO we should add more csv options here
   /// @extra_param should be a json string, like this
@@ -74,16 +77,14 @@ public:
     if (!m_stream->is_open()) {
       throw std::runtime_error("file not exist");
     }
-    m_reader.reset(
-        new io::CSVReader<ntobject_size<item_t>::size>(m_file_path, *m_stream));
+    m_reader.reset(new csv_reader_t(m_file_path, *m_stream));
   }
   virtual int reset_for_read() {
     m_stream.reset(new std::ifstream(m_file_path));
     if (!m_stream->is_open()) {
       return -1;
     }
-    m_reader.reset(
-        new io::CSVReader<ntobject_size<item_t>::size>(m_file_path, *m_stream));
+    m_reader.reset(new csv_reader_t(m_file_path, *m_stream));
     return 0;
   }
   item_t read_typed_item() {
@@ -101,13 +102,20 @@ public:
     if (!rv) {
       return 1;
     }
-    if (len) {
-      ff::net::marshaler lm(ff::net::marshaler::length_retriver);
-      v.arch(lm);
-      *len = static_cast<int>(lm.get_length());
+    ff::net::marshaler lm(ff::net::marshaler::length_retriver);
+    v.arch(lm);
+    const auto needed = static_cast<int>(lm.get_length());
+    const int capacity = (len != nullptr) ? *len : needed;
+    if (len != nullptr) {
+      *len = needed;
     }
-    if (buf) {
-      ff::net::marshaler sm(buf, *len, ff::net::marshaler::serializer);
+    if (buf != nullptr) {
+      // Treat *len as available buffer capacity when provided.
+      if (capacity < needed) {
+        // Caller buffer is too small; signal error without writing.
+        return -1;
+      }
+      ff::net::marshaler sm(buf, needed, ff::net::marshaler::serializer);
       v.arch(sm);
     }
     return 0;
@@ -119,7 +127,7 @@ public:
   }
   virtual int get_item_number() {
     std::ifstream s(m_file_path);
-    io::CSVReader<ntobject_size<item_t>::size> r(m_file_path, s);
+    csv_reader_t r(m_file_path, s);
 
     while (r.next_line()) {
     }
@@ -131,7 +139,7 @@ protected:
   const std::string m_extra_param;
   std::string m_file_path;
   std::unique_ptr<std::ifstream> m_stream;
-  std::unique_ptr<io::CSVReader<ntobject_size<item_t>::size>> m_reader;
+  std::unique_ptr<csv_reader_t> m_reader;
 };
 } // namespace plugins
 } // namespace ypc
@@ -167,4 +175,3 @@ protected:
     ypc::plugins::csv_reader *reader = (ypc::plugins::csv_reader *)handle;     \
     return reader->get_item_number();                                          \
   }
-

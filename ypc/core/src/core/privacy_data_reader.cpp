@@ -4,6 +4,8 @@
 #include "ypc/corecommon/exceptions.h"
 #include <boost/format.hpp>
 #include <iostream>
+#include <sstream>
+#include <vector>
 
 namespace ypc {
 component_load_failure::component_load_failure(const std::string &name)
@@ -102,14 +104,24 @@ std::string privacy_data_reader::get_data_format() {
 }
 
 bytes privacy_data_reader::read_item_data() {
-  // We use static buf here to optimize memory usage.
-  char buf[::ypc::utc::max_item_size] = {0};
-
+  std::vector<char> buf(::ypc::utc::max_item_size);
   int len = ::ypc::utc::max_item_size;
-  auto status = m_read_item_data(m_handle, buf, &len);
+  auto status = m_read_item_data(m_handle, buf.data(), &len);
   if (status != 0) {
+    if (status < 0) {
+      std::stringstream ss;
+      ss << "item size(" << len << ") exceeds max supported size("
+         << ::ypc::utc::max_item_size << ")";
+      throw std::runtime_error(ss.str());
+    }
     return bytes();
   }
-  return bytes(buf, len);
+  if (len > static_cast<int>(buf.size())) {
+    std::stringstream ss;
+    ss << "item size(" << len << ") exceeds max supported size("
+       << ::ypc::utc::max_item_size << ")";
+    throw std::runtime_error(ss.str());
+  }
+  return bytes(buf.data(), len);
 }
 } // namespace ypc
