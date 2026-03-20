@@ -18,6 +18,21 @@ Fidelius 基于“数据可用不可见”思想，推出了面向数据合作�
 ## 文档
 - [Fidelius：面向数据合作的隐私保护区块链解决方案](https://download.yeez.tech/doc/Fidelius_Introduction.pdf)
 
+## 学术论文
+Fidelius 相关研究已发表于以下学术论文：
+
+Wang, Chenmin, Chunhua Su, Zhenxing Hu, Xuepeng Fan, and Yulong Zeng. "Fidelius: A Novel Secure Data Analysis Framework Leveraging Intel SGX and Blockchain." Proceedings of the 7th ACM International Symposium on Blockchain and Secure Critical Infrastructure, 1-9, 2025.
+
+```bibtex
+@inproceedings{wang2025fidelius,
+  title={Fidelius: A Novel Secure Data Analysis Framework Leveraging Intel SGX and Blockchain},
+  author={Wang, Chenmin and Su, Chunhua and Hu, Zhenxing and Fan, Xuepeng and Zeng, Yulong},
+  booktitle={Proceedings of the 7th ACM International Symposium on Blockchain and Secure Critical Infrastructure},
+  pages={1--9},
+  year={2025}
+}
+```
+
 ## 快速开始
 Fidelius 基于 Intel SGX 运行，需确认硬件环境配备了支持的中央处理器（CPU），对 BIOS 进行设置，并安装驱动和相关软件。即使不具备该硬件环境，仍能在安装了 Intel SGX SDK 之后运行 Debug 版本。
 

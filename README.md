@@ -18,6 +18,21 @@ In the figure, the trusted third party can choose to be a blockchain network. As
 ## Documentation
 - [Fidelius: YeeZ Privacy Protection for Data Collaboration - A Blockchain based Solution](https://download.yeez.tech/doc/Fidelius_Introduction.pdf)
 
+## Publication
+The Fidelius system is described in the following publication:
+
+Wang, Chenmin, Chunhua Su, Zhenxing Hu, Xuepeng Fan, and Yulong Zeng. "Fidelius: A Novel Secure Data Analysis Framework Leveraging Intel SGX and Blockchain." Proceedings of the 7th ACM International Symposium on Blockchain and Secure Critical Infrastructure, 1-9, 2025.
+
+```bibtex
+@inproceedings{wang2025fidelius,
+  title={Fidelius: A Novel Secure Data Analysis Framework Leveraging Intel SGX and Blockchain},
+  author={Wang, Chenmin and Su, Chunhua and Hu, Zhenxing and Fan, Xuepeng and Zeng, Yulong},
+  booktitle={Proceedings of the 7th ACM International Symposium on Blockchain and Secure Critical Infrastructure},
+  pages={1--9},
+  year={2025}
+}
+```
+
 ## Quick Start
 Fidelius runs on Intel SGX and requires confirmation that the hardware environment is equipped with a supported central processing unit (CPU), BIOS settings, and the installation of drivers and related software. Even without the required hardware environment, the debug version can still run after installing the Intel SGX SDK.
 
@@ -48,4 +63,3 @@ Made with [contrib.rocks](https://contrib.rocks).
 
 - Wechat Official Account:
 - <img width="213" alt="CleanShot 2023-02-02 at 14 21 19@2x" src="https://user-images.githubusercontent.com/5715598/216247527-d60fbcc1-0de8-4a6c-88ba-9a1f51f903fc.png">
-
