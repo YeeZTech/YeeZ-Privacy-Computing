@@ -20,6 +20,7 @@
 
 #include <string>
 #include <vector>
+#include <cstdint>
 
 /**
  * Encode a byte sequence as a base58-encoded string.

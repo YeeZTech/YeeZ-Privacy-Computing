@@ -193,12 +193,7 @@ private:
       std::string err = error.message();
       if (error.category() == boost::asio::error::get_ssl_category()) {
         err = std::string(" (") +
-              boost::lexical_cast<std::string>(ERR_GET_LIB(error.value())) +
-              "," +
-              boost::lexical_cast<std::string>(ERR_GET_FUNC(error.value())) +
-              "," +
-              boost::lexical_cast<std::string>(ERR_GET_REASON(error.value())) +
-              ") ";
+              boost::lexical_cast<std::string>(ERR_reason_error_string(error.value())) ;
         // ERR_PACK /* crypto/err/err.h */
         char buf[128];
         ::ERR_error_string_n(error.value(), buf, sizeof(buf));

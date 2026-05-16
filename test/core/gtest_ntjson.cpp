@@ -1,3 +1,4 @@
+#include "ypc/core/byte.h"
 #include "ypc/core/ntjson.h"
 #include "ypc/core/ntobject_file.h"
 #include <gtest/gtest.h>
