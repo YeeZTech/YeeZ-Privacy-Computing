@@ -4,6 +4,7 @@
 #endif
 
 #include <stdexcept>
+#include <cstdint>
 
 namespace stbox {
 const char *status_string(uint32_t status) {
