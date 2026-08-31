@@ -44,7 +44,10 @@ add_component(keymgr
 add_component(terminus
   COMP_TARGETS "toolkit/mod_terminus.cmake")
 
-set(_supported_comp common stbox gmssl stdeth core keymgr terminus)
+add_component(parser_plugin
+  COMP_TARGETS "toolkit/mod_fid_parser_plugin_runtime.cmake")
+
+set(_supported_comp common stbox gmssl stdeth core keymgr terminus parser_plugin)
 
 if(CMAKE_BUILD_TYPE STREQUAL "")
   message(STATUS "CMAKE_BUILD_TYPE not defined, use Debug as default")

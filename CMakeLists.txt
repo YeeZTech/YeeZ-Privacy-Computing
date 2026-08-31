@@ -7,6 +7,9 @@ cmake_minimum_required(VERSION 3.12)
 project(YPC VERSION 0.5.2)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+# Parser-plugin packaging lives with the analyzer toolkit, but has to be
+# available before example/ and test/ applets reach their sign step.
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/toolkit/analyzer/cmake)
 
 if(CMAKE_BUILD_TYPE STREQUAL "")
   message(STATUS "CMAKE_BUILD_TYPE not defined, use Debug as default")
@@ -50,6 +53,7 @@ else()
 endif()
 
 include(SGXHelper)
+include(FidParserPlugin)
 
 if(SGX_MODE STREQUAL "Debug")
   message(STATUS "This is a Debug version!")
@@ -76,9 +80,15 @@ configure_file("${PROJECT_SOURCE_DIR}/cmake/project_path.h.in" "${PROJECT_SOURCE
 set(FF_PATH ${PROJECT_SOURCE_DIR}/vendor/fflib)
 set(FF_SRC_PATH ${FF_PATH}/src)
 
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/)
+if(NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
+  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/)
+endif()
+if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/)
+endif()
+if(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
+  set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/)
+endif()
 
 include(ClangTidy)
 include(GNUInstallDirs)
@@ -140,7 +150,12 @@ install(
   COMPONENT cmake
 )
 install(
-  FILES "${PROJECT_SOURCE_DIR}/cmake/FindSGX.cmake"
+  FILES
+    "${PROJECT_SOURCE_DIR}/cmake/FindSGX.cmake"
+    "${PROJECT_SOURCE_DIR}/cmake/FidEdlFingerprint.cmake"
+    "${PROJECT_SOURCE_DIR}/toolkit/analyzer/cmake/FidParserPlugin.cmake"
+    "${PROJECT_SOURCE_DIR}/toolkit/analyzer/cmake/GenerateFidParserRegistry.cmake"
+    "${PROJECT_SOURCE_DIR}/toolkit/analyzer/cmake/fid_parser_plugin.map"
   DESTINATION "${config_install_dir}"
   COMPONENT sgxcmake
 )

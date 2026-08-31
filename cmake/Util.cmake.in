@@ -1,4 +1,6 @@
 
+include("${CMAKE_CURRENT_LIST_DIR}/FidEdlFingerprint.cmake")
+
 define_property(TARGET PROPERTY COMP_NAME
   BRIEF_DOCS "component name"
   FULL_DOCS "Component name for find_package()")
@@ -51,9 +53,17 @@ function(add_ypc_applet target)
       message(FATAL_ERROR "add_ypc_applet can only use 'stdeth' or 'gmssl' for CRYPTO " )
     endif()
 
+  fid_compute_edl_fingerprint(
+    applet_edl_fingerprint
+    "${YPC_INCLUDE_DIR}/ypc/edl/eparser.edl"
+    "${YPC_INCLUDE_DIR}"
+    "${YPC_INCLUDE_DIR}/ypc/edl/util/"
+    "${YPC_INCLUDE_DIR}/ypc/edl/"
+    "${YPC_INCLUDE_DIR}/ypc/stbox/")
   add_enclave_library(${target} SRCS ${ADD_YPC_APPLET_SRCS}
     EDL ${YPC_INCLUDE_DIR}/ypc/edl/eparser.edl
     EDL_SEARCH_PATHS ${YPC_INCLUDE_DIR}/ypc/edl/util/:${YPC_INCLUDE_DIR}/ypc/edl/:${YPC_INCLUDE_DIR}/ypc/stbox/
+    EDL_DEPENDS ${applet_edl_fingerprint_DEPENDENCIES}
   )
   target_include_directories(${target}-edlobj PUBLIC
     "${YPC_INCLUDE_DIR}"

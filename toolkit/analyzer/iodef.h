@@ -24,8 +24,10 @@ define_nt(parser_path, std::string);
 define_nt(parser_enclave_hash, ypc::bytes);
 define_nt(keymgr_path, std::string);
 define_nt(dian_pkey, ypc::bytes);
+define_nt(forward_shu_info, ypc::bytes);
+define_nt(parser_module_id, std::string);
 
-typedef ::ff::util::ntobject<shu_info, input_data, parser_path, keymgr_path,
-                             parser_enclave_hash, dian_pkey, ntt::model,
-                             ntt::param>
+typedef ::ff::util::ntobject<
+    forward_shu_info, parser_module_id, shu_info, input_data, parser_path,
+    keymgr_path, parser_enclave_hash, dian_pkey, ntt::model, ntt::param>
     input_param_t;
