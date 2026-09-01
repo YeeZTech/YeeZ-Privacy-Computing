@@ -4,7 +4,7 @@
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 cmake_minimum_required(VERSION 3.12)
-project(YPC VERSION 0.5.2)
+project(YPC VERSION 0.6.0)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 # Parser-plugin packaging lives with the analyzer toolkit, but has to be
@@ -71,6 +71,15 @@ set(CPACK_PACKAGE_VENDOR "YeeZTech")
 set(CPACK_PACKAGE_CONTACT "fidelius@yeez.tech")
 set(CPACK_PACKAGE_DESCRIPTION "Fidelius: YeeZ Privacy Computing")
 set(CPACK_COMPONENTS_GROUPING ONE_PER_GROUP)
+set(CPACK_GENERATOR "DEB")
+set(CPACK_PACKAGING_INSTALL_PREFIX "/usr")
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "YeeZTech <contact@yeez.tech>")
+set(CPACK_DEBIAN_PACKAGE_SECTION "libs")
+set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
+set(CPACK_DEBIAN_FILE_NAME "DEB-DEFAULT")
+# The packaging script computes Debian dependencies after excluding the Intel
+# SGX SDK and PSW packages, which users install separately.
+set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS OFF)
 
 include(CPack)
 
