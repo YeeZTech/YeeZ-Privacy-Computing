@@ -65,6 +65,18 @@ function(add_ypc_applet target)
     EDL_SEARCH_PATHS ${YPC_INCLUDE_DIR}/ypc/edl/util/:${YPC_INCLUDE_DIR}/ypc/edl/:${YPC_INCLUDE_DIR}/ypc/stbox/
     EDL_DEPENDS ${applet_edl_fingerprint_DEPENDENCIES}
   )
+  # Tag the applet so enclave_sign() can emit its parser registry fragment.
+  # Without the analyzer toolkit the applet simply stays unregistered.
+  if(COMMAND fid_mark_parser_enclave)
+    fid_mark_parser_enclave(${target}
+      EDL "${YPC_INCLUDE_DIR}/ypc/edl/eparser.edl"
+      EDL_SEARCH_PATHS
+        "${YPC_INCLUDE_DIR}"
+        "${YPC_INCLUDE_DIR}/ypc/edl/util/"
+        "${YPC_INCLUDE_DIR}/ypc/edl/"
+        "${YPC_INCLUDE_DIR}/ypc/stbox/")
+  endif()
+
   target_include_directories(${target}-edlobj PUBLIC
     "${YPC_INCLUDE_DIR}"
     )

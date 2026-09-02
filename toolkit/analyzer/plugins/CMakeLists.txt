@@ -10,5 +10,3 @@ add_fid_parser_plugin(
     ${PROJECT_SOURCE_DIR}/include/ypc/edl/util/
   SRCS
     ${CMAKE_CURRENT_SOURCE_DIR}/eparser_plugin.cpp)
-
-add_subdirectory(dianshu)

@@ -75,6 +75,12 @@ endif()
 #endif()
 
 find_package(SGX)
+
+# Parser-plugin packaging: add_fid_parser_plugin, fid_mark_parser_enclave and
+# fid_register_parser_enclave, so a project outside this tree can ship its own
+# untrusted parser module and register the enclaves it signs.
+include(FidParserPlugin)
+
 set(_supported_sgx_comp common_t stbox_t gmssl_t stdeth_t core_t)
 if(SGX_FOUND)
   set(_supported_comp ${_supported_comp} ${_supported_sgx_comp})

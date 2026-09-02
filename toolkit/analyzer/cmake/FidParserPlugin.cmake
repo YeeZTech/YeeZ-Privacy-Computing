@@ -113,9 +113,18 @@ function(add_fid_parser_plugin)
   target_compile_definitions(${FID_TARGET} PRIVATE
     "FID_PARSER_MODULE_ID=\"${FID_MODULE_ID}\""
     "FID_PARSER_EDL_CONTRACT_FINGERPRINT=\"${edl_fingerprint}\"")
-  target_include_directories(${FID_TARGET} PRIVATE
-    "${YPC_INCLUDE_DIR}"
-    "${PROJECT_SOURCE_DIR}/include")
+  # In this tree the headers come from the source tree; in a project that
+  # consumes an installed YPC only YPC_INCLUDE_DIR exists.
+  set(plugin_include_dirs)
+  if(YPC_INCLUDE_DIR)
+    list(APPEND plugin_include_dirs "${YPC_INCLUDE_DIR}")
+  endif()
+  if(EXISTS "${PROJECT_SOURCE_DIR}/include")
+    list(APPEND plugin_include_dirs "${PROJECT_SOURCE_DIR}/include")
+  endif()
+  if(plugin_include_dirs)
+    target_include_directories(${FID_TARGET} PRIVATE ${plugin_include_dirs})
+  endif()
   set_target_properties(${FID_TARGET} PROPERTIES
     POSITION_INDEPENDENT_CODE ON
     C_VISIBILITY_PRESET hidden

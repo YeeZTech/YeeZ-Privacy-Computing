@@ -169,6 +169,14 @@ install(
   COMPONENT sgxcmake
 )
 
+# The offline registry utility is a framework tool, but the catalogue of
+# already-published enclaves it walks belongs to the project that shipped
+# them, so it is installed next to the contracts those projects drop here.
+install(
+  FILES "${PROJECT_SOURCE_DIR}/cmake/RegisterPublishedParserEnclaves.cmake"
+  DESTINATION share/fidelius/registry-tools
+)
+
 
 if (UNIX)
   #install(CODE "execute_process(COMMAND ldconfig)")
