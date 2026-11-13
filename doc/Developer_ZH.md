@@ -131,6 +131,10 @@ int close_item_reader(void *handle);
 uint64_t get_item_number(void *handle);
   ```
 
+### 解析插件
+新增一种数据格式的解析能力不需要修改 Fidelius，在自己的项目里编译一个解析插件即可，
+见[开发 Fidelius 解析插件](./ParserPlugin_ZH.md)。
+
 ### 参考文档
 - [Fidelius 编程](./pdf/programming.pdf)
 - [Fidelius 高性能计算框架（HPDA）](./pdf/hpda.pdf)

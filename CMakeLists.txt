@@ -4,9 +4,12 @@
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 cmake_minimum_required(VERSION 3.12)
-project(YPC VERSION 0.5.2)
+project(YPC VERSION 0.6.0)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+# Parser-plugin packaging lives with the analyzer toolkit, but has to be
+# available before example/ and test/ applets reach their sign step.
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/toolkit/analyzer/cmake)
 
 if(CMAKE_BUILD_TYPE STREQUAL "")
   message(STATUS "CMAKE_BUILD_TYPE not defined, use Debug as default")
@@ -50,6 +53,7 @@ else()
 endif()
 
 include(SGXHelper)
+include(FidParserPlugin)
 
 if(SGX_MODE STREQUAL "Debug")
   message(STATUS "This is a Debug version!")
@@ -67,6 +71,15 @@ set(CPACK_PACKAGE_VENDOR "YeeZTech")
 set(CPACK_PACKAGE_CONTACT "fidelius@yeez.tech")
 set(CPACK_PACKAGE_DESCRIPTION "Fidelius: YeeZ Privacy Computing")
 set(CPACK_COMPONENTS_GROUPING ONE_PER_GROUP)
+set(CPACK_GENERATOR "DEB")
+set(CPACK_PACKAGING_INSTALL_PREFIX "/usr")
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "YeeZTech <contact@yeez.tech>")
+set(CPACK_DEBIAN_PACKAGE_SECTION "libs")
+set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
+set(CPACK_DEBIAN_FILE_NAME "DEB-DEFAULT")
+# The packaging script computes Debian dependencies after excluding the Intel
+# SGX SDK and PSW packages, which users install separately.
+set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS OFF)
 
 include(CPack)
 
@@ -76,9 +89,15 @@ configure_file("${PROJECT_SOURCE_DIR}/cmake/project_path.h.in" "${PROJECT_SOURCE
 set(FF_PATH ${PROJECT_SOURCE_DIR}/vendor/fflib)
 set(FF_SRC_PATH ${FF_PATH}/src)
 
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/)
+if(NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
+  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/)
+endif()
+if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/)
+endif()
+if(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
+  set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib/)
+endif()
 
 include(ClangTidy)
 include(GNUInstallDirs)
@@ -140,9 +159,22 @@ install(
   COMPONENT cmake
 )
 install(
-  FILES "${PROJECT_SOURCE_DIR}/cmake/FindSGX.cmake"
+  FILES
+    "${PROJECT_SOURCE_DIR}/cmake/FindSGX.cmake"
+    "${PROJECT_SOURCE_DIR}/cmake/FidEdlFingerprint.cmake"
+    "${PROJECT_SOURCE_DIR}/toolkit/analyzer/cmake/FidParserPlugin.cmake"
+    "${PROJECT_SOURCE_DIR}/toolkit/analyzer/cmake/GenerateFidParserRegistry.cmake"
+    "${PROJECT_SOURCE_DIR}/toolkit/analyzer/cmake/fid_parser_plugin.map"
   DESTINATION "${config_install_dir}"
   COMPONENT sgxcmake
+)
+
+# The offline registry utility is a framework tool, but the catalogue of
+# already-published enclaves it walks belongs to the project that shipped
+# them, so it is installed next to the contracts those projects drop here.
+install(
+  FILES "${PROJECT_SOURCE_DIR}/cmake/RegisterPublishedParserEnclaves.cmake"
+  DESTINATION share/fidelius/registry-tools
 )
 
 

@@ -1,0 +1,6 @@
+FIDELIUS_PARSER_PLUGIN_1.0 {
+  global:
+    fid_parser_plugin_query;
+  local:
+    *;
+};
