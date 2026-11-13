@@ -7,9 +7,9 @@
     // typedef ypc::blockfile<0x4788d13e7fefe21f, 1024 * 1024,
     // 256 * ypc::max_item_size>
     // bft;
-    typedef ypc::blockfile<0x29384792, 16, 1024> bft;
+    typedef ypc::blockfile<0x29384792, 16, 1024, 1024> bft;
 
-    TEST(test_blockfile, simple) { ypc::blockfile<0x29384792, 16, 1024> t; }
+    TEST(test_blockfile, simple) { ypc::blockfile<0x29384792, 16, 1024, 1024> t; }
 
     void test_1_data(const ypc::bytes &k) {
       bft f;

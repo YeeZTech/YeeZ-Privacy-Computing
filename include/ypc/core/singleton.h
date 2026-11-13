@@ -2,6 +2,7 @@
 #include <functional>
 #include <memory>
 #include <mutex>
+#include <stdexcept>
 
 namespace ypc {
 

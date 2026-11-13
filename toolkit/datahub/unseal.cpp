@@ -10,6 +10,7 @@
 #include "ypc/corecommon/crypto/stdeth.h"
 #include "ypc/corecommon/nt_cols.h"
 
+#define BOOST_TIMER_ENABLE_DEPRECATED
 #include <boost/program_options.hpp>
 #include <boost/progress.hpp>
 #include <boost/property_tree/json_parser.hpp>

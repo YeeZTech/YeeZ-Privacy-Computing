@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <cstdint>
 
 namespace ypc {
 enum ypc_status : uint32_t {
